@@ -75,13 +75,15 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // अपडेटेड नया कॉन्फिग
         const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
+            authDomain: "adatacore-f.firebaseapp.com",
+            projectId: "adatacore-f",
+            storageBucket: "adatacore-f.firebasestorage.app",
+            messagingSenderId: "806498602099",
+            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
+            measurementId: "G-740M8K5M0J"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -96,7 +98,10 @@
                         const myID = data.uniqueID;
                         document.getElementById('user-display-name').innerText = data.fullName || user.email.split('@')[0];
                         document.getElementById('display-uid').innerText = "ID: " + myID;
-                        document.getElementById('stat-balance').innerText = data.balance || "0.00";
+                        
+                        // बैलेंस को प्रोफेशनल दिखाने के लिए toFixed(2)
+                        const balance = data.balance || 0;
+                        document.getElementById('stat-balance').innerText = balance.toFixed(2);
 
                         loadMyTasks(myID);
                     }
@@ -121,7 +126,6 @@
                 container.innerHTML = "";
                 querySnapshot.forEach((doc) => {
                     const task = doc.data();
-                    // यहाँ मैंने href में dynamic targetPage जोड़ दिया है
                     container.innerHTML += `
                         <div class="task-card p-8">
                             <div class="flex justify-between items-start mb-6">
@@ -129,7 +133,7 @@
                                 <p class="text-green-400 font-bold">$${task.price || '0.00'}</p>
                             </div>
                             <h4 class="text-lg font-bold mb-2">${task.title}</h4>
-                            <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description}</p>
+                            <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description || 'No description provided.'}</p>
                             <a href="${task.targetPage || '#'}" class="w-full inline-block text-center py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 hover:border-purple-600 transition-all">START TASK ➔</a>
                         </div>
                     `;
