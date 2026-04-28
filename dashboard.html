@@ -3,86 +3,110 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Dashboard — Adatacore Pro</title>
+    <title>Adatacore — Expert Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; margin: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; overflow-x: hidden; }
         .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
         .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.15); }
+        .premium-input { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 12px; padding: 10px 14px; color: white; outline: none; font-size: 13px; width: 100%; transition: 0.3s; }
+        .premium-input:focus { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-item { transition: all 0.3s; border-radius: 12px; cursor: pointer; }
-        .nav-item:hover { background: rgba(167, 139, 250, 0.1); color: #A78BFA; }
-        .card-stat { transition: transform 0.3s ease; }
-        .card-stat:hover { transform: translateY(-5px); border-color: rgba(167, 139, 250, 0.4); }
     </style>
 </head>
 <body class="grid-pattern">
 
     <div class="flex">
-        <aside class="w-64 h-screen glass fixed left-0 top-0 p-6 flex flex-col border-r border-white/5">
+        <aside class="w-72 h-screen glass fixed left-0 top-0 p-6 flex flex-col border-r border-white/5 z-20">
             <div class="flex items-center gap-2.5 font-bold text-white text-lg mb-10">
                 <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
             </div>
+
+            <div class="bg-white/5 rounded-3xl p-5 border border-white/10 mb-8">
+                <div class="w-12 h-12 rounded-full bg-purple-600 mb-3 flex items-center justify-center font-bold text-xl" id="avatar">U</div>
+                <h4 class="font-bold text-sm" id="side-name">Loading...</h4>
+                <p class="text-[10px] text-gray-500 font-mono mt-1" id="side-uid">ID: GEN-0000-0000-0000</p>
+            </div>
             
-            <nav class="flex-1 space-y-2">
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white">🏠 Overview</div>
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">📊 Active Tasks</div>
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">💰 Payouts</div>
+            <nav class="flex-1 space-y-1">
+                <div class="flex items-center gap-3 px-4 py-3 text-sm font-medium bg-purple-500/10 text-purple-300 rounded-xl">🏠 Dashboard</div>
+                <div class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white transition-all cursor-pointer">📊 Active Tasks</div>
+                <div class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white transition-all cursor-pointer">💰 Earnings</div>
             </nav>
 
             <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
         </aside>
 
-        <main class="ml-64 p-10 w-full">
-            <header class="flex justify-between items-start mb-10">
+        <main class="ml-72 p-10 w-full">
+            <header class="flex justify-between items-center mb-10">
                 <div>
-                    <h1 class="text-3xl font-bold text-gradient">Hello, <span id="user-name-display">Annotator</span>!</h1>
-                    <p class="text-gray-500 text-sm mt-1" id="greeting-date"></p>
-                </div>
-                <div class="flex items-center gap-4 glass p-2 px-4 rounded-2xl border border-white/10">
-                    <div class="text-right">
-                        <p class="text-xs font-bold" id="user-email-display">loading...</p>
-                        <p class="text-[9px] text-green-400 uppercase font-black">Verified Account</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold" id="user-initials">A</div>
+                    <h1 class="text-3xl font-bold text-gradient">Dashboard Overview</h1>
+                    <p class="text-gray-500 text-sm">Welcome to your workstation.</p>
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Total Earnings</p>
-                    <h3 class="text-3xl font-bold text-purple-400">$<span id="stat-balance">0.00</span></h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="glass p-6 rounded-[2rem]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold mb-1">Balance</p>
+                            <h3 class="text-2xl font-bold text-purple-400">$<span id="bal">0.00</span></h3>
+                        </div>
+                        <div class="glass p-6 rounded-[2rem]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold mb-1">Accuracy</p>
+                            <h3 class="text-2xl font-bold text-green-400"><span id="acc">0</span>%</h3>
+                        </div>
+                        <div class="glass p-6 rounded-[2rem]">
+                            <p class="text-gray-500 text-[10px] uppercase font-bold mb-1">Rank</p>
+                            <h3 class="text-2xl font-bold">Expert</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/5 h-64 flex flex-col items-center justify-center text-center">
+                        <p class="text-gray-600">Tasks assigned by Adatacore will appear here.</p>
+                    </div>
                 </div>
-                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Completed Tasks</p>
-                    <h3 class="text-3xl font-bold" id="stat-tasks">0</h3>
-                </div>
-                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Quality Score</p>
-                    <h3 class="text-3xl font-bold text-green-400"><span id="stat-accuracy">0</span>%</h3>
-                </div>
-            </div>
 
-            <div class="glass rounded-3xl p-8 border border-white/5 mb-10">
-                <h3 class="text-lg font-bold mb-4">Complete Your Profile</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="text" id="input-display-name" placeholder="Enter Your Real Name" class="bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-purple-500 transition-all">
-                    <button id="btn-update-profile" class="bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl px-6 py-3 text-sm transition-all">Update Name</button>
-                </div>
-            </div>
+                <div class="space-y-6">
+                    <div class="glass p-8 rounded-[2.5rem] border border-purple-500/20">
+                        <h3 class="text-lg font-bold mb-6 flex items-center gap-2">👤 Complete Profile</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block ml-1">Full Name</label>
+                                <input type="text" id="p-name" class="premium-input" placeholder="Enter Full Name">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block ml-1">Phone Number</label>
+                                <input type="tel" id="p-phone" class="premium-input" placeholder="+91 0000000000">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block ml-1">Qualification</label>
+                                <select id="p-qual" class="premium-input bg-[#1A1A2E]">
+                                    <option value="High School">High School</option>
+                                    <option value="Graduate">Graduate</option>
+                                    <option value="Post Graduate">Post Graduate</option>
+                                    <option value="Specialist">Specialist</option>
+                                </select>
+                            </div>
+                            <button id="btn-save-profile" class="w-full bg-purple-600 hover:bg-purple-500 py-3 rounded-xl font-bold text-sm transition-all mt-4">Save Information</button>
+                        </div>
+                    </div>
 
-            <div class="text-center py-20 border-2 border-dashed border-white/5 rounded-[40px]">
-                <p class="text-gray-600 font-medium">Fetching active projects from Adatacore Cloud...</p>
+                    <div class="glass p-6 rounded-[2rem] border border-white/5 text-center">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold mb-2">Your Unique ID</p>
+                        <p class="text-sm font-mono text-purple-300" id="display-uid">---</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -99,52 +123,75 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Greetings
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('greeting-date').innerText = new Date().toLocaleDateString('en-US', options);
+        // 16-Digit UID Generator
+        function generate16DigitID() {
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let res = 'AD-';
+            for(let i=0; i<12; i++) {
+                if(i > 0 && i % 4 === 0) res += '-';
+                res += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return res;
+        }
 
-        // Core Session & Data Logic
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // UI Updates
-                document.getElementById('user-email-display').innerText = user.email;
-                document.getElementById('user-name-display').innerText = user.displayName || "Annotator";
-                document.getElementById('user-initials').innerText = (user.displayName || user.email).charAt(0).toUpperCase();
-
-                // Real-time Database Listener
                 const userDocRef = doc(db, "users", user.uid);
                 
-                // Firestore से डेटा पढ़ना
                 onSnapshot(userDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        document.getElementById('stat-balance').innerText = data.balance || "0.00";
-                        document.getElementById('stat-tasks').innerText = data.tasksCompleted || "0";
-                        document.getElementById('stat-accuracy').innerText = data.accuracy || "0";
+                        // Sidebar & Stats update
+                        document.getElementById('side-name').innerText = data.fullName || "New Annotator";
+                        document.getElementById('side-uid').innerText = "ID: " + (data.uniqueID || "Generating...");
+                        document.getElementById('display-uid').innerText = data.uniqueID || "Generating...";
+                        document.getElementById('avatar').innerText = (data.fullName || user.email).charAt(0).toUpperCase();
+                        document.getElementById('bal').innerText = data.balance || "0.00";
+                        document.getElementById('acc').innerText = data.accuracy || "0";
+
+                        // Fill Form if data exists
+                        if(!document.activeElement.classList.contains('premium-input')) {
+                            document.getElementById('p-name').value = data.fullName || "";
+                            document.getElementById('p-phone').value = data.phone || "";
+                            document.getElementById('p-qual').value = data.qualification || "High School";
+                        }
                     } else {
-                        // अगर नया यूज़र है, तो डेटाबेस में उसका शुरूआती डेटा बना दो
-                        setDoc(userDocRef, { balance: "0.00", tasksCompleted: 0, accuracy: 100 });
+                        // Create initial record with 16-digit ID
+                        const newID = generate16DigitID();
+                        setDoc(userDocRef, { 
+                            fullName: "", 
+                            phone: "", 
+                            qualification: "High School",
+                            uniqueID: newID, 
+                            balance: "0.00", 
+                            accuracy: 100 
+                        });
                     }
                 });
-
             } else {
                 window.location.href = "auth.html";
             }
         });
 
-        // Update Profile Name Logic
-        document.getElementById('btn-update-profile').onclick = async () => {
-            const newName = document.getElementById('input-display-name').value;
-            if (newName.length < 2) return alert("Please enter a valid name");
+        // Save Information
+        document.getElementById('btn-save-profile').onclick = async () => {
+            const name = document.getElementById('p-name').value;
+            const phone = document.getElementById('p-phone').value;
+            const qual = document.getElementById('p-qual').value;
             
+            if(name.length < 3 || phone.length < 10) return alert("Please enter valid details");
+
             try {
-                await updateProfile(auth.currentUser, { displayName: newName });
-                alert("Name Updated Successfully!");
-                location.reload();
+                const userDocRef = doc(db, "users", auth.currentUser.uid);
+                await setDoc(userDocRef, {
+                    fullName: name,
+                    phone: phone,
+                    qualification: qual
+                }, { merge: true });
+                alert("Profile Updated!");
             } catch (err) { alert(err.message); }
         };
 
-        // Logout
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
