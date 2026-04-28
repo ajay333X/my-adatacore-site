@@ -46,7 +46,7 @@
             background: var(--card-bg);
             border: 1px solid rgba(167, 139, 250, 0.1);
             transition: all 0.3s ease;
-            transform-style: preserve-3d; /* Added for 3D effect */
+            transform-style: preserve-3d;
         }
 
         .card-glow:hover {
@@ -76,33 +76,61 @@
         .btn-shine {
             position: relative;
             overflow: hidden;
+            transition: transform 0.1s ease;
         }
 
+        /* 4.1 IMPROVED SHINE EFFECT */
         .btn-shine::after {
             content: "";
             position: absolute;
             top: -50%; left: -50%;
             width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.35), transparent);
             transform: rotate(45deg);
             transition: 0.5s;
         }
 
-        .btn-shine:hover::after { left: 120%; }
+        .btn-shine:hover::after { 
+            left: 120%; 
+            transition: 0.4s ease-in-out;
+        }
 
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.3); border-radius: 10px; }
+
+        /* 4.2 NEON INPUT GROUP STYLES */
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .neon-line {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #A78BFA;
+            box-shadow: 0 0 10px #A78BFA;
+            transition: all 0.4s ease;
+            z-index: 10;
+        }
+
+        .input-group:focus-within .neon-line {
+            width: 100%;
+            left: 0;
+        }
 
         input, textarea, select {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(167, 139, 250, 0.1) !important;
             color: white !important;
+            width: 100%;
         }
         
         select option { background: #0D0D1F; color: white; }
         html { scroll-behavior: smooth; }
 
-        /* Reveal Animation Classes */
         .reveal {
             opacity: 0;
             transform: translateY(30px);
@@ -277,13 +305,13 @@
                 <p class="text-gray-400 text-sm">Please select your account type to continue.</p>
             </div>
             <div class="space-y-4">
-                <button onclick="chooseRole('company')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left">
+                <button onclick="chooseRole('company')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left btn-shine">
                     <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                     </div>
                     <div><p class="text-white font-bold">I am a Company</p><p class="text-gray-500 text-[11px]">I need data labeled for my AI models.</p></div>
                 </button>
-                <button onclick="chooseRole('annotator')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left">
+                <button onclick="chooseRole('annotator')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left btn-shine">
                     <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                     </div>
@@ -306,16 +334,18 @@
                 <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
             </div>
             <form id="authForm" class="space-y-5">
-                <div>
+                <div class="input-group">
                     <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2 ml-1 font-bold">Email Address</label>
-                    <input type="email" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="name@company.com">
+                    <input type="email" required placeholder="name@company.com">
+                    <div class="neon-line"></div>
                 </div>
-                <div>
+                <div class="input-group">
                     <div class="flex justify-between items-center mb-2 ml-1">
                         <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Password</label>
                         <a href="#" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold uppercase tracking-widest">Forgot?</a>
                     </div>
-                    <input type="password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="••••••••">
+                    <input type="password" required placeholder="••••••••">
+                    <div class="neon-line"></div>
                 </div>
                 <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white shadow-xl shadow-purple-500/20 mt-2">Sign In to Dashboard</button>
                 <div class="relative py-4">
@@ -323,11 +353,11 @@
                     <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
                         <span class="text-xs font-medium text-white">Google</span>
                     </button>
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine">
                         <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4" alt="LinkedIn">
                         <span class="text-xs font-medium text-white">LinkedIn</span>
                     </button>
@@ -347,7 +377,7 @@
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Weekly Payouts</p><p class="text-[11px]">Reliable payments every week.</p></div>
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Global Impact</p><p class="text-[11px]">Build leading AI models.</p></div>
                 </div>
-                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase tracking-widest">Wanna join? Apply Now →</button>
+                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase tracking-widest btn-shine">Wanna join? Apply Now →</button>
             </div>
         </div>
     </div>
@@ -358,19 +388,42 @@
             <h2 class="text-3xl font-bold text-gradient mb-8 text-center">Annotator Application</h2>
             <form id="annotatorAppForm" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Birth Place">
+                    <div class="input-group">
+                        <input type="text" required placeholder="Full Name">
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" required placeholder="Birth Place">
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Email Address">
-                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Education Level</option><option value="highschool">High School</option><option value="bachelor">Bachelor's</option><option value="master">Master's</option><option value="phd">PhD</option></select>
+                    <div class="input-group">
+                        <input type="email" required placeholder="Email Address">
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <select required class="outline-none"><option value="" disabled selected>Education Level</option><option value="highschool">High School</option><option value="bachelor">Bachelor's</option><option value="master">Master's</option><option value="phd">PhD</option></select>
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Expertise Area</option><option value="image">Image Annotation</option><option value="trans">Transcription</option><option value="rlhf">RLHF</option><option value="translate">Translation</option></select>
-                    <select id="prevExp" required class="rounded-2xl px-5 py-4 text-sm outline-none" onchange="toggleExpField()"><option value="no">Experience? No</option><option value="yes">Experience? Yes</option></select>
+                    <div class="input-group">
+                        <select required class="outline-none"><option value="" disabled selected>Expertise Area</option><option value="image">Image Annotation</option><option value="trans">Transcription</option><option value="rlhf">RLHF</option><option value="translate">Translation</option></select>
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <select id="prevExp" required class="outline-none" onchange="toggleExpField()"><option value="no">Experience? No</option><option value="yes">Experience? Yes</option></select>
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
-                <div id="expDetail" class="hidden text-left"><input type="text" id="companyInput" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Which company?"></div>
-                <button type="submit" class="bg-green-600 hover:bg-green-500 w-full py-5 rounded-2xl font-bold text-sm text-white shadow-xl transition-all">Submit Application</button>
+                <div id="expDetail" class="hidden text-left">
+                    <div class="input-group">
+                        <input type="text" id="companyInput" placeholder="Which company?">
+                        <div class="neon-line"></div>
+                    </div>
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-500 w-full py-5 rounded-2xl font-bold text-sm text-white shadow-xl transition-all btn-shine">Submit Application</button>
             </form>
         </div>
     </div>
@@ -396,18 +449,42 @@
             <h2 class="text-3xl font-bold text-gradient mb-8">Detailed Inquiry</h2>
             <form id="fullInquiryForm" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Company Name">
+                    <div class="input-group">
+                        <input type="text" required placeholder="Full Name">
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" required placeholder="Company Name">
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Work Email">
-                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Budget Range</option><option value="1k">Under $1k</option><option value="5k">$1k - $5k</option><option value="20k">$5k - $20k</option><option value="plus">$20k+</option></select>
+                    <div class="input-group">
+                        <input type="email" required placeholder="Work Email">
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <select required class="outline-none"><option value="" disabled selected>Budget Range</option><option value="1k">Under $1k</option><option value="5k">$1k - $5k</option><option value="20k">$5k - $20k</option><option value="plus">$20k+</option></select>
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
-                <textarea rows="2" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Special Requirements?"></textarea>
-                <textarea required rows="3" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Project details..."></textarea>
+                <div class="input-group">
+                    <textarea rows="2" placeholder="Any special requirements?"></textarea>
+                    <div class="neon-line"></div>
+                </div>
+                <div class="input-group">
+                    <textarea required rows="3" placeholder="Project details..."></textarea>
+                    <div class="neon-line"></div>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <select class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="whatsapp">WhatsApp</option><option value="linkedin">LinkedIn</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Username / Number">
+                    <div class="input-group">
+                        <select class="outline-none"><option value="whatsapp">WhatsApp</option><option value="linkedin">LinkedIn</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
+                        <div class="neon-line"></div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" required placeholder="Username / Number">
+                        <div class="neon-line"></div>
+                    </div>
                 </div>
                 <button type="submit" class="accent-gradient w-full py-5 rounded-2xl font-bold text-sm btn-shine">Send Request</button>
             </form>
