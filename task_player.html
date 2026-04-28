@@ -3,36 +3,39 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Ajay Test Demo — Adatacore</title>
+    <title>Workstation Player — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { background: #0D0D1F; color: white; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 32px; }
-        .record-btn { width: 80px; height: 80px; border-radius: 50%; transition: all 0.3s; }
-        .recording { background: #EF4444 !important; box-shadow: 0 0 30px rgba(239, 68, 68, 0.5); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        body { background: #050510; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 40px; }
+        .record-btn { width: 90px; height: 90px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .recording { background: #ff4757 !important; transform: scale(1.1); box-shadow: 0 0 40px rgba(255, 71, 87, 0.4); }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
 
-    <div class="glass w-full max-w-xl p-10 text-center">
-        <h2 class="text-2xl font-bold mb-2">Ajay Test Demo</h2>
-        <p class="text-gray-500 text-sm mb-8">Pay Rate: $8.00 / Hour</p>
+    <div class="glass w-full max-w-2xl p-12 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+        
+        <h2 class="text-3xl font-bold mb-2">Ajay Test Demo</h2>
+        <p id="pay-rate-display" class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-10">Rate: $8.00 / Hour</p>
 
-        <div class="mb-8">
-            <div id="timer" class="text-5xl font-mono mb-4 text-purple-400">00:00</div>
-            <p id="status" class="text-xs uppercase tracking-widest text-gray-400">Ready to Record</p>
+        <div class="mb-12">
+            <div id="timer" class="text-7xl font-mono mb-4 tracking-tighter">00:00</div>
+            <p id="status" class="text-[10px] uppercase tracking-[0.3em] text-gray-500">System Ready</p>
         </div>
 
-        <div class="flex flex-col items-center gap-6">
-            <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
+        <div class="flex flex-col items-center gap-8">
+            <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl">
+                <div id="btn-icon" class="w-4 h-4 bg-white rounded-sm"></div>
+            </button>
             
-            <div id="playbackSection" class="hidden w-full space-y-4">
-                <audio id="audioPlayer" controls class="w-full"></audio>
+            <div id="playbackSection" class="hidden w-full space-y-6 animate-in fade-in zoom-in duration-300">
+                <audio id="audioPlayer" controls class="w-full h-10 opacity-80"></audio>
                 <div class="flex gap-4">
-                    <button id="discardBtn" class="flex-1 py-3 bg-white/5 rounded-xl text-sm font-bold border border-white/10">Discard</button>
-                    <button id="submitBtn" class="flex-1 py-3 bg-purple-600 rounded-xl text-sm font-bold shadow-lg">Submit & Earn</button>
+                    <button id="discardBtn" class="flex-1 py-4 bg-white/5 rounded-2xl text-xs font-bold border border-white/10 hover:bg-white/10 transition-all">DISCARD</button>
+                    <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-xs font-bold shadow-xl">SUBMIT WORK</button>
                 </div>
             </div>
         </div>
@@ -41,98 +44,93 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, increment, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
+        // अपडेटेड नया कॉन्फ़िगरेशन (New Project)
         const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
+            authDomain: "adatacore-f.firebaseapp.com",
+            projectId: "adatacore-f",
+            storageBucket: "adatacore-f.firebasestorage.app",
+            messagingSenderId: "806498602099",
+            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
+            measurementId: "G-740M8K5M0J"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        let mediaRecorder;
-        let audioChunks = [];
-        let startTime;
-        let timerInterval;
-        let durationInSeconds = 0;
-
+        let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob;
         const recordBtn = document.getElementById('recordBtn');
-        const playbackSection = document.getElementById('playbackSection');
         const audioPlayer = document.getElementById('audioPlayer');
-        const timerDisplay = document.getElementById('timer');
 
-        // Setup Audio Recording
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "auth.html"; });
+
         recordBtn.onclick = async () => {
             if (mediaRecorder && mediaRecorder.state === "recording") {
-                stopRecording();
+                mediaRecorder.stop();
+                clearInterval(timerInterval);
+                recordBtn.classList.remove('recording');
+                document.getElementById('status').innerText = "Review Recording";
             } else {
-                startRecording();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = []; duration = 0;
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioPlayer.src = URL.createObjectURL(audioBlob);
+                    document.getElementById('playbackSection').classList.remove('hidden');
+                };
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                document.getElementById('status').innerText = "Recording Live";
+                timerInterval = setInterval(() => {
+                    duration++;
+                    const m = Math.floor(duration/60).toString().padStart(2,'0');
+                    const s = (duration%60).toString().padStart(2,'0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
+                }, 1000);
             }
         };
 
-        async function startRecording() {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            durationInSeconds = 0;
-            startTime = Date.now();
-
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                audioPlayer.src = URL.createObjectURL(audioBlob);
-                playbackSection.classList.remove('hidden');
-            };
-
-            mediaRecorder.start();
-            recordBtn.classList.add('recording');
-            document.getElementById('status').innerText = "Recording...";
-            timerInterval = setInterval(updateTimer, 1000);
-        }
-
-        function stopRecording() {
-            mediaRecorder.stop();
-            clearInterval(timerInterval);
-            recordBtn.classList.remove('recording');
-            document.getElementById('status').innerText = "Preview Your Recording";
-        }
-
-        function updateTimer() {
-            durationInSeconds++;
-            const mins = Math.floor(durationInSeconds / 60).toString().padStart(2, '0');
-            const secs = (durationInSeconds % 60).toString().padStart(2, '0');
-            timerDisplay.innerText = `${mins}:${secs}`;
-        }
-
-        // --- Payment Logic ---
         document.getElementById('submitBtn').onclick = async () => {
-            const hourlyRate = 8.00;
-            const earnings = (durationInSeconds / 3600) * hourlyRate; // $8 / hr calculate logic
-
-            Swal.fire({
-                title: 'Submitting...',
-                text: `You earned $${earnings.toFixed(4)}`,
-                icon: 'success',
-                showConfirmButton: false,
-                background: '#1A1A2E', color: '#fff'
-            });
+            const user = auth.currentUser;
+            const payRate = 8.00;
+            const earnings = (duration / 3600) * payRate;
+            
+            Swal.fire({ title: 'Uploading...', text: 'Saving your work to Adatacore Cloud.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                const userRef = doc(db, "users", auth.currentUser.uid);
-                // बैलेंस को डेटाबेस में अपडेट करना
-                await updateDoc(userRef, {
-                    balance: increment(earnings),
-                    tasksCompleted: increment(1)
+                // 1. Upload Audio to Firebase Storage
+                const fileName = `recordings/${user.uid}_${Date.now()}.wav`;
+                const storageRef = ref(storage, fileName);
+                await uploadBytes(storageRef, audioBlob);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // 2. Save Log to Firestore
+                await addDoc(collection(db, "submissions"), {
+                    workerUID: user.uid,
+                    workerEmail: user.email,
+                    projectTitle: "Ajay Test Demo",
+                    audioUrl: downloadURL,
+                    durationSeconds: duration,
+                    earnedAmount: earnings.toFixed(4),
+                    timestamp: new Date()
                 });
 
-                setTimeout(() => window.location.href = "dashboard.html", 2000);
-            } catch (err) { alert(err.message); }
+                // 3. Update User Balance
+                await updateDoc(doc(db, "users", user.uid), {
+                    balance: increment(earnings)
+                });
+
+                Swal.fire({ icon: 'success', title: 'Success!', text: `Earned $${earnings.toFixed(4)}`, background: '#050510', color: '#fff' })
+                .then(() => window.location.href = "dashboard.html");
+
+            } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
         document.getElementById('discardBtn').onclick = () => location.reload();
