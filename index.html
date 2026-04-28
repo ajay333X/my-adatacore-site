@@ -33,7 +33,7 @@
             position: fixed; top: 0; left: 0; border-radius: 50%; 
             z-index: 9999; pointer-events: none;
             transform: translate(-50%, -50%);
-            /* स्मूथनेस के लिए बदलाव */
+            /* स्मूथनेस के लिए बदलाव - JS एनीमेशन के साथ मैच किया */
             transition: transform 0.1s ease-out, width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
         }
         button, a, input, select, textarea { cursor: none !important; }
@@ -189,8 +189,8 @@
                 <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="openSignInModal()" class="hidden md:block text-[13px] text-gray-400 hover:text-white transition-colors font-medium">Sign in</button>
-                <button onclick="openGetStartedModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full shadow-lg shadow-purple-500/20">Get Started</button>
+                <a href="auth.html" class="hidden md:block text-[13px] text-gray-400 hover:text-white transition-colors font-medium">Sign in</a>
+                <a href="auth.html" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full shadow-lg shadow-purple-500/20">Get Started</a>
             </div>
         </nav>
     </header>
@@ -293,7 +293,7 @@
 
     <section class="py-24 border-t border-gray-800">
         <div class="max-w-5xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-16 text-gradient reveal">Trusted by teams and workers</h2>
+            <h2 class="text-3xl font-bold mb-16 text-gradient reveal text-left">Trusted by teams and workers</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="card-glow rounded-2xl p-7 reveal text-left">
                     <p class="text-gray-400 text-sm italic mb-6">"Adatacore cut our pipeline from 3 weeks to 4 days."</p>
@@ -377,29 +377,6 @@
         <p>© 2026 Adatacore, Inc. All rights reserved.</p>
     </footer>
 
-    <div id="getStartedModal" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-        <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 text-center">
-            <button onclick="closeGetStartedModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            </button>
-            <h2 class="text-3xl font-bold text-gradient mb-10">Get Started</h2>
-            <div class="space-y-4">
-                <button onclick="chooseRole('company')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group text-left btn-shine">
-                    <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
-                        🏢
-                    </div>
-                    <div><p class="text-white font-bold">I am a Company</p><p class="text-gray-500 text-[11px]">I need data labeled for my AI models.</p></div>
-                </button>
-                <button onclick="chooseRole('annotator')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group text-left btn-shine">
-                    <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all">
-                        👤
-                    </div>
-                    <div><p class="text-white font-bold">I am an Annotator</p><p class="text-gray-500 text-[11px]">I want to earn by labeling data.</p></div>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div id="contactModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
         <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[32px] p-8 sm:p-10 relative overflow-y-auto custom-scroll shadow-2xl">
             <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
@@ -417,7 +394,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Company Name</label>
-                        <input type="text" required placeholder="AI Tech Inc." class="premium-input">
+                        <input type="text" required placeholder="AI Lab Inc." class="premium-input">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -437,56 +414,46 @@
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Project Details</label>
-                    <textarea required rows="4" placeholder="How can our annotators help you?" class="premium-input resize-none"></textarea>
+                    <textarea required rows="4" placeholder="How can we help your team?" class="premium-input resize-none"></textarea>
                 </div>
                 <button type="submit" class="accent-gradient w-full py-4 rounded-2xl font-bold text-white btn-shine shadow-lg shadow-purple-500/20">Send Request →</button>
             </form>
         </div>
     </div>
 
-    <div id="signInModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-        <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-2xl">
-            <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            </button>
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-                <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
-            </div>
-            <form id="authForm" class="space-y-5 text-left">
-                <div class="input-group"><input type="email" required placeholder="Email Address" class="premium-input"></div>
-                <div class="input-group"><input type="password" required placeholder="Password" class="premium-input"></div>
-                <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white mt-2">Sign In</button>
-                <div class="relative py-4"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div><div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine"><img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-medium text-white">Google</span></button>
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine"><img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4"> <span class="text-xs font-medium text-white">LinkedIn</span></button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full rounded-[40px] p-12 relative border border-purple-500/40 text-center text-left">
+        <div class="glass max-w-2xl w-full rounded-[40px] p-8 sm:p-12 relative border border-purple-500/40 text-left">
             <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-6">About Adatacore</h2>
-            <p class="text-gray-300 text-sm mb-8 leading-relaxed">We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
-            <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full shadow-2xl">Let us reach you out →</button>
+            <h2 class="text-3xl font-bold text-gradient mb-6 text-center">About Adatacore</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl">
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">What we do</p><p class="text-xs">Transform raw data into structured sets via 120k+ experts.</p></div>
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">Our Edge</p><p class="text-xs">99.4% Accuracy & 48h Average Turnaround.</p></div>
+                </div>
+                <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 shadow-2xl">Let us reach you out →</button>
+            </div>
         </div>
     </div>
 
     <div id="annotatorInfoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full rounded-[40px] p-12 relative border border-green-500/30 text-center text-left">
+        <div class="glass max-w-2xl w-full rounded-[40px] p-8 sm:p-12 relative border border-green-500/30 text-left">
             <button onclick="closeAnnotatorInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-6">Work with Adatacore</h2>
-            <p class="text-gray-300 text-sm mb-8">Join a global community of experts shaping the future of AI. Flexible hours and fair pay guaranteed.</p>
-            <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase btn-shine">Apply Now →</button>
+            <h2 class="text-3xl font-bold text-gradient mb-6 text-center">Why work with Adatacore?</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>Join a global community of experts shaping the future of AI. We offer flexible hours and fair pay.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Weekly Payouts</p><p class="text-[11px]">Reliable payments every week.</p></div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Global Impact</p><p class="text-[11px]">Build leading AI models.</p></div>
+                </div>
+                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase tracking-widest btn-shine">Wanna join? Apply Now →</button>
+            </div>
         </div>
     </div>
 
     <div id="annotatorFormModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto border border-green-500/30 text-left">
-            <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+            <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
             <h2 class="text-3xl font-bold text-gradient mb-8 text-center">Annotator Application</h2>
             <form id="annotatorAppForm" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
