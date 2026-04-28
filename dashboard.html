@@ -84,70 +84,86 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
-            measurementId: "G-PTS16DVVYE"
-        };
+    // Your Exact Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
+        authDomain: "adatacoresite.firebaseapp.com",
+        projectId: "adatacoresite",
+        storageBucket: "adatacoresite.firebasestorage.app",
+        messagingSenderId: "108144458736",
+        appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
+        measurementId: "G-PTS16DVVYE"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        // Date Display
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-        // 16-Digit ID Generator
-        function generateUID() {
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let res = 'AD-';
-            for(let i=0; i<12; i++) {
-                if(i > 0 && i % 4 === 0) res += '-';
-                res += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return res;
+    // 16-Digit Alphanumeric ID Generator
+    function generateUID() {
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let res = 'AD-';
+        for(let i=0; i<12; i++) {
+            if(i > 0 && i % 4 === 0) res += '-';
+            res += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+        return res;
+    }
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userDocRef = doc(db, "users", user.uid);
-                
-                onSnapshot(userDocRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        const finalName = data.fullName || user.email.split('@')[0];
-                        
-                        document.getElementById('user-display-name').innerText = finalName;
-                        document.getElementById('header-name').innerText = finalName;
-                        document.getElementById('user-initials').innerText = finalName.charAt(0).toUpperCase();
-                        document.getElementById('display-uid').innerText = data.uniqueID || "Generating...";
-                        document.getElementById('stat-balance').innerText = data.balance || "0.00";
-                        document.getElementById('stat-tasks').innerText = data.tasksCompleted || "0";
-                        document.getElementById('stat-accuracy').innerText = data.accuracy || "0";
-                    } else {
-                        // Create initial profile with 16-digit Unique ID
-                        setDoc(userDocRef, { 
-                            uniqueID: generateUID(),
-                            balance: "0.00", 
-                            tasksCompleted: 0, 
-                            accuracy: 100 
-                        });
-                    }
-                });
-            } else {
-                window.location.href = "auth.html";
+    // Date Display
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDocRef = doc(db, "users", user.uid);
+            
+            // डेटाबेस से एक बार चेक करें कि क्या ID पहले से है
+            const docSnap = await getDoc(userDocRef);
+            
+            if (!docSnap.exists() || !docSnap.data().uniqueID) {
+                // अगर ID नहीं है, तो नई बनाओ और पुराने डेटा के साथ मर्ज कर दो
+                const newID = generateUID();
+                await setDoc(userDocRef, { 
+                    uniqueID: newID,
+                    balance: "0.00", 
+                    tasksCompleted: 0, 
+                    accuracy: 100 
+                }, { merge: true });
             }
-        });
 
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
-    </script>
+            // अब Real-time अपडेट सुनें (ID अब बार-बार नहीं बदलेगी)
+            onSnapshot(userDocRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    // अगर प्रोफाइल में नाम सेट है तो वो दिखाओ, वरना ईमेल का पहला हिस्सा
+                    const finalName = data.fullName || user.email.split('@')[0];
+                    
+                    document.getElementById('user-display-name').innerText = finalName;
+                    document.getElementById('header-name').innerText = finalName;
+                    document.getElementById('user-initials').innerText = finalName.charAt(0).toUpperCase();
+                    
+                    // डेटाबेस वाली ID दिखाएं
+                    document.getElementById('display-uid').innerText = data.uniqueID || "Generating...";
+                    
+                    // कमाई और स्कोर दिखाएं
+                    document.getElementById('stat-balance').innerText = data.balance || "0.00";
+                    document.getElementById('stat-tasks').innerText = data.tasksCompleted || "0";
+                    document.getElementById('stat-accuracy').innerText = data.accuracy || "0";
+                }
+            });
+
+        } else {
+            // अगर लॉगिन नहीं है तो बाहर भेज दो
+            window.location.href = "auth.html";
+        }
+    });
+
+    // Logout Function
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
+</script>
 </body>
 </html>
