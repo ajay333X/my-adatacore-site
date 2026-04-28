@@ -10,12 +10,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-dark); 
-            color: white; 
+        /* स्क्रॉलिंग फिक्स करने के लिए ज़रूरी सेटिंग्स */
+        html, body {
+            height: auto;
+            min-height: 100%;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            overflow-y: auto; /* स्क्रॉलिंग फिक्स */
+            padding: 0;
+            overflow-x: hidden;
+            overflow-y: auto; /* स्क्रॉल इनेबल */
         }
 
         .grid-pattern { 
@@ -35,42 +40,38 @@
         }
 
         .input-field { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(255, 255, 255, 0.03) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
             border-radius: 12px; 
             padding: 12px; 
-            color: white; 
+            color: white !important; 
             width: 100%; 
             outline: none; 
             transition: 0.3s; 
         }
 
         .input-field:focus { 
-            border-color: var(--accent); 
-            background: rgba(167, 139, 250, 0.05); 
+            border-color: var(--accent) !important; 
+            background: rgba(167, 139, 250, 0.05) !important; 
         }
 
         .section-label { 
-            font-size: 11px; 
-            font-weight: 700; 
-            color: #6B7280; 
-            text-transform: uppercase; 
-            letter-spacing: 0.05em; 
-            margin-bottom: 8px; 
-            display: block; 
+            font-size: 11px; font-weight: 700; color: #6B7280; 
+            text-transform: uppercase; letter-spacing: 0.05em; 
+            margin-bottom: 8px; display: block; 
         }
 
-        /* Apple-style sticky bar */
-        .action-bar {
-            position: fixed;
+        /* बटन बार जो नीचे चिपका रहेगा */
+        .sticky-footer {
+            position: sticky;
             bottom: 0;
             left: 0;
-            right: 0;
-            padding: 20px;
-            background: rgba(13, 13, 31, 0.8);
+            width: 100%;
+            background: rgba(13, 13, 31, 0.9);
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
-            z-index: 50;
+            padding: 1.5rem;
+            z-index: 100;
         }
 
         .swal2-popup {
@@ -79,82 +80,89 @@
             border-radius: 24px !important;
             color: white !important;
         }
+        
+        /* क्लिक करने के लिए बटन्स को 'Relative' और 'Z-index' देना ज़रूरी है */
+        button, a, select, input {
+            position: relative;
+            z-index: 10;
+        }
     </style>
 </head>
-<body class="grid-pattern">
+<body>
+    <div class="grid-pattern"></div>
 
-    <nav class="p-6 max-w-5xl mx-auto flex justify-between items-center relative z-10">
-        <a href="dashboard.html" class="flex items-center gap-2 font-bold text-lg">
-            <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
-            Adatacore
-        </a>
-        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all">← Back</a>
-    </nav>
+    <div class="relative min-h-screen flex flex-col">
+        
+        <nav class="p-6 max-w-5xl w-full mx-auto flex justify-between items-center">
+            <a href="dashboard.html" class="flex items-center gap-2 font-bold text-lg">
+                <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
+                Adatacore
+            </a>
+            <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all">← Back</a>
+        </nav>
 
-    <main class="max-w-4xl mx-auto p-6 pb-32 relative z-10">
-        <header class="mb-12">
-            <h1 class="text-4xl font-bold mb-2">Account Settings</h1>
-            <p class="text-gray-400">Update your profile information and manage account security.</p>
-        </header>
+        <main class="max-w-4xl w-full mx-auto p-6 flex-grow">
+            <header class="mb-12">
+                <h1 class="text-4xl font-bold mb-2">Account Settings</h1>
+                <p class="text-gray-400">Update your profile information and manage account security.</p>
+            </header>
 
-        <div class="glass-card p-8 mb-8">
-            <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Personal Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <label class="section-label">Full Name</label>
-                    <input type="text" id="fullName" class="input-field" placeholder="Your Name">
-                </div>
-                <div>
-                    <label class="section-label">Email Address (Locked)</label>
-                    <input type="email" id="email" class="input-field opacity-50 cursor-not-allowed" readonly>
-                </div>
-                <div>
-                    <label class="section-label">Phone Number</label>
-                    <input type="tel" id="phone" class="input-field" placeholder="+91 XXXXX-XXXXX">
-                </div>
-                <div>
-                    <label class="section-label">Date of Birth</label>
-                    <input type="date" id="dob" class="input-field">
+            <div class="glass-card p-8 mb-8">
+                <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Personal Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="section-label">Full Name</label>
+                        <input type="text" id="fullName" class="input-field" placeholder="Full Name">
+                    </div>
+                    <div>
+                        <label class="section-label">Email (Locked)</label>
+                        <input type="email" id="email" class="input-field opacity-50 cursor-not-allowed" readonly>
+                    </div>
+                    <div>
+                        <label class="section-label">Phone Number</label>
+                        <input type="tel" id="phone" class="input-field" placeholder="+91 XXXXX-XXXXX">
+                    </div>
+                    <div>
+                        <label class="section-label">Date of Birth</label>
+                        <input type="date" id="dob" class="input-field">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="glass-card p-8 mb-8">
-            <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Qualification</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <label class="section-label">Occupation</label>
-                    <input type="text" id="occupation" class="input-field" placeholder="e.g. Student, Software Engineer">
-                </div>
-                <div>
-                    <label class="section-label">Education Level</label>
-                    <select id="education" class="input-field bg-[#1A1A2E]">
-                        <option value="High School">High School</option>
-                        <option value="Bachelors">Bachelors Degree</option>
-                        <option value="Masters">Masters Degree</option>
-                        <option value="PhD">PhD / Doctorate</option>
-                    </select>
+            <div class="glass-card p-8 mb-8">
+                <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Work & Education</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="section-label">Occupation</label>
+                        <input type="text" id="occupation" class="input-field" placeholder="e.g. Student">
+                    </div>
+                    <div>
+                        <label class="section-label">Education</label>
+                        <select id="education" class="input-field bg-[#1A1A2E]">
+                            <option value="High School">High School</option>
+                            <option value="Bachelors">Bachelors Degree</option>
+                            <option value="Masters">Masters Degree</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="glass-card p-8 border-red-500/20 mb-10">
-            <h3 class="text-xl font-bold mb-8 text-red-500 border-b border-white/5 pb-4">Security</h3>
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <p class="font-bold text-sm">Reset Password</p>
-                    <p class="text-xs text-gray-500">We will send a reset link to your email.</p>
+            <div class="glass-card p-8 border-red-500/20 mb-20">
+                <h3 class="text-xl font-bold mb-8 text-red-500 border-b border-white/5 pb-4">Security</h3>
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium">Reset Password via Email</p>
+                    <button onclick="resetPass()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all">Send Link</button>
                 </div>
-                <button onclick="resetPass()" class="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all">Send Link</button>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <div class="action-bar">
-        <div class="max-w-4xl mx-auto flex justify-end gap-6 items-center">
-            <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-gray-500 hover:text-white transition-all">Cancel</button>
-            <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all">Save Changes</button>
-        </div>
+        <footer class="sticky-footer">
+            <div class="max-w-4xl mx-auto flex justify-end gap-6 items-center">
+                <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-gray-500 hover:text-white transition-all">Cancel</button>
+                <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all">Save Changes</button>
+            </div>
+        </footer>
+
     </div>
 
     <script type="module">
@@ -176,7 +184,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Load User Data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('email').value = user.email;
@@ -194,7 +201,6 @@
             }
         });
 
-        // Save Data Logic
         document.getElementById('saveBtn').onclick = async () => {
             const user = auth.currentUser;
             const updateData = {
@@ -207,23 +213,15 @@
 
             try {
                 await setDoc(doc(db, "users", user.uid), updateData, { merge: true });
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated!',
-                    text: 'Your profile has been securely updated.',
-                    background: '#1A1A2E',
-                    color: '#fff',
-                    confirmButtonColor: '#7C3AED'
-                });
+                Swal.fire({ icon: 'success', title: 'Saved!', text: 'Profile updated successfully.', background: '#1A1A2E', color: '#fff', confirmButtonColor: '#7C3AED' });
             } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Oops', text: err.message });
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message });
             }
         };
 
-        // Password Reset
         window.resetPass = () => {
             sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
-                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the reset link.', background: '#1A1A2E', color: '#fff' });
+                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox.', background: '#1A1A2E', color: '#fff' });
             });
         };
     </script>
