@@ -19,44 +19,160 @@
             background-color: var(--bg-dark); 
             color: white;
             overflow-x: hidden;
-            cursor: none;
         }
 
-        #cursor-dot { width: 6px; height: 6px; background: #A78BFA; position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 10000; pointer-events: none; transform: translate(-50%, -50%); }
-        #cursor-outline { width: 35px; height: 35px; border: 1.5px solid #A78BFA; position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 9999; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.2s ease; }
+        /* कर्सर स्टाइल फिक्स (Center alignment added) */
+        #cursor-dot { 
+            width: 6px; height: 6px; background: #A78BFA; 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 10000; pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+        #cursor-outline { 
+            width: 35px; height: 35px; border: 1.5px solid #A78BFA; 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 9999; pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
         button, a, input, select, textarea { cursor: none !important; }
 
-        .typewriter-cursor { display: inline-block; width: 2px; background-color: #A78BFA; margin-left: 4px; animation: blink 0.8s infinite; }
+        .typewriter-cursor {
+            display: inline-block;
+            width: 2px;
+            background-color: #A78BFA;
+            margin-left: 4px;
+            animation: blink 0.8s infinite;
+        }
         @keyframes blink { 50% { opacity: 0; } }
 
+        .grid-pattern {
+            background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .glass {
+            background: rgba(26, 26, 46, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(167, 139, 250, 0.15);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+        }
+
+        .card-glow {
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .card-glow:hover {
+            border-color: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 0 25px rgba(167, 139, 250, 0.1);
+        }
+
+        /* PREMIUM FORM STYLES */
         .premium-input {
-            background: rgba(255, 255, 255, 0.03) !important;
+            background: rgba(255, 255, 255, 0.04) !important;
             border: 1px solid rgba(167, 139, 250, 0.1) !important;
             border-radius: 12px !important;
-            padding: 14px 18px !important;
+            padding: 12px 16px !important;
             color: white !important;
             transition: all 0.3s ease !important;
             outline: none !important;
             width: 100%;
         }
-        .premium-input:focus { border-color: #A78BFA !important; background: rgba(167, 139, 250, 0.05) !important; box-shadow: 0 0 20px rgba(167, 139, 250, 0.15); }
-        .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: #94A3B8; font-weight: 700; margin-bottom: 8px; display: block; margin-left: 4px; }
+        .premium-input:focus {
+            border-color: #A78BFA !important;
+            background: rgba(167, 139, 250, 0.06) !important;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+        }
 
-        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; }
-        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(167, 139, 250, 0.15); }
-        .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .accent-gradient { background: linear-gradient(135deg, #7C3AED, #A78BFA); }
-        .card-glow { background: var(--card-bg); border: 1px solid rgba(167, 139, 250, 0.1); transition: all 0.3s ease; transform-style: preserve-3d; }
-        .card-glow:hover { border-color: rgba(167, 139, 250, 0.4); box-shadow: 0 0 25px rgba(167, 139, 250, 0.1); }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-marquee { display: flex; width: max-content; animation: marquee 40s linear infinite; }
-        .btn-shine { position: relative; overflow: hidden; }
-        .btn-shine::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.35), transparent); transform: rotate(45deg); transition: 0.5s; }
-        .btn-shine:hover::after { left: 120%; }
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-        .reveal.active { opacity: 1; transform: translateY(0); }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 40s linear infinite;
+        }
+
+        .hero-glow {
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; height: 800px;
+            background: radial-gradient(circle at 50% 20%, rgba(167, 139, 250, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-shine::after {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+
+        .btn-shine:hover::after { 
+            left: 120%; 
+            transition: 0.4s ease-in-out;
+        }
+
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.3); border-radius: 10px; }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .neon-line {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #A78BFA;
+            box-shadow: 0 0 10px #A78BFA;
+            transition: all 0.4s ease;
+            z-index: 10;
+        }
+
+        .input-group:focus-within .neon-line {
+            width: 100%;
+            left: 0;
+        }
+        
+        select option { background: #0D0D1F; color: white; }
+        html { scroll-behavior: smooth; }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="grid-pattern">
@@ -85,10 +201,12 @@
             <span class="inline-flex items-center gap-2 text-[11px] font-medium tracking-widest uppercase text-purple-300/90 mb-8 px-4 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5">
                 <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Trusted by 500+ AI teams worldwide
             </span>
+            
             <h1 class="text-5xl sm:text-7xl lg:text-[82px] font-bold tracking-tight leading-[0.95] text-gradient">
                 Fuel Your AI With<br/>
                 <span id="typewriter" class="text-white"></span><span class="typewriter-cursor">&nbsp;</span>
             </h1>
+
             <p class="mt-8 text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
                 Enterprise-grade annotation for images, video, audio, and text — powered by a global network of expert human annotators.
             </p>
@@ -96,11 +214,24 @@
                 <button onclick="openModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-3.5 rounded-full text-sm w-full sm:w-auto">Get Data Labeled →</button>
                 <button onclick="openAnnotatorInfoModal()" class="group text-gray-400 hover:text-white text-sm px-8 py-3.5 rounded-full border border-gray-800 transition-all flex items-center gap-2">Earn as Annotator</button>
             </div>
+
             <div class="mt-20 grid grid-cols-2 sm:grid-cols-4 border border-gray-800/50 rounded-2xl bg-[#1A1A2E]/40 backdrop-blur-sm overflow-hidden reveal">
-                <div class="p-6 border-r border-gray-800/50"><div class="text-3xl font-bold text-gradient">50M+</div><div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Tasks Completed</div></div>
-                <div class="p-6 border-r border-gray-800/50"><div class="text-3xl font-bold text-gradient">120K+</div><div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Expert Annotators</div></div>
-                <div class="p-6 border-r border-gray-800/50"><div class="text-3xl font-bold text-gradient">99.4%</div><div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Accuracy Rate</div></div>
-                <div class="p-6"><div class="text-3xl font-bold text-gradient">48h</div><div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Avg Turnaround</div></div>
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">50M+</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Tasks Completed</div>
+                </div>
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">120K+</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Expert Annotators</div>
+                </div>
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">99.4%</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Accuracy Rate</div>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl font-bold text-gradient">48h</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Avg Turnaround</div>
+                </div>
             </div>
         </div>
     </section>
@@ -162,18 +293,18 @@
     </section>
 
     <section class="py-24 border-t border-gray-800">
-        <div class="max-w-5xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-16 text-gradient reveal">Trusted by teams and workers</h2>
+        <div class="max-w-5xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16 text-gradient reveal">Trusted by teams and workers</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="card-glow rounded-2xl p-7 reveal text-left">
+                <div class="card-glow rounded-2xl p-7 reveal">
                     <p class="text-gray-400 text-sm italic mb-6">"Adatacore cut our pipeline from 3 weeks to 4 days."</p>
                     <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">David Kim — Head of ML</p>
                 </div>
-                <div class="card-glow rounded-2xl p-7 reveal text-left">
+                <div class="card-glow rounded-2xl p-7 reveal">
                     <p class="text-gray-400 text-sm italic mb-6">"Interesting tasks and fair pay. Highly recommended."</p>
                     <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">Amara Diallo — Senior Annotator</p>
                 </div>
-                <div class="card-glow rounded-2xl p-7 reveal text-left">
+                <div class="card-glow rounded-2xl p-7 reveal">
                     <p class="text-gray-400 text-sm italic mb-6">"Industry-leading accuracy rates and transparency."</p>
                     <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">Priya Mehta — VP Trust & Safety</p>
                 </div>
@@ -186,7 +317,7 @@
             <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow reveal">
                 <h3 class="text-2xl font-bold mb-4">For AI Companies</h3>
                 <p class="text-gray-400 text-sm mb-8">Get enterprise-grade quality data at scale.</p>
-                <button onclick="openModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Get Data Labeled →</button>
+                <button onclick="openInfoModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Learn More →</button>
             </div>
             <div id="annotators" class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow reveal">
                 <h3 class="text-2xl font-bold mb-4">For Annotators</h3>
@@ -202,23 +333,41 @@
                 <h2 class="text-4xl font-bold text-gradient">Frequently Asked Questions</h2>
                 <p class="text-gray-400 mt-4 text-sm">Everything you need to know about our data services.</p>
             </div>
+
             <div class="space-y-4">
                 <div class="card-glow rounded-2xl overflow-hidden reveal">
                     <button onclick="toggleFAQ(this)" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-white/5 transition-all">
-                        <span class="font-semibold text-gray-200 text-sm">How do you ensure data security?</span>
-                        <svg class="w-5 h-5 text-purple-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        <span class="font-semibold text-gray-200 text-sm">How do you ensure data security and privacy?</span>
+                        <svg class="w-5 h-5 text-purple-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div class="max-h-0 overflow-hidden transition-all duration-300 bg-white/2">
-                        <p class="px-8 py-6 text-xs text-gray-400 leading-relaxed border-t border-white/5">We sign strict NDAs. Our platform uses enterprise-grade encryption and secure VPC workflows.</p>
+                    <div class="max-h-0 overflow-hidden transition-all duration-300 bg-white/5">
+                        <p class="px-8 py-6 text-xs text-gray-400 leading-relaxed border-t border-white/5">
+                            We take security seriously. All projects are covered by strict NDAs. Our experts work in encrypted environments, ensuring your raw data is always protected.
+                        </p>
                     </div>
                 </div>
+
                 <div class="card-glow rounded-2xl overflow-hidden reveal">
                     <button onclick="toggleFAQ(this)" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-white/5 transition-all">
                         <span class="font-semibold text-gray-200 text-sm">What is your typical turnaround time?</span>
-                        <svg class="w-5 h-5 text-purple-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        <svg class="w-5 h-5 text-purple-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div class="max-h-0 overflow-hidden transition-all duration-300 bg-white/2">
-                        <p class="px-8 py-6 text-xs text-gray-400 leading-relaxed border-t border-white/5">Standard projects delivered within 48-72 hours by our vetted global expert network.</p>
+                    <div class="max-h-0 overflow-hidden transition-all duration-300 bg-white/5">
+                        <p class="px-8 py-6 text-xs text-gray-400 leading-relaxed border-t border-white/5">
+                            Standard projects are usually completed within 48-72 hours. We scale our global workforce to meet your specific deadlines.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-glow rounded-2xl overflow-hidden reveal">
+                    <button onclick="toggleFAQ(this)" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-white/5 transition-all">
+                        <span class="font-semibold text-gray-200 text-sm">How do you maintain 99.4% accuracy?</span>
+                        <svg class="w-5 h-5 text-purple-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-300 bg-white/5">
+                        <p class="px-8 py-6 text-xs text-gray-400 leading-relaxed border-t border-white/5">
+                            Our multi-layer QA process includes expert labeling, blind peer review, and final audit by senior project managers.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -229,89 +378,162 @@
         <p>© 2026 Adatacore, Inc. All rights reserved.</p>
     </footer>
 
-    <div id="signInModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-        <div class="glass max-w-md w-full rounded-[40px] p-10 relative shadow-2xl text-center">
-            <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p class="text-gray-400 text-xs tracking-wide uppercase font-medium mb-10">Sign in to your account</p>
-            <form class="space-y-5 text-left">
-                <div><span class="field-label">Email Address</span><input type="email" required placeholder="name@company.com" class="premium-input"></div>
-                <div><span class="field-label">Password</span><input type="password" required placeholder="••••••••" class="premium-input"></div>
-                <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white">Sign In</button>
-                <div class="relative py-4"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div><div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 btn-shine"><img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-medium text-white">Google</span></button>
-                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 btn-shine"><img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4"> <span class="text-xs font-medium text-white">LinkedIn</span></button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="contactModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[32px] p-8 sm:p-10 relative overflow-y-auto custom-scroll shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gradient mb-2">Detailed Inquiry</h2>
-                <p class="text-gray-400 text-sm">Tell us about your project requirements.</p>
+    <div id="getStartedModal" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+        <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-[0_0_50px_rgba(167,139,250,0.2)] text-left">
+            <button onclick="closeGetStartedModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gradient mb-3">Get Started</h2>
+                <p class="text-gray-400 text-sm">Please select your account type to continue.</p>
             </div>
-            <form id="fullInquiryForm" class="space-y-6 text-left">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div><span class="field-label">Full Name</span><input type="text" required placeholder="John Doe" class="premium-input"></div>
-                    <div><span class="field-label">Company Name</span><input type="text" required placeholder="AI Tech Inc." class="premium-input"></div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div><span class="field-label">Work Email</span><input type="email" required placeholder="john@company.com" class="premium-input"></div>
-                    <div><span class="field-label">Budget</span><select class="premium-input appearance-none"><option>Under $1k</option><option>$1k - $5k</option><option>$5k+</option></select></div>
-                </div>
-                <div><span class="field-label">Project Details</span><textarea required rows="4" placeholder="How can we help?" class="premium-input resize-none"></textarea></div>
-                <button type="submit" class="accent-gradient w-full py-4 rounded-2xl font-bold text-white btn-shine shadow-lg">Send Request →</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="getStartedModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-        <div class="glass max-w-md w-full rounded-[40px] p-10 relative shadow-2xl text-center">
-            <button onclick="closeGetStartedModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-10">Get Started</h2>
             <div class="space-y-4">
-                <button onclick="chooseRole('company')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 text-left btn-shine">
-                    <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400">🏢</div>
+                <button onclick="chooseRole('company')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left btn-shine">
+                    <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </div>
                     <div><p class="text-white font-bold">I am a Company</p><p class="text-gray-500 text-[11px]">I need data labeled for my AI models.</p></div>
                 </button>
-                <button onclick="chooseRole('annotator')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 text-left btn-shine">
-                    <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-green-400">👤</div>
+                <button onclick="chooseRole('annotator')" class="w-full card-glow p-6 rounded-[24px] flex items-center gap-5 group transition-all text-left btn-shine">
+                    <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </div>
                     <div><p class="text-white font-bold">I am an Annotator</p><p class="text-gray-500 text-[11px]">I want to earn by labeling data.</p></div>
                 </button>
             </div>
         </div>
     </div>
 
+    <div id="contactModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[32px] p-8 sm:p-10 relative overflow-y-auto custom-scroll shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gradient mb-2">Detailed Inquiry</h2>
+                <p class="text-gray-400 text-sm">Tell us about your project requirements.</p>
+            </div>
+            <form id="fullInquiryForm" class="space-y-6 text-left">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Full Name</label>
+                        <input type="text" required placeholder="John Doe" class="premium-input">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Company Name</label>
+                        <input type="text" required placeholder="AI Lab Inc." class="premium-input">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Work Email</label>
+                        <input type="email" required placeholder="john@company.com" class="premium-input">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Budget Range</label>
+                        <select required class="premium-input appearance-none">
+                            <option value="" disabled selected>Select range</option>
+                            <option value="1k">Under $1k</option>
+                            <option value="5k">$1k - $5k</option>
+                            <option value="plus">$5k+</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-bold text-gray-500 mb-2 ml-1">Project Details</label>
+                    <textarea required rows="4" placeholder="How can we help your team?" class="premium-input resize-none"></textarea>
+                </div>
+                <button type="submit" class="accent-gradient w-full py-4 rounded-2xl font-bold text-white btn-shine shadow-lg shadow-purple-500/20">Send Request →</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="signInModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+        <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-[0_0_50px_rgba(167,139,250,0.15)]">
+            <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="text-center mb-10">
+                <div class="w-12 h-12 bg-white/5 border border-purple-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg viewBox="0 0 64 64" class="w-7 h-7"><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+                <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
+            </div>
+            <form id="authForm" class="space-y-5">
+                <div class="input-group">
+                    <input type="email" required placeholder="name@company.com" class="premium-input">
+                </div>
+                <div class="input-group">
+                    <input type="password" required placeholder="••••••••" class="premium-input">
+                </div>
+                <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white mt-2">Sign In</button>
+                <div class="relative py-4">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
+                    <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
+                        <span class="text-xs font-medium text-white">Google</span>
+                    </button>
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all btn-shine">
+                        <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4" alt="LinkedIn">
+                        <span class="text-xs font-medium text-white">LinkedIn</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full rounded-[40px] p-12 relative border border-purple-500/40 text-center">
+        <div class="glass max-w-2xl w-full rounded-[40px] p-8 sm:p-12 relative border border-purple-500/40 text-left">
             <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-6">About Adatacore</h2>
-            <p class="text-gray-300 text-sm mb-8 leading-relaxed">We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
-            <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full">Let us reach you out →</button>
+            <h2 class="text-3xl font-bold text-gradient mb-6 text-center">About Adatacore</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl">
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">What we do</p><p class="text-xs">Transform raw data into structured sets via 120k+ experts.</p></div>
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">Our Edge</p><p class="text-xs">99.4% Accuracy & 48h Average Turnaround.</p></div>
+                </div>
+                <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 shadow-2xl">Let us reach you out →</button>
+            </div>
         </div>
     </div>
 
     <div id="annotatorInfoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full rounded-[40px] p-12 relative border border-green-500/30 text-center">
+        <div class="glass max-w-2xl w-full rounded-[40px] p-8 sm:p-12 relative border border-green-500/30 text-left">
             <button onclick="closeAnnotatorInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-6">Work with Us</h2>
-            <p class="text-gray-300 text-sm mb-8">Join a global community of experts shaping the future of AI.</p>
-            <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full">Apply Now →</button>
+            <h2 class="text-3xl font-bold text-gradient mb-6 text-center">Why work with Adatacore?</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>Join a global community of experts shaping the future of AI. We offer flexible hours and fair pay.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Weekly Payouts</p><p class="text-[11px]">Reliable payments every week.</p></div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Global Impact</p><p class="text-[11px]">Build leading AI models.</p></div>
+                </div>
+                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase tracking-widest btn-shine">Wanna join? Apply Now →</button>
+            </div>
         </div>
     </div>
 
-    <div id="annotatorFormModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30 text-left">
+    <div id="annotatorFormModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto border border-green-500/30 text-left">
             <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
             <h2 class="text-3xl font-bold text-gradient mb-8 text-center">Annotator Application</h2>
             <form id="annotatorAppForm" class="space-y-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5"><input type="text" required placeholder="Full Name" class="premium-input"><input type="text" required placeholder="Birth Place" class="premium-input"></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5"><input type="email" required placeholder="Email Address" class="premium-input"><select class="premium-input appearance-none"><option>High School</option><option>Bachelor's</option><option>Master's</option></select></div>
-                <button type="submit" class="bg-green-600 hover:bg-green-500 w-full py-5 rounded-2xl font-bold text-white">Submit Application</button>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                    <input type="text" required placeholder="Full Name" class="premium-input">
+                    <input type="text" required placeholder="Birth Place" class="premium-input">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                    <input type="email" required placeholder="Email Address" class="premium-input">
+                    <select required class="premium-input appearance-none">
+                        <option value="" disabled selected>Education Level</option>
+                        <option value="highschool">High School</option>
+                        <option value="bachelor">Bachelor's</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-500 w-full py-5 rounded-2xl font-bold text-sm text-white shadow-xl transition-all btn-shine">Submit Application</button>
             </form>
         </div>
     </div>
