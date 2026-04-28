@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Dashboard — Adatacore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; margin: 0; }
+        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
+        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.15); }
+        .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar { border-right: 1px solid rgba(255,255,255,0.05); }
+        .nav-item { transition: all 0.3s; border-radius: 12px; margin-bottom: 4px; }
+        .nav-item:hover { background: rgba(167, 139, 250, 0.1); color: #A78BFA; }
+    </style>
+</head>
+<body class="grid-pattern">
+    <div class="flex min-height-screen">
+        <aside class="w-64 h-screen glass sidebar fixed left-0 top-0 p-6 flex flex-col">
+            <div class="flex items-center gap-2.5 font-bold text-white text-lg mb-10">
+                <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
+                Adatacore
+            </div>
+            
+            <nav class="flex-1 space-y-2">
+                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white bg-white/5 text-white">
+                    <span>🏠 Overview</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
+                    <span>📊 My Tasks</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
+                    <span>💰 Earnings</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
+                    <span>⚙️ Settings</span>
+                </a>
+            </nav>
+
+            <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
+                <span>🚪 Logout</span>
+            </button>
+        </aside>
+
+        <main class="ml-64 p-10 w-full">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h1 class="text-3xl font-bold text-gradient">Welcome back, <span id="user-display-name">User</span>!</h1>
+                    <p class="text-gray-500 text-sm mt-1">Here's what's happening with your tasks today.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold" id="user-email">loading...</p>
+                        <p class="text-[10px] text-purple-400 uppercase tracking-widest font-bold">Annotator Pro</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center font-bold border-2 border-white/10" id="user-avatar">
+                        U
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="glass p-6 rounded-3xl border border-white/5">
+                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Total Tasks</p>
+                    <h3 class="text-2xl font-bold">1,284</h3>
+                </div>
+                <div class="glass p-6 rounded-3xl border border-white/5">
+                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Accuracy</p>
+                    <h3 class="text-2xl font-bold text-green-400">99.8%</h3>
+                </div>
+                <div class="glass p-6 rounded-3xl border border-white/5">
+                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Balance</p>
+                    <h3 class="text-2xl font-bold text-purple-400">$420.50</h3>
+                </div>
+            </div>
+
+            <div class="glass rounded-3xl p-10 border border-white/5 text-center">
+                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">📁</div>
+                <h3 class="text-lg font-bold mb-2">No active tasks</h3>
+                <p class="text-gray-500 text-sm max-w-xs mx-auto">New annotation projects will appear here once they are assigned to you.</p>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
+            authDomain: "adatacoresite.firebaseapp.com",
+            projectId: "adatacoresite",
+            storageBucket: "adatacoresite.firebasestorage.app",
+            messagingSenderId: "108144458736",
+            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
+            measurementId: "G-PTS16DVVYE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Security: Check if user is logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('user-email').innerText = user.email;
+                document.getElementById('user-display-name').innerText = user.displayName || user.email.split('@')[0];
+                document.getElementById('user-avatar').innerText = user.email.charAt(0).toUpperCase();
+            } else {
+                // No user is signed in, send back to login
+                window.location.href = "auth.html";
+            }
+        });
+
+        // Logout Logic
+        document.getElementById('btn-logout').onclick = async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "auth.html";
+            } catch (err) {
+                alert("Logout Error: " + err.message);
+            }
+        };
+    </script>
+</body>
+</html>
