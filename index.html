@@ -117,8 +117,8 @@
                 <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="openSignInModal()" class="hidden md:block text-[13px] text-gray-400 hover:text-white transition-colors">Sign in</button>
-                <button onclick="openModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</button>
+                <button onclick="openSignInModal()" class="hidden md:block text-[13px] text-gray-400 hover:text-white transition-colors font-medium">Sign in</button>
+                <button onclick="openModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full shadow-lg shadow-purple-500/20">Get Started</button>
             </div>
         </nav>
     </header>
@@ -184,7 +184,7 @@
                 </div>
                 <div class="card-glow rounded-2xl p-8">
                     <h3 class="text-lg font-bold mb-2">Text Annotation</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Named entity recognition, sentiment analysis, and intent classification.</p>
+                    <p class="text-gray-400 text-sm leading-relaxed">Entity recognition, sentiment analysis, and intent classification.</p>
                 </div>
                 <div class="md:col-span-2 card-glow rounded-2xl p-8">
                     <h3 class="text-lg font-bold mb-2">Content Moderation</h3>
@@ -201,17 +201,17 @@
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">01</div>
                     <p class="font-bold text-sm mb-2">Upload your data</p>
-                    <p class="text-gray-500 text-xs text-center">Connect your cloud storage directly.</p>
+                    <p class="text-gray-500 text-xs">Connect storage directly.</p>
                 </div>
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">02</div>
                     <p class="font-bold text-sm mb-2">We assign experts</p>
-                    <p class="text-gray-500 text-xs text-center">Matched to vetted domain experts.</p>
+                    <p class="text-gray-500 text-xs">Matched to vetted experts.</p>
                 </div>
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">03</div>
                     <p class="font-bold text-sm mb-2">Receive labeled data</p>
-                    <p class="text-gray-500 text-xs text-center">Download production-ready sets.</p>
+                    <p class="text-gray-500 text-xs">Production-ready sets.</p>
                 </div>
             </div>
         </div>
@@ -221,33 +221,33 @@
         <div class="max-w-5xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-center mb-16 text-gradient">Trusted by teams and workers</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="card-glow rounded-2xl p-7 text-center sm:text-left">
+                <div class="card-glow rounded-2xl p-7">
                     <p class="text-gray-400 text-sm italic mb-6">"Adatacore cut our pipeline from 3 weeks to 4 days."</p>
-                    <p class="text-xs font-bold">David Kim — Head of ML</p>
+                    <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">David Kim — Head of ML</p>
                 </div>
-                <div class="card-glow rounded-2xl p-7 text-center sm:text-left">
+                <div class="card-glow rounded-2xl p-7">
                     <p class="text-gray-400 text-sm italic mb-6">"Interesting tasks and fair pay. Highly recommended."</p>
-                    <p class="text-xs font-bold">Amara Diallo — Senior Annotator</p>
+                    <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">Amara Diallo — Senior Annotator</p>
                 </div>
-                <div class="card-glow rounded-2xl p-7 text-center sm:text-left">
+                <div class="card-glow rounded-2xl p-7">
                     <p class="text-gray-400 text-sm italic mb-6">"Industry-leading accuracy rates and transparency."</p>
-                    <p class="text-xs font-bold">Priya Mehta — VP Trust & Safety</p>
+                    <p class="text-xs font-bold text-purple-400 uppercase tracking-tighter">Priya Mehta — VP Trust & Safety</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-24 border-t border-gray-800">
+    <section id="companies" class="py-24 border-t border-gray-800">
         <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
                 <h3 class="text-2xl font-bold mb-4">For AI Companies</h3>
                 <p class="text-gray-400 text-sm mb-8">Get enterprise-grade quality data at scale.</p>
                 <button onclick="openInfoModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Learn More →</button>
             </div>
-            <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
+            <div id="annotators" class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
                 <h3 class="text-2xl font-bold mb-4">For Annotators</h3>
                 <p class="text-gray-400 text-sm mb-8">Join our workforce and start earning today.</p>
-                <button onclick="openAnnotatorInfoModal()" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all w-full">Join as Annotator →</button>
+                <button onclick="openAnnotatorInfoModal()" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all w-full">Join Now</button>
             </div>
         </div>
     </section>
@@ -256,63 +256,68 @@
         <p>© 2026 Adatacore, Inc. All rights reserved.</p>
     </footer>
 
-    <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/40 text-left">
-            <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-6">About Adatacore</h2>
-            <div class="space-y-6 text-sm text-gray-300">
-                <p>We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl">
-                    <div><p class="text-purple-400 font-bold mb-1">What we do</p><p class="text-xs">Transform raw data into structured sets via 120k+ experts.</p></div>
-                    <div><p class="text-purple-400 font-bold mb-1">Our Edge</p><p class="text-xs">99.4% Accuracy & 48h Average Turnaround.</p></div>
+    <div id="signInModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+        <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-[0_0_50px_rgba(167,139,250,0.15)]">
+            <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="text-center mb-10">
+                <div class="w-12 h-12 bg-white/5 border border-purple-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg viewBox="0 0 64 64" class="w-7 h-7"><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 </div>
-                <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full mt-4">Let us reach you out →</button>
+                <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+                <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
             </div>
-        </div>
-    </div>
-
-    <div id="contactModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/30 text-left">
-            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            <h2 class="text-3xl font-bold text-gradient mb-8">Detailed Inquiry</h2>
-            <form id="fullInquiryForm" class="space-y-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Company Name">
+            <form id="authForm" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2 ml-1 font-bold">Email Address</label>
+                    <input type="email" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="name@company.com">
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Email">
-                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Budget Range</option><option value="1k">Under $1k</option><option value="5k">$1k - $5k</option><option value="20k">$5k - $20k</option><option value="plus">$20k+</option></select>
+                <div>
+                    <div class="flex justify-between items-center mb-2 ml-1">
+                        <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Password</label>
+                        <a href="#" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold uppercase tracking-widest">Forgot?</a>
+                    </div>
+                    <input type="password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="••••••••">
                 </div>
-                <textarea rows="2" class="w-full rounded-2xl px-5 py-4 text-sm text-left" placeholder="Any special requirements?"></textarea>
-                <textarea required rows="3" class="w-full rounded-2xl px-5 py-4 text-sm text-left" placeholder="Project details..."></textarea>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                    <select class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="whatsapp">WhatsApp</option><option value="linkedin">LinkedIn</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Username / Number">
+                <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white shadow-xl shadow-purple-500/20 mt-2">Sign In to Dashboard</button>
+                <div class="relative py-4">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
+                    <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
                 </div>
-                <button type="submit" class="accent-gradient w-full py-5 rounded-2xl font-bold text-sm btn-shine">Send Request</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
+                        <span class="text-xs font-medium text-white">Google</span>
+                    </button>
+                    <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                        <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4" alt="LinkedIn">
+                        <span class="text-xs font-medium text-white">LinkedIn</span>
+                    </button>
+                </div>
             </form>
+            <p class="text-center text-xs text-gray-500 mt-8 font-medium">Don't have an account? <button onclick="openAnnotatorInfoModal(); closeSignInModal();" class="text-purple-400 font-bold hover:underline">Join Now</button></p>
         </div>
     </div>
 
     <div id="annotatorInfoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30 text-left">
-            <button onclick="closeAnnotatorInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30">
+            <button onclick="closeAnnotatorInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
             <h2 class="text-3xl font-bold text-gradient mb-6 text-center">Why work with Adatacore?</h2>
             <div class="space-y-6 text-sm text-gray-300">
                 <p>Join a global community of experts shaping the future of AI. We offer flexible hours and fair pay.</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Weekly Payouts</p><p class="text-[11px]">Reliable payments every week.</p></div>
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Global Impact</p><p class="text-[11px]">Build leading AI models.</p></div>
                 </div>
-                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all">Wanna join? Apply Now →</button>
+                <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all uppercase tracking-widest">Wanna join? Apply Now →</button>
             </div>
         </div>
     </div>
 
     <div id="annotatorFormModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30 text-left">
-            <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30">
+            <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
             <h2 class="text-3xl font-bold text-gradient mb-8 text-center">Annotator Application</h2>
             <form id="annotatorAppForm" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
@@ -333,23 +338,71 @@
         </div>
     </div>
 
+    <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/40 text-left">
+            <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h2 class="text-3xl font-bold text-gradient mb-6">About Adatacore</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl">
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">What we do</p><p class="text-xs">Transform raw data into structured sets via 120k+ experts.</p></div>
+                    <div><p class="text-purple-400 font-bold mb-1 uppercase tracking-widest text-[10px]">Our Edge</p><p class="text-xs">99.4% Accuracy & 48h Average Turnaround.</p></div>
+                </div>
+                <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 shadow-2xl">Let us reach you out →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/30 text-left">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h2 class="text-3xl font-bold text-gradient mb-8">Detailed Inquiry</h2>
+            <form id="fullInquiryForm" class="space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Company Name">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Work Email">
+                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Budget Range</option><option value="1k">Under $1k</option><option value="5k">$1k - $5k</option><option value="20k">$5k - $20k</option><option value="plus">$20k+</option></select>
+                </div>
+                <textarea rows="2" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Special Requirements?"></textarea>
+                <textarea required rows="3" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Project details..."></textarea>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="whatsapp">WhatsApp</option><option value="linkedin">LinkedIn</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Username / Number">
+                </div>
+                <button type="submit" class="accent-gradient w-full py-5 rounded-2xl font-bold text-sm btn-shine">Send Request</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         const infoModal = document.getElementById('infoModal');
         const contactModal = document.getElementById('contactModal');
         const annotatorInfoModal = document.getElementById('annotatorInfoModal');
         const annotatorFormModal = document.getElementById('annotatorFormModal');
+        const signInModal = document.getElementById('signInModal');
 
+        // Nav & General Functions
         function openInfoModal() { infoModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function closeInfoModal() { infoModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+        
         function openModal() { contactModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function closeModal() { contactModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+        
         function openAnnotatorInfoModal() { annotatorInfoModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function closeAnnotatorInfoModal() { annotatorInfoModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+        
         function openAnnotatorFormModal() { annotatorFormModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function closeAnnotatorFormModal() { annotatorFormModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
 
+        function openSignInModal() { signInModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeSignInModal() { signInModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        // Switch Logic
         function switchToInquiry() { closeInfoModal(); setTimeout(openModal, 300); }
-        function switchToAnnotatorForm() { closeAnnotatorInfoModal(); setTimeout(openAnnotatorFormModal, 300); }
+        function switchToAnnotatorForm() { annotatorInfoModal.style.display = 'none'; setTimeout(openAnnotatorFormModal, 300); }
 
         function toggleExpField() {
             const expSelect = document.getElementById('prevExp');
@@ -358,68 +411,19 @@
             else expDetail.classList.add('hidden');
         }
 
+        // Close on Background Click
         window.onclick = function(e) {
             if (e.target == infoModal) closeInfoModal();
             if (e.target == contactModal) closeModal();
             if (e.target == annotatorInfoModal) closeAnnotatorInfoModal();
             if (e.target == annotatorFormModal) closeAnnotatorFormModal();
+            if (e.target == signInModal) closeSignInModal();
         }
 
-        document.getElementById('fullInquiryForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Company Request Sent!'); closeModal(); });
-        document.getElementById('annotatorAppForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Annotator Application Sent! Our expert will reach out to you.'); closeAnnotatorFormModal(); });
+        // Form Submission Handlers
+        document.getElementById('fullInquiryForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Company Request Sent Successfully!'); closeModal(); });
+        document.getElementById('annotatorAppForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Application Received! One of our experts will reach out soon.'); closeAnnotatorFormModal(); });
+        document.getElementById('authForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Logging in...'); closeSignInModal(); });
     </script>
-    <div id="signInModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-    <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-[0_0_50px_rgba(167,139,250,0.15)]">
-        <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        </button>
-
-        <div class="text-center mb-10">
-            <div class="w-12 h-12 bg-white/5 border border-purple-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg viewBox="0 0 64 64" class="w-7 h-7"><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
-            </div>
-            <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
-        </div>
-
-        <form id="authForm" class="space-y-5">
-            <div>
-                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2 ml-1 font-bold">Email Address</label>
-                <input type="email" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="name@company.com">
-            </div>
-            <div>
-                <div class="flex justify-between items-center mb-2 ml-1">
-                    <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Password</label>
-                    <a href="#" class="text-[10px] text-purple-400 hover:text-purple-300">Forgot?</a>
-                </div>
-                <input type="password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="••••••••">
-            </div>
-
-            <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white shadow-xl shadow-purple-500/20 mt-2">
-                Sign In to Dashboard
-            </button>
-
-            <div class="relative py-4">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
-                <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
-                    <span class="text-xs font-medium text-white">Google</span>
-                </button>
-                <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
-                    <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4" alt="LinkedIn">
-                    <span class="text-xs font-medium text-white">LinkedIn</span>
-                </button>
-            </div>
-        </form>
-
-        <p class="text-center text-xs text-gray-500 mt-8">
-            Don't have an account? <button onclick="switchToAnnotatorForm()" class="text-purple-400 font-bold hover:underline">Join as Annotator</button>
-        </p>
-    </div>
-</div>
 </body>
 </html>
