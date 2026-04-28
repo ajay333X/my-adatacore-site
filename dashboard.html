@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Dashboard — Adatacore</title>
+    <title>Workstation — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -12,9 +12,8 @@
         .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
         .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.15); }
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-item { transition: all 0.3s; border-radius: 12px; cursor: pointer; }
-        .nav-item:hover { background: rgba(167, 139, 250, 0.1); color: #A78BFA; }
-        .profile-btn:hover { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); transform: translateY(-2px); }
+        .task-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 24px; transition: all 0.3s ease; }
+        .task-card:hover { transform: translateY(-5px); border-color: var(--accent); background: rgba(167, 139, 250, 0.05); }
     </style>
 </head>
 <body class="grid-pattern">
@@ -27,9 +26,9 @@
             </div>
 
             <div class="mb-8">
-                <a href="profile.html" class="profile-btn flex items-center gap-3 p-4 glass rounded-[24px] border border-white/5 transition-all group">
-                    <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white group-hover:scale-110 transition-transform">U</div>
-                    <div class="overflow-hidden">
+                <a href="profile.html" class="flex items-center gap-3 p-4 glass rounded-[24px] border border-white/5 hover:border-purple-500 transition-all group">
+                    <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white">U</div>
+                    <div>
                         <p id="user-display-name" class="text-sm font-bold truncate">Loading...</p>
                         <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Manage Profile ➔</p>
                     </div>
@@ -37,9 +36,7 @@
             </div>
             
             <nav class="flex-1 space-y-1">
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white">🏠 Overview</div>
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">📊 My Tasks</div>
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">💰 Payouts</div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white rounded-xl">🏠 Dashboard</div>
             </nav>
 
             <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
@@ -48,122 +45,100 @@
         <main class="ml-72 p-10 w-full">
             <header class="flex justify-between items-start mb-10">
                 <div>
-                    <h1 class="text-3xl font-bold text-gradient">Hello, <span id="header-name">Annotator</span>!</h1>
-                    <p class="text-gray-500 text-sm mt-1" id="current-date"></p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Your Unique ID</p>
-                    <p id="display-uid" class="text-sm font-mono text-purple-300">AD-0000-0000-0000</p>
+                    <h1 class="text-3xl font-bold text-gradient">Workstation</h1>
+                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold">ID: AD-0000-0000-0000</p>
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div class="glass p-7 rounded-[32px] border border-white/5">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Available Balance</p>
-                    <h3 class="text-3xl font-bold text-purple-400">$<span id="stat-balance">0.00</span></h3>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Balance</p>
+                    <h3 class="text-2xl font-bold text-purple-400">$<span id="stat-balance">0.00</span></h3>
                 </div>
                 <div class="glass p-7 rounded-[32px] border border-white/5">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Tasks Done</p>
-                    <h3 class="text-3xl font-bold" id="stat-tasks">0</h3>
-                </div>
-                <div class="glass p-7 rounded-[32px] border border-white/5">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Accuracy Level</p>
-                    <h3 class="text-3xl font-bold text-green-400"><span id="stat-accuracy">0</span>%</h3>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Active Tasks</p>
+                    <h3 class="text-2xl font-bold" id="active-count">0</h3>
                 </div>
             </div>
 
-            <div class="glass rounded-[40px] p-12 border border-white/5 flex flex-col items-center justify-center text-center min-h-[300px]">
-                <div class="w-16 h-16 bg-purple-500/10 rounded-3xl flex items-center justify-center text-2xl mb-6">🚀</div>
-                <h2 class="text-xl font-bold mb-3">Ready to start earning?</h2>
-                <p class="text-gray-500 text-sm max-w-sm leading-relaxed mb-8">
-                    Complete your profile verification to unlock high-paying transcription and annotation tasks.
-                </p>
-                <a href="profile.html" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-2xl font-bold text-sm transition-all">Go to Profile Settings</a>
+            <h2 class="text-xl font-bold mb-6">Assigned Projects</h2>
+            <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-full py-20 text-center glass rounded-[40px] border-dashed border-white/10">
+                    <p class="text-gray-600">No projects assigned to your ID yet.</p>
+                </div>
             </div>
         </main>
     </div>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Your Exact Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-        authDomain: "adatacoresite.firebaseapp.com",
-        projectId: "adatacoresite",
-        storageBucket: "adatacoresite.firebasestorage.app",
-        messagingSenderId: "108144458736",
-        appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
-        measurementId: "G-PTS16DVVYE"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
+            authDomain: "adatacoresite.firebaseapp.com",
+            projectId: "adatacoresite",
+            storageBucket: "adatacoresite.firebasestorage.app",
+            messagingSenderId: "108144458736",
+            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    // 16-Digit Alphanumeric ID Generator
-    function generateUID() {
-        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let res = 'AD-';
-        for(let i=0; i<12; i++) {
-            if(i > 0 && i % 4 === 0) res += '-';
-            res += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return res;
-    }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 1. User Info Listener
+                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        const myID = data.uniqueID;
+                        document.getElementById('user-display-name').innerText = data.fullName || user.email.split('@')[0];
+                        document.getElementById('display-uid').innerText = "ID: " + myID;
+                        document.getElementById('stat-balance').innerText = data.balance || "0.00";
 
-    // Date Display
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDocRef = doc(db, "users", user.uid);
-            
-            // डेटाबेस से एक बार चेक करें कि क्या ID पहले से है
-            const docSnap = await getDoc(userDocRef);
-            
-            if (!docSnap.exists() || !docSnap.data().uniqueID) {
-                // अगर ID नहीं है, तो नई बनाओ और पुराने डेटा के साथ मर्ज कर दो
-                const newID = generateUID();
-                await setDoc(userDocRef, { 
-                    uniqueID: newID,
-                    balance: "0.00", 
-                    tasksCompleted: 0, 
-                    accuracy: 100 
-                }, { merge: true });
+                        // 2. Load Tasks Assigned to this Unique ID
+                        loadMyTasks(myID);
+                    }
+                });
+            } else {
+                window.location.href = "auth.html";
             }
+        });
 
-            // अब Real-time अपडेट सुनें (ID अब बार-बार नहीं बदलेगी)
-            onSnapshot(userDocRef, (snap) => {
-                if (snap.exists()) {
-                    const data = snap.data();
-                    // अगर प्रोफाइल में नाम सेट है तो वो दिखाओ, वरना ईमेल का पहला हिस्सा
-                    const finalName = data.fullName || user.email.split('@')[0];
-                    
-                    document.getElementById('user-display-name').innerText = finalName;
-                    document.getElementById('header-name').innerText = finalName;
-                    document.getElementById('user-initials').innerText = finalName.charAt(0).toUpperCase();
-                    
-                    // डेटाबेस वाली ID दिखाएं
-                    document.getElementById('display-uid').innerText = data.uniqueID || "Generating...";
-                    
-                    // कमाई और स्कोर दिखाएं
-                    document.getElementById('stat-balance').innerText = data.balance || "0.00";
-                    document.getElementById('stat-tasks').innerText = data.tasksCompleted || "0";
-                    document.getElementById('stat-accuracy').innerText = data.accuracy || "0";
+        function loadMyTasks(userUniqueID) {
+            const taskQuery = query(collection(db, "tasks"), where("assignedTo", "==", userUniqueID));
+            
+            onSnapshot(taskQuery, (querySnapshot) => {
+                const container = document.getElementById('task-container');
+                document.getElementById('active-count').innerText = querySnapshot.size;
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<div class="col-span-full py-20 text-center glass rounded-[40px] border-dashed border-white/10"><p class="text-gray-600">No special projects assigned to ID: ${userUniqueID}</p></div>`;
+                    return;
                 }
+
+                container.innerHTML = "";
+                querySnapshot.forEach((doc) => {
+                    const task = doc.data();
+                    container.innerHTML += `
+                        <div class="task-card p-8">
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">${task.type || 'Project'}</span>
+                                <p class="text-green-400 font-bold">$${task.price || '0.00'}</p>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2">${task.title}</h4>
+                            <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description}</p>
+                            <button class="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 hover:border-purple-600 transition-all">START TASK ➔</button>
+                        </div>
+                    `;
+                });
             });
-
-        } else {
-            // अगर लॉगिन नहीं है तो बाहर भेज दो
-            window.location.href = "auth.html";
         }
-    });
 
-    // Logout Function
-    document.getElementById('btn-logout').onclick = () => signOut(auth);
-</script>
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+    </script>
 </body>
 </html>
