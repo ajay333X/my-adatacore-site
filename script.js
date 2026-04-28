@@ -109,3 +109,51 @@ document.querySelectorAll('button').forEach(btn => {
 window.onclick = function(e) {
     Object.values(elements).forEach(modal => { if (e.target == modal) { modal.style.display = 'none'; document.body.style.overflow = 'auto'; } });
 };
+// --- TYPEWRITER EFFECT LOGIC ---
+const textElement = document.getElementById('typewriter');
+const phrases = [
+    "Perfect Training Data",
+    "Precise Image Labels",
+    "Expert Transcription",
+    "High-Quality RLHF",
+    "Accurate Datasets"
+];
+
+let phraseIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
+let typeSpeed = 100;
+
+function typeEffect() {
+    const currentPhrase = phrases[phraseIndex];
+    
+    if (isDeleting) {
+        // शब्द मिटाना
+        textElement.textContent = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+        typeSpeed = 50;
+    } else {
+        // शब्द लिखना
+        textElement.textContent = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+        typeSpeed = 100;
+    }
+
+    if (!isDeleting && charIndex === currentPhrase.length) {
+        // पूरा शब्द लिख लिया, अब रुको
+        isDeleting = true;
+        typeSpeed = 2000; // 2 सेकंड तक शब्द दिखेगा
+    } else if (isDeleting && charIndex === 0) {
+        // शब्द मिट गया, अब अगला शब्द उठाओ
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        typeSpeed = 500;
+    }
+
+    setTimeout(typeEffect, typeSpeed);
+}
+
+// एनीमेशन शुरू करें
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(typeEffect, 1000);
+});
