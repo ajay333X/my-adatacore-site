@@ -46,12 +46,12 @@
             background: var(--card-bg);
             border: 1px solid rgba(167, 139, 250, 0.1);
             transition: all 0.3s ease;
+            transform-style: preserve-3d; /* Added for 3D effect */
         }
 
         .card-glow:hover {
             border-color: rgba(167, 139, 250, 0.4);
             box-shadow: 0 0 25px rgba(167, 139, 250, 0.1);
-            transform: translateY(-2px);
         }
 
         @keyframes marquee {
@@ -154,19 +154,19 @@
             <div class="mt-20 grid grid-cols-2 sm:grid-cols-4 border border-gray-800/50 rounded-2xl bg-[#1A1A2E]/40 backdrop-blur-sm overflow-hidden reveal">
                 <div class="p-6 border-r border-gray-800/50">
                     <div class="text-3xl font-bold text-gradient">50M+</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Tasks Completed</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Tasks Completed</div>
                 </div>
                 <div class="p-6 border-r border-gray-800/50">
                     <div class="text-3xl font-bold text-gradient">120K+</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Expert Annotators</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Expert Annotators</div>
                 </div>
                 <div class="p-6 border-r border-gray-800/50">
                     <div class="text-3xl font-bold text-gradient">99.4%</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Accuracy Rate</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Accuracy Rate</div>
                 </div>
                 <div class="p-6">
                     <div class="text-3xl font-bold text-gradient">48h</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Avg Turnaround</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">Avg Turnaround</div>
                 </div>
             </div>
         </div>
