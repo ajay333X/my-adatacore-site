@@ -28,23 +28,20 @@
             z-index: 10000; pointer-events: none;
             transform: translate(-50%, -50%);
         }
-        #cursor-outline { 
-            width: 35px; height: 35px; border: 1.5px solid #A78BFA; 
-            position: fixed; top: 0; left: 0; border-radius: 50%; 
-            z-index: 9999; pointer-events: none;
-            transform: translate(-50%, -50%);
-            /* Magnetic effect smoothness */
-            transition: transform 0.15s ease-out, width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
-        }
-        button, a, input, select, textarea { cursor: none !important; }
-
-        .typewriter-cursor {
-            display: inline-block;
-            width: 2px;
-            background-color: #A78BFA;
-            margin-left: 4px;
-            animation: blink 0.8s infinite;
-        }
+        #cursor-dot { 
+    width: 6px; height: 6px; background: #A78BFA; 
+    position: fixed; top: 0; left: 0; border-radius: 50%; 
+    z-index: 10000; pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+#cursor-outline { 
+    width: 35px; height: 35px; border: 1.5px solid #A78BFA; 
+    position: fixed; top: 0; left: 0; border-radius: 50%; 
+    z-index: 9999; pointer-events: none;
+    transform: translate(-50%, -50%);
+    /* transition हटा दिया क्योंकि JS अब इसे हैंडल करेगा */
+    background-color: transparent;
+}
         @keyframes blink { 50% { opacity: 0; } }
 
         .grid-pattern {
