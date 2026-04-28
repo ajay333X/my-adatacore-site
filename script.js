@@ -29,15 +29,7 @@ function chooseRole(role) {
     else setTimeout(openAnnotatorInfoModal, 300);
 }
 function switchToInquiry() { closeInfoModal(); setTimeout(openModal, 300); }
-function switchToAnnotatorForm() { if(elements.annotatorInfoModal) elements.annotatorInfoModal.style.display = 'none'; setTimeout(openAnnotatorFormModal, 300); }
-
-function toggleExpField() {
-    const expSelect = document.getElementById('prevExp');
-    const expDetail = document.getElementById('expDetail');
-    if (expSelect && expDetail) {
-        expDetail.style.display = (expSelect.value === 'yes') ? 'block' : 'none';
-    }
-}
+function switchToAnnotatorForm() { closeAnnotatorInfoModal(); setTimeout(openAnnotatorFormModal, 300); }
 
 // --- 4. REVEAL ON SCROLL ---
 const observer = new IntersectionObserver((entries) => {
@@ -45,7 +37,20 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// --- 5. ULTRA-SMOOTH MAGNETIC CURSOR LOGIC ---
+// --- 5. 3D TILT EFFECT (RESTORED) ---
+document.querySelectorAll('.card-glow').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const rotateX = ((e.clientY - rect.top - rect.height/2) / (rect.height/2)) * -10;
+        const rotateY = ((e.clientX - rect.left - rect.width/2) / (rect.width/2)) * 10;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+    });
+});
+
+// --- 6. ULTRA-SMOOTH MAGNETIC CURSOR ---
 const cursorDot = document.getElementById('cursor-dot');
 const cursorOutline = document.getElementById('cursor-outline');
 
@@ -63,7 +68,6 @@ window.addEventListener('mousemove', (e) => {
 });
 
 function animateCursor() {
-    // 1. Smooth Dot Movement
     dotX += (mouseX - dotX) * 0.2;
     dotY += (mouseY - dotY) * 0.2;
     if(cursorDot) {
@@ -71,7 +75,6 @@ function animateCursor() {
         cursorDot.style.top = `${dotY}px`;
     }
 
-    // 2. Smooth Outline Logic
     if (!isMagnetic) {
         targetX = mouseX;
         targetY = mouseY;
@@ -90,37 +93,32 @@ function animateCursor() {
         cursorOutline.style.height = `${targetHeight}px`;
         cursorOutline.style.borderRadius = isMagnetic ? targetRadius : '50%';
     }
-
     requestAnimationFrame(animateCursor);
 }
 animateCursor();
 
-// Function to Attach Magnetic Events
-function attachMagneticEffect() {
-    document.querySelectorAll('button, a, .card-glow').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            isMagnetic = true;
-            const rect = el.getBoundingClientRect();
-            targetX = rect.left + rect.width / 2;
-            targetY = rect.top + rect.height / 2;
-            targetWidth = rect.width + 12;
-            targetHeight = rect.height + 12;
-            targetRadius = window.getComputedStyle(el).borderRadius;
-            
-            cursorOutline.style.backgroundColor = "rgba(167, 139, 250, 0.1)";
-            cursorOutline.style.borderColor = "rgba(167, 139, 250, 0.8)";
-        });
-
-        el.addEventListener('mouseleave', () => {
-            isMagnetic = false;
-            cursorOutline.style.backgroundColor = "transparent";
-            cursorOutline.style.borderColor = "#A78BFA";
-        });
+// Magnetic Events for Buttons/Links
+document.querySelectorAll('button, a, .card-glow').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+        isMagnetic = true;
+        const rect = el.getBoundingClientRect();
+        targetX = rect.left + rect.width / 2;
+        targetY = rect.top + rect.height / 2;
+        targetWidth = rect.width + 12;
+        targetHeight = rect.height + 12;
+        targetRadius = window.getComputedStyle(el).borderRadius;
+        cursorOutline.style.backgroundColor = "rgba(167, 139, 250, 0.1)";
+        cursorOutline.style.borderColor = "rgba(167, 139, 250, 0.8)";
     });
-}
-attachMagneticEffect();
 
-// --- 6. TYPEWRITER EFFECT ---
+    el.addEventListener('mouseleave', () => {
+        isMagnetic = false;
+        cursorOutline.style.backgroundColor = "transparent";
+        cursorOutline.style.borderColor = "#A78BFA";
+    });
+});
+
+// --- 7. TYPEWRITER EFFECT ---
 const textElement = document.getElementById('typewriter');
 const phrases = ["Perfect Training Data", "Precise Image Labels", "Expert Transcription", "High-Quality RLHF", "Accurate Datasets"];
 let phraseIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
@@ -128,41 +126,27 @@ let phraseIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
 function typeEffect() {
     if (!textElement) return;
     const currentPhrase = phrases[phraseIndex];
-    if (isDeleting) {
-        textElement.textContent = currentPhrase.substring(0, charIndex - 1);
-        charIndex--;
-        typeSpeed = 50;
-    } else {
-        textElement.textContent = currentPhrase.substring(0, charIndex + 1);
-        charIndex++;
-        typeSpeed = 100;
-    }
-    if (!isDeleting && charIndex === currentPhrase.length) {
-        isDeleting = true;
-        typeSpeed = 2000;
-    } else if (isDeleting && charIndex === 0) {
-        isDeleting = false;
-        phraseIndex = (phraseIndex + 1) % phrases.length;
-        typeSpeed = 500;
-    }
-    setTimeout(typeEffect, typeSpeed);
+    textElement.textContent = isDeleting ? currentPhrase.substring(0, charIndex - 1) : currentPhrase.substring(0, charIndex + 1);
+    charIndex = isDeleting ? charIndex - 1 : charIndex + 1;
+    
+    let speed = isDeleting ? 50 : 100;
+    if (!isDeleting && charIndex === currentPhrase.length) { isDeleting = true; speed = 2000; }
+    else if (isDeleting && charIndex === 0) { isDeleting = false; phraseIndex = (phraseIndex + 1) % phrases.length; speed = 500; }
+    setTimeout(typeEffect, speed);
 }
 typeEffect();
 
-// --- 7. FAQ ACCORDION ---
+// --- 8. FAQ LOGIC ---
 function toggleFAQ(button) {
     const content = button.nextElementSibling;
-    const icon = button.querySelector('svg');
     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
         content.style.maxHeight = '0px';
-        if(icon) icon.style.transform = 'rotate(0deg)';
     } else {
         content.style.maxHeight = content.scrollHeight + "px";
-        if(icon) icon.style.transform = 'rotate(180deg)';
     }
 }
 
-// --- 8. BACKGROUND PARTICLES ---
+// --- 9. PARTICLES ---
 const canvas = document.getElementById('particleCanvas');
 if (canvas) {
     const ctx = canvas.getContext('2d');
@@ -175,10 +159,7 @@ if (canvas) {
             this.size = Math.random() * 1.5; this.speedX = (Math.random() - 0.5) * 0.4;
             this.speedY = (Math.random() - 0.5) * 0.4; this.opacity = Math.random() * 0.4;
         }
-        update() {
-            this.x += this.speedX; this.y += this.speedY;
-            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
-        }
+        update() { this.x += this.speedX; this.y += this.speedY; if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset(); }
         draw() { ctx.fillStyle = `rgba(167, 139, 250, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
     }
     function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
@@ -188,7 +169,7 @@ if (canvas) {
     window.addEventListener('resize', initCanvas);
 }
 
-// --- 9. MISC UI ---
+// --- 10. OUTSIDE CLICK ---
 window.onclick = (e) => {
     Object.values(elements).forEach(modal => { if (e.target == modal) { modal.style.display = 'none'; document.body.style.overflow = 'auto'; } });
 };
