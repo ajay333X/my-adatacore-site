@@ -9,75 +9,84 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
-        .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; }
-        .admin-input:focus { border-color: #A78BFA; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(155, 135, 245, 0.1); border-radius: 28px; }
+        .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; font-size: 14px; }
+        .admin-input:focus { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
         .hidden { display: none; }
     </style>
 </head>
 <body class="p-8">
 
     <div id="access-denied" class="hidden flex flex-col items-center justify-center h-screen text-center">
-        <h1 class="text-6xl mb-4">🚫</h1>
-        <h2 class="text-2xl font-bold text-red-500">Access Denied</h2>
-        <p class="text-gray-500 mt-2">Your ID is not authorized to access the Admin Panel.</p>
-        <a href="dashboard.html" class="mt-6 text-purple-400 underline">Back to Dashboard</a>
+        <h1 class="text-6xl mb-4">🔐</h1>
+        <h2 class="text-2xl font-bold text-red-500">Authorized Personnel Only</h2>
+        <p class="text-gray-500 mt-2">Access restricted to as4556676@gmail.com</p>
+        <a href="dashboard.html" class="mt-6 text-purple-400 underline">Exit System</a>
     </div>
 
-    <div id="admin-content" class="max-w-5xl mx-auto hidden">
-        <header class="flex justify-between items-center mb-12">
+    <div id="admin-content" class="max-w-6xl mx-auto hidden">
+        <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight">Admin Central Control</h1>
-                <p class="text-gray-500 text-sm">Assign tasks and manage global users.</p>
+                <h1 class="text-3xl font-bold tracking-tight">Project Control Center</h1>
+                <p class="text-gray-500 text-sm">Assign, route, and manage worker tasks.</p>
             </div>
-            <button onclick="window.location.href='dashboard.html'" class="text-xs bg-white/5 px-4 py-2 rounded-lg border border-white/10">Exit Admin</button>
+            <button onclick="window.location.href='dashboard.html'" class="bg-white/5 px-5 py-2 rounded-xl border border-white/10 text-xs hover:bg-white/10 transition-all">➔ Dashboard</button>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 glass p-8">
-                <h3 class="text-lg font-bold mb-6 text-purple-400">Assign New Task</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 glass p-8 h-fit sticky top-8">
+                <h3 class="text-lg font-bold mb-6 text-purple-400">Deploy New Project</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">User Unique ID (Target)</label>
-                        <input type="text" id="targetID" class="admin-input" placeholder="e.g. AD-XXXX-XXXX">
+                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Worker Unique ID</label>
+                        <input type="text" id="targetID" class="admin-input" placeholder="AD-XXXX-XXXX-XXXX">
                     </div>
                     <div>
                         <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Project Title</label>
-                        <input type="text" id="taskTitle" class="admin-input" placeholder="Project Name">
+                        <input type="text" id="taskTitle" class="admin-input" placeholder="e.g. Ajay Test Demo">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Rate ($/Hr)</label>
+                            <input type="number" id="taskPrice" class="admin-input" placeholder="8.00">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Task Type</label>
+                            <select id="taskType" class="admin-input bg-[#050510]">
+                                <option value="Audio">Audio</option>
+                                <option value="Image">Image</option>
+                                <option value="Text">Text</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Task Type</label>
-                        <select id="taskType" class="admin-input bg-[#050510]">
-                            <option value="Transcription">Transcription</option>
-                            <option value="Annotation">Annotation</option>
-                            <option value="Moderation">Moderation</option>
-                        </select>
+                        <label class="text-[10px] uppercase font-bold text-yellow-500 mb-1 block">Target Page (Redirect Link)</label>
+                        <input type="text" id="targetPage" class="admin-input border-yellow-500/30" placeholder="e.g. task_player.html">
+                        <p class="text-[9px] text-gray-500 mt-1">*This file will open when worker clicks Start.</p>
                     </div>
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Reward ($)</label>
-                        <input type="number" id="taskPrice" class="admin-input" placeholder="5.00">
+                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Instructions</label>
+                        <textarea id="taskDesc" class="admin-input h-24 resize-none" placeholder="Enter task instructions here..."></textarea>
                     </div>
-                    <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Short Description</label>
-                        <textarea id="taskDesc" class="admin-input h-24 resize-none" placeholder="Task details..."></textarea>
-                    </div>
-                    <button id="btn-assign" class="w-full bg-purple-600 hover:bg-purple-500 py-3 rounded-xl font-bold transition-all mt-4">Assign Task Now</button>
+                    <button id="btn-assign" class="w-full bg-purple-600 hover:bg-purple-500 py-4 rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all mt-4">PUSH PROJECT 🚀</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 glass p-8">
-                <h3 class="text-lg font-bold mb-6">Global Active Tasks</h3>
+            <div class="lg:col-span-8 glass p-8">
+                <h3 class="text-lg font-bold mb-6">Live Project Monitor</h3>
                 <div id="admin-task-list" class="space-y-4">
-                    <p class="text-gray-600 text-sm italic">Loading master task list...</p>
+                    <p class="text-gray-600 animate-pulse">Syncing with database...</p>
                 </div>
             </div>
+
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
@@ -92,11 +101,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- महत्वपूर्ण: सिर्फ ये ईमेल एडमिन पैनल खोल पाएंगे ---
-        const authorizedAdmins = ["as4556676@gmail.com", "your-other-email@gmail.com"];
+        const ADMIN_EMAIL = "as4556676@gmail.com";
 
         onAuthStateChanged(auth, (user) => {
-            if (user && authorizedAdmins.includes(user.email)) {
+            if (user && user.email === ADMIN_EMAIL) {
                 document.getElementById('admin-content').classList.remove('hidden');
                 loadAllTasks();
             } else {
@@ -104,15 +112,16 @@
             }
         });
 
-        // Task Assign Function
+        // Function: Assign Task
         document.getElementById('btn-assign').onclick = async () => {
             const targetID = document.getElementById('targetID').value.trim();
             const title = document.getElementById('taskTitle').value;
             const price = document.getElementById('taskPrice').value;
             const desc = document.getElementById('taskDesc').value;
             const type = document.getElementById('taskType').value;
+            const targetPage = document.getElementById('targetPage').value.trim() || "task_player.html";
 
-            if(!targetID || !title) return Swal.fire('Error', 'Unique ID and Title are required', 'error');
+            if(!targetID || !title) return Swal.fire('Missing Data', 'Target ID and Title are required.', 'warning');
 
             try {
                 await addDoc(collection(db, "tasks"), {
@@ -121,40 +130,69 @@
                     price: price,
                     description: desc,
                     type: type,
+                    targetPage: targetPage, // यह डेटाबेस में सेव होगा
                     status: "active",
                     createdAt: new Date()
                 });
-                Swal.fire('Success', 'Task assigned to ' + targetID, 'success');
-                // Clear inputs
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deployed!',
+                    text: `Project pushed to worker ${targetID}`,
+                    background: '#1A1A2E',
+                    color: '#fff'
+                });
+                
+                // Clear fields
                 document.getElementById('targetID').value = "";
                 document.getElementById('taskTitle').value = "";
-            } catch (err) { alert(err.message); }
+                document.getElementById('taskDesc').value = "";
+            } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
-        // Load Global Tasks for Management
+        // Function: Monitor Tasks
         function loadAllTasks() {
-            onSnapshot(collection(db, "tasks"), (snap) => {
+            const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snap) => {
                 const list = document.getElementById('admin-task-list');
                 list.innerHTML = "";
+                
+                if(snap.empty) {
+                    list.innerHTML = `<div class="text-center py-10 text-gray-600 italic">No active projects in the cloud.</div>`;
+                    return;
+                }
+
                 snap.forEach((taskDoc) => {
                     const t = taskDoc.data();
                     list.innerHTML += `
-                        <div class="flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/5">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all">
                             <div>
-                                <p class="text-[10px] text-purple-400 font-bold uppercase">${t.assignedTo}</p>
-                                <h4 class="font-bold text-sm">${t.title}</h4>
-                                <p class="text-xs text-gray-500">$${t.price} • ${t.type}</p>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[9px] bg-purple-500/20 text-purple-300 font-bold px-2 py-0.5 rounded-full uppercase">${t.type}</span>
+                                    <span class="text-[10px] text-gray-500 font-mono">${t.assignedTo}</span>
+                                </div>
+                                <h4 class="font-bold text-white">${t.title}</h4>
+                                <p class="text-xs text-gray-500 mt-1">Routes to: <span class="text-yellow-500">${t.targetPage}</span> • Rate: $${t.price}/hr</p>
                             </div>
-                            <button onclick="removeTask('${taskDoc.id}')" class="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1 rounded-lg">Remove</button>
+                            <button onclick="removeTask('${taskDoc.id}')" class="mt-4 md:mt-0 text-[11px] font-bold text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/10 transition-all">REMOVE</button>
                         </div>
                     `;
                 });
             });
         }
 
-        // Global function for removal
         window.removeTask = async (id) => {
-            if(confirm("Delete this task? User will no longer see it.")) {
+            const result = await Swal.fire({
+                title: 'Terminate Project?',
+                text: "Worker will immediately lose access to this task.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#1F2937',
+                confirmButtonText: 'Yes, Remove'
+            });
+
+            if(result.isConfirmed) {
                 await deleteDoc(doc(db, "tasks", id));
             }
         }
