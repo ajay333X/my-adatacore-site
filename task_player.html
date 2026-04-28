@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ajay Test Demo — Adatacore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background: #0D0D1F; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 32px; }
+        .record-btn { width: 80px; height: 80px; border-radius: 50%; transition: all 0.3s; }
+        .recording { background: #EF4444 !important; box-shadow: 0 0 30px rgba(239, 68, 68, 0.5); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="glass w-full max-w-xl p-10 text-center">
+        <h2 class="text-2xl font-bold mb-2">Ajay Test Demo</h2>
+        <p class="text-gray-500 text-sm mb-8">Pay Rate: $8.00 / Hour</p>
+
+        <div class="mb-8">
+            <div id="timer" class="text-5xl font-mono mb-4 text-purple-400">00:00</div>
+            <p id="status" class="text-xs uppercase tracking-widest text-gray-400">Ready to Record</p>
+        </div>
+
+        <div class="flex flex-col items-center gap-6">
+            <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
+            
+            <div id="playbackSection" class="hidden w-full space-y-4">
+                <audio id="audioPlayer" controls class="w-full"></audio>
+                <div class="flex gap-4">
+                    <button id="discardBtn" class="flex-1 py-3 bg-white/5 rounded-xl text-sm font-bold border border-white/10">Discard</button>
+                    <button id="submitBtn" class="flex-1 py-3 bg-purple-600 rounded-xl text-sm font-bold shadow-lg">Submit & Earn</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
+            authDomain: "adatacoresite.firebaseapp.com",
+            projectId: "adatacoresite",
+            storageBucket: "adatacoresite.firebasestorage.app",
+            messagingSenderId: "108144458736",
+            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let startTime;
+        let timerInterval;
+        let durationInSeconds = 0;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const playbackSection = document.getElementById('playbackSection');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const timerDisplay = document.getElementById('timer');
+
+        // Setup Audio Recording
+        recordBtn.onclick = async () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        };
+
+        async function startRecording() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            durationInSeconds = 0;
+            startTime = Date.now();
+
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioPlayer.src = URL.createObjectURL(audioBlob);
+                playbackSection.classList.remove('hidden');
+            };
+
+            mediaRecorder.start();
+            recordBtn.classList.add('recording');
+            document.getElementById('status').innerText = "Recording...";
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            recordBtn.classList.remove('recording');
+            document.getElementById('status').innerText = "Preview Your Recording";
+        }
+
+        function updateTimer() {
+            durationInSeconds++;
+            const mins = Math.floor(durationInSeconds / 60).toString().padStart(2, '0');
+            const secs = (durationInSeconds % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${mins}:${secs}`;
+        }
+
+        // --- Payment Logic ---
+        document.getElementById('submitBtn').onclick = async () => {
+            const hourlyRate = 8.00;
+            const earnings = (durationInSeconds / 3600) * hourlyRate; // $8 / hr calculate logic
+
+            Swal.fire({
+                title: 'Submitting...',
+                text: `You earned $${earnings.toFixed(4)}`,
+                icon: 'success',
+                showConfirmButton: false,
+                background: '#1A1A2E', color: '#fff'
+            });
+
+            try {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                // बैलेंस को डेटाबेस में अपडेट करना
+                await updateDoc(userRef, {
+                    balance: increment(earnings),
+                    tasksCompleted: increment(1)
+                });
+
+                setTimeout(() => window.location.href = "dashboard.html", 2000);
+            } catch (err) { alert(err.message); }
+        };
+
+        document.getElementById('discardBtn').onclick = () => location.reload();
+    </script>
+</body>
+</html>
