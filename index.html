@@ -19,7 +19,13 @@
             background-color: var(--bg-dark); 
             color: white;
             overflow-x: hidden;
+            cursor: none; /* कर्सर छिपाया गया */
         }
+
+        /* सिर्फ ये कर्सर की लाइनें जोड़ी गई हैं */
+        #cursor-dot { width: 6px; height: 6px; background: #A78BFA; position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 9999; pointer-events: none; }
+        #cursor-outline { width: 30px; height: 30px; border: 2px solid rgba(167, 139, 250, 0.4); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 9998; pointer-events: none; }
+        button, a, input, select, textarea { cursor: none !important; }
 
         .grid-pattern {
             background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px);
@@ -490,8 +496,9 @@
             </form>
         </div>
     </div>
-     <div id="cursor-dot" class="hidden md:block"></div>
-<div id="cursor-outline" class="hidden md:block"></div>
+    
+    <div id="cursor-dot" class="hidden md:block"></div>
+    <div id="cursor-outline" class="hidden md:block"></div>
     <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
     <script src="script.js"></script>
 
