@@ -22,14 +22,12 @@ function closeSignInModal() { if(elements.signInModal) elements.signInModal.styl
 function openGetStartedModal() { if(elements.getStartedModal) elements.getStartedModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 function closeGetStartedModal() { if(elements.getStartedModal) elements.getStartedModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
 
-// --- 3. GET STARTED LOGIC ---
+// --- 3. LOGIC & TOGGLES ---
 function chooseRole(role) {
     closeGetStartedModal();
     if (role === 'company') setTimeout(openInfoModal, 300);
     else setTimeout(openAnnotatorInfoModal, 300);
 }
-
-// --- 4. SWITCHERS & TOGGLES ---
 function switchToInquiry() { closeInfoModal(); setTimeout(openModal, 300); }
 function switchToAnnotatorForm() { if(elements.annotatorInfoModal) elements.annotatorInfoModal.style.display = 'none'; setTimeout(openAnnotatorFormModal, 300); }
 function toggleExpField() {
@@ -41,13 +39,13 @@ function toggleExpField() {
     }
 }
 
-// --- 5. REVEAL ON SCROLL ---
+// --- 4. REVEAL ON SCROLL ---
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// --- 6. 3D TILT EFFECT ---
+// --- 5. 3D TILT EFFECT ---
 document.querySelectorAll('.card-glow').forEach(card => {
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
@@ -58,7 +56,7 @@ document.querySelectorAll('.card-glow').forEach(card => {
     card.addEventListener('mouseleave', () => card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`);
 });
 
-// --- 7. BACKGROUND PARTICLES ---
+// --- 6. BACKGROUND PARTICLES ---
 const canvas = document.getElementById('particleCanvas');
 if (canvas) {
     const ctx = canvas.getContext('2d');
@@ -84,76 +82,80 @@ if (canvas) {
     window.addEventListener('resize', initCanvas);
 }
 
-// --- 8. CUSTOM CURSOR LOGIC ---
+// --- 7. ULTRA-SMOOTH CUSTOM CURSOR ---
 const cursorDot = document.getElementById('cursor-dot');
 const cursorOutline = document.getElementById('cursor-outline');
+
 if (cursorDot && cursorOutline) {
+    let mouseX = 0, mouseY = 0;
+    let outlineX = 0, outlineY = 0;
+
     window.addEventListener('mousemove', (e) => {
-        cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-        cursorOutline.animate({
-            transform: `translate(${e.clientX - 15}px, ${e.clientY - 15}px)`
-        }, { duration: 150, fill: "forwards" });
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        // डॉट तुरंत चलेगा बिना एनीमेशन के (ताकि लैग न लगे)
+        cursorDot.style.left = `${mouseX}px`;
+        cursorDot.style.top = `${mouseY}px`;
     });
+
+    // आउटलाइन को स्मूथ बनाने के लिए 'requestAnimationFrame'
+    function animateCursor() {
+        let distX = mouseX - outlineX;
+        let distY = mouseY - outlineY;
+        
+        // 0.15 = स्मूथनेस की वैल्यू (इसे कम करने से और स्मूथ होगा)
+        outlineX = outlineX + (distX * 0.15);
+        outlineY = outlineY + (distY * 0.15);
+
+        cursorOutline.style.left = `${outlineX}px`;
+        cursorOutline.style.top = `${outlineY}px`;
+
+        requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Hover interactions
     document.querySelectorAll('button, a, .card-glow').forEach(el => {
-        el.addEventListener('mouseenter', () => { cursorOutline.style.transform += ' scale(1.5)'; cursorOutline.style.backgroundColor = 'rgba(167, 139, 250, 0.1)'; });
-        el.addEventListener('mouseleave', () => { cursorOutline.style.transform = cursorOutline.style.transform.replace(' scale(1.5)', ''); cursorOutline.style.backgroundColor = 'transparent'; });
+        el.addEventListener('mouseenter', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)');
+        el.addEventListener('mouseleave', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)');
     });
 }
 
-// --- 9. CLICK FEEDBACK & MODAL CLOSE ---
-document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
-    btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
-});
-
-window.onclick = function(e) {
-    Object.values(elements).forEach(modal => { if (e.target == modal) { modal.style.display = 'none'; document.body.style.overflow = 'auto'; } });
-};
-// --- TYPEWRITER EFFECT LOGIC ---
+// --- 8. TYPEWRITER EFFECT ---
 const textElement = document.getElementById('typewriter');
-const phrases = [
-    "Perfect Training Data",
-    "Precise Image Labels",
-    "Expert Transcription",
-    "High-Quality RLHF",
-    "Accurate Datasets"
-];
-
-let phraseIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
-let typeSpeed = 100;
+const phrases = ["Perfect Training Data", "Precise Image Labels", "Expert Transcription", "High-Quality RLHF", "Accurate Datasets"];
+let phraseIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
 
 function typeEffect() {
+    if (!textElement) return;
     const currentPhrase = phrases[phraseIndex];
-    
     if (isDeleting) {
-        // शब्द मिटाना
         textElement.textContent = currentPhrase.substring(0, charIndex - 1);
         charIndex--;
         typeSpeed = 50;
     } else {
-        // शब्द लिखना
         textElement.textContent = currentPhrase.substring(0, charIndex + 1);
         charIndex++;
         typeSpeed = 100;
     }
-
     if (!isDeleting && charIndex === currentPhrase.length) {
-        // पूरा शब्द लिख लिया, अब रुको
         isDeleting = true;
-        typeSpeed = 2000; // 2 सेकंड तक शब्द दिखेगा
+        typeSpeed = 2000;
     } else if (isDeleting && charIndex === 0) {
-        // शब्द मिट गया, अब अगला शब्द उठाओ
         isDeleting = false;
         phraseIndex = (phraseIndex + 1) % phrases.length;
         typeSpeed = 500;
     }
-
     setTimeout(typeEffect, typeSpeed);
 }
+// Start typewriter
+typeEffect();
 
-// एनीमेशन शुरू करें
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(typeEffect, 1000);
+// --- 9. CLICK FEEDBACK & OUTSIDE CLICK ---
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
+    btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
 });
+window.onclick = (e) => {
+    Object.values(elements).forEach(modal => { if (e.target == modal) { modal.style.display = 'none'; document.body.style.overflow = 'auto'; } });
+};
