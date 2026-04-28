@@ -90,7 +90,6 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 1. User Info Listener
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
@@ -99,7 +98,6 @@
                         document.getElementById('display-uid').innerText = "ID: " + myID;
                         document.getElementById('stat-balance').innerText = data.balance || "0.00";
 
-                        // 2. Load Tasks Assigned to this Unique ID
                         loadMyTasks(myID);
                     }
                 });
@@ -123,6 +121,7 @@
                 container.innerHTML = "";
                 querySnapshot.forEach((doc) => {
                     const task = doc.data();
+                    // यहाँ मैंने href में dynamic targetPage जोड़ दिया है
                     container.innerHTML += `
                         <div class="task-card p-8">
                             <div class="flex justify-between items-start mb-6">
@@ -131,7 +130,7 @@
                             </div>
                             <h4 class="text-lg font-bold mb-2">${task.title}</h4>
                             <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description}</p>
-                            <button class="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 hover:border-purple-600 transition-all">START TASK ➔</button>
+                            <a href="${task.targetPage || '#'}" class="w-full inline-block text-center py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 hover:border-purple-600 transition-all">START TASK ➔</a>
                         </div>
                     `;
                 });
