@@ -3,20 +3,82 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Profile Settings — Adatacore</title>
+    <title>Account Settings — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; }
-        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
-        .glass-card { background: rgba(26, 26, 46, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 24px; }
-        .input-field { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; transition: 0.3s; }
-        .input-field:focus { border-color: var(--accent); background: rgba(167, 139, 250, 0.05); }
-        .section-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
-        .btn-update { background: linear-gradient(135deg, #7C3AED, #A78BFA); transition: all 0.3s; }
-        .btn-update:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(167, 139, 250, 0.5); }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: white; 
+            margin: 0;
+            overflow-y: auto; /* स्क्रॉलिंग फिक्स */
+        }
+
+        .grid-pattern { 
+            background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); 
+            background-size: 40px 40px; 
+            position: fixed; 
+            inset: 0; 
+            z-index: -1; 
+            pointer-events: none;
+        }
+
+        .glass-card { 
+            background: rgba(26, 26, 46, 0.6); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(167, 139, 250, 0.1); 
+            border-radius: 24px; 
+        }
+
+        .input-field { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 12px; 
+            padding: 12px; 
+            color: white; 
+            width: 100%; 
+            outline: none; 
+            transition: 0.3s; 
+        }
+
+        .input-field:focus { 
+            border-color: var(--accent); 
+            background: rgba(167, 139, 250, 0.05); 
+        }
+
+        .section-label { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #6B7280; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            margin-bottom: 8px; 
+            display: block; 
+        }
+
+        /* Apple-style sticky bar */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(13, 13, 31, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 50;
+        }
+
+        .swal2-popup {
+            background: #1A1A2E !important;
+            border: 1px solid var(--accent) !important;
+            border-radius: 24px !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body class="grid-pattern">
@@ -26,97 +88,74 @@
             <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
             Adatacore
         </a>
-        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all flex items-center gap-2">
-            ← Back to Dashboard
-        </a>
+        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all">← Back</a>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-6 pb-20 relative z-10">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold mb-2">Your Account</h1>
-            <p class="text-gray-400">Manage your personal information, qualification, and security settings.</p>
+    <main class="max-w-4xl mx-auto p-6 pb-32 relative z-10">
+        <header class="mb-12">
+            <h1 class="text-4xl font-bold mb-2">Account Settings</h1>
+            <p class="text-gray-400">Update your profile information and manage account security.</p>
         </header>
 
-        <section class="glass-card p-8 mb-8">
-            <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-                <h3 class="text-xl font-semibold">Personal Information</h3>
-                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full font-bold">Public Profile</span>
-            </div>
-            
+        <div class="glass-card p-8 mb-8">
+            <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Personal Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <label class="section-label">Full Name</label>
-                    <input type="text" id="fullName" class="input-field" placeholder="Ajay Sahani">
+                    <input type="text" id="fullName" class="input-field" placeholder="Your Name">
                 </div>
                 <div>
-                    <label class="section-label">Email Address</label>
-                    <input type="email" id="email" class="input-field opacity-60 cursor-not-allowed" readonly>
+                    <label class="section-label">Email Address (Locked)</label>
+                    <input type="email" id="email" class="input-field opacity-50 cursor-not-allowed" readonly>
                 </div>
                 <div>
                     <label class="section-label">Phone Number</label>
-                    <input type="tel" id="phone" class="input-field" placeholder="+91 97559 48021">
+                    <input type="tel" id="phone" class="input-field" placeholder="+91 XXXXX-XXXXX">
                 </div>
                 <div>
                     <label class="section-label">Date of Birth</label>
                     <input type="date" id="dob" class="input-field">
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section class="glass-card p-8 mb-8">
-            <h3 class="text-xl font-semibold mb-8 border-b border-white/5 pb-4">Qualification & Work</h3>
+        <div class="glass-card p-8 mb-8">
+            <h3 class="text-xl font-bold mb-8 border-b border-white/5 pb-4">Qualification</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="section-label">Current Occupation</label>
-                    <select id="occupation" class="input-field bg-[#1A1A2E]">
-                        <option value="Student">Student</option>
-                        <option value="Freelancer">Freelancer</option>
-                        <option value="Professional">Full-time Professional</option>
-                        <option value="Unemployed">Searching for work</option>
-                    </select>
+                    <label class="section-label">Occupation</label>
+                    <input type="text" id="occupation" class="input-field" placeholder="e.g. Student, Software Engineer">
                 </div>
                 <div>
                     <label class="section-label">Education Level</label>
                     <select id="education" class="input-field bg-[#1A1A2E]">
                         <option value="High School">High School</option>
-                        <option value="Bachelors">College or University (Bachelors)</option>
+                        <option value="Bachelors">Bachelors Degree</option>
                         <option value="Masters">Masters Degree</option>
-                        <option value="Doctorate">PhD or Doctorate</option>
+                        <option value="PhD">PhD / Doctorate</option>
                     </select>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section class="glass-card p-8 border-red-500/20">
-            <h3 class="text-xl font-semibold mb-8 text-red-400 border-b border-white/5 pb-4">Security & Danger Zone</h3>
-            <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div class="glass-card p-8 border-red-500/20 mb-10">
+            <h3 class="text-xl font-bold mb-8 text-red-500 border-b border-white/5 pb-4">Security</h3>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <p class="font-bold">Password Security</p>
-                    <p class="text-xs text-gray-500">Change your password regularly to stay secure.</p>
+                    <p class="font-bold text-sm">Reset Password</p>
+                    <p class="text-xs text-gray-500">We will send a reset link to your email.</p>
                 </div>
-                <button onclick="changePassword()" class="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl border border-white/10 text-sm font-bold transition-all">
-                    Reset Password
-                </button>
-            </div>
-            
-            <div class="mt-10 pt-8 border-t border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
-                <div>
-                    <p class="font-bold text-red-500">Delete Account</p>
-                    <p class="text-xs text-gray-500">Permanently remove all your data. This cannot be undone.</p>
-                </div>
-                <button onclick="deleteAccount()" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-6 py-2 rounded-xl border border-red-500/20 text-sm font-bold transition-all">
-                    Request Deletion
-                </button>
-            </div>
-        </section>
-
-        <div class="fixed bottom-0 left-0 right-0 p-6 bg-dark/80 backdrop-blur-xl border-t border-white/5 z-20">
-            <div class="max-w-4xl mx-auto flex justify-end gap-4">
-                <button onclick="location.reload()" class="px-6 py-3 text-sm font-bold text-gray-400 hover:text-white">Discard</button>
-                <button id="saveBtn" class="btn-update px-10 py-3 rounded-xl font-bold text-sm shadow-xl">Save Changes</button>
+                <button onclick="resetPass()" class="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all">Send Link</button>
             </div>
         </div>
     </main>
+
+    <div class="action-bar">
+        <div class="max-w-4xl mx-auto flex justify-end gap-6 items-center">
+            <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-gray-500 hover:text-white transition-all">Cancel</button>
+            <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all">Save Changes</button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -137,7 +176,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // UI Load Logic
+        // Load User Data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('email').value = user.email;
@@ -147,7 +186,7 @@
                     document.getElementById('fullName').value = data.fullName || "";
                     document.getElementById('phone').value = data.phone || "";
                     document.getElementById('dob').value = data.dob || "";
-                    document.getElementById('occupation').value = data.occupation || "Student";
+                    document.getElementById('occupation').value = data.occupation || "";
                     document.getElementById('education').value = data.education || "Bachelors";
                 }
             } else {
@@ -155,10 +194,10 @@
             }
         });
 
-        // Save Logic
+        // Save Data Logic
         document.getElementById('saveBtn').onclick = async () => {
             const user = auth.currentUser;
-            const data = {
+            const updateData = {
                 fullName: document.getElementById('fullName').value,
                 phone: document.getElementById('phone').value,
                 dob: document.getElementById('dob').value,
@@ -167,30 +206,24 @@
             };
 
             try {
-                await setDoc(doc(db, "users", user.uid), data, { merge: true });
+                await setDoc(doc(db, "users", user.uid), updateData, { merge: true });
                 Swal.fire({
                     icon: 'success',
-                    title: 'Settings Saved',
-                    text: 'Your profile has been updated successfully.',
+                    title: 'Updated!',
+                    text: 'Your profile has been securely updated.',
                     background: '#1A1A2E',
                     color: '#fff',
                     confirmButtonColor: '#7C3AED'
                 });
             } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Oops...', text: err.message });
+                Swal.fire({ icon: 'error', title: 'Oops', text: err.message });
             }
         };
 
-        // Reset Password
-        window.changePassword = () => {
+        // Password Reset
+        window.resetPass = () => {
             sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
-                Swal.fire({
-                    title: 'Check your email',
-                    text: 'Password reset link has been sent to ' + auth.currentUser.email,
-                    icon: 'info',
-                    background: '#1A1A2E',
-                    color: '#fff'
-                });
+                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the reset link.', background: '#1A1A2E', color: '#fff' });
             });
         };
     </script>
