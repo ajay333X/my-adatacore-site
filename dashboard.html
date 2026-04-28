@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Dashboard — Adatacore</title>
+    <title>Dashboard — Adatacore Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -12,82 +12,78 @@
         .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
         .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.15); }
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sidebar { border-right: 1px solid rgba(255,255,255,0.05); }
-        .nav-item { transition: all 0.3s; border-radius: 12px; margin-bottom: 4px; }
+        .nav-item { transition: all 0.3s; border-radius: 12px; cursor: pointer; }
         .nav-item:hover { background: rgba(167, 139, 250, 0.1); color: #A78BFA; }
+        .card-stat { transition: transform 0.3s ease; }
+        .card-stat:hover { transform: translateY(-5px); border-color: rgba(167, 139, 250, 0.4); }
     </style>
 </head>
 <body class="grid-pattern">
-    <div class="flex min-height-screen">
-        <aside class="w-64 h-screen glass sidebar fixed left-0 top-0 p-6 flex flex-col">
+
+    <div class="flex">
+        <aside class="w-64 h-screen glass fixed left-0 top-0 p-6 flex flex-col border-r border-white/5">
             <div class="flex items-center gap-2.5 font-bold text-white text-lg mb-10">
                 <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
             </div>
             
             <nav class="flex-1 space-y-2">
-                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white bg-white/5 text-white">
-                    <span>🏠 Overview</span>
-                </a>
-                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
-                    <span>📊 My Tasks</span>
-                </a>
-                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
-                    <span>💰 Earnings</span>
-                </a>
-                <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">
-                    <span>⚙️ Settings</span>
-                </a>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white">🏠 Overview</div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">📊 Active Tasks</div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400">💰 Payouts</div>
             </nav>
 
-            <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
-                <span>🚪 Logout</span>
-            </button>
+            <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
         </aside>
 
         <main class="ml-64 p-10 w-full">
-            <header class="flex justify-between items-center mb-10">
+            <header class="flex justify-between items-start mb-10">
                 <div>
-                    <h1 class="text-3xl font-bold text-gradient">Welcome back, <span id="user-display-name">User</span>!</h1>
-                    <p class="text-gray-500 text-sm mt-1">Here's what's happening with your tasks today.</p>
+                    <h1 class="text-3xl font-bold text-gradient">Hello, <span id="user-name-display">Annotator</span>!</h1>
+                    <p class="text-gray-500 text-sm mt-1" id="greeting-date"></p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-bold" id="user-email">loading...</p>
-                        <p class="text-[10px] text-purple-400 uppercase tracking-widest font-bold">Annotator Pro</p>
+                <div class="flex items-center gap-4 glass p-2 px-4 rounded-2xl border border-white/10">
+                    <div class="text-right">
+                        <p class="text-xs font-bold" id="user-email-display">loading...</p>
+                        <p class="text-[9px] text-green-400 uppercase font-black">Verified Account</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center font-bold border-2 border-white/10" id="user-avatar">
-                        U
-                    </div>
+                    <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold" id="user-initials">A</div>
                 </div>
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="glass p-6 rounded-3xl border border-white/5">
-                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Total Tasks</p>
-                    <h3 class="text-2xl font-bold">1,284</h3>
+                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Total Earnings</p>
+                    <h3 class="text-3xl font-bold text-purple-400">$<span id="stat-balance">0.00</span></h3>
                 </div>
-                <div class="glass p-6 rounded-3xl border border-white/5">
-                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Accuracy</p>
-                    <h3 class="text-2xl font-bold text-green-400">99.8%</h3>
+                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Completed Tasks</p>
+                    <h3 class="text-3xl font-bold" id="stat-tasks">0</h3>
                 </div>
-                <div class="glass p-6 rounded-3xl border border-white/5">
-                    <p class="text-gray-500 text-xs uppercase font-bold tracking-widest mb-1">Balance</p>
-                    <h3 class="text-2xl font-bold text-purple-400">$420.50</h3>
+                <div class="glass p-6 rounded-3xl border border-white/5 card-stat">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-2">Quality Score</p>
+                    <h3 class="text-3xl font-bold text-green-400"><span id="stat-accuracy">0</span>%</h3>
                 </div>
             </div>
 
-            <div class="glass rounded-3xl p-10 border border-white/5 text-center">
-                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">📁</div>
-                <h3 class="text-lg font-bold mb-2">No active tasks</h3>
-                <p class="text-gray-500 text-sm max-w-xs mx-auto">New annotation projects will appear here once they are assigned to you.</p>
+            <div class="glass rounded-3xl p-8 border border-white/5 mb-10">
+                <h3 class="text-lg font-bold mb-4">Complete Your Profile</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="text" id="input-display-name" placeholder="Enter Your Real Name" class="bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-purple-500 transition-all">
+                    <button id="btn-update-profile" class="bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl px-6 py-3 text-sm transition-all">Update Name</button>
+                </div>
+            </div>
+
+            <div class="text-center py-20 border-2 border-dashed border-white/5 rounded-[40px]">
+                <p class="text-gray-600 font-medium">Fetching active projects from Adatacore Cloud...</p>
             </div>
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
@@ -101,28 +97,55 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // Security: Check if user is logged in
-        onAuthStateChanged(auth, (user) => {
+        // Greetings
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('greeting-date').innerText = new Date().toLocaleDateString('en-US', options);
+
+        // Core Session & Data Logic
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.getElementById('user-email').innerText = user.email;
-                document.getElementById('user-display-name').innerText = user.displayName || user.email.split('@')[0];
-                document.getElementById('user-avatar').innerText = user.email.charAt(0).toUpperCase();
+                // UI Updates
+                document.getElementById('user-email-display').innerText = user.email;
+                document.getElementById('user-name-display').innerText = user.displayName || "Annotator";
+                document.getElementById('user-initials').innerText = (user.displayName || user.email).charAt(0).toUpperCase();
+
+                // Real-time Database Listener
+                const userDocRef = doc(db, "users", user.uid);
+                
+                // Firestore से डेटा पढ़ना
+                onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('stat-balance').innerText = data.balance || "0.00";
+                        document.getElementById('stat-tasks').innerText = data.tasksCompleted || "0";
+                        document.getElementById('stat-accuracy').innerText = data.accuracy || "0";
+                    } else {
+                        // अगर नया यूज़र है, तो डेटाबेस में उसका शुरूआती डेटा बना दो
+                        setDoc(userDocRef, { balance: "0.00", tasksCompleted: 0, accuracy: 100 });
+                    }
+                });
+
             } else {
-                // No user is signed in, send back to login
                 window.location.href = "auth.html";
             }
         });
 
-        // Logout Logic
-        document.getElementById('btn-logout').onclick = async () => {
+        // Update Profile Name Logic
+        document.getElementById('btn-update-profile').onclick = async () => {
+            const newName = document.getElementById('input-display-name').value;
+            if (newName.length < 2) return alert("Please enter a valid name");
+            
             try {
-                await signOut(auth);
-                window.location.href = "auth.html";
-            } catch (err) {
-                alert("Logout Error: " + err.message);
-            }
+                await updateProfile(auth.currentUser, { displayName: newName });
+                alert("Name Updated Successfully!");
+                location.reload();
+            } catch (err) { alert(err.message); }
         };
+
+        // Logout
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
