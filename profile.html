@@ -7,65 +7,121 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0D0D1F; color: white; }
-        .glass { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.2); }
-        .premium-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px; color: white; width: 100%; outline: none; transition: 0.3s; }
-        .premium-input:focus { border-color: #A78BFA; background: rgba(167, 139, 250, 0.1); }
-        /* SweetAlert Custom Style */
-        .swal2-popup { background: #1A1A2E !important; border: 1px solid #A78BFA !important; border-radius: 24px !important; color: white !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; }
+        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
+        .glass-card { background: rgba(26, 26, 46, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 24px; }
+        .input-field { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: var(--accent); background: rgba(167, 139, 250, 0.05); }
+        .section-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+        .btn-update { background: linear-gradient(135deg, #7C3AED, #A78BFA); transition: all 0.3s; }
+        .btn-update:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(167, 139, 250, 0.5); }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-    <div class="glass w-full max-w-2xl p-10 rounded-[2.5rem] relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-8">
-            <a href="dashboard.html" class="text-gray-500 hover:text-white transition-all text-sm">✕ Close</a>
-        </div>
-        
-        <h2 class="text-3xl font-bold mb-2">Complete Your Identity</h2>
-        <p class="text-gray-500 text-sm mb-10">This information helps us assign relevant high-paying tasks to you.</p>
+<body class="grid-pattern">
 
-        <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
+    <nav class="p-6 max-w-5xl mx-auto flex justify-between items-center relative z-10">
+        <a href="dashboard.html" class="flex items-center gap-2 font-bold text-lg">
+            <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
+            Adatacore
+        </a>
+        <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all flex items-center gap-2">
+            ← Back to Dashboard
+        </a>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-6 pb-20 relative z-10">
+        <header class="mb-10">
+            <h1 class="text-4xl font-bold mb-2">Your Account</h1>
+            <p class="text-gray-400">Manage your personal information, qualification, and security settings.</p>
+        </header>
+
+        <section class="glass-card p-8 mb-8">
+            <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+                <h3 class="text-xl font-semibold">Personal Information</h3>
+                <span class="text-[10px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full font-bold">Public Profile</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-purple-400 mb-1 block">Full Name</label>
-                    <input type="text" id="fullName" class="premium-input" placeholder="e.g. Rahul Sharma" required>
+                    <label class="section-label">Full Name</label>
+                    <input type="text" id="fullName" class="input-field" placeholder="Ajay Sahani">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-purple-400 mb-1 block">Phone Number</label>
-                    <input type="tel" id="phone" class="premium-input" placeholder="+91 00000-00000" required>
+                    <label class="section-label">Email Address</label>
+                    <input type="email" id="email" class="input-field opacity-60 cursor-not-allowed" readonly>
+                </div>
+                <div>
+                    <label class="section-label">Phone Number</label>
+                    <input type="tel" id="phone" class="input-field" placeholder="+91 97559 48021">
+                </div>
+                <div>
+                    <label class="section-label">Date of Birth</label>
+                    <input type="date" id="dob" class="input-field">
                 </div>
             </div>
+        </section>
 
-            <div class="space-y-4">
+        <section class="glass-card p-8 mb-8">
+            <h3 class="text-xl font-semibold mb-8 border-b border-white/5 pb-4">Qualification & Work</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-purple-400 mb-1 block">Base Qualification</label>
-                    <select id="baseQual" class="premium-input bg-[#0D0D1F]" onchange="updateSpecialization()">
-                        <option value="High School">High School</option>
-                        <option value="Graduate">Graduate</option>
-                        <option value="Post Graduate">Post Graduate</option>
-                        <option value="Specialist">Specialist / Doctorate</option>
+                    <label class="section-label">Current Occupation</label>
+                    <select id="occupation" class="input-field bg-[#1A1A2E]">
+                        <option value="Student">Student</option>
+                        <option value="Freelancer">Freelancer</option>
+                        <option value="Professional">Full-time Professional</option>
+                        <option value="Unemployed">Searching for work</option>
                     </select>
                 </div>
-                <div id="specSection" class="hidden">
-                    <label class="text-[10px] uppercase font-bold text-purple-400 mb-1 block">Field of Study / Specialization</label>
-                    <select id="specialization" class="premium-input bg-[#0D0D1F]">
-                        </select>
+                <div>
+                    <label class="section-label">Education Level</label>
+                    <select id="education" class="input-field bg-[#1A1A2E]">
+                        <option value="High School">High School</option>
+                        <option value="Bachelors">College or University (Bachelors)</option>
+                        <option value="Masters">Masters Degree</option>
+                        <option value="Doctorate">PhD or Doctorate</option>
+                    </select>
                 </div>
             </div>
+        </section>
 
-            <div class="md:col-span-2 pt-6">
-                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 py-4 rounded-2xl font-bold hover:shadow-[0_0_30px_rgba(167,139,250,0.3)] transition-all">
-                    Verify & Save Profile
+        <section class="glass-card p-8 border-red-500/20">
+            <h3 class="text-xl font-semibold mb-8 text-red-400 border-b border-white/5 pb-4">Security & Danger Zone</h3>
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div>
+                    <p class="font-bold">Password Security</p>
+                    <p class="text-xs text-gray-500">Change your password regularly to stay secure.</p>
+                </div>
+                <button onclick="changePassword()" class="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl border border-white/10 text-sm font-bold transition-all">
+                    Reset Password
                 </button>
             </div>
-        </form>
-    </div>
+            
+            <div class="mt-10 pt-8 border-t border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div>
+                    <p class="font-bold text-red-500">Delete Account</p>
+                    <p class="text-xs text-gray-500">Permanently remove all your data. This cannot be undone.</p>
+                </div>
+                <button onclick="deleteAccount()" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-6 py-2 rounded-xl border border-red-500/20 text-sm font-bold transition-all">
+                    Request Deletion
+                </button>
+            </div>
+        </section>
+
+        <div class="fixed bottom-0 left-0 right-0 p-6 bg-dark/80 backdrop-blur-xl border-t border-white/5 z-20">
+            <div class="max-w-4xl mx-auto flex justify-end gap-4">
+                <button onclick="location.reload()" class="px-6 py-3 text-sm font-bold text-gray-400 hover:text-white">Discard</button>
+                <button id="saveBtn" class="btn-update px-10 py-3 rounded-xl font-bold text-sm shadow-xl">Save Changes</button>
+            </div>
+        </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
@@ -73,69 +129,69 @@
             projectId: "adatacoresite",
             storageBucket: "adatacoresite.firebasestorage.app",
             messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
+            measurementId: "G-PTS16DVVYE"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Qualification List (Duniya bhar ki list)
-        const fields = [
-            "Computer Science", "Artificial Intelligence", "Medical Science", "Law", "Chartered Accountant", 
-            "Linguistics", "Data Science", "Psychology", "Mathematics", "Mechanical Engineering", 
-            "Biology", "Literature", "History", "Economics", "Graphic Design"
-        ];
-
-        window.updateSpecialization = () => {
-            const base = document.getElementById('baseQual').value;
-            const specSection = document.getElementById('specSection');
-            const specSelect = document.getElementById('specialization');
-            
-            if(base !== "High School") {
-                specSection.classList.remove('hidden');
-                specSelect.innerHTML = fields.map(f => `<option value="${f}">${f}</option>`).join('');
-            } else {
-                specSection.classList.add('hidden');
-            }
-        };
-
+        // UI Load Logic
         onAuthStateChanged(auth, async (user) => {
-            if (!user) window.location.href = "auth.html";
-            else {
+            if (user) {
+                document.getElementById('email').value = user.email;
                 const docSnap = await getDoc(doc(db, "users", user.uid));
-                if(docSnap.exists()){
+                if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('fullName').value = data.fullName || "";
                     document.getElementById('phone').value = data.phone || "";
+                    document.getElementById('dob').value = data.dob || "";
+                    document.getElementById('occupation').value = data.occupation || "Student";
+                    document.getElementById('education').value = data.education || "Bachelors";
                 }
+            } else {
+                window.location.href = "auth.html";
             }
         });
 
-        document.getElementById('profileForm').onsubmit = async (e) => {
-            e.preventDefault();
-            
-            try {
-                await setDoc(doc(db, "users", auth.currentUser.uid), {
-                    fullName: document.getElementById('fullName').value,
-                    phone: document.getElementById('phone').value,
-                    qualification: document.getElementById('baseQual').value,
-                    specialization: document.getElementById('specialization').value || "N/A",
-                }, { merge: true });
+        // Save Logic
+        document.getElementById('saveBtn').onclick = async () => {
+            const user = auth.currentUser;
+            const data = {
+                fullName: document.getElementById('fullName').value,
+                phone: document.getElementById('phone').value,
+                dob: document.getElementById('dob').value,
+                occupation: document.getElementById('occupation').value,
+                education: document.getElementById('education').value
+            };
 
+            try {
+                await setDoc(doc(db, "users", user.uid), data, { merge: true });
                 Swal.fire({
                     icon: 'success',
-                    title: 'Profile Verified',
-                    text: 'Your details have been securely saved to Adatacore Cloud.',
-                    confirmButtonText: 'Back to Dashboard',
+                    title: 'Settings Saved',
+                    text: 'Your profile has been updated successfully.',
+                    background: '#1A1A2E',
+                    color: '#fff',
                     confirmButtonColor: '#7C3AED'
-                }).then(() => {
-                    window.location.href = "dashboard.html";
                 });
-
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'Oops...', text: err.message });
             }
+        };
+
+        // Reset Password
+        window.changePassword = () => {
+            sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
+                Swal.fire({
+                    title: 'Check your email',
+                    text: 'Password reset link has been sent to ' + auth.currentUser.email,
+                    icon: 'info',
+                    background: '#1A1A2E',
+                    color: '#fff'
+                });
+            });
         };
     </script>
 </body>
