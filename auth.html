@@ -24,7 +24,7 @@
 <body class="grid-pattern">
     <div class="glass w-full max-w-[440px] p-10 relative z-10">
         <div class="flex flex-col items-center mb-8">
-            <a href="index.html" class="flex items-center gap-2.5 font-bold text-white text-xl mb-6 decoration-none">
+            <a href="index.html" class="flex items-center gap-2.5 font-bold text-white text-xl mb-6">
                 <svg viewBox="0 0 64 64" class="w-8 h-8"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
             </a>
@@ -35,95 +35,56 @@
         </div>
 
         <div id="signin-form" class="space-y-5">
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Email</label>
-                <input type="email" id="login-email" placeholder="name@company.com" class="premium-input">
-            </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Password</label>
-                <input type="password" id="login-password" placeholder="••••••••" class="premium-input">
-            </div>
+            <input type="email" id="login-email" placeholder="Email" class="premium-input">
+            <input type="password" id="login-password" placeholder="Password" class="premium-input">
             <button id="btn-signin" class="btn-shine">Sign In</button>
         </div>
 
         <div id="signup-form" class="space-y-5 hidden">
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Full Name</label>
-                <input type="text" id="signup-name" placeholder="John Doe" class="premium-input">
-            </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Email</label>
-                <input type="email" id="signup-email" placeholder="name@email.com" class="premium-input">
-            </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Password</label>
-                <input type="password" id="signup-password" placeholder="••••••••" class="premium-input">
-            </div>
+            <input type="text" id="signup-name" placeholder="Full Name" class="premium-input">
+            <input type="email" id="signup-email" placeholder="Email Address" class="premium-input">
+            <input type="password" id="signup-password" placeholder="Password" class="premium-input">
             <button id="btn-signup" class="btn-shine">Create Account</button>
-        </div>
-
-        <div class="relative py-6">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
-            <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <button class="bg-white/5 border border-white/10 py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Google</span>
-            </button>
-            <button class="bg-white/5 border border-white/10 py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4"> <span class="text-xs font-semibold">LinkedIn</span>
-            </button>
         </div>
     </div>
 
     <script type="module">
-        // Firebase Import
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Config (Apni details yahan replace karein)
+        // Your Exact Firebase Config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
+            authDomain: "adatacoresite.firebaseapp.com",
+            projectId: "adatacoresite",
+            storageBucket: "adatacoresite.firebasestorage.app",
+            messagingSenderId: "108144458736",
+            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
+            measurementId: "G-PTS16DVVYE"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Session Check: Login hai to dashboard bhej do
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.location.href = "dashboard.html";
-            }
-        });
+        // Session Check
+        onAuthStateChanged(auth, (user) => { if (user) window.location.href = "dashboard.html"; });
 
-        // Sign In Logic
+        // Login
         document.getElementById('btn-signin').onclick = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                window.location.href = "dashboard.html";
-            } catch (err) { alert(err.message); }
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (err) { alert("Error: " + err.message); }
         };
 
-        // Sign Up Logic
+        // Signup
         document.getElementById('btn-signup').onclick = async () => {
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, pass);
-                alert("Account Created!");
-                window.location.href = "dashboard.html";
-            } catch (err) { alert(err.message); }
+            try { await createUserWithEmailAndPassword(auth, email, pass); } 
+            catch (err) { alert("Error: " + err.message); }
         };
 
-        // Tab Switching
         window.switchTab = function(type) {
             document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
