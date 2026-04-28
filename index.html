@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adatacore — AI Data Annotation Platform</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Adatacore — AI Data Annotation & Labeling Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,55 +11,108 @@
 
     <header class="fixed top-0 inset-x-0 z-50">
         <nav class="glass max-w-5xl mx-auto mt-4 mx-4 sm:mx-auto rounded-full px-6 py-3 flex items-center justify-between">
-            <div class="font-bold text-white text-lg tracking-tight flex items-center gap-2">
-                <div class="w-7 h-7 bg-indigo-950 border border-indigo-400 rounded-lg flex items-center justify-center text-[12px] text-indigo-400">A</div>
+            <a href="#" class="flex items-center gap-2.5 font-bold text-white text-lg tracking-tight">
+                <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
+            </a>
+            <div class="hidden md:flex items-center gap-7 text-[13px] text-gray-400 font-medium">
+                <a href="#companies" class="hover:text-white transition-colors">For Companies</a>
+                <a href="#annotators" class="hover:text-white transition-colors">For Annotators</a>
+                <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
-            <div class="hidden md:flex gap-7 text-[13px] text-gray-400">
-                <a href="#companies">For Companies</a>
-                <a href="#annotators">For Annotators</a>
-                <a href="#tasks">Task Types</a>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hidden md:block text-[13px] text-gray-400 hover:text-white">Sign in</a>
+                <a href="#companies" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</a>
             </div>
-            <a href="#companies" class="accent-gradient text-white text-[12px] font-medium px-5 py-2 rounded-full">Get Started</a>
         </nav>
     </header>
 
     <section class="relative pt-44 pb-20 px-6">
         <div class="hero-glow"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10">
-            <span class="inline-block px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-[10px] tracking-widest uppercase text-indigo-300 mb-8">
-                Trusted by 500+ AI teams worldwide
+            <span class="inline-flex items-center gap-2 text-[11px] font-medium tracking-widest uppercase text-purple-300/90 mb-8 px-4 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Trusted by 500+ AI teams worldwide
             </span>
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-gradient leading-[0.95]">
-                Fuel Your AI With<br>Perfect Training Data
+            <h1 class="text-5xl sm:text-7xl lg:text-[82px] font-bold tracking-tight leading-[0.95] text-gradient">
+                Fuel Your AI With<br/>Perfect Training Data
             </h1>
-            <p class="mt-8 text-gray-400 text-lg max-w-xl mx-auto">Enterprise-grade annotation powered by expert human annotators.</p>
-            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-                <button class="accent-gradient px-8 py-3.5 rounded-full text-sm font-bold">Get Data Labeled →</button>
-                <button class="border border-gray-800 px-8 py-3.5 rounded-full text-sm text-gray-400">Earn as Annotator</button>
+            <p class="mt-8 text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+                Enterprise-grade annotation for images, video, audio, and text — powered by a global network of expert human annotators.
+            </p>
+            <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#companies" class="accent-gradient btn-shine text-white font-medium px-8 py-3.5 rounded-full text-sm w-full sm:w-auto">Get Data Labeled →</a>
+                <a href="#annotators" class="group text-gray-400 hover:text-white text-sm px-8 py-3.5 rounded-full border border-gray-800 transition-all flex items-center gap-2">Earn as Annotator</a>
+            </div>
+
+            <div class="mt-20 grid grid-cols-2 sm:grid-cols-4 border border-gray-800/50 rounded-2xl bg-[#1A1A2E]/40 backdrop-blur-sm overflow-hidden">
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">50M+</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Tasks Completed</div>
+                </div>
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">120K+</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Expert Annotators</div>
+                </div>
+                <div class="p-6 border-r border-gray-800/50">
+                    <div class="text-3xl font-bold text-gradient">99.4%</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Accuracy Rate</div>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl font-bold text-gradient">48h</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Avg Turnaround</div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="companies" class="py-24 px-6 border-t border-gray-800/50">
+    <div class="py-12 border-t border-gray-800 overflow-hidden bg-[#0D0D1F]">
+        <div class="animate-marquee text-gray-600 font-bold text-sm tracking-widest opacity-40">
+            <span class="mx-12">OPENAI</span><span class="mx-12">COHERE</span><span class="mx-12">MISTRAL</span><span class="mx-12">DEEPMIND</span><span class="mx-12">HUGGING FACE</span><span class="mx-12">ANTHROPIC</span>
+            <span class="mx-12">OPENAI</span><span class="mx-12">COHERE</span><span class="mx-12">MISTRAL</span><span class="mx-12">DEEPMIND</span><span class="mx-12">HUGGING FACE</span><span class="mx-12">ANTHROPIC</span>
+        </div>
+    </div>
+
+    <section id="tasks" class="py-24 border-t border-gray-800 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gradient">Every data type, covered</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2 card-glow rounded-2xl p-8">
+                    <h3 class="text-lg font-bold mb-2">Image & Video Annotation</h3>
+                    <p class="text-gray-400 text-sm">Bounding boxes, semantic segmentation, and keypoint detection at scale.</p>
+                </div>
+                <div class="card-glow rounded-2xl p-8">
+                    <h3 class="text-lg font-bold mb-2">Audio</h3>
+                    <p class="text-gray-400 text-sm">Speech-to-text and speaker diarization.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="companies" class="py-24 border-t border-gray-800 text-center">
+        <h2 class="text-4xl font-bold text-gradient mb-16">Data labeled in 3 steps</h2>
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 px-6">
+            <div><div class="text-purple-400 font-bold mb-4">01</div><p class="text-sm">Upload your data</p></div>
+            <div><div class="text-purple-400 font-bold mb-4">02</div><p class="text-sm">We assign experts</p></div>
+            <div><div class="text-purple-400 font-bold mb-4">03</div><p class="text-sm">Receive labeled data</p></div>
+        </div>
+    </section>
+
+    <section class="py-24 border-t border-gray-800 px-6">
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card-glow p-10 rounded-3xl">
-                <h3 class="text-xl font-bold mb-4 text-white">For AI Companies</h3>
+            <div class="card-glow rounded-3xl p-10">
+                <h3 class="text-2xl font-bold mb-4">For AI Companies</h3>
                 <p class="text-gray-400 text-sm mb-8">Scale your training data pipeline with enterprise-grade quality. 500 free annotations to start.</p>
-                <button class="bg-white text-black text-[12px] font-bold px-6 py-2.5 rounded-full">Get Data Labeled →</button>
+                <a href="#" class="accent-gradient block text-center py-4 rounded-full font-bold">Get Data Labeled →</a>
             </div>
-            <div class="card-glow p-10 rounded-3xl">
-                <h3 class="text-xl font-bold mb-4 text-white">For Annotators</h3>
+            <div class="card-glow rounded-3xl p-10">
+                <h3 class="text-2xl font-bold mb-4">For Annotators</h3>
                 <p class="text-gray-400 text-sm mb-8">Join our global workforce and earn money completing annotation tasks from home. Weekly payouts.</p>
-                <button class="border border-gray-700 text-white text-[12px] font-bold px-6 py-2.5 rounded-full">Start Earning Today →</button>
+                <a href="#" class="border border-purple-500/30 block text-center py-4 rounded-full font-bold hover:bg-purple-500/10">Start Earning Today →</a>
             </div>
         </div>
     </section>
 
-    <footer class="py-10 text-center border-t border-gray-900">
-        <p class="text-[10px] text-gray-600 uppercase tracking-widest">© 2026 Adatacore. All rights reserved.</p>
-    </footer>
-
-    <script src="script.js"></script>
 </body>
 </html>
