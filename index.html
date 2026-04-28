@@ -117,7 +117,7 @@
                 <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
             <div class="flex items-center gap-4">
-                <a href="#" class="hidden md:block text-[13px] text-gray-400">Sign in</a>
+                <button onclick="openSignInModal()" class="hidden md:block text-[13px] text-gray-400 hover:text-white transition-colors">Sign in</button>
                 <button onclick="openModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</button>
             </div>
         </nav>
@@ -368,5 +368,58 @@
         document.getElementById('fullInquiryForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Company Request Sent!'); closeModal(); });
         document.getElementById('annotatorAppForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Annotator Application Sent! Our expert will reach out to you.'); closeAnnotatorFormModal(); });
     </script>
+    <div id="signInModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div class="glass max-w-md w-full rounded-[40px] p-10 relative border border-white/10 shadow-[0_0_50px_rgba(167,139,250,0.15)]">
+        <button onclick="closeSignInModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+
+        <div class="text-center mb-10">
+            <div class="w-12 h-12 bg-white/5 border border-purple-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg viewBox="0 0 64 64" class="w-7 h-7"><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
+            </div>
+            <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+            <p class="text-gray-400 text-xs tracking-wide uppercase font-medium">Enter your details to sign in</p>
+        </div>
+
+        <form id="authForm" class="space-y-5">
+            <div>
+                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2 ml-1 font-bold">Email Address</label>
+                <input type="email" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="name@company.com">
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-2 ml-1">
+                    <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Password</label>
+                    <a href="#" class="text-[10px] text-purple-400 hover:text-purple-300">Forgot?</a>
+                </div>
+                <input type="password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="accent-gradient btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white shadow-xl shadow-purple-500/20 mt-2">
+                Sign In to Dashboard
+            </button>
+
+            <div class="relative py-4">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
+                <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
+                    <span class="text-xs font-medium text-white">Google</span>
+                </button>
+                <button type="button" class="flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3 rounded-2xl hover:bg-white/10 transition-all">
+                    <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4" alt="LinkedIn">
+                    <span class="text-xs font-medium text-white">LinkedIn</span>
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center text-xs text-gray-500 mt-8">
+            Don't have an account? <button onclick="switchToAnnotatorForm()" class="text-purple-400 font-bold hover:underline">Join as Annotator</button>
+        </p>
+    </div>
+</div>
 </body>
 </html>
