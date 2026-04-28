@@ -50,26 +50,22 @@ const observer = new IntersectionObserver((entries) => {
         }
     });
 }, { threshold: 0.1 });
-
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 // --- 6. 3D TILT EFFECT FOR CARDS ---
-const tiltCards = document.querySelectorAll('.card-glow');
-tiltCards.forEach(card => {
+document.querySelectorAll('.card-glow').forEach(card => {
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = ((y - centerY) / centerY) * -8; // Slight tilt
+        const rotateX = ((y - centerY) / centerY) * -8;
         const rotateY = ((x - centerX) / centerX) * 8;
         card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        card.style.transition = 'none';
     });
     card.addEventListener('mouseleave', () => {
         card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-        card.style.transition = 'all 0.5s ease';
     });
 });
 
@@ -107,7 +103,13 @@ for (let i = 0; i < 60; i++) particles.push(new Particle());
 animate();
 window.addEventListener('resize', initCanvas);
 
-// --- 8. CLOSE ON OUTSIDE CLICK ---
+// --- 8. MICRO-INTERACTIONS: BUTTON FEEDBACK ---
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
+    btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
+});
+
+// --- 9. CLOSE ON OUTSIDE CLICK ---
 window.onclick = function(e) {
     Object.values(elements).forEach(modal => {
         if (e.target == modal) {
