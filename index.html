@@ -112,11 +112,12 @@
                 Adatacore
             </a>
             <div class="hidden md:flex items-center gap-7 text-[13px] text-gray-400 font-medium">
-                <a href="#companies" class="hover:text-white transition-colors">For Companies</a>
+                <button onclick="openInfoModal()" class="hover:text-white transition-colors">For Companies</button>
                 <a href="#annotators" class="hover:text-white transition-colors">For Annotators</a>
                 <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
             <div class="flex items-center gap-4">
+                <a href="#" class="hidden md:block text-[13px] text-gray-400">Sign in</a>
                 <button onclick="openModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</button>
             </div>
         </nav>
@@ -126,7 +127,7 @@
         <div class="hero-glow"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10">
             <span class="inline-flex items-center gap-2 text-[11px] font-medium tracking-widest uppercase text-purple-300/90 mb-8 px-4 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5">
-                <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> Trusted by 500+ AI teams worldwide
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> Trusted by 500+ AI teams worldwide
             </span>
             <h1 class="text-5xl sm:text-7xl lg:text-[82px] font-bold tracking-tight leading-[0.95] text-gradient">
                 Fuel Your AI With<br/>Perfect Training Data
@@ -183,11 +184,11 @@
                 </div>
                 <div class="card-glow rounded-2xl p-8">
                     <h3 class="text-lg font-bold mb-2">Text Annotation</h3>
-                    <p class="text-gray-400 text-sm">Named entity recognition, sentiment analysis, and intent classification.</p>
+                    <p class="text-gray-400 text-sm">Entity recognition, sentiment analysis, and intent classification.</p>
                 </div>
                 <div class="md:col-span-2 card-glow rounded-2xl p-8">
                     <h3 class="text-lg font-bold mb-2">Content Moderation</h3>
-                    <p class="text-gray-400 text-sm">NSFW detection, hate speech identification, and policy enforcement.</p>
+                    <p class="text-gray-400 text-sm">Keep your platforms safe with human-reviewed accuracy.</p>
                 </div>
             </div>
         </div>
@@ -199,18 +200,18 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">01</div>
-                    <h3 class="font-bold mb-2">Upload your data</h3>
-                    <p class="text-gray-500 text-sm">Connect your cloud storage directly.</p>
+                    <p class="font-bold text-sm mb-2">Upload your data</p>
+                    <p class="text-gray-500 text-xs">Connect your storage directly.</p>
                 </div>
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">02</div>
-                    <h3 class="font-bold mb-2">We assign experts</h3>
-                    <p class="text-gray-500 text-sm">Tasks matched to vetted domain experts.</p>
+                    <p class="font-bold text-sm mb-2">We assign experts</p>
+                    <p class="text-gray-500 text-xs">Matched to vetted domain experts.</p>
                 </div>
                 <div>
                     <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold mx-auto mb-6">03</div>
-                    <h3 class="font-bold mb-2">Receive labeled data</h3>
-                    <p class="text-gray-500 text-sm">Download production-ready datasets.</p>
+                    <p class="font-bold text-sm mb-2">Receive labeled data</p>
+                    <p class="text-gray-500 text-xs">Download production-ready sets.</p>
                 </div>
             </div>
         </div>
@@ -221,25 +222,16 @@
             <h2 class="text-3xl font-bold text-center mb-16 text-gradient">Trusted by teams and workers</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="card-glow rounded-2xl p-7">
-                    <p class="text-gray-400 text-sm italic mb-8">"Adatacore cut our data labeling pipeline from 3 weeks to 4 days."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-bold">DK</div>
-                        <p class="text-xs font-bold">David Kim</p>
-                    </div>
+                    <p class="text-gray-400 text-sm italic mb-6">"Adatacore cut our pipeline from 3 weeks to 4 days."</p>
+                    <p class="text-xs font-bold">David Kim — Head of ML</p>
                 </div>
                 <div class="card-glow rounded-2xl p-7">
-                    <p class="text-gray-400 text-sm italic mb-8">"The tasks are interesting and the pay is fair. Great experience!"</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs font-bold">AD</div>
-                        <p class="text-xs font-bold">Amara Diallo</p>
-                    </div>
+                    <p class="text-gray-400 text-sm italic mb-6">"Interesting tasks and fair pay. Highly recommended."</p>
+                    <p class="text-xs font-bold">Amara Diallo — Senior Annotator</p>
                 </div>
                 <div class="card-glow rounded-2xl p-7">
-                    <p class="text-gray-400 text-sm italic mb-8">"Best accuracy rates we've seen in the industry."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-bold">PM</div>
-                        <p class="text-xs font-bold">Priya Mehta</p>
-                    </div>
+                    <p class="text-gray-400 text-sm italic mb-6">"Industry-leading accuracy rates and transparency."</p>
+                    <p class="text-xs font-bold">Priya Mehta — VP Trust & Safety</p>
                 </div>
             </div>
         </div>
@@ -249,13 +241,13 @@
         <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
                 <h3 class="text-2xl font-bold mb-4">For AI Companies</h3>
-                <p class="text-gray-400 text-sm mb-8">Scale your pipeline with enterprise-grade quality.</p>
-                <button onclick="openModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Get Data Labeled →</button>
+                <p class="text-gray-400 text-sm mb-8">Get enterprise-grade quality data at scale.</p>
+                <button onclick="openInfoModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Learn More →</button>
             </div>
             <div id="annotators" class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
                 <h3 class="text-2xl font-bold mb-4">For Annotators</h3>
-                <p class="text-gray-400 text-sm mb-8">Join our global workforce and earn money today.</p>
-                <a href="#" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all">Start Earning Now →</a>
+                <p class="text-gray-400 text-sm mb-8">Join our workforce and start earning today.</p>
+                <a href="#" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all">Join Now</a>
             </div>
         </div>
     </section>
@@ -264,51 +256,55 @@
         <p>© 2026 Adatacore, Inc. All rights reserved.</p>
     </footer>
 
+    <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
+        <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/40">
+            <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+            <h2 class="text-3xl font-bold text-gradient mb-6 text-center">About Adatacore</h2>
+            <div class="space-y-6 text-sm text-gray-300">
+                <p>We provide high-quality human-in-the-loop data required to build advanced AI models.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-6 rounded-2xl">
+                    <div><p class="text-purple-400 font-bold mb-1">What we do</p><p class="text-xs">Transform raw data into structured sets via 120k+ experts.</p></div>
+                    <div><p class="text-purple-400 font-bold mb-1">Our Edge</p><p class="text-xs">99.4% Accuracy & 48h Average Turnaround.</p></div>
+                </div>
+                <button onclick="switchToInquiry()" class="accent-gradient btn-shine text-white font-bold px-10 py-4 rounded-2xl w-full mt-4">Let us reach you out →</button>
+            </div>
+        </div>
+    </div>
+
     <div id="contactModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/30">
-            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h2 class="text-3xl font-bold text-gradient mb-8">Project Inquiry</h2>
-            <form id="fullInquiryForm" class="space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Full Name">
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Company Name">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+            <h2 class="text-3xl font-bold text-gradient mb-8">Detailed Inquiry</h2>
+            <form id="fullInquiryForm" class="space-y-5 text-left">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Company Name">
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Email">
-                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none">
-                        <option value="" disabled selected>Estimated Budget</option>
-                        <option value="1k">Under $1k</option>
-                        <option value="5k">$1k - $5k</option>
-                        <option value="20k">$5k - $20k</option>
-                        <option value="plus">$20k+</option>
-                    </select>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Email">
+                    <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Budget Range</option><option value="1k">Under $1k</option><option value="5k">$1k - $5k</option><option value="20k">$5k - $20k</option><option value="plus">$20k+</option></select>
                 </div>
-                <textarea rows="2" class="w-full rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Any special requirements?"></textarea>
-                <textarea required rows="3" class="w-full rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Tell us about your project..."></textarea>
+                <textarea rows="2" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Any special requirements?"></textarea>
+                <textarea required rows="3" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Project details..."></textarea>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <select class="rounded-2xl px-5 py-4 text-sm outline-none">
-                        <option value="whatsapp">WhatsApp</option>
-                        <option value="linkedin">LinkedIn</option>
-                        <option value="telegram">Telegram</option>
-                        <option value="email">Email</option>
-                    </select>
-                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm outline-none" placeholder="Username / Number">
+                    <select class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="whatsapp">WhatsApp</option><option value="linkedin">LinkedIn</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
+                    <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Username / Number">
                 </div>
-                <button type="submit" class="accent-gradient w-full py-5 rounded-2xl font-bold text-sm btn-shine">Send Comprehensive Request</button>
+                <button type="submit" class="accent-gradient w-full py-5 rounded-2xl font-bold text-sm btn-shine">Send Request</button>
             </form>
         </div>
     </div>
 
     <script>
-        const modal = document.getElementById('contactModal');
-        function openModal() { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        function closeModal() { modal.style.display = 'none'; document.body.style.overflow = 'auto'; }
-        window.onclick = function(e) { if (e.target == modal) closeModal(); }
-        document.getElementById('fullInquiryForm').addEventListener('submit', function(e) {
-            e.preventDefault(); alert('Request Received!'); closeModal();
-        });
+        const infoModal = document.getElementById('infoModal');
+        const contactModal = document.getElementById('contactModal');
+        function openInfoModal() { infoModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeInfoModal() { infoModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+        function openModal() { contactModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeModal() { contactModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+        function switchToInquiry() { closeInfoModal(); setTimeout(openModal, 300); }
+        window.onclick = function(e) { if (e.target == infoModal) closeInfoModal(); if (e.target == contactModal) closeModal(); }
+        document.getElementById('fullInquiryForm').addEventListener('submit', function(e) { e.preventDefault(); alert('Request Sent!'); closeModal(); });
     </script>
 </body>
 </html>
