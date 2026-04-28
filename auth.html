@@ -37,30 +37,34 @@
         <div id="signin-form" class="space-y-5">
             <div>
                 <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Email</label>
-                <input type="email" placeholder="name@company.com" class="premium-input">
+                <input type="email" id="login-email" placeholder="name@company.com" class="premium-input">
             </div>
             <div>
                 <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Password</label>
-                <input type="password" placeholder="••••••••" class="premium-input">
+                <input type="password" id="login-password" placeholder="••••••••" class="premium-input">
             </div>
-            <button class="btn-shine">Sign In</button>
+            <button id="btn-signin" class="btn-shine">Sign In</button>
         </div>
 
         <div id="signup-form" class="space-y-5 hidden">
             <div>
                 <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Full Name</label>
-                <input type="text" placeholder="John Doe" class="premium-input">
+                <input type="text" id="signup-name" placeholder="John Doe" class="premium-input">
             </div>
             <div>
                 <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Email</label>
-                <input type="email" placeholder="name@email.com" class="premium-input">
+                <input type="email" id="signup-email" placeholder="name@email.com" class="premium-input">
             </div>
-            <button class="btn-shine">Create Account</button>
+            <div>
+                <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block ml-1">Password</label>
+                <input type="password" id="signup-password" placeholder="••••••••" class="premium-input">
+            </div>
+            <button id="btn-signup" class="btn-shine">Create Account</button>
         </div>
 
         <div class="relative py-6">
             <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
-            <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 px-2">Or continue with</div>
+            <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 bg-transparent px-2">Or continue with</div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -73,8 +77,54 @@
         </div>
     </div>
 
-    <script>
-        function switchTab(type) {
+    <script type="module">
+        // Firebase Import
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Firebase Config (Apni details yahan replace karein)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Session Check: Login hai to dashboard bhej do
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = "dashboard.html";
+            }
+        });
+
+        // Sign In Logic
+        document.getElementById('btn-signin').onclick = async () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                window.location.href = "dashboard.html";
+            } catch (err) { alert(err.message); }
+        };
+
+        // Sign Up Logic
+        document.getElementById('btn-signup').onclick = async () => {
+            const email = document.getElementById('signup-email').value;
+            const pass = document.getElementById('signup-password').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                alert("Account Created!");
+                window.location.href = "dashboard.html";
+            } catch (err) { alert(err.message); }
+        };
+
+        // Tab Switching
+        window.switchTab = function(type) {
             document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
             document.getElementById('tab-signin').classList.toggle('active', type === 'signin');
