@@ -93,28 +93,19 @@ if (cursorDot && cursorOutline) {
     window.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
-        // डॉट तुरंत चलेगा बिना एनीमेशन के (ताकि लैग न लगे)
         cursorDot.style.left = `${mouseX}px`;
         cursorDot.style.top = `${mouseY}px`;
     });
 
-    // आउटलाइन को स्मूथ बनाने के लिए 'requestAnimationFrame'
     function animateCursor() {
-        let distX = mouseX - outlineX;
-        let distY = mouseY - outlineY;
-        
-        // 0.15 = स्मूथनेस की वैल्यू (इसे कम करने से और स्मूथ होगा)
-        outlineX = outlineX + (distX * 0.15);
-        outlineY = outlineY + (distY * 0.15);
-
+        outlineX += (mouseX - outlineX) * 0.15;
+        outlineY += (mouseY - outlineY) * 0.15;
         cursorOutline.style.left = `${outlineX}px`;
         cursorOutline.style.top = `${outlineY}px`;
-
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
 
-    // Hover interactions
     document.querySelectorAll('button, a, .card-glow').forEach(el => {
         el.addEventListener('mouseenter', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)');
         el.addEventListener('mouseleave', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)');
@@ -148,10 +139,23 @@ function typeEffect() {
     }
     setTimeout(typeEffect, typeSpeed);
 }
-// Start typewriter
 typeEffect();
 
-// --- 9. CLICK FEEDBACK & OUTSIDE CLICK ---
+// --- 9. FAQ ACCORDION LOGIC ---
+function toggleFAQ(button) {
+    const content = button.nextElementSibling;
+    const icon = button.querySelector('svg');
+
+    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+        content.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+// --- 10. CLICK FEEDBACK & OUTSIDE CLICK ---
 document.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
     btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
