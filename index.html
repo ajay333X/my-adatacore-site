@@ -19,14 +19,25 @@
             background-color: var(--bg-dark); 
             color: white;
             overflow-x: hidden;
-            cursor: none;
+            cursor: none; /* कर्सर छिपाया गया */
         }
 
-        #cursor-dot { width: 6px; height: 6px; background: #A78BFA; position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 9999; pointer-events: none; }
-        #cursor-outline { width: 30px; height: 30px; border: 2px solid rgba(167, 139, 250, 0.4); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 9998; pointer-events: none; }
+        /* कर्सर स्टाइल फिक्स (Center alignment added) */
+        #cursor-dot { 
+            width: 6px; height: 6px; background: #A78BFA; 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 10000; pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+        #cursor-outline { 
+            width: 35px; height: 35px; border: 1.5px solid #A78BFA; 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 9999; pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
         button, a, input, select, textarea { cursor: none !important; }
 
-        /* TYPEWRITER CURSOR BLINK (सिर्फ ये नया जुड़ा है) */
         .typewriter-cursor {
             display: inline-block;
             width: 2px;
