@@ -30,12 +30,12 @@ function chooseRole(role) {
 }
 function switchToInquiry() { closeInfoModal(); setTimeout(openModal, 300); }
 function switchToAnnotatorForm() { if(elements.annotatorInfoModal) elements.annotatorInfoModal.style.display = 'none'; setTimeout(openAnnotatorFormModal, 300); }
+
 function toggleExpField() {
     const expSelect = document.getElementById('prevExp');
     const expDetail = document.getElementById('expDetail');
     if (expSelect && expDetail) {
-        if (expSelect.value === 'yes') expDetail.classList.remove('hidden');
-        else expDetail.classList.add('hidden');
+        expDetail.style.display = (expSelect.value === 'yes') ? 'block' : 'none';
     }
 }
 
@@ -45,96 +45,82 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// --- 5. 3D TILT EFFECT ---
-document.querySelectorAll('.card-glow').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const rotateX = ((e.clientY - rect.top - rect.height/2) / (rect.height/2)) * -8;
-        const rotateY = ((e.clientX - rect.left - rect.width/2) / (rect.width/2)) * 8;
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-    });
-    card.addEventListener('mouseleave', () => card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`);
-});
-
-// --- 6. BACKGROUND PARTICLES ---
-const canvas = document.getElementById('particleCanvas');
-if (canvas) {
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 1.5; this.speedX = (Math.random() - 0.5) * 0.4;
-            this.speedY = (Math.random() - 0.5) * 0.4; this.opacity = Math.random() * 0.4;
-        }
-        update() {
-            this.x += this.speedX; this.y += this.speedY;
-            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
-        }
-        draw() { ctx.fillStyle = `rgba(167, 139, 250, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
-    }
-    function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-    initCanvas();
-    for (let i = 0; i < 60; i++) particles.push(new Particle());
-    animate();
-    window.addEventListener('resize', initCanvas);
-}
-
-// --- 7. MAGNETIC CUSTOM CURSOR ---
+// --- 5. ULTRA-SMOOTH MAGNETIC CURSOR LOGIC ---
 const cursorDot = document.getElementById('cursor-dot');
 const cursorOutline = document.getElementById('cursor-outline');
-let mouseX = 0, mouseY = 0;
-let outlineX = 0, outlineY = 0;
+
+let mouseX = 0, mouseY = 0;     
+let dotX = 0, dotY = 0;         
+let outlineX = 0, outlineY = 0; 
+let targetX = 0, targetY = 0;   
+let targetWidth = 35, targetHeight = 35; 
+let targetRadius = 50;          
 let isMagnetic = false;
 
 window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    
-    // डॉट हमेशा माउस के साथ रहेगा
-    cursorDot.style.left = `${mouseX}px`;
-    cursorDot.style.top = `${mouseY}px`;
 });
 
 function animateCursor() {
+    // 1. Smooth Dot Movement
+    dotX += (mouseX - dotX) * 0.2;
+    dotY += (mouseY - dotY) * 0.2;
+    if(cursorDot) {
+        cursorDot.style.left = `${dotX}px`;
+        cursorDot.style.top = `${dotY}px`;
+    }
+
+    // 2. Smooth Outline Logic
     if (!isMagnetic) {
-        // नॉर्मल स्मूथ एनीमेशन
-        outlineX += (mouseX - outlineX) * 0.15;
-        outlineY += (mouseY - outlineY) * 0.15;
+        targetX = mouseX;
+        targetY = mouseY;
+        targetWidth = 35;
+        targetHeight = 35;
+        targetRadius = 50;
+    }
+
+    outlineX += (targetX - outlineX) * 0.15; 
+    outlineY += (targetY - outlineY) * 0.15;
+    
+    if(cursorOutline) {
         cursorOutline.style.left = `${outlineX}px`;
         cursorOutline.style.top = `${outlineY}px`;
-        cursorOutline.style.width = `35px`;
-        cursorOutline.style.height = `35px`;
-        cursorOutline.style.borderRadius = `50%`;
+        cursorOutline.style.width = `${targetWidth}px`;
+        cursorOutline.style.height = `${targetHeight}px`;
+        cursorOutline.style.borderRadius = isMagnetic ? targetRadius : '50%';
     }
+
     requestAnimationFrame(animateCursor);
 }
 animateCursor();
 
-// Magnetic Effect on Buttons/Links
-document.querySelectorAll('button, a, .card-glow').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-        isMagnetic = true;
-        const rect = el.getBoundingClientRect();
-        
-        // आउटलाइन को बटन के साइज और पोजीशन पर चिपकाना
-        cursorOutline.style.left = `${rect.left + rect.width / 2}px`;
-        cursorOutline.style.top = `${rect.top + rect.height / 2}px`;
-        cursorOutline.style.width = `${rect.width + 10}px`;
-        cursorOutline.style.height = `${rect.height + 10}px`;
-        cursorOutline.style.borderRadius = window.getComputedStyle(el).borderRadius;
-        cursorOutline.style.backgroundColor = "rgba(167, 139, 250, 0.1)";
-    });
+// Function to Attach Magnetic Events
+function attachMagneticEffect() {
+    document.querySelectorAll('button, a, .card-glow').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            isMagnetic = true;
+            const rect = el.getBoundingClientRect();
+            targetX = rect.left + rect.width / 2;
+            targetY = rect.top + rect.height / 2;
+            targetWidth = rect.width + 12;
+            targetHeight = rect.height + 12;
+            targetRadius = window.getComputedStyle(el).borderRadius;
+            
+            cursorOutline.style.backgroundColor = "rgba(167, 139, 250, 0.1)";
+            cursorOutline.style.borderColor = "rgba(167, 139, 250, 0.8)";
+        });
 
-    el.addEventListener('mouseleave', () => {
-        isMagnetic = false;
-        cursorOutline.style.backgroundColor = "transparent";
+        el.addEventListener('mouseleave', () => {
+            isMagnetic = false;
+            cursorOutline.style.backgroundColor = "transparent";
+            cursorOutline.style.borderColor = "#A78BFA";
+        });
     });
-});
+}
+attachMagneticEffect();
 
-// --- 8. TYPEWRITER EFFECT ---
+// --- 6. TYPEWRITER EFFECT ---
 const textElement = document.getElementById('typewriter');
 const phrases = ["Perfect Training Data", "Precise Image Labels", "Expert Transcription", "High-Quality RLHF", "Accurate Datasets"];
 let phraseIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
@@ -163,25 +149,46 @@ function typeEffect() {
 }
 typeEffect();
 
-// --- 9. FAQ ACCORDION LOGIC ---
+// --- 7. FAQ ACCORDION ---
 function toggleFAQ(button) {
     const content = button.nextElementSibling;
     const icon = button.querySelector('svg');
-
     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
         content.style.maxHeight = '0px';
-        icon.style.transform = 'rotate(0deg)';
+        if(icon) icon.style.transform = 'rotate(0deg)';
     } else {
         content.style.maxHeight = content.scrollHeight + "px";
-        icon.style.transform = 'rotate(180deg)';
+        if(icon) icon.style.transform = 'rotate(180deg)';
     }
 }
 
-// --- 10. CLICK FEEDBACK & OUTSIDE CLICK ---
-document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
-    btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
-});
+// --- 8. BACKGROUND PARTICLES ---
+const canvas = document.getElementById('particleCanvas');
+if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 1.5; this.speedX = (Math.random() - 0.5) * 0.4;
+            this.speedY = (Math.random() - 0.5) * 0.4; this.opacity = Math.random() * 0.4;
+        }
+        update() {
+            this.x += this.speedX; this.y += this.speedY;
+            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
+        }
+        draw() { ctx.fillStyle = `rgba(167, 139, 250, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+    }
+    function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+    initCanvas();
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+    animateParticles();
+    window.addEventListener('resize', initCanvas);
+}
+
+// --- 9. MISC UI ---
 window.onclick = (e) => {
     Object.values(elements).forEach(modal => { if (e.target == modal) { modal.style.display = 'none'; document.body.style.overflow = 'auto'; } });
 };
