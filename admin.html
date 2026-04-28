@@ -13,6 +13,7 @@
         .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; font-size: 14px; }
         .admin-input:focus { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
         .hidden { display: none; }
+        .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body class="p-8">
@@ -96,20 +97,21 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // अपडेटेड नया कॉन्फ़िगरेशन
         const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35"
+            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
+            authDomain: "adatacore-f.firebaseapp.com",
+            projectId: "adatacore-f",
+            storageBucket: "adatacore-f.firebasestorage.app",
+            messagingSenderId: "806498602099",
+            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
+            measurementId: "G-740M8K5M0J"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Access Restricted to you
         const ADMIN_EMAIL = "as4556676@gmail.com";
 
         onAuthStateChanged(auth, (user) => {
@@ -121,14 +123,13 @@
             }
         });
 
-        // Function: Push Task to Worker
         document.getElementById('btn-assign').onclick = async () => {
             const targetID = document.getElementById('targetID').value.trim();
             const title = document.getElementById('taskTitle').value;
-            const price = document.getElementById('taskPrice').value;
+            const price = parseFloat(document.getElementById('taskPrice').value) || 0;
             const desc = document.getElementById('taskDesc').value;
             const type = document.getElementById('taskType').value;
-            const targetPage = document.getElementById('targetPage').value; // Dropdown value
+            const targetPage = document.getElementById('targetPage').value;
 
             if(!targetID || !title) return Swal.fire('Missing Data', 'Unique ID and Title are required.', 'warning');
 
@@ -146,14 +147,12 @@
                 
                 Swal.fire({ icon: 'success', title: 'Deployed!', text: `Project pushed to ${targetID}`, background: '#1A1A2E', color: '#fff' });
                 
-                // Reset inputs except dropdown
                 document.getElementById('targetID').value = "";
                 document.getElementById('taskTitle').value = "";
                 document.getElementById('taskDesc').value = "";
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
-        // Function: Real-time Master List
         function loadAllTasks() {
             const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
             onSnapshot(q, (snap) => {
