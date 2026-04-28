@@ -43,18 +43,37 @@ function toggleExpField() {
 }
 
 // --- 5. REVEAL ON SCROLL ANIMATION ---
-const observerOptions = { threshold: 0.1 };
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
         }
     });
-}, observerOptions);
+}, { threshold: 0.1 });
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// --- 6. BACKGROUND PARTICLES ---
+// --- 6. 3D TILT EFFECT FOR CARDS ---
+const tiltCards = document.querySelectorAll('.card-glow');
+tiltCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -8; // Slight tilt
+        const rotateY = ((x - centerX) / centerX) * 8;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        card.style.transition = 'none';
+    });
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        card.style.transition = 'all 0.5s ease';
+    });
+});
+
+// --- 7. BACKGROUND PARTICLES ---
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -64,10 +83,10 @@ class Particle {
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.opacity = Math.random() * 0.5;
+        this.size = Math.random() * 1.5;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.4;
     }
     update() {
         this.x += this.speedX; this.y += this.speedY;
@@ -84,11 +103,11 @@ function animate() {
     requestAnimationFrame(animate);
 }
 initCanvas();
-for (let i = 0; i < 50; i++) particles.push(new Particle());
+for (let i = 0; i < 60; i++) particles.push(new Particle());
 animate();
 window.addEventListener('resize', initCanvas);
 
-// --- 7. CLOSE ON OUTSIDE CLICK ---
+// --- 8. CLOSE ON OUTSIDE CLICK ---
 window.onclick = function(e) {
     Object.values(elements).forEach(modal => {
         if (e.target == modal) {
