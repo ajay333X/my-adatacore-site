@@ -98,6 +98,14 @@
         html {
             scroll-behavior: smooth;
         }
+
+        /* Modal Styles */
+        #contactModal.hidden {
+            display: none;
+        }
+        #contactModal {
+            display: flex;
+        }
     </style>
 </head>
 <body class="grid-pattern">
@@ -115,7 +123,7 @@
             </div>
             <div class="flex items-center gap-4">
                 <a href="#" class="hidden md:block text-[13px] text-gray-400 hover:text-white">Sign in</a>
-                <a href="#companies" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</a>
+                <button onclick="openModal()" class="accent-gradient btn-shine text-white text-[13px] font-medium px-5 py-2 rounded-full">Get Started</button>
             </div>
         </nav>
     </header>
@@ -133,7 +141,7 @@
                 Enterprise-grade annotation for images, video, audio, and text — powered by a global network of expert human annotators.
             </p>
             <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="#companies" class="accent-gradient btn-shine text-white font-medium px-8 py-3.5 rounded-full text-sm w-full sm:w-auto">Get Data Labeled →</a>
+                <button onclick="openModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-3.5 rounded-full text-sm w-full sm:w-auto">Get Data Labeled →</button>
                 <a href="#annotators" class="group text-gray-400 hover:text-white text-sm px-8 py-3.5 rounded-full border border-gray-800 transition-all flex items-center gap-2">Earn as Annotator</a>
             </div>
 
@@ -206,62 +214,6 @@
     </section>
 
     <section id="companies" class="py-24 border-t border-gray-800">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <p class="text-purple-400 text-[13px] font-medium tracking-widest uppercase mb-3">For AI Companies</p>
-            <h2 class="text-4xl font-bold text-gradient mb-16">Data labeled in 3 steps</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div>
-                    <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold text-sm mx-auto mb-6">01</div>
-                    <h3 class="font-bold text-white mb-2">Upload your data</h3>
-                    <p class="text-gray-500 text-sm">Connect your S3 bucket or GCP. We support all major data formats.</p>
-                </div>
-                <div>
-                    <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold text-sm mx-auto mb-6">02</div>
-                    <h3 class="font-bold text-white mb-2">We assign experts</h3>
-                    <p class="text-gray-500 text-sm">Our platform matches tasks to vetted annotators with domain expertise.</p>
-                </div>
-                <div>
-                    <div class="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 flex items-center justify-center text-purple-300 font-bold text-sm mx-auto mb-6">03</div>
-                    <h3 class="font-bold text-white mb-2">Receive labeled data</h3>
-                    <p class="text-gray-500 text-sm">Download production-ready datasets with quality reports and scores.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-24 border-t border-gray-800 bg-[#0D0D1F]/40">
-        <div class="max-w-5xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center mb-16 text-gradient">Trusted by teams and workers</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="card-glow rounded-2xl p-7">
-                    <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-400/10 px-2 py-1 rounded">AI Company</span>
-                    <p class="text-gray-400 text-sm italic mt-6 mb-8">"Adatacore cut our data labeling pipeline from 3 weeks to 4 days. The quality is genuinely enterprise-grade."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs text-purple-400 font-bold">DK</div>
-                        <div><p class="text-xs font-bold">David Kim</p><p class="text-[10px] text-gray-600">Head of ML, Autonomous Systems Co.</p></div>
-                    </div>
-                </div>
-                <div class="card-glow rounded-2xl p-7">
-                    <span class="text-[10px] uppercase font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded">Annotator</span>
-                    <p class="text-gray-400 text-sm italic mt-6 mb-8">"I've been annotating on Adatacore for 8 months. The tasks are interesting and the pay is fair."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs text-green-400 font-bold">AD</div>
-                        <div><p class="text-xs font-bold">Amara Diallo</p><p class="text-[10px] text-gray-600">Senior Annotator, Level 5</p></div>
-                    </div>
-                </div>
-                <div class="card-glow rounded-2xl p-7">
-                    <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-400/10 px-2 py-1 rounded">AI Company</span>
-                    <p class="text-gray-400 text-sm italic mt-6 mb-8">"We needed content moderation at scale. Adatacore's accuracy rates are the best we've seen."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs text-purple-400 font-bold">PM</div>
-                        <div><p class="text-xs font-bold">Priya Mehta</p><p class="text-[10px] text-gray-600">VP Trust & Safety, SocialPlatform Inc.</p></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="annotators" class="py-24 border-t border-gray-800 relative">
         <div class="max-w-5xl mx-auto px-6 relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow" style="background:rgba(26, 26, 46, 0.8)">
@@ -272,9 +224,9 @@
                     <p class="text-gray-400 text-sm leading-relaxed mb-8 flex-1">
                         Scale your training data pipeline with enterprise-grade quality. 500 free annotations to get started — no credit card.
                     </p>
-                    <a href="#" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm text-center">
+                    <button onclick="openModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm text-center">
                         Get Data Labeled →
-                    </a>
+                    </button>
                 </div>
 
                 <div class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow" style="background:rgba(26, 26, 46, 0.8)">
@@ -285,7 +237,7 @@
                     <p class="text-gray-400 text-sm leading-relaxed mb-8 flex-1">
                         Join our global workforce and earn money completing annotation tasks from home. Weekly payouts, no experience required.
                     </p>
-                    <a href="#" class="text-white font-medium px-8 py-4 rounded-full text-sm text-center border border-purple-500/30 hover:bg-purple-500/10 transition-all">
+                    <a href="#annotators" class="text-white font-medium px-8 py-4 rounded-full text-sm text-center border border-purple-500/30 hover:bg-purple-500/10 transition-all">
                         Start Earning Today →
                     </a>
                 </div>
@@ -294,43 +246,70 @@
     </section>
 
     <footer class="py-20 border-t border-gray-800 bg-[#0D0D1F]/80">
-        <div class="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
-            <div class="col-span-2 md:col-span-1">
-                <a href="#" class="font-bold text-lg flex items-center gap-2">
-                    <svg viewBox="0 0 64 64" class="w-6 h-6"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
-                    Adatacore
-                </a>
-                <p class="text-gray-600 text-xs mt-4 leading-relaxed">Enterprise AI data annotation & labeling platform.</p>
-            </div>
-            <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-6 text-gray-300">Platform</h4>
-                <ul class="text-xs text-gray-500 space-y-3">
-                    <li><a href="#" class="hover:text-white">For Companies</a></li>
-                    <li><a href="#" class="hover:text-white">For Annotators</a></li>
-                    <li><a href="#" class="hover:text-white">Task Types</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-6 text-gray-300">Company</h4>
-                <ul class="text-xs text-gray-500 space-y-3">
-                    <li><a href="#" class="hover:text-white">About Us</a></li>
-                    <li><a href="#" class="hover:text-white">Careers</a></li>
-                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
-                </ul>
-            </div>
-            <div class="text-right">
-                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-6 text-gray-300">Social</h4>
-                <div class="flex justify-end gap-4 text-gray-500 italic text-[11px]">
-                    <a href="#" class="hover:text-white transition-colors">Twitter</a>
-                    <a href="#" class="hover:text-white transition-colors">LinkedIn</a>
-                </div>
-            </div>
-        </div>
-        <div class="max-w-5xl mx-auto px-6 mt-16 pt-8 border-t border-gray-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-gray-600">
-            <p>© 2026 Adatacore, Inc. All rights reserved.</p>
-            <p>Built for the future of AI.</p>
+        <div class="max-w-5xl mx-auto px-6 text-center text-[10px] text-gray-600">
+            <p>© 2026 Adatacore, Inc. All rights reserved. Built for the future of AI.</p>
         </div>
     </footer>
 
+    <div id="contactModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="glass max-w-lg w-full rounded-[32px] p-8 sm:p-10 relative overflow-hidden border border-purple-500/30">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gradient mb-2">Let's label your data</h2>
+                <p class="text-gray-400 text-sm">Tell us about your project requirements.</p>
+            </div>
+            <form id="inquiryForm" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1.5 ml-1">Full Name</label>
+                        <input type="text" required class="w-full bg-white/5 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1.5 ml-1">Company Name</label>
+                        <input type="text" required class="w-full bg-white/5 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all" placeholder="AI Solutions Inc.">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1.5 ml-1">Work Email</label>
+                    <input type="email" required class="w-full bg-white/5 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all" placeholder="john@company.com">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1.5 ml-1">Project Idea</label>
+                    <textarea required rows="4" class="w-full bg-white/5 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-purple-500 outline-none transition-all resize-none" placeholder="Describe what you need..."></textarea>
+                </div>
+                <button type="submit" class="accent-gradient w-full py-4 rounded-xl font-bold text-sm btn-shine mt-2 shadow-lg shadow-purple-500/20">
+                    Send Project Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('contactModal');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        document.getElementById('inquiryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Success! We will contact you soon.');
+            closeModal();
+        });
+    </script>
 </body>
 </html>
