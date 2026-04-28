@@ -113,7 +113,7 @@
             </a>
             <div class="hidden md:flex items-center gap-7 text-[13px] text-gray-400 font-medium">
                 <button onclick="openInfoModal()" class="hover:text-white transition-colors">For Companies</button>
-                <a href="#annotators" class="hover:text-white transition-colors">For Annotators</a>
+              <button onclick="openAnnotatorInfoModal()" class="hover:text-white transition-colors">For Annotators</button>
                 <a href="#tasks" class="hover:text-white transition-colors">Task Types</a>
             </div>
             <div class="flex items-center gap-4">
@@ -245,7 +245,9 @@
                 <button onclick="openInfoModal()" class="accent-gradient btn-shine text-white font-medium px-8 py-4 rounded-full text-sm">Learn More →</button>
             </div>
             <div id="annotators" class="rounded-3xl border border-gray-800 p-10 flex flex-col card-glow">
-                <h3 class="text-2xl font-bold mb-4">For Annotators</h3>
+                <button onclick="openAnnotatorInfoModal()" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all w-full">
+    Join as Annotator →
+</button>
                 <p class="text-gray-400 text-sm mb-8">Join our workforce and start earning today.</p>
                 <a href="#" class="text-white text-center font-medium px-8 py-4 rounded-full text-sm border border-purple-500/30 hover:bg-purple-500/10 transition-all">Join Now</a>
             </div>
@@ -255,7 +257,43 @@
     <footer class="py-12 border-t border-gray-800 text-center text-[10px] text-gray-600">
         <p>© 2026 Adatacore, Inc. All rights reserved.</p>
     </footer>
+<div id="annotatorInfoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
+    <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30">
+        <button onclick="closeAnnotatorInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        <h2 class="text-3xl font-bold text-gradient mb-6 text-center">Why work with Adatacore?</h2>
+        <div class="space-y-6 text-sm text-gray-300">
+            <p>Join a global community of experts shaping the future of AI. We offer flexible hours and fair pay.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Weekly Payouts</p><p class="text-[11px]">Reliable payments every week.</p></div>
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/10"><p class="text-green-400 font-bold mb-1">Global Impact</p><p class="text-[11px]">Build leading AI models.</p></div>
+            </div>
+            <button onclick="switchToAnnotatorForm()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-10 py-4 rounded-2xl w-full mt-4 transition-all">Wanna join? Apply Now →</button>
+        </div>
+    </div>
+</div>
 
+<div id="annotatorFormModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-green-500/30">
+        <button onclick="closeAnnotatorFormModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        <h2 class="text-3xl font-bold text-gradient mb-8 text-center">Annotator Application</h2>
+        <form id="annotatorAppForm" class="space-y-5 text-left">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Full Name">
+                <input type="text" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Birth Place">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <input type="email" required class="rounded-2xl px-5 py-4 text-sm" placeholder="Email Address">
+                <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Education Level</option><option value="highschool">High School</option><option value="bachelor">Bachelor's</option><option value="master">Master's</option></select>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <select required class="rounded-2xl px-5 py-4 text-sm outline-none"><option value="" disabled selected>Expertise Area</option><option value="image">Image Annotation</option><option value="trans">Transcription</option><option value="rlhf">RLHF</option></select>
+                <select id="prevExp" required class="rounded-2xl px-5 py-4 text-sm outline-none" onchange="toggleExpField()"><option value="no">Experience? No</option><option value="yes">Experience? Yes</option></select>
+            </div>
+            <div id="expDetail" class="hidden"><input type="text" id="companyInput" class="w-full rounded-2xl px-5 py-4 text-sm" placeholder="Which company?"></div>
+            <button type="submit" class="bg-green-600 hover:bg-green-500 w-full py-5 rounded-2xl font-bold text-sm text-white shadow-xl">Submit Application</button>
+        </form>
+    </div>
+</div>
     <div id="infoModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
         <div class="glass max-w-2xl w-full max-h-[90vh] rounded-[40px] p-8 sm:p-12 relative overflow-y-auto custom-scroll border border-purple-500/40">
             <button onclick="closeInfoModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
