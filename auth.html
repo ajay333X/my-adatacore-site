@@ -19,6 +19,8 @@
         .tab-btn.active { color: white; }
         .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 16px; right: 16px; height: 2px; background: #A78BFA; box-shadow: 0 0 10px #A78BFA; }
         .hidden { display: none; }
+        .social-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; }
+        .social-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); }
     </style>
 </head>
 <body class="grid-pattern">
@@ -34,25 +36,48 @@
             </div>
         </div>
 
-        <div id="signin-form" class="space-y-5">
-            <input type="email" id="login-email" placeholder="Email" class="premium-input">
-            <input type="password" id="login-password" placeholder="Password" class="premium-input">
+        <div id="signin-form" class="space-y-4">
+            <div id="email-signin-group" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
+                <input type="password" id="login-password" placeholder="Password" class="premium-input">
+            </div>
+            
+            <div id="phone-signin-group" class="hidden space-y-4">
+                <input type="tel" id="login-phone" placeholder="+91 1234567890" class="premium-input">
+                <div id="recaptcha-container"></div>
+            </div>
+
             <button id="btn-signin" class="btn-shine">Sign In</button>
+            
+            <button onclick="togglePhoneAuth()" id="phone-toggle-btn" class="text-xs text-gray-500 w-full hover:text-purple-400 transition-colors">Login with Phone Number instead?</button>
         </div>
 
-        <div id="signup-form" class="space-y-5 hidden">
+        <div id="signup-form" class="space-y-4 hidden">
             <input type="text" id="signup-name" placeholder="Full Name" class="premium-input">
             <input type="email" id="signup-email" placeholder="Email Address" class="premium-input">
             <input type="password" id="signup-password" placeholder="Password" class="premium-input">
             <button id="btn-signup" class="btn-shine">Create Account</button>
         </div>
+
+        <div class="relative py-6">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
+            <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 px-2">Or continue with</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button id="btn-google" class="social-btn">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Google</span>
+            </button>
+            <button class="social-btn">
+                <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4"> <span class="text-xs font-semibold">LinkedIn</span>
+            </button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Your Exact Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
             authDomain: "adatacoresite.firebaseapp.com",
@@ -65,31 +90,55 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
-        // Session Check
         onAuthStateChanged(auth, (user) => { if (user) window.location.href = "dashboard.html"; });
 
-        // Login
+        // Email Sign In
         document.getElementById('btn-signin').onclick = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
+            if(!email || !pass) { alert("Please fill details"); return; }
             try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (err) { alert("Error: " + err.message); }
+            catch (err) { alert(err.message); }
         };
 
-        // Signup
+        // Google Sign In (Logic Added)
+        document.getElementById('btn-google').onclick = async () => {
+            try { await signInWithPopup(auth, googleProvider); } 
+            catch (err) { alert(err.message); }
+        };
+
+        // Signup Logic
         document.getElementById('btn-signup').onclick = async () => {
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
             try { await createUserWithEmailAndPassword(auth, email, pass); } 
-            catch (err) { alert("Error: " + err.message); }
+            catch (err) { alert(err.message); }
         };
 
+        // UI Helpers
         window.switchTab = function(type) {
             document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
             document.getElementById('tab-signin').classList.toggle('active', type === 'signin');
             document.getElementById('tab-signup').classList.toggle('active', type === 'signup');
+        }
+
+        window.togglePhoneAuth = function() {
+            const emailGrp = document.getElementById('email-signin-group');
+            const phoneGrp = document.getElementById('phone-signin-group');
+            const btn = document.getElementById('phone-toggle-btn');
+            
+            if(phoneGrp.classList.contains('hidden')) {
+                phoneGrp.classList.remove('hidden');
+                emailGrp.classList.add('hidden');
+                btn.innerText = "Login with Email instead?";
+            } else {
+                phoneGrp.classList.add('hidden');
+                emailGrp.classList.remove('hidden');
+                btn.innerText = "Login with Phone Number instead?";
+            }
         }
     </script>
 </body>
