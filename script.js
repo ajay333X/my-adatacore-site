@@ -82,35 +82,57 @@ if (canvas) {
     window.addEventListener('resize', initCanvas);
 }
 
-// --- 7. ULTRA-SMOOTH CUSTOM CURSOR ---
+// --- 7. MAGNETIC CUSTOM CURSOR ---
 const cursorDot = document.getElementById('cursor-dot');
 const cursorOutline = document.getElementById('cursor-outline');
+let mouseX = 0, mouseY = 0;
+let outlineX = 0, outlineY = 0;
+let isMagnetic = false;
 
-if (cursorDot && cursorOutline) {
-    let mouseX = 0, mouseY = 0;
-    let outlineX = 0, outlineY = 0;
+window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    // डॉट हमेशा माउस के साथ रहेगा
+    cursorDot.style.left = `${mouseX}px`;
+    cursorDot.style.top = `${mouseY}px`;
+});
 
-    window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        cursorDot.style.left = `${mouseX}px`;
-        cursorDot.style.top = `${mouseY}px`;
-    });
-
-    function animateCursor() {
+function animateCursor() {
+    if (!isMagnetic) {
+        // नॉर्मल स्मूथ एनीमेशन
         outlineX += (mouseX - outlineX) * 0.15;
         outlineY += (mouseY - outlineY) * 0.15;
         cursorOutline.style.left = `${outlineX}px`;
         cursorOutline.style.top = `${outlineY}px`;
-        requestAnimationFrame(animateCursor);
+        cursorOutline.style.width = `35px`;
+        cursorOutline.style.height = `35px`;
+        cursorOutline.style.borderRadius = `50%`;
     }
-    animateCursor();
-
-    document.querySelectorAll('button, a, .card-glow').forEach(el => {
-        el.addEventListener('mouseenter', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)');
-        el.addEventListener('mouseleave', () => cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)');
-    });
+    requestAnimationFrame(animateCursor);
 }
+animateCursor();
+
+// Magnetic Effect on Buttons/Links
+document.querySelectorAll('button, a, .card-glow').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+        isMagnetic = true;
+        const rect = el.getBoundingClientRect();
+        
+        // आउटलाइन को बटन के साइज और पोजीशन पर चिपकाना
+        cursorOutline.style.left = `${rect.left + rect.width / 2}px`;
+        cursorOutline.style.top = `${rect.top + rect.height / 2}px`;
+        cursorOutline.style.width = `${rect.width + 10}px`;
+        cursorOutline.style.height = `${rect.height + 10}px`;
+        cursorOutline.style.borderRadius = window.getComputedStyle(el).borderRadius;
+        cursorOutline.style.backgroundColor = "rgba(167, 139, 250, 0.1)";
+    });
+
+    el.addEventListener('mouseleave', () => {
+        isMagnetic = false;
+        cursorOutline.style.backgroundColor = "transparent";
+    });
+});
 
 // --- 8. TYPEWRITER EFFECT ---
 const textElement = document.getElementById('typewriter');
