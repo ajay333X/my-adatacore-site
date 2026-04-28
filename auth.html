@@ -41,15 +41,7 @@
                 <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
                 <input type="password" id="login-password" placeholder="Password" class="premium-input">
             </div>
-            
-            <div id="phone-signin-group" class="hidden space-y-4">
-                <input type="tel" id="login-phone" placeholder="+91 1234567890" class="premium-input">
-                <div id="recaptcha-container"></div>
-            </div>
-
             <button id="btn-signin" class="btn-shine">Sign In</button>
-            
-            <button onclick="togglePhoneAuth()" id="phone-toggle-btn" class="text-xs text-gray-500 w-full hover:text-purple-400 transition-colors">Login with Phone Number instead?</button>
         </div>
 
         <div id="signup-form" class="space-y-4 hidden">
@@ -64,12 +56,9 @@
             <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 px-2">Or continue with</div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4">
             <button id="btn-google" class="social-btn">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Google</span>
-            </button>
-            <button class="social-btn">
-                <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-4 h-4"> <span class="text-xs font-semibold">LinkedIn</span>
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Sign in with Google</span>
             </button>
         </div>
     </div>
@@ -77,22 +66,43 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // अपडेटेड कॉन्फिग (New Project)
         const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
-            measurementId: "G-PTS16DVVYE"
+            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
+            authDomain: "adatacore-f.firebaseapp.com",
+            projectId: "adatacore-f",
+            storageBucket: "adatacore-f.firebasestorage.app",
+            messagingSenderId: "806498602099",
+            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
+            measurementId: "G-740M8K5M0J"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
         onAuthStateChanged(auth, (user) => { if (user) window.location.href = "dashboard.html"; });
+
+        // Helper: Create User Document (New Project Logic)
+        async function createUserDoc(user, fullName) {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            
+            if (!snap.exists()) {
+                const uniqueID = "AD-" + Math.random().toString(36).substr(2, 4).toUpperCase() + "-" + Math.random().toString(36).substr(2, 4).toUpperCase();
+                await setDoc(userRef, {
+                    fullName: fullName || user.displayName || "Adatacore User",
+                    email: user.email,
+                    uniqueID: uniqueID,
+                    balance: 0.00,
+                    tasksCompleted: 0,
+                    createdAt: new Date()
+                });
+            }
+        }
 
         // Email Sign In
         document.getElementById('btn-signin').onclick = async () => {
@@ -103,18 +113,26 @@
             catch (err) { alert(err.message); }
         };
 
-        // Google Sign In (Logic Added)
+        // Google Sign In
         document.getElementById('btn-google').onclick = async () => {
-            try { await signInWithPopup(auth, googleProvider); } 
-            catch (err) { alert(err.message); }
+            try { 
+                const result = await signInWithPopup(auth, googleProvider);
+                await createUserDoc(result.user);
+            } catch (err) { alert(err.message); }
         };
 
-        // Signup Logic
+        // Signup Logic (With Firestore Entry)
         document.getElementById('btn-signup').onclick = async () => {
+            const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
-            try { await createUserWithEmailAndPassword(auth, email, pass); } 
-            catch (err) { alert(err.message); }
+            
+            if(!name || !email || !pass) { alert("Please fill all fields"); return; }
+
+            try { 
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await createUserDoc(cred.user, name);
+            } catch (err) { alert(err.message); }
         };
 
         // UI Helpers
@@ -123,22 +141,6 @@
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
             document.getElementById('tab-signin').classList.toggle('active', type === 'signin');
             document.getElementById('tab-signup').classList.toggle('active', type === 'signup');
-        }
-
-        window.togglePhoneAuth = function() {
-            const emailGrp = document.getElementById('email-signin-group');
-            const phoneGrp = document.getElementById('phone-signin-group');
-            const btn = document.getElementById('phone-toggle-btn');
-            
-            if(phoneGrp.classList.contains('hidden')) {
-                phoneGrp.classList.remove('hidden');
-                emailGrp.classList.add('hidden');
-                btn.innerText = "Login with Email instead?";
-            } else {
-                phoneGrp.classList.add('hidden');
-                emailGrp.classList.remove('hidden');
-                btn.innerText = "Login with Phone Number instead?";
-            }
         }
     </script>
 </body>
