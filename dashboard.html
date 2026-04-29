@@ -19,6 +19,14 @@
         .btn-haptic:hover { transform: scale(1.05); filter: brightness(1.1); }
         .btn-haptic:active { transform: scale(0.95); }
 
+        /* Announcement Animation */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
+        .banner-glow { box-shadow: 0 0 20px rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.15); }
+
         @keyframes reveal {
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -46,7 +54,7 @@
 
         <nav class="flex-1 px-4 space-y-2">
             <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all hover:border-purple-500/30">
-                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white">U</div>
+                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">U</div>
                 <span class="nav-text text-xs font-semibold truncate text-white" id="user-display-name">Loading...</span>
             </a>
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
@@ -61,6 +69,18 @@
     </aside>
 
     <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
+        
+        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden banner-glow reveal-item" style="animation-delay: 0.05s">
+            <div class="flex items-center">
+                <div class="bg-purple-600 px-4 py-2 text-[9px] font-black z-10 shadow-xl tracking-tighter">ANNOUNCEMENT</div>
+                <div class="flex-1 overflow-hidden py-2 relative">
+                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">
+                        Updating system core...
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <header class="flex justify-between items-end mb-12 reveal-item" style="animation-delay: 0.1s">
             <div>
                 <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello</h1>
@@ -157,6 +177,19 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // 📢 LISTEN FOR GLOBAL ANNOUNCEMENTS
+                onSnapshot(doc(db, "settings", "announcements"), (snap) => {
+                    const banner = document.getElementById('announcement-banner');
+                    const text = document.getElementById('announcement-text');
+                    if (snap.exists() && snap.data().text) {
+                        banner.classList.remove('hidden');
+                        text.innerText = snap.data().text;
+                    } else {
+                        banner.classList.add('hidden');
+                    }
+                });
+
+                // PROFILE & WORK DATA
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
@@ -200,15 +233,15 @@
                     container.innerHTML += `
                         <div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s">
                             <div class="flex justify-between items-start mb-8">
-                                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🧩</div>
+                                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🎙️</div>
                                 <div class="text-right">
-                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Rate</p>
+                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Payout Rate</p>
                                     <p class="text-green-400 font-bold text-lg">$${(t.price || 0).toFixed(2)}</p>
                                 </div>
                             </div>
                             <h4 class="font-bold text-xl mb-3">${t.title}</h4>
                             <p class="text-gray-500 text-xs mb-8 line-clamp-2 leading-relaxed">${t.description || 'System contribution task.'}</p>
-                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl">START ➔</a>
+                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl">START PROJECT ➔</a>
                         </div>`;
                     delay += 0.1;
                 });
@@ -220,7 +253,7 @@
             onSnapshot(qSub, (snap) => {
                 const body = document.getElementById('history-body');
                 if(snap.empty) {
-                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs tracking-widest">No previous submissions found</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs tracking-widest uppercase">Initializing History Hub...</td></tr>`;
                     return;
                 }
                 body.innerHTML = "";
@@ -233,12 +266,12 @@
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="p-6">
                                 <div class="text-sm font-bold text-white">${s.projectTitle || 'AI Task'}</div>
-                                <div class="text-[9px] text-gray-600 font-mono">REF: ${d.id.slice(0,8)}</div>
+                                <div class="text-[9px] text-gray-600 font-mono tracking-tighter">REF: ${d.id.slice(0,10)}</div>
                             </td>
                             <td class="p-6 text-sm font-bold text-white">$${(s.earnedAmount || 0).toFixed(4)}</td>
-                            <td class="p-6 text-xs text-gray-500">${s.timestamp?.toDate().toLocaleString() || 'Recent'}</td>
+                            <td class="p-6 text-[10px] text-gray-500 uppercase">${s.timestamp?.toDate().toLocaleString() || 'Recent'}</td>
                             <td class="p-6 text-center">
-                                <span class="px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border ${color}">${status}</span>
+                                <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${color}">${status}</span>
                             </td>
                         </tr>`;
                 });
