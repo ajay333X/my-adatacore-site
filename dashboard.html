@@ -15,22 +15,16 @@
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .glass-card:hover { border-color: rgba(167, 139, 250, 0.4); transform: scale(1.02) translateY(-2px); background: rgba(167, 139, 250, 0.04); }
         
-        .btn-haptic { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .btn-haptic:hover { transform: scale(1.05); filter: brightness(1.1); }
-        .btn-haptic:active { transform: scale(0.95); }
+        /* 🚨 Red Alert Light */
+        .red-pulse { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; box-shadow: 0 0 10px #ff4444; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } }
 
-        /* Announcement Animation */
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
+        /* Marquee */
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
-        .banner-glow { box-shadow: 0 0 20px rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.15); }
 
-        @keyframes reveal {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        /* Apple Entrance Animation */
+        @keyframes reveal { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .reveal-item { opacity: 0; animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
@@ -46,38 +40,42 @@
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
         <div class="p-6 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white tracking-tight">
-                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">A</div>
+                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-black">A</div>
                 <span class="nav-text">Adatacore</span>
             </div>
             <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-colors text-white">✨</button>
         </div>
 
         <nav class="flex-1 px-4 space-y-2">
-            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all hover:border-purple-500/30">
+            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all">
                 <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">U</div>
                 <span class="nav-text text-xs font-semibold truncate text-white" id="user-display-name">Loading...</span>
             </a>
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
+            
+            <div id="sidebar-alert" class="hidden flex items-center gap-4 px-4 py-3 text-red-400 bg-red-400/5 rounded-xl border border-red-400/10 mt-2">
+                <div class="red-pulse"></div> <span class="nav-text text-[10px] font-bold uppercase tracking-widest">Active News</span>
+            </div>
+
             <div id="admin-nav-container"></div>
         </nav>
 
-        <button id="btn-logout" class="m-4 flex items-center gap-4 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
+        <button id="btn-logout" class="m-4 flex items-center gap-4 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl">
             <span>🚪</span> <span class="nav-text text-white">Logout</span>
         </button>
     </aside>
 
     <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
         
-        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden banner-glow reveal-item" style="animation-delay: 0.05s">
+        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden border-purple-500/20 shadow-2xl reveal-item">
             <div class="flex items-center">
-                <div class="bg-purple-600 px-4 py-2 text-[9px] font-black z-10 shadow-xl tracking-tighter">ANNOUNCEMENT</div>
-                <div class="flex-1 overflow-hidden py-2 relative">
-                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">
-                        Updating system core...
-                    </p>
+                <div class="bg-purple-600 px-4 py-3 text-[9px] font-black z-10 shadow-xl tracking-tighter">ANNOUNCEMENT</div>
+                <div class="flex-1 overflow-hidden py-3">
+                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">Loading updates...</p>
                 </div>
+                <button onclick="acknowledgeMsg()" class="bg-white/10 hover:bg-white/20 px-4 py-3 text-[9px] font-bold border-l border-white/5 transition-all">I UNDERSTAND ➔</button>
             </div>
         </div>
 
@@ -96,63 +94,52 @@
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.2s">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
                 <h3 class="text-4xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
-                <p class="text-[10px] text-green-400 mt-2 font-semibold">↑ Verified in Real-time</p>
             </div>
-
             <div class="lg:col-span-2 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.3s">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Performance Stream</p>
-                    <div class="flex gap-2"><span class="w-2 h-2 bg-purple-500 rounded-full"></span><span class="w-2 h-2 bg-gray-700 rounded-full"></span></div>
-                </div>
                 <canvas id="earningChart" height="85"></canvas>
             </div>
-
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20 reveal-item" style="animation-delay: 0.4s">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Quality Score</p>
-                <div class="flex items-center justify-between">
-                    <h3 class="text-4xl font-bold text-purple-400">98%</h3>
-                    <div class="text-right">
-                        <div class="text-[10px] text-white font-bold uppercase">Excellent</div>
-                        <div class="text-[8px] text-gray-500 uppercase tracking-tighter font-bold">Tier 1 Elite</div>
-                    </div>
-                </div>
-                <div class="w-full bg-white/5 h-1.5 mt-6 rounded-full overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-600 to-indigo-400 h-full w-[98%] shadow-[0_0_10px_rgba(167,139,250,0.4)]"></div>
-                </div>
+                <h3 class="text-4xl font-bold text-purple-400">98%</h3>
             </div>
         </div>
 
         <h2 class="text-xl font-bold mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.5s">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span>
-            Assigned Projects
+            <span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects
         </h2>
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"></div>
 
         <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.7s">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span>
-            Recent Submissions
+            <span class="w-8 h-[1px] bg-purple-500/50"></span> Recent Submissions
         </h2>
         <div class="glass-card rounded-[32px] overflow-hidden reveal-item custom-scroll" style="animation-delay: 0.8s">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="bg-white/5 border-b border-white/5">
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Project Name</th>
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Payout</th>
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Timestamp</th>
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500 text-center">Status</th>
+                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Project</th>
+                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Payout</th>
+                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Date</th>
+                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody id="history-body" class="divide-y divide-white/5"></tbody>
                 </table>
             </div>
         </div>
+
+        <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.9s">
+            <span class="w-8 h-[1px] bg-purple-500/50"></span> Broadcast Log
+        </h2>
+        <div class="glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 1s">
+            <div id="broadcast-list" class="space-y-4 max-h-60 overflow-y-auto custom-scroll pr-2"></div>
+        </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -175,42 +162,48 @@
             main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '260px';
         }
 
+        window.acknowledgeMsg = () => {
+            const currentMsg = document.getElementById('announcement-text').innerText;
+            localStorage.setItem('lastAckMsg', currentMsg);
+            document.getElementById('announcement-banner').classList.add('hidden');
+            document.getElementById('sidebar-alert').classList.remove('hidden');
+        };
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 📢 LISTEN FOR GLOBAL ANNOUNCEMENTS
+                // 📢 Announcement Logic
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
-                    const banner = document.getElementById('announcement-banner');
-                    const text = document.getElementById('announcement-text');
-                    if (snap.exists() && snap.data().text) {
-                        banner.classList.remove('hidden');
-                        text.innerText = snap.data().text;
-                    } else {
-                        banner.classList.add('hidden');
+                    if (snap.exists()) {
+                        const msg = snap.data().text;
+                        document.getElementById('announcement-text').innerText = msg;
+                        if (localStorage.getItem('lastAckMsg') === msg) {
+                            document.getElementById('announcement-banner').classList.add('hidden');
+                            document.getElementById('sidebar-alert').classList.remove('hidden');
+                        } else {
+                            document.getElementById('announcement-banner').classList.remove('hidden');
+                            document.getElementById('sidebar-alert').classList.add('hidden');
+                        }
                     }
                 });
 
-                // PROFILE & WORK DATA
+                // User Sync
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
-                        const data = snap.data();
-                        const name = data.fullName || "User";
-                        document.getElementById('user-display-name').innerText = name;
-                        document.getElementById('user-initials').innerText = name.charAt(0).toUpperCase();
-                        document.getElementById('display-uid').innerText = "UID: " + (data.uniqueID || "N/A");
-                        document.getElementById('stat-balance').innerText = (data.balance || 0).toFixed(2);
-                        
-                        const hrs = new Date().getHours();
-                        let msg = hrs < 12 ? "Good Morning" : hrs < 17 ? "Good Afternoon" : "Good Evening";
-                        document.getElementById('greeting').innerText = `${msg}, ${name.split(' ')[0]}`;
+                        const d = snap.data();
+                        document.getElementById('user-display-name').innerText = d.fullName || "User";
+                        document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
+                        document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
+                        document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
+                        const h = new Date().getHours();
+                        let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+                        document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0]}`;
 
-                        if (data.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            document.getElementById('admin-nav-container').innerHTML = `
-                                <a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">
-                                    <span>🛡️</span> <span class="nav-text">Admin Space</span>
-                                </a>`;
+                        if (d.role === 'admin' || user.email === "as4556676@gmail.com") {
+                            document.getElementById('admin-nav-container').innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text">Admin Space</span></a>`;
                         }
-                        loadMyTasks(data.uniqueID);
-                        loadHistory(data.uniqueID);
+                        loadMyTasks(d.uniqueID);
+                        loadHistory(d.uniqueID);
+                        loadBroadcasts();
                         renderChart();
                     }
                 });
@@ -218,85 +211,50 @@
         });
 
         function loadMyTasks(uid) {
-            if(!uid) return;
-            const qTasks = query(collection(db, "tasks"), where("assignedTo", "==", uid));
-            onSnapshot(qTasks, (snap) => {
-                const container = document.getElementById('task-container');
-                if (snap.empty) {
-                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500">No active assignments for ID: ${uid}</div>`;
-                    return;
-                }
-                container.innerHTML = "";
+            const q = query(collection(db, "tasks"), where("assignedTo", "==", uid));
+            onSnapshot(q, (snap) => {
+                const c = document.getElementById('task-container');
+                c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card text-gray-500">No active assignments.</div>` : "";
                 let delay = 0.6;
-                snap.forEach((d) => {
-                    const t = d.data();
-                    container.innerHTML += `
-                        <div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s">
-                            <div class="flex justify-between items-start mb-8">
-                                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🎙️</div>
-                                <div class="text-right">
-                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Payout Rate</p>
-                                    <p class="text-green-400 font-bold text-lg">$${(t.price || 0).toFixed(2)}</p>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-xl mb-3">${t.title}</h4>
-                            <p class="text-gray-500 text-xs mb-8 line-clamp-2 leading-relaxed">${t.description || 'System contribution task.'}</p>
-                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl">START PROJECT ➔</a>
-                        </div>`;
+                snap.forEach(doc => {
+                    const t = doc.data();
+                    c.innerHTML += `<div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🎙️</div><div class="text-right text-green-400 font-bold">$${t.price.toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold">START ➔</a></div>`;
                     delay += 0.1;
                 });
             });
         }
 
-        function loadHistory(uniqueID) {
-            const qSub = query(collection(db, "submissions"), where("workerID", "==", uniqueID));
-            onSnapshot(qSub, (snap) => {
-                const body = document.getElementById('history-body');
-                if(snap.empty) {
-                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs tracking-widest uppercase">Initializing History Hub...</td></tr>`;
-                    return;
-                }
-                body.innerHTML = "";
-                const sorted = snap.docs.sort((a,b) => b.data().timestamp - a.data().timestamp);
-                sorted.forEach(d => {
-                    const s = d.data();
+        function loadHistory(uid) {
+            const q = query(collection(db, "submissions"), where("workerID", "==", uid));
+            onSnapshot(q, snap => {
+                const b = document.getElementById('history-body');
+                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No records.</td></tr>` : "";
+                const sorted = snap.docs.sort((x,y) => y.data().timestamp - x.data().timestamp);
+                sorted.forEach(doc => {
+                    const s = doc.data();
                     const status = s.status || 'Pending';
-                    const color = status === 'Approved' ? 'text-green-400 border-green-500/20 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 border-red-500/20 bg-red-500/10' : 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10';
-                    body.innerHTML += `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="p-6">
-                                <div class="text-sm font-bold text-white">${s.projectTitle || 'AI Task'}</div>
-                                <div class="text-[9px] text-gray-600 font-mono tracking-tighter">REF: ${d.id.slice(0,10)}</div>
-                            </td>
-                            <td class="p-6 text-sm font-bold text-white">$${(s.earnedAmount || 0).toFixed(4)}</td>
-                            <td class="p-6 text-[10px] text-gray-500 uppercase">${s.timestamp?.toDate().toLocaleString() || 'Recent'}</td>
-                            <td class="p-6 text-center">
-                                <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${color}">${status}</span>
-                            </td>
-                        </tr>`;
+                    const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
+                    b.innerHTML += `<tr class="hover:bg-white/[0.02] transition-colors"><td class="p-6 text-sm font-bold">${s.projectTitle}</td><td class="p-6 text-sm">$${s.earnedAmount.toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500">${s.timestamp?.toDate().toLocaleDateString()}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-bold border border-white/5 ${color}">${status}</span></td></tr>`;
+                });
+            });
+        }
+
+        function loadBroadcasts() {
+            const q = query(collection(db, "announcements"), orderBy("timestamp", "desc"));
+            onSnapshot(q, snap => {
+                const l = document.getElementById('broadcast-list');
+                l.innerHTML = snap.empty ? `<p class="text-gray-600 text-xs">No archives.</p>` : "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    l.innerHTML += `<div class="p-4 bg-white/5 rounded-2xl border border-white/5"><p class="text-xs text-purple-200">${d.text}</p><p class="text-[8px] text-gray-600 mt-2 uppercase font-bold">${d.timestamp?.toDate().toLocaleString()}</p></div>`;
                 });
             });
         }
 
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-                    datasets: [{
-                        data: [5, 12, 8, 15, 10, 20, 18],
-                        borderColor: '#A78BFA',
-                        borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true,
-                        backgroundColor: 'rgba(167, 139, 250, 0.05)'
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false }, ticks: { color: '#444', font: { size: 9 } } }, y: { display: false } }
-                }
-            });
+            new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
         }
-
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
 </body>
