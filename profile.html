@@ -143,7 +143,7 @@
                 <h3 class="text-xl font-bold mb-8 text-red-500 border-b border-white/5 pb-4">Security</h3>
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium">Reset Password via Email</p>
-                    <button onclick="window.resetPass()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all text-white">Send Link</button>
+                    <button id="resetBtn" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all text-white">Send Link</button>
                 </div>
             </div>
         </main>
@@ -154,95 +154,84 @@
                 <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all text-white">Save Changes</button>
             </div>
         </footer>
-
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // ✅ Updated New Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
-            authDomain: "adatacore-f.firebaseapp.com",
-            projectId: "adatacore-f",
-            storageBucket: "adatacore-f.firebasestorage.app",
-            messagingSenderId: "806498602099",
-            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
-            measurementId: "G-740M8K5M0J"
-        };
+        // ✅ आपकी Supabase Keys (अब एकदम सही हैं)
+const supabaseUrl = 'https://llmhyezgcnbognmmsnzq.supabase.co'; 
+const supabaseKey = 'sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // 1. डेटा लोड करने का फंक्शन
+        async function init() {
+            const { data: { user } } = await supabase.auth.getUser();
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                document.getElementById('email').value = user.email;
-                try {
-                    const docSnap = await getDoc(doc(db, "users", user.uid));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.getElementById('fullName').value = data.fullName || "";
-                        document.getElementById('phone').value = data.phone || "";
-                        document.getElementById('dob').value = data.dob || "";
-                        document.getElementById('occupation').value = data.occupation || "";
-                        document.getElementById('education').value = data.education || "Bachelors";
-                    }
-                } catch (err) {
-                    console.error("Error loading document:", err);
-                }
-            } else {
-                // Login check delay to prevent flickering
-                setTimeout(() => {
-                    if (!auth.currentUser) {
-                        window.location.replace("auth.html");
-                    }
-                }, 1000);
+            if (!user) {
+                window.location.replace("auth.html");
+                return;
             }
-        });
 
+            document.getElementById('email').value = user.email;
+
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                document.getElementById('fullName').value = data.full_name || "";
+                document.getElementById('phone').value = data.phone || "";
+                document.getElementById('dob').value = data.dob || "";
+                document.getElementById('occupation').value = data.occupation || "";
+                document.getElementById('education').value = data.education || "Bachelors";
+            }
+        }
+
+        // 2. सेव बटन का फंक्शन
         document.getElementById('saveBtn').onclick = async () => {
-            const user = auth.currentUser;
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             const updateData = {
-                fullName: document.getElementById('fullName').value,
+                full_name: document.getElementById('fullName').value,
                 phone: document.getElementById('phone').value,
                 dob: document.getElementById('dob').value,
                 occupation: document.getElementById('occupation').value,
                 education: document.getElementById('education').value
             };
 
-            try {
-                await setDoc(doc(db, "users", user.uid), updateData, { merge: true });
-                Swal.fire({ 
-                    icon: 'success', 
-                    title: 'Saved!', 
-                    text: 'Profile updated successfully.', 
-                    background: '#1A1A2E', 
-                    color: '#fff', 
-                    confirmButtonColor: '#7C3AED' 
-                });
-            } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+            const { error } = await supabase
+                .from('users')
+                .update(updateData)
+                .eq('id', user.id);
+
+            if (!error) {
+                Swal.fire({ icon: 'success', title: 'Saved!', text: 'Profile updated.', background: '#1A1A2E', color: '#fff' });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: error.message });
             }
         };
 
-        window.resetPass = () => {
-            if (auth.currentUser) {
-                sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
-                    Swal.fire({ 
-                        icon: 'success', 
-                        title: 'Email Sent!', 
-                        text: 'Check your inbox for password reset instructions.', 
-                        background: '#1A1A2E', 
-                        color: '#fff' 
-                    });
+        // 3. पासवर्ड रिसेट फंक्शन (फीचर वापस जोड़ दिया)
+        document.getElementById('resetBtn').onclick = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                    redirectTo: 'https://www.adatacore.com/auth.html',
                 });
+                
+                if (!error) {
+                    Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the reset link.', background: '#1A1A2E', color: '#fff' });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+                }
             }
         };
+
+        init();
     </script>
 </body>
 </html>
