@@ -45,9 +45,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, updateDoc, increment, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // अपडेटेड नया कॉन्फ़िगरेशन (New Project)
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
             authDomain: "adatacore-f.firebaseapp.com",
@@ -61,7 +59,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob;
         const recordBtn = document.getElementById('recordBtn');
@@ -102,35 +99,39 @@
             const payRate = 8.00;
             const earnings = (duration / 3600) * payRate;
             
-            Swal.fire({ title: 'Uploading...', text: 'Saving your work to Adatacore Cloud.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Saving...', text: 'Finalizing your work...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            try {
-                // 1. Upload Audio to Firebase Storage
-                const fileName = `recordings/${user.uid}_${Date.now()}.wav`;
-                const storageRef = ref(storage, fileName);
-                await uploadBytes(storageRef, audioBlob);
-                const downloadURL = await getDownloadURL(storageRef);
+            // ऑडियो फाइल को Base64 टेक्स्ट में बदलना
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+                const base64Audio = reader.result;
 
-                // 2. Save Log to Firestore
-                await addDoc(collection(db, "submissions"), {
-                    workerUID: user.uid,
-                    workerEmail: user.email,
-                    projectTitle: "Ajay Test Demo",
-                    audioUrl: downloadURL,
-                    durationSeconds: duration,
-                    earnedAmount: earnings.toFixed(4),
-                    timestamp: new Date()
-                });
+                try {
+                    // सीधे Firestore में टेक्स्ट की तरह सेव करना
+                    await addDoc(collection(db, "submissions"), {
+                        workerUID: user.uid,
+                        workerEmail: user.email,
+                        projectTitle: "Ajay Test Demo",
+                        audioData: base64Audio, // यहाँ ऑडियो डेटा टेक्स्ट के रूप में है
+                        durationSeconds: duration,
+                        earnedAmount: parseFloat(earnings.toFixed(4)),
+                        timestamp: new Date()
+                    });
 
-                // 3. Update User Balance
-                await updateDoc(doc(db, "users", user.uid), {
-                    balance: increment(earnings)
-                });
+                    // यूज़र का बैलेंस अपडेट करना
+                    await updateDoc(doc(db, "users", user.uid), {
+                        balance: increment(earnings)
+                    });
 
-                Swal.fire({ icon: 'success', title: 'Success!', text: `Earned $${earnings.toFixed(4)}`, background: '#050510', color: '#fff' })
-                .then(() => window.location.href = "dashboard.html");
+                    Swal.fire({ icon: 'success', title: 'Work Submitted!', text: `You earned $${earnings.toFixed(4)}`, background: '#050510', color: '#fff' })
+                    .then(() => window.location.href = "dashboard.html");
 
-            } catch (err) { Swal.fire('Error', err.message, 'error'); }
+                } catch (err) { 
+                    console.error(err);
+                    Swal.fire('Error', 'Submission failed: ' + err.message, 'error'); 
+                }
+            };
         };
 
         document.getElementById('discardBtn').onclick = () => location.reload();
