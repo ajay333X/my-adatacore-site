@@ -16,7 +16,6 @@
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .status-active { color: #10B981; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 99px; }
         .status-blocked { color: #EF4444; background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 99px; }
-        /* Table Styling */
         table { width: 100%; border-spacing: 0 8px; border-collapse: separate; }
         th { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 0 16px; text-align: left; }
         td { background: rgba(255,255,255,0.02); padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -54,7 +53,7 @@
                     <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Select Project to Audit</label>
                     <select id="auditProjectSelect" class="admin-input bg-[#050510]">
                         <option value="">-- Choose Project --</option>
-                        <option value="Ajay Test Demo">Ajay Test Demo</option>
+                        <option value="Ajay demo">Ajay demo</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -95,7 +94,7 @@
                 <div class="space-y-4">
                     <input type="text" id="targetID" class="admin-input" placeholder="Worker UID">
                     <select id="targetPage" class="admin-input bg-[#050510]">
-                        <option value="task_player.html">Ajay Test Demo (Voice)</option>
+                        <option value="task_player.html">Ajay demo</option>
                         <option value="image_labeling.html">Image Labeling</option>
                     </select>
                     <input type="text" id="taskTitle" class="admin-input" placeholder="Project Title">
@@ -141,7 +140,6 @@
             }
         });
 
-        // --- PROJECT VAULT LOGIC ---
         document.getElementById('btn-fetch-vault').onclick = async () => {
             const projectName = document.getElementById('auditProjectSelect').value;
             const vaultResults = document.getElementById('vault-results');
@@ -162,7 +160,7 @@
                 const snap = await getDocs(q);
 
                 if (snap.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-red-400 font-bold">No submissions found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-red-400 font-bold">No submissions found. Make sure names match exactly.</td></tr>`;
                     return;
                 }
 
@@ -194,7 +192,7 @@
             }
         };
 
-        // --- MANAGE CONTRIBUTOR SEARCH ---
+        // --- CONTRIBUTOR SEARCH & MANAGE ---
         document.getElementById('btn-search').onclick = async () => {
             const input = document.getElementById('searchInput').value.trim();
             const resultDiv = document.getElementById('search-result');
