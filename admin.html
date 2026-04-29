@@ -45,14 +45,14 @@
         </div>
     </aside>
 
-    <main class="flex-1 h-screen overflow-y-auto p-12">
+    <main class="flex-1 h-screen overflow-y-auto p-12 text-white">
         
         <!-- 📢 BROADCAST CENTER -->
         <section id="broadcast" class="content-section active">
             <h2 class="text-2xl font-bold mb-8">System Broadcast</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="text" id="announcementInput" class="admin-input mb-4" placeholder="Enter live scrolling message...">
-                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full text-white">PUSH LIVE</button>
+                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full text-white transition-all">PUSH LIVE</button>
             </div>
         </section>
 
@@ -61,7 +61,7 @@
             <h2 class="text-2xl font-bold mb-8">Advanced User Lookup</h2>
             <div class="flex gap-4 mb-10 max-w-2xl">
                 <input type="text" id="workerSearchInput" class="admin-input" placeholder="Search by Email or UID...">
-                <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500">Lookup</button>
+                <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500 transition-all">Lookup</button>
             </div>
 
             <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[600px]">
@@ -82,7 +82,7 @@
                             <div id="lookup-status-badge" class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-500/20 text-green-400">ACTIVE</div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-white">Current Balance</p>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Current Balance</p>
                             <p id="lookup-balance" class="text-4xl font-bold text-green-400">$0.00</p>
                         </div>
                     </div>
@@ -94,10 +94,10 @@
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Name:</span> <span id="lookup-name" class="text-white font-semibold">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Email:</span> <span id="lookup-email" class="text-white">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">ID:</span> <span id="lookup-doc-id" class="text-gray-500 font-mono text-[10px]">---</span></div>
-                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Work ID:</span> <span id="lookup-uid" class="text-purple-400 font-mono font-bold">---</span></div>
+                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Work ID:</span> <span id="lookup-uid" class="text-purple-400 font-mono font-bold uppercase">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Member Since:</span> <span id="lookup-joined" class="text-gray-400">---</span></div>
-                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Active:</span> <span id="lookup-last-active" class="text-yellow-500 font-semibold">Never Online</span></div>
-                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Online:</span> <span id="lookup-last-online" class="text-green-500 font-mono text-[10px]">Offline</span></div>
+                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Active:</span> <span id="lookup-last-active" class="text-yellow-500 font-semibold">---</span></div>
+                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Online:</span> <span id="lookup-last-online" class="text-green-500 font-mono text-[10px]">---</span></div>
                             </div>
                         </div>
 
@@ -111,7 +111,7 @@
             </div>
         </section>
 
-        <!-- 🚀 DEPLOY TASK (RESTORED) -->
+        <!-- 🚀 DEPLOY TASK -->
         <section id="deploy" class="content-section">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div>
@@ -125,7 +125,7 @@
                         </select>
                         <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
                         <textarea id="taskInstructions" class="admin-input h-24" placeholder="Instructions..."></textarea>
-                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase">DEPLOY PROJECT 🚀</button>
+                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase transition-all hover:bg-yellow-500">DEPLOY PROJECT 🚀</button>
                     </div>
                 </div>
                 <div>
@@ -135,16 +135,16 @@
             </div>
         </section>
 
-        <!-- 📦 DATA VAULT (RESTORED) -->
+        <!-- 📦 DATA VAULT -->
         <section id="vault" class="content-section">
             <div class="flex justify-between items-end mb-8">
                 <div><h2 class="text-2xl font-bold mb-2">Data Vault</h2><p class="text-gray-500 text-sm">Export Submissions.</p></div>
-                <button onclick="exportToCSV()" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase text-white">📥 CSV</button>
+                <button onclick="exportToCSV()" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase text-white hover:bg-green-500 transition-all">📥 Export CSV</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <input type="text" id="filterProj" class="admin-input" placeholder="Project Name...">
                 <input type="text" id="filterWorker" class="admin-input" placeholder="Worker Email/ID...">
-                <button id="btn-query-vault" class="bg-blue-600 rounded-xl font-bold text-xs uppercase text-white">Query</button>
+                <button id="btn-query-vault" class="bg-blue-600 rounded-xl font-bold text-xs uppercase text-white hover:bg-blue-500 transition-all">Query</button>
             </div>
             <div class="glass rounded-[32px] overflow-hidden">
                 <table class="w-full">
@@ -154,25 +154,25 @@
             </div>
         </section>
 
-        <!-- 📝 ACTIVITY LOGS (RESTORED) -->
+        <!-- 📝 ACTIVITY LOGS -->
         <section id="logs" class="content-section">
             <h2 class="text-2xl font-bold mb-8">Activity Logs</h2>
             <div class="glass rounded-[32px] overflow-hidden">
-                <table>
+                <table class="w-full">
                     <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Time</th></tr></thead>
                     <tbody id="logs-display-list"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 🔑 AUTHORITY (RESTORED) -->
+        <!-- 🔑 AUTHORITY -->
         <section id="authority" class="content-section">
             <h2 class="text-2xl font-bold mb-8 text-white">Authority Management</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="Worker Email Address...">
                 <div class="flex gap-4">
-                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white">GRANT ADMIN</button>
-                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white">REVOKE ADMIN</button>
+                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white hover:bg-red-500">GRANT ADMIN</button>
+                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10 hover:bg-gray-700">REVOKE ADMIN</button>
                 </div>
             </div>
         </section>
@@ -213,113 +213,183 @@
                 const userSnap = await getDoc(doc(db, "users", user.uid));
                 if (user.email === "as4556676@gmail.com" || (userSnap.exists() && userSnap.data().role === 'admin')) {
                     activeAdminEmail = user.email;
-                    loadTasks();
-                    loadLogs();
+                    startSync();
                 } else { window.location.href = "dashboard.html"; }
             } else { window.location.href = "auth.html"; }
         });
 
+        function startSync() { loadTasks(); loadLogs(); loadVault(); }
+
         async function writeLog(action, target) { await addDoc(collection(db, "admin_logs"), { admin: activeAdminEmail, action, target, timestamp: serverTimestamp() }); }
 
-        // --- LOOKUP ---
+        // --- REAL USER LOOKUP LOGIC ---
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
             const box = document.getElementById('search-results-box');
             if(!val) return;
+
             try {
                 let q = query(collection(db, "users"), where("email", "==", val));
                 let snap = await getDocs(q);
-                if(snap.empty) { q = query(collection(db, "users"), where("uniqueID", "==", val)); snap = await getDocs(q); }
-                if(snap.empty) return Swal.fire('Error', 'Not found', 'error');
-                
+                if(snap.empty) {
+                    q = query(collection(db, "users"), where("uniqueID", "==", val));
+                    snap = await getDocs(q);
+                }
+
+                if(snap.empty) return Swal.fire('Error', 'Worker not found.', 'error');
+
                 const u = snap.docs[0].data();
                 const dId = snap.docs[0].id;
                 box.classList.remove('hidden');
-                
+
+                // Sidebar Update
                 document.getElementById('lookup-side-email').innerText = u.email;
-                document.getElementById('lookup-side-uid').innerText = u.uniqueID || 'N/A';
-                document.getElementById('lookup-balance').innerText = `$${(u.balance || 0).toFixed(2)}`;
+                document.getElementById('lookup-side-uid').innerText = "ID: " + (u.uniqueID || 'N/A');
+
+                // Main Metadata Update
                 document.getElementById('lookup-name').innerText = u.fullName || '---';
                 document.getElementById('lookup-email').innerText = u.email;
                 document.getElementById('lookup-doc-id').innerText = dId;
                 document.getElementById('lookup-uid').innerText = u.uniqueID || '---';
+                document.getElementById('lookup-balance').innerText = `$${(u.balance || 0).toFixed(2)}`;
                 document.getElementById('lookup-joined').innerText = u.createdAt ? u.createdAt.toDate().toLocaleDateString() : 'N/A';
 
+                // Activity Tracking (Real)
                 if(u.lastOnline) {
-                    const date = u.lastOnline.toDate();
-                    const hoursDiff = Math.floor((new Date() - date) / (1000 * 60 * 60));
-                    document.getElementById('lookup-last-active').innerText = `${date.toLocaleString()} (${hoursDiff} hours ago)`;
-                    document.getElementById('lookup-last-online').innerText = date.toLocaleString();
+                    const lastDate = u.lastOnline.toDate();
+                    const hoursDiff = Math.floor((new Date() - lastDate) / (1000 * 60 * 60));
+                    document.getElementById('lookup-last-active').innerText = `${lastDate.toLocaleString()} (${hoursDiff}h ago)`;
+                    document.getElementById('lookup-last-online').innerText = lastDate.toLocaleString();
                 } else {
                     document.getElementById('lookup-last-active').innerText = "Never Online";
                     document.getElementById('lookup-last-online').innerText = "Offline";
                 }
 
+                // Account Status Logic
+                const status = u.accountStatus || 'active';
                 const badge = document.getElementById('lookup-status-badge');
-                badge.innerText = (u.accountStatus || 'active').toUpperCase();
-                badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${u.accountStatus === 'blocked' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
+                badge.innerText = status.toUpperCase();
+                badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${status === 'blocked' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
 
                 document.getElementById('btn-toggle-status').onclick = async () => {
-                    const next = u.accountStatus === 'blocked' ? 'active' : 'blocked';
+                    const next = status === 'blocked' ? 'active' : 'blocked';
                     await updateDoc(doc(db, "users", dId), { accountStatus: next });
-                    await writeLog("Status Change", `${u.email} to ${next}`);
-                    document.getElementById('btn-worker-find').click();
+                    await writeLog("Status Change", `${u.email} -> ${next}`);
+                    document.getElementById('btn-worker-find').click(); // Refresh data
                 };
-            } catch(e) { Swal.fire('Error', e.message, 'error'); }
+
+            } catch(e) { console.error(e); }
         };
 
-        // --- DEPLOY & LOGS ---
+        // --- BROADCAST ---
         document.getElementById('btn-update-announcement').onclick = async () => {
             const msg = document.getElementById('announcementInput').value.trim();
             if(!msg) return;
             await setDoc(doc(db, "settings", "announcements"), { text: msg }, { merge: true });
-            await addDoc(collection(db, "announcements"), { text: msg, timestamp: serverTimestamp() });
-            await writeLog("Broadcast", msg);
-            Swal.fire('Updated', 'Live', 'success');
+            await writeLog("Broadcast Updated", msg);
+            Swal.fire('Success', 'Live message updated.', 'success');
         };
 
+        // --- DEPLOY PROJECTS ---
         document.getElementById('btn-push-project').onclick = async () => {
             const uid = document.getElementById('targetUID').value.trim();
             const title = document.getElementById('projectTitleSelect').value;
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
-            if(!uid) return;
+            if(!uid) return Swal.fire('Error', 'Unique ID required.', 'warning');
+
             await addDoc(collection(db, "tasks"), { assignedTo: uid, title, price, createdAt: serverTimestamp(), targetPage: 'task_player.html' });
-            await writeLog("Deploy", `${title} to ${uid}`);
-            Swal.fire('Deployed', 'Task is Live', 'success');
+            await writeLog("Task Deployed", `${title} to ${uid}`);
+            Swal.fire('Success', 'Task pushed successfully.', 'success');
         };
 
-        function loadTasks() { onSnapshot(collection(db, "tasks"), snap => { const area = document.getElementById('live-task-display'); area.innerHTML = ""; snap.forEach(d => { const t = d.data(); area.innerHTML += `<div class="p-4 glass flex justify-between items-center rounded-2xl"><div><p class="font-bold text-sm">${t.title}</p><p class="text-[10px] text-gray-500">${t.assignedTo}</p></div><button onclick="removeTask('${d.id}')" class="text-red-500 font-bold text-xs">DELETE</button></div>`; }); }); }
-        window.removeTask = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, "tasks", id)); };
-
-        function loadLogs() { onSnapshot(query(collection(db, "admin_logs"), orderBy("timestamp", "desc")), snap => { const list = document.getElementById('logs-display-list'); list.innerHTML = ""; snap.forEach(doc => { const l = doc.data(); list.innerHTML += `<tr><td>${l.admin}</td><td class="text-purple-400 font-bold uppercase text-[10px]">${l.action}</td><td>${l.target}</td><td class="opacity-40 text-xs">${l.timestamp?.toDate().toLocaleString() || '---'}</td></tr>`; }); }); }
-
-        // --- VAULT & CSV ---
-        document.getElementById('btn-query-vault').onclick = async () => {
-            const projQ = document.getElementById('filterProj').value.toLowerCase().trim();
-            const workerQ = document.getElementById('filterWorker').value.toLowerCase().trim();
-            const body = document.getElementById('vault-table-body');
-            body.innerHTML = "<tr><td colspan='5' class='p-10 text-center animate-pulse text-purple-400'>Filtering...</td></tr>";
-            
-            const [subSnap, userSnap] = await Promise.all([getDocs(collection(db, "submissions")), getDocs(collection(db, "users"))]);
-            const userMap = {}; userSnap.forEach(uDoc => userMap[uDoc.id] = uDoc.data());
-            
-            body.innerHTML = ""; exportableData = [];
-            subSnap.forEach(sDoc => {
-                const s = sDoc.data(); const u = userMap[s.workerUID] || {};
-                const workerEmail = u.email || "N/A";
-                const title = s.projectTitle || "Untitled";
-                if ((!projQ || title.toLowerCase().includes(projQ)) && (!workerQ || workerEmail.toLowerCase().includes(workerQ))) {
-                    const date = s.timestamp ? s.timestamp.toDate().toLocaleString() : 'Recent';
-                    exportableData.push({Name: u.fullName||"User", Email: workerEmail, Project: title, Reward: s.earnedAmount, Date: date});
-                    body.innerHTML += `<tr class="text-white border-b border-white/5"><td class="p-4"><div class="font-bold text-sm">${u.fullName||'User'}</div><div class="text-[9px] opacity-40">${workerEmail}</div></td><td>${title}</td><td class="text-green-400">$${(s.earnedAmount||0).toFixed(4)}</td><td><audio src="${s.audioData}" controls class="h-8 w-32"></audio></td><td class="text-[10px] opacity-40">${date}</td></tr>`;
-                }
+        function loadTasks() {
+            onSnapshot(collection(db, "tasks"), snap => {
+                const area = document.getElementById('live-task-display');
+                area.innerHTML = "";
+                snap.forEach(d => {
+                    const t = d.data();
+                    area.innerHTML += `<div class="p-4 glass flex justify-between items-center rounded-2xl">
+                        <div><p class="font-bold text-sm text-white">${t.title}</p><p class="text-[10px] text-gray-500">${t.assignedTo}</p></div>
+                        <button onclick="delTask('${d.id}')" class="text-red-500 font-bold text-xs hover:underline">REMOVE</button>
+                    </div>`;
+                });
             });
+        }
+        window.delTask = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, "tasks", id)); };
+
+        // --- DATA VAULT & CSV ---
+        async function loadVault() {
+            onSnapshot(collection(db, "submissions"), async (snap) => {
+                const uSnap = await getDocs(collection(db, "users"));
+                const uMap = {}; uSnap.forEach(u => uMap[u.id] = u.data());
+                const body = document.getElementById('vault-table-body');
+                body.innerHTML = ""; exportableData = [];
+                snap.forEach(sDoc => {
+                    const s = sDoc.data();
+                    const u = uMap[s.workerUID] || {};
+                    const date = s.timestamp ? s.timestamp.toDate().toLocaleString() : 'Recent';
+                    exportableData.push({Name: u.fullName || 'User', Email: u.email || 'N/A', Project: s.projectTitle, Reward: s.earnedAmount, Date: date});
+                    body.innerHTML += `<tr class="border-b border-white/5">
+                        <td class="p-4"><div class="font-bold text-sm text-white">${u.fullName || 'User'}</div><div class="text-[9px] opacity-40">${u.email || 'N/A'}</div></td>
+                        <td>${s.projectTitle}</td>
+                        <td class="text-green-400 font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td>
+                        <td><audio src="${s.audioData}" controls class="h-8"></audio></td>
+                        <td class="opacity-40 text-[10px]">${date}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        window.exportToCSV = () => {
+            if(exportableData.length === 0) return;
+            let csv = "Name,Email,Project,Reward,Date\n";
+            exportableData.forEach(r => csv += `"${r.Name}","${r.Email}","${r.Project}","${r.Reward}","${r.Date}"\n`);
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Adatacore_Submissions_${Date.now()}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         };
-        window.exportToCSV = () => { if(exportableData.length===0) return Swal.fire('Error', 'No data', 'error'); let csv = "Name,Email,Project,Reward,Date\n"; exportableData.forEach(r => csv += `"${r.Name}","${r.Email}","${r.Project}","${r.Reward}","${r.Date}"\n`); const blob = new Blob([csv], {type: 'text/csv'}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download=`Adatacore_Vault_${Date.now()}.csv`; link.click(); };
+
+        // --- ACTIVITY LOGS ---
+        function loadLogs() {
+            onSnapshot(query(collection(db, "admin_logs"), orderBy("timestamp", "desc")), snap => {
+                const l = document.getElementById('logs-display-list');
+                l.innerHTML = "";
+                snap.forEach(doc => {
+                    const v = doc.data();
+                    l.innerHTML += `<tr class="hover:bg-white/5">
+                        <td class="opacity-40 text-xs">${v.admin}</td>
+                        <td class="font-bold text-purple-400 uppercase text-[10px]">${v.action}</td>
+                        <td class="text-white">${v.target}</td>
+                        <td class="opacity-40 text-[10px]">${v.timestamp ? v.timestamp.toDate().toLocaleString() : '---'}</td>
+                    </tr>`;
+                });
+            });
+        }
 
         // --- AUTHORITY ---
-        document.getElementById('btn-grant-admin').onclick = async () => { const email = document.getElementById('authEmailInput').value.toLowerCase().trim(); const q = query(collection(db, "users"), where("email", "==", email)); const snap = await getDocs(q); if(!snap.empty) { await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'admin' }); await writeLog("Admin Grant", email); Swal.fire('Success', 'Admin Added', 'success'); } };
-        document.getElementById('btn-revoke-admin').onclick = async () => { const email = document.getElementById('authEmailInput').value.toLowerCase().trim(); if(email === "as4556676@gmail.com") return; const q = query(collection(db, "users"), where("email", "==", email)); const snap = await getDocs(q); if(!snap.empty) { await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'user' }); await writeLog("Admin Revoke", email); Swal.fire('Revoked', 'Removed', 'info'); } };
+        document.getElementById('btn-grant-admin').onclick = async () => {
+            const email = document.getElementById('authEmailInput').value.toLowerCase().trim();
+            const q = query(collection(db, "users"), where("email", "==", email));
+            const s = await getDocs(q);
+            if(!s.empty) {
+                await updateDoc(doc(db, "users", s.docs[0].id), { role: 'admin' });
+                writeLog("Admin Rights Granted", email);
+                Swal.fire('Success', 'Role updated to Admin.', 'success');
+            } else { Swal.fire('Error', 'User not found.', 'error'); }
+        };
+        
+        document.getElementById('btn-revoke-admin').onclick = async () => {
+            const email = document.getElementById('authEmailInput').value.toLowerCase().trim();
+            if(email === "as4556676@gmail.com") return;
+            const q = query(collection(db, "users"), where("email", "==", email));
+            const s = await getDocs(q);
+            if(!s.empty) {
+                await updateDoc(doc(db, "users", s.docs[0].id), { role: 'user' });
+                writeLog("Admin Rights Revoked", email);
+                Swal.fire('Success', 'Role changed to User.', 'info');
+            }
+        };
     </script>
 </body>
 </html>
