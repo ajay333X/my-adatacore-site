@@ -10,45 +10,64 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { background: #02020a; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
+        
+        /* Focus Mode Transitions */
+        #sidebar { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); width: 320px; }
+        #main-area { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .focus-active #sidebar { margin-left: -320px; opacity: 0; }
+        .focus-active #main-area { padding-left: 0; }
+
         .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
-        .record-btn { width: 80px; height: 80px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .record-btn { width: 90px; height: 90px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
         .recording { background: #ef4444 !important; transform: scale(1.1); box-shadow: 0 0 50px rgba(239, 68, 68, 0.3); }
         .pulse { position: absolute; width: 100%; height: 100%; background: #ef4444; border-radius: 50%; z-index: -1; opacity: 0.5; animation: pulse-out 1.5s infinite; }
         @keyframes pulse-out { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
-        .waveform-container { width: 100%; height: 100px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-top: 20px; }
+        
+        /* Focus Toggle Styling */
+        .toggle-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 99px; font-size: 10px; font-bold; tracking-widest; transition: 0.3s; }
+        .toggle-btn:hover { background: rgba(167, 139, 250, 0.1); border-color: #A78BFA; }
     </style>
 </head>
-<body class="flex">
+<body class="flex" id="body-wrapper">
 
-    <aside class="w-80 h-screen glass-panel p-8 flex flex-col border-r border-white/5">
+    <aside id="sidebar" class="h-screen glass-panel p-8 flex flex-col border-r border-white/5 z-30">
         <div class="mb-10">
+            <a href="dashboard.html" class="text-[10px] text-gray-500 hover:text-white transition-all mb-4 block">← BACK TO DASHBOARD</a>
             <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Project 101</span>
             <h1 class="text-2xl font-bold mt-1">Ajay Test Demo</h1>
         </div>
-        <div class="space-y-6 flex-1 text-gray-400 text-sm">
-            <p>1. शांत कमरे में रिकॉर्ड करें।</p>
-            <p>2. शुरू में 2 सेकंड चुप रहें।</p>
+        <div class="space-y-6 flex-1 text-gray-400 text-sm leading-relaxed">
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">01</span> शांत कमरे में रिकॉर्ड करें, शोर नहीं होना चाहिए।</p>
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">02</span> शुरू में 2 सेकंड चुप रहें, फिर बोलना शुरू करें।</p>
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">03</span> अपनी आवाज़ साफ़ और नॉर्मल स्पीड में रखें।</p>
         </div>
         <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center text-sm">
-            <span class="text-gray-500">Rate</span>
+            <span class="text-gray-500 font-medium text-xs">Project Rate</span>
             <span class="text-green-400 font-bold">$8.00 / Hr</span>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col items-center justify-center p-20">
-        <div id="timer" class="text-8xl font-mono tracking-tighter mb-4 text-white/90">00:00</div>
-        <p id="status" class="text-[11px] uppercase tracking-[0.4em] text-purple-400 font-bold mb-12">Ready to Capture</p>
+    <main id="main-area" class="flex-1 flex flex-col items-center justify-center p-20 relative">
+        <div class="absolute top-10 right-10 z-50">
+            <button onclick="toggleFocus()" class="toggle-btn text-white uppercase font-bold">
+                <span id="focus-text">✨ Focus Mode</span>
+            </button>
+        </div>
+
+        <div id="timer" class="text-[120px] font-mono tracking-tighter mb-4 text-white/90 leading-none">00:00</div>
+        <p id="status" class="text-[11px] uppercase tracking-[0.6em] text-purple-400 font-bold mb-16">Ready to Capture</p>
 
         <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl">
             <div id="pulse-ring"></div>
-            <div id="btn-icon" class="w-5 h-5 bg-white rounded-sm"></div>
+            <div id="btn-icon" class="w-6 h-6 bg-white rounded-sm"></div>
         </button>
 
-        <div id="playbackUI" class="hidden w-full max-w-xl space-y-8 mt-12">
-            <div id="waveform"></div>
-            <div class="flex gap-4">
-                <button id="discardBtn" class="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold tracking-widest">DISCARD</button>
-                <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-xs font-bold tracking-widest shadow-xl">SUBMIT WORK</button>
+        <div id="playbackUI" class="hidden w-full max-w-xl space-y-10 mt-12 animate-in fade-in slide-in-from-bottom-5">
+            <div id="waveform" class="w-full"></div>
+            <div class="flex gap-6">
+                <button id="discardBtn" class="flex-1 py-5 bg-white/5 border border-white/10 rounded-[24px] text-xs font-bold tracking-widest hover:bg-white/10 transition-all">DISCARD</button>
+                <button id="submitBtn" class="flex-1 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-[24px] text-xs font-bold tracking-widest shadow-2xl hover:scale-105 transition-all">SUBMIT WORK</button>
             </div>
         </div>
     </main>
@@ -72,7 +91,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob, wavesurfer;
+        let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob;
+
+        // Focus Mode Logic
+        window.toggleFocus = () => {
+            const body = document.getElementById('body-wrapper');
+            const btnText = document.getElementById('focus-text');
+            body.classList.toggle('focus-active');
+            btnText.innerText = body.classList.contains('focus-active') ? '👁️ Standard Mode' : '✨ Focus Mode';
+        };
 
         onAuthStateChanged(auth, u => { if(!u) window.location.href="auth.html"; });
 
@@ -83,34 +110,42 @@
                 clearInterval(timerInterval);
                 recordBtn.classList.remove('recording');
                 document.getElementById('pulse-ring').classList.remove('pulse');
-                document.getElementById('status').innerText = "Complete";
+                document.getElementById('status').innerText = "Recording Complete";
             } else {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = []; duration = 0;
-                mediaRecorder.onstart = () => {
-                    recordBtn.classList.add('recording');
-                    document.getElementById('pulse-ring').classList.add('pulse');
-                    document.getElementById('status').innerText = "Live...";
-                    timerInterval = setInterval(() => {
-                        duration++;
-                        const m = Math.floor(duration/60).toString().padStart(2,'0');
-                        const s = (duration%60).toString().padStart(2,'0');
-                        document.getElementById('timer').innerText = `${m}:${s}`;
-                    }, 1000);
-                };
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    document.getElementById('playbackUI').classList.remove('hidden');
-                };
-                mediaRecorder.start();
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = []; duration = 0;
+                    
+                    mediaRecorder.onstart = () => {
+                        recordBtn.classList.add('recording');
+                        document.getElementById('pulse-ring').classList.add('pulse');
+                        document.getElementById('status').innerText = "Live Recording...";
+                        timerInterval = setInterval(() => {
+                            duration++;
+                            const m = Math.floor(duration/60).toString().padStart(2,'0');
+                            const s = (duration%60).toString().padStart(2,'0');
+                            document.getElementById('timer').innerText = `${m}:${s}`;
+                        }, 1000);
+                    };
+                    
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        document.getElementById('playbackUI').classList.remove('hidden');
+                    };
+                    mediaRecorder.start();
+                } catch (err) {
+                    Swal.fire('Mic Error', 'Please allow microphone access.', 'error');
+                }
             }
         };
 
         document.getElementById('submitBtn').onclick = async () => {
             const user = auth.currentUser;
-            Swal.fire({ title: 'Saving...', text: 'Syncing with History...', didOpen: () => Swal.showLoading() });
+            if(!audioBlob) return;
+            
+            Swal.fire({ title: 'Saving...', text: 'Syncing with workstation...', didOpen: () => Swal.showLoading() });
 
             try {
                 const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -136,7 +171,7 @@
                         tasksCompleted: increment(1)
                     });
 
-                    Swal.fire({ icon: 'success', title: 'Success', text: 'Task reflected in History!' })
+                    Swal.fire({ icon: 'success', title: 'Work Submitted!', text: 'Earnings added to balance.' })
                     .then(() => window.location.href = "dashboard.html");
                 };
             } catch (e) { Swal.fire('Error', e.message, 'error'); }
