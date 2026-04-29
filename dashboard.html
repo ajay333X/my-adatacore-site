@@ -5,78 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Workstation — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
+        :root { --accent: #A78BFA; --bg-dark: #050510; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; overflow-x: hidden; }
-        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
-        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.15); }
-        .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .task-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 24px; transition: all 0.3s ease; }
-        .task-card:hover { transform: translateY(-5px); border-color: var(--accent); background: rgba(167, 139, 250, 0.05); }
-        .admin-btn { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); color: #EAB308; }
-        .admin-btn:hover { background: rgba(234, 179, 8, 0.2); }
+        
+        /* Glassmorphism Logic */
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(167, 139, 250, 0.1); }
+        .glass-card { background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(167, 139, 250, 0.1); transform: translateY(-4px); }
+        
+        /* Sidebar Transition */
+        #sidebar { transition: width 0.3s ease; width: 280px; overflow: hidden; }
+        #sidebar.collapsed { width: 80px; }
+        .nav-text { transition: opacity 0.2s; }
+        .collapsed .nav-text { opacity: 0; display: none; }
+        
+        /* Skeleton Animation */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 12px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .text-gradient { background: linear-gradient(to right, #fff, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="grid-pattern">
+<body class="flex">
 
-    <div class="flex">
-        <aside class="w-72 h-screen glass fixed left-0 top-0 p-6 flex flex-col border-r border-white/5 z-20">
-            <div class="flex items-center gap-2.5 font-bold text-white text-lg mb-10">
-                <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
-                Adatacore
+    <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
+        <div class="p-6 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-3 font-bold text-white text-lg">
+                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">A</div>
+                <span class="nav-text">Adatacore</span>
             </div>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/5 rounded-lg">⚡</button>
+        </div>
 
-            <div class="mb-8">
-                <a href="profile.html" class="flex items-center gap-3 p-4 glass rounded-[24px] border border-white/5 hover:border-purple-500 transition-all group">
-                    <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white uppercase">U</div>
-                    <div>
-                        <p id="user-display-name" class="text-sm font-bold truncate">Loading...</p>
-                        <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Settings ➔</p>
+        <div class="px-4 mb-10">
+            <a href="profile.html" class="flex items-center gap-3 p-3 glass-card rounded-2xl">
+                <div id="user-initials" class="w-10 h-10 min-w-[40px] bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg">U</div>
+                <div class="nav-text">
+                    <p id="user-display-name" class="text-xs font-bold truncate w-32">Loading...</p>
+                    <p class="text-[8px] text-purple-400 font-bold uppercase tracking-widest">Settings</p>
+                </div>
+            </a>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-2">
+            <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl border border-purple-600/20">
+                <span>🏠</span> <span class="nav-text text-sm font-medium">Dashboard</span>
+            </div>
+            <div id="admin-nav-container"></div>
+        </nav>
+
+        <button id="btn-logout" class="m-4 flex items-center gap-4 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
+            <span>🚪</span> <span class="nav-text">Logout</span>
+        </button>
+    </aside>
+
+    <main id="main-content" class="ml-[280px] p-8 w-full transition-all duration-300">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h1 id="greeting" class="text-3xl font-bold text-gradient">Good Morning</h1>
+                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-1 uppercase tracking-widest">UID: AD-LOADING-16-DIGIT</p>
+            </div>
+            <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-3">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                <span class="text-[10px] font-bold text-gray-400">SERVER LIVE</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <div class="space-y-6">
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-4xl">💰</div>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Balance</p>
+                    <h3 class="text-3xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
+                </div>
+                <div class="glass-card p-6 rounded-3xl">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Tasks Completed Today</p>
+                    <h3 class="text-3xl font-bold" id="active-count">0</h3>
+                    <div class="w-full bg-white/5 h-1.5 mt-4 rounded-full overflow-hidden">
+                        <div class="bg-purple-500 h-full w-[40%]"></div>
                     </div>
-                </a>
+                </div>
             </div>
             
-            <nav id="main-nav" class="flex-1 space-y-1">
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white rounded-xl cursor-default">🏠 Dashboard</div>
-                
-                <div id="admin-nav-container"></div>
-            </nav>
-
-            <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
-        </aside>
-
-        <main class="ml-72 p-10 w-full">
-            <header class="flex justify-between items-start mb-10">
-                <div>
-                    <h1 class="text-3xl font-bold text-gradient">Workstation</h1>
-                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold">ID: LOADING...</p>
+            <div class="lg:col-span-2 glass-card p-6 rounded-3xl">
+                <div class="flex justify-between items-center mb-6">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Weekly Performance</p>
+                    <span class="text-[10px] text-green-400">+12.5% vs last week</span>
                 </div>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="glass p-7 rounded-[32px] border border-white/5">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Balance</p>
-                    <h3 class="text-2xl font-bold text-purple-400">$<span id="stat-balance">0.00</span></h3>
-                </div>
-                <div class="glass p-7 rounded-[32px] border border-white/5">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Active Tasks</p>
-                    <h3 class="text-2xl font-bold" id="active-count">0</h3>
-                </div>
-                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="window.open('https://join.slack.com/t/adatacore/shared_invite/zt-3wykfbp68-I8XlYSMFTxb5_3JrNA~gAQ', '_blank')">
-                    <p class="text-indigo-400 text-[10px] uppercase font-bold tracking-widest mb-1">Slack Community</p>
-                    <h3 class="text-xl font-bold">Join Now ➔</h3>
-                </div>
+                <canvas id="earningChart" height="100"></canvas>
             </div>
+        </div>
 
-            <h2 class="text-xl font-bold mb-6">Assigned Projects</h2>
-            <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="col-span-full py-20 text-center glass rounded-[40px] border-dashed border-white/10">
-                    <p class="text-gray-600">Loading your assignments...</p>
-                </div>
-            </div>
-        </main>
-    </div>
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <span>⚡</span> Active Assignments
+        </h2>
+        
+        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div class="skeleton h-48 w-full"></div>
+            <div class="skeleton h-48 w-full"></div>
+            <div class="skeleton h-48 w-full"></div>
+        </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -97,37 +129,49 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- Sidebar & Greeting Logic ---
+        window.toggleSidebar = () => {
+            const sb = document.getElementById('sidebar');
+            const main = document.getElementById('main-content');
+            sb.classList.toggle('collapsed');
+            main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '280px';
+        }
+
+        function setGreeting(name) {
+            const hrs = new Date().getHours();
+            let msg = "Good Morning";
+            if (hrs >= 12) msg = "Good Afternoon";
+            if (hrs >= 17) msg = "Good Evening";
+            document.getElementById('greeting').innerText = `${msg}, ${name}!`;
+        }
+
+        // --- Firebase Auth & Data ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // रीयल-टाइम डेटा लिसनर (Admin Access यहाँ चेक होगा)
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
-                        
-                        // ब्लॉक चेक
-                        if(data.accountStatus === 'blocked') {
-                            signOut(auth);
-                            return;
-                        }
+                        if(data.accountStatus === 'blocked') { signOut(auth); return; }
 
-                        // प्रोफाइल UI अपडेट
-                        document.getElementById('user-display-name').innerText = data.fullName || "User";
-                        document.getElementById('user-initials').innerText = (data.fullName || "U").charAt(0);
-                        document.getElementById('display-uid').innerText = "ID: " + (data.uniqueID || "N/A");
+                        const fullName = data.fullName || "Contributor";
+                        document.getElementById('user-display-name').innerText = fullName;
+                        document.getElementById('user-initials').innerText = fullName.charAt(0).toUpperCase();
+                        document.getElementById('display-uid').innerText = "UID: " + (data.uniqueID || "N/A");
                         document.getElementById('stat-balance').innerText = (data.balance || 0).toFixed(2);
+                        
+                        setGreeting(fullName.split(' ')[0]);
 
-                        // 🔥 DYNAMIC ADMIN BUTTON LOGIC
+                        // Admin Space Logic
                         const adminContainer = document.getElementById('admin-nav-container');
                         if (data.role === 'admin' || user.email === "as4556676@gmail.com") {
                             adminContainer.innerHTML = `
-                                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold admin-btn rounded-xl transition-all mt-4 animate-pulse">
-                                    🛡️ Admin Space
+                                <a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition-all">
+                                    <span>🛡️</span> <span class="nav-text">Admin Space</span>
                                 </a>`;
-                        } else {
-                            adminContainer.innerHTML = ""; // अगर एक्सेस छीना गया तो बटन गायब
                         }
 
                         loadMyTasks(data.uniqueID);
+                        renderChart(); // चार्ट लोड करें
                     }
                 });
             } else {
@@ -143,7 +187,7 @@
                 document.getElementById('active-count').innerText = snap.size;
                 
                 if (snap.empty) {
-                    container.innerHTML = `<div class="col-span-full py-10 text-center glass rounded-3xl border-dashed border-white/10 text-gray-500">No tasks for ID: ${uid}</div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500">No active projects for your ID.</div>`;
                     return;
                 }
 
@@ -151,15 +195,48 @@
                 snap.forEach((d) => {
                     const t = d.data();
                     container.innerHTML += `
-                        <div class="task-card p-8">
-                            <div class="flex justify-between mb-4">
-                                <span class="text-[10px] font-bold text-purple-300 uppercase">${t.type || 'Task'}</span>
-                                <p class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</p>
+                        <div class="glass-card p-6 rounded-3xl animate-in fade-in zoom-in duration-500">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-purple-600/10 rounded-2xl text-xl">🎙️</div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-gray-500 uppercase font-bold">Reward</p>
+                                    <p class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</p>
+                                </div>
                             </div>
-                            <h4 class="font-bold text-lg mb-2">${t.title}</h4>
-                            <a href="${t.targetPage || 'task_player.html'}" class="block w-full text-center py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 transition-all">START ➔</a>
+                            <h4 class="font-bold text-lg mb-2 truncate">${t.title}</h4>
+                            <p class="text-gray-500 text-xs mb-6 line-clamp-2">${t.description || 'Global processing task.'}</p>
+                            <a href="${t.targetPage || 'task_player.html'}" class="block w-full text-center py-3 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-black transition-all shadow-lg shadow-purple-600/20">START PROJECT ➔</a>
                         </div>`;
                 });
+            });
+        }
+
+        // Chart.js Configuration
+        function renderChart() {
+            const ctx = document.getElementById('earningChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Earnings ($)',
+                        data: [12, 19, 15, 25, 22, 30, 28], // यहाँ डेटाबेस से डेटा भी ला सकते हैं
+                        borderColor: '#A78BFA',
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { display: false }, ticks: { display: false }, border: { display: false } },
+                        x: { grid: { display: false }, ticks: { color: '#6B7280', font: { size: 10 } }, border: { display: false } }
+                    }
+                }
             });
         }
 
