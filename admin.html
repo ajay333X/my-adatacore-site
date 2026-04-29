@@ -16,6 +16,16 @@
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .status-active { color: #10B981; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 99px; }
         .status-blocked { color: #EF4444; background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 99px; }
+        /* Table Styling */
+        table { width: 100%; border-spacing: 0 8px; border-collapse: separate; }
+        tr { transition: all 0.3s ease; }
+        th { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 0 16px; }
+        td { background: rgba(255,255,255,0.02); padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-radius: 16px 0 0 16px; }
+        td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-radius: 0 16px 16px 0; }
+        tr:hover td { background: rgba(255,255,255,0.05); border-color: rgba(167, 139, 250, 0.3); }
+        audio::-webkit-media-controls-panel { background-color: #1e1e2e; }
+        audio::-webkit-media-controls-current-time-display, audio::-webkit-media-controls-time-remaining-display { color: #fff; }
     </style>
 </head>
 <body class="p-8">
@@ -34,6 +44,41 @@
             </div>
             <button onclick="window.location.href='dashboard.html'" class="bg-white/5 px-5 py-2 rounded-xl border border-white/10 text-xs hover:bg-white/10 transition-all">➔ Dashboard</button>
         </header>
+
+        <div class="glass p-8 mb-8 border-blue-500/10">
+            <h3 class="text-lg font-bold mb-6 text-blue-400 flex items-center gap-2">
+                <span>📦</span> Project Data Vault
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Select Project to Audit</label>
+                    <select id="auditProjectSelect" class="admin-input bg-[#050510]">
+                        <option value="">-- Choose Project --</option>
+                        <option value="Ajay Test Demo">Ajay Test Demo</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="btn-fetch-vault" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-xl font-bold transition-all text-sm w-full uppercase tracking-widest">FETCH SUBMISSIONS</button>
+                </div>
+            </div>
+
+            <div id="vault-results" class="hidden overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Contributor</th>
+                            <th>Duration</th>
+                            <th>Payout</th>
+                            <th>Audio Review</th>
+                            <th>Submission Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vault-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
         <div class="glass p-8 mb-8 border-purple-500/10">
             <h3 class="text-lg font-bold mb-6 text-purple-400 flex items-center gap-2">
@@ -98,7 +143,62 @@
             }
         });
 
-        // Search & Manage Contributor
+        // --- PROJECT VAULT LOGIC (FETCH SUBMISSIONS) ---
+        document.getElementById('btn-fetch-vault').onclick = async () => {
+            const projectName = document.getElementById('auditProjectSelect').value;
+            const vaultResults = document.getElementById('vault-results');
+            const tableBody = document.getElementById('vault-table-body');
+
+            if (!projectName) return Swal.fire('Error', 'Please select a project first', 'warning');
+
+            vaultResults.classList.remove('hidden');
+            tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center animate-pulse text-gray-500">Decrypting files from Adatacore Cloud...</td></tr>`;
+
+            try {
+                // Querying submissions for the specific project
+                const q = query(
+                    collection(db, "submissions"), 
+                    where("projectTitle", "==", projectName),
+                    orderBy("timestamp", "desc")
+                );
+                
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-red-400 font-bold">No submissions found for this project.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = "";
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "N/A";
+                    
+                    tableBody.innerHTML += `
+                        <tr class="animate-in fade-in slide-in-from-top-1 duration-300">
+                            <td>
+                                <div class="flex flex-col">
+                                    <span class="text-white font-bold">${data.workerEmail || 'Contributor'}</span>
+                                    <span class="text-[9px] text-gray-500 uppercase tracking-tighter">${data.workerUID}</span>
+                                </div>
+                            </td>
+                            <td class="font-mono text-purple-400">${data.durationSeconds}s</td>
+                            <td class="text-green-400 font-bold">$${data.earnedAmount}</td>
+                            <td>
+                                <audio src="${data.audioData}" controls class="h-8 w-44 opacity-60 hover:opacity-100 transition-all filter grayscale hover:grayscale-0"></audio>
+                            </td>
+                            <td class="text-[10px] text-gray-400">${date}</td>
+                        </tr>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Fetch Error', err.message, 'error');
+            }
+        };
+
+        // --- MANAGE CONTRIBUTOR SEARCH ---
         document.getElementById('btn-search').onclick = async () => {
             const input = document.getElementById('searchInput').value.trim();
             const resultDiv = document.getElementById('search-result');
@@ -124,7 +224,7 @@
             const isBlocked = u.accountStatus === 'blocked';
 
             resultDiv.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-white/5 rounded-[32px] border border-white/10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-white/5 rounded-[32px] border border-white/10 animate-in fade-in slide-in-from-top-2">
                     <div>
                         <p class="text-2xl font-bold mb-1">${u.fullName} 
                             <span class="text-[10px] ${isBlocked ? 'status-blocked' : 'status-active'}">${isBlocked ? 'DEACTIVATED' : 'ACTIVE'}</span>
@@ -133,7 +233,7 @@
                         
                         <div class="flex flex-wrap gap-2">
                             <button onclick="toggleStatus('${userDoc.id}', '${u.accountStatus}')" class="px-4 py-2 ${isBlocked ? 'bg-green-600' : 'bg-red-600'} rounded-xl text-[10px] font-bold">
-                                ${isBlocked ? 'ACTIVATE ACCOUNT' : 'DEACTIVATE ACCOUNT'}
+                                ${isBlocked ? 'ACTIVATE' : 'DEACTIVATE'}
                             </button>
                             <button onclick="adjustBalance('${userDoc.id}', ${u.balance})" class="px-4 py-2 bg-blue-600 rounded-xl text-[10px] font-bold">ADJUST BALANCE</button>
                         </div>
@@ -146,24 +246,16 @@
                                 <span>Tasks: <b class="text-purple-400">${u.tasksCompleted || 0}</b></span>
                             </div>
                         </div>
-                        <div>
-                            <label class="text-[10px] text-gray-500 font-bold uppercase">Task Limit (Max allowed)</label>
-                            <div class="flex gap-2 mt-1">
-                                <input type="number" id="newLimit" class="admin-input py-2 text-xs" value="${u.taskLimit || 10}">
-                                <button onclick="setLimit('${userDoc.id}')" class="bg-white/10 px-4 rounded-xl text-[10px]">SET</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `;
         };
 
-        // Window functions for actions
         window.toggleStatus = async (docId, currentStatus) => {
             const newStatus = currentStatus === 'blocked' ? 'active' : 'blocked';
             await updateDoc(doc(db, "users", docId), { accountStatus: newStatus });
             Swal.fire('Updated', `Account is now ${newStatus}`, 'success');
-            document.getElementById('btn-search').click(); // Refresh lookup
+            document.getElementById('btn-search').click();
         };
 
         window.adjustBalance = async (docId, currentBalance) => {
@@ -171,7 +263,7 @@
                 title: 'Adjust Balance',
                 input: 'number',
                 inputLabel: `Current: $${currentBalance.toFixed(2)}`,
-                inputPlaceholder: 'Enter amount (use - for deduction)'
+                inputPlaceholder: 'Enter amount (+ or -)'
             });
             if (amount) {
                 await updateDoc(doc(db, "users", docId), { balance: parseFloat(currentBalance) + parseFloat(amount) });
@@ -180,20 +272,12 @@
             }
         };
 
-        window.setLimit = async (docId) => {
-            const limit = document.getElementById('newLimit').value;
-            await updateDoc(doc(db, "users", docId), { taskLimit: parseInt(limit) });
-            Swal.fire('Updated', `Task limit set to ${limit}`, 'success');
-        };
-
-        // Deployment & Live List logic
         document.getElementById('btn-assign').onclick = async () => {
             const targetID = document.getElementById('targetID').value.trim();
             const title = document.getElementById('taskTitle').value;
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
             const desc = document.getElementById('taskDesc').value;
             const targetPage = document.getElementById('targetPage').value;
-
             try {
                 await addDoc(collection(db, "tasks"), {
                     assignedTo: targetID, title, price, description: desc, targetPage, createdAt: new Date()
@@ -208,9 +292,9 @@
                 list.innerHTML = "";
                 snap.forEach(d => {
                     const t = d.data();
-                    list.innerHTML += `<div class="p-6 bg-white/5 rounded-3xl border border-white/5 flex justify-between items-center">
+                    list.innerHTML += `<div class="p-6 bg-white/5 rounded-3xl border border-white/5 flex justify-between items-center hover:border-purple-500/20 transition-all">
                         <div><p class="text-[10px] text-purple-400 font-bold">${t.assignedTo}</p><h4 class="font-bold">${t.title}</h4></div>
-                        <button onclick="removeTask('${d.id}')" class="text-[10px] text-red-400 border border-red-500/20 px-4 py-2 rounded-xl">TERMINATE</button>
+                        <button onclick="removeTask('${d.id}')" class="text-[10px] text-red-400 border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500/10">TERMINATE</button>
                     </div>`;
                 });
             });
