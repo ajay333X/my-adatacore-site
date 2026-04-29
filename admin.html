@@ -56,32 +56,26 @@
             </div>
         </section>
 
-        <!-- 🛡️ SEARCH CENTER (RE-STLYED TO USER LOOKUP) -->
+        <!-- 🛡️ SEARCH CENTER (USER LOOKUP) -->
         <section id="search" class="content-section">
             <h2 class="text-2xl font-bold mb-8 text-white">Advanced User Lookup</h2>
-            
             <div class="flex gap-4 mb-10 max-w-2xl">
                 <input type="text" id="workerSearchInput" class="admin-input" placeholder="Search by Email or Unique ID...">
                 <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500 transition-all">Lookup</button>
             </div>
 
-            <!-- Professional Lookup Interface -->
             <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[600px] reveal-item">
-                <!-- Internal Sidebar -->
                 <div class="w-64 bg-white/5 p-8 border-r border-white/5 flex flex-col gap-2">
-                    <div class="text-[10px] font-bold text-gray-500 uppercase mb-6 tracking-widest">User Navigation</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase mb-6 tracking-widest">Navigation</div>
                     <div class="p-3 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20">Overview</div>
-                    <div class="p-3 hover:bg-white/5 text-gray-400 rounded-lg text-xs cursor-pointer">Project Activity</div>
-                    <div class="p-3 hover:bg-white/5 text-gray-400 rounded-lg text-xs cursor-pointer">Payment History</div>
-                    
+                    <div class="p-3 hover:bg-white/5 text-gray-400 rounded-lg text-xs opacity-40">Project Activity</div>
                     <div class="mt-auto pt-6 border-t border-white/5">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold mb-2">Metadata Summary</p>
+                        <p class="text-[9px] text-gray-500 uppercase font-bold mb-2">Quick Stats</p>
                         <p id="lookup-side-email" class="text-[10px] text-white truncate font-mono">---</p>
                         <p id="lookup-side-uid" class="text-[10px] text-purple-400 font-mono mt-1">---</p>
                     </div>
                 </div>
 
-                <!-- Profile Data Body -->
                 <div class="flex-1 p-12 overflow-y-auto">
                     <div class="flex justify-between items-start mb-12">
                         <div>
@@ -95,7 +89,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                        <!-- Metadata (MATCHING SCREENSHOT) -->
                         <div class="space-y-6">
                             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Metadata</h3>
                             <div class="space-y-4">
@@ -103,27 +96,16 @@
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Email:</span> <span id="lookup-email" class="text-white">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">ID:</span> <span id="lookup-doc-id" class="text-gray-500 font-mono text-[10px]">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Work ID:</span> <span id="lookup-uid" class="text-purple-400 font-mono font-bold uppercase">---</span></div>
-                                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Account Role:</span> <span id="lookup-role" class="text-white uppercase font-bold text-[10px]">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Member Since:</span> <span id="lookup-joined" class="text-gray-400">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Active:</span> <span id="lookup-last-active" class="text-yellow-500 font-semibold">---</span></div>
                                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Online:</span> <span id="lookup-last-online" class="text-green-500 font-mono text-[10px]">---</span></div>
                             </div>
-
-                            <div class="mt-10">
-                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Worker Tags</h3>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-gray-400 font-mono">active_worker</span>
-                                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-gray-400 font-mono">kyc_verified</span>
-                                </div>
-                            </div>
                         </div>
 
-                        <!-- System Actions -->
                         <div class="space-y-4">
-                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">System Actions</h3>
-                            <button id="btn-toggle-status" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-red-500/10 hover:text-red-400 transition-all uppercase tracking-widest">Block Access</button>
-                            <button onclick="Swal.fire('Info','Option coming soon','info')" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-white/10 transition-all uppercase tracking-widest">Wipe Session Data</button>
-                            <button id="btn-flag-suspicious" class="w-full py-4 bg-red-600/20 text-red-500 border border-red-500/20 rounded-2xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest">Flag as Suspicious</button>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Actions</h3>
+                            <button id="btn-toggle-status" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-red-500/10 hover:text-red-400 transition-all uppercase">Toggle Block</button>
+                            <button id="btn-flag-suspicious" class="w-full py-4 bg-red-600/20 text-red-500 border border-red-500/20 rounded-2xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all uppercase">Flag Security</button>
                         </div>
                     </div>
                 </div>
@@ -142,9 +124,9 @@
                             <option value="Audio Labeling">Audio Labeling</option>
                             <option value="Transcription Work">Transcription Work</option>
                         </select>
-                        <input type="number" id="taskPrice" class="admin-input" placeholder="Reward Amount ($)">
+                        <input type="number" id="taskPrice" class="admin-input" placeholder="Reward ($)">
                         <textarea id="taskInstructions" class="admin-input h-24" placeholder="Instructions..."></textarea>
-                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-black text-black uppercase tracking-widest">DEPLOY PROJECT 🚀</button>
+                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-black text-black uppercase tracking-widest text-white">DEPLOY PROJECT 🚀</button>
                     </div>
                 </div>
                 <div>
@@ -154,28 +136,21 @@
             </div>
         </section>
 
-        <!-- 📦 ADVANCED DATA VAULT -->
+        <!-- 📦 DATA VAULT -->
         <section id="vault" class="content-section">
             <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-2xl font-bold mb-2 text-white">Advanced Data Vault</h2>
-                    <p class="text-gray-500 text-sm">Search by Project or Worker and Export Payouts.</p>
-                </div>
-                <button onclick="exportToCSV()" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase hover:bg-green-500 transition-all flex items-center gap-2 text-white">
-                    <span>📥</span> Export CSV
-                </button>
+                <div><h2 class="text-2xl font-bold mb-2 text-white">Data Vault</h2><p class="text-gray-500 text-sm">Export Submissions.</p></div>
+                <button onclick="exportToCSV()" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase text-white">📥 Export CSV</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <input type="text" id="filterProj" class="admin-input" placeholder="Project Name (e.g. Ajay demo)...">
-                <input type="text" id="filterWorker" class="admin-input" placeholder="Worker Email or ID...">
-                <button id="btn-query-vault" class="bg-blue-600 rounded-xl font-bold text-xs uppercase hover:bg-blue-500 text-white">Query Records</button>
+                <input type="text" id="filterProj" class="admin-input" placeholder="Project Name...">
+                <input type="text" id="filterWorker" class="admin-input" placeholder="Worker Email/ID...">
+                <button id="btn-query-vault" class="bg-blue-600 rounded-xl font-bold text-xs uppercase text-white">Query</button>
             </div>
             <div class="glass rounded-[32px] overflow-hidden">
                 <table class="w-full">
                     <thead><tr><th>Worker</th><th>Project</th><th>Reward</th><th>Audio</th><th>Date</th></tr></thead>
-                    <tbody id="vault-table-body">
-                        <tr><td colspan="5" class="p-10 text-center text-gray-600 uppercase text-[10px]">Ready for Query</td></tr>
-                    </tbody>
+                    <tbody id="vault-table-body"><tr><td colspan="5" class="p-10 text-center text-gray-600 uppercase text-[10px]">Ready</td></tr></tbody>
                 </table>
             </div>
         </section>
@@ -185,7 +160,7 @@
             <h2 class="text-2xl font-bold mb-8 text-white">Activity Logs</h2>
             <div class="glass rounded-[32px] overflow-hidden">
                 <table class="w-full">
-                    <thead><tr><th>Admin</th><th>Operation</th><th>Target</th><th>Time</th></tr></thead>
+                    <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Time</th></tr></thead>
                     <tbody id="logs-display-list"></tbody>
                 </table>
             </div>
@@ -195,10 +170,10 @@
         <section id="authority" class="content-section">
             <h2 class="text-2xl font-bold mb-8 text-white">Authority Management</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
-                <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="User Email Address...">
+                <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="Email...">
                 <div class="flex gap-4">
                     <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white">GRANT ADMIN</button>
-                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10">REVOKE ADMIN</button>
+                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white">REVOKE ADMIN</button>
                 </div>
             </div>
         </section>
@@ -239,212 +214,102 @@
                 const userSnap = await getDoc(doc(db, "users", user.uid));
                 if (user.email === "as4556676@gmail.com" || (userSnap.exists() && userSnap.data().role === 'admin')) {
                     activeAdminEmail = user.email;
-                    startSync();
+                    loadTasks();
+                    loadLogs();
                 } else { window.location.href = "dashboard.html"; }
             } else { window.location.href = "auth.html"; }
         });
 
-        function startSync() {
-            loadTasks();
-            loadLogs();
-        }
+        async function writeLog(action, target) { await addDoc(collection(db, "admin_logs"), { admin: activeAdminEmail, action, target, timestamp: serverTimestamp() }); }
 
-        async function writeLog(action, target) {
-            await addDoc(collection(db, "admin_logs"), { admin: activeAdminEmail, action, target, timestamp: serverTimestamp() });
-        }
-
-        // 🛡️ UPDATED USER LOOKUP INTERFACE LOGIC
+        // --- LOOKUP ---
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
             const box = document.getElementById('search-results-box');
             if(!val) return;
-
             try {
                 let q = query(collection(db, "users"), where("email", "==", val));
                 let snap = await getDocs(q);
-                if(snap.empty) {
-                    q = query(collection(db, "users"), where("uniqueID", "==", val));
-                    snap = await getDocs(q);
-                }
-
-                if(snap.empty) {
-                    box.classList.add('hidden');
-                    Swal.fire('Error', 'Worker not found.', 'error');
-                    return;
-                }
+                if(snap.empty) { q = query(collection(db, "users"), where("uniqueID", "==", val)); snap = await getDocs(q); }
+                if(snap.empty) return Swal.fire('Error', 'Not found', 'error');
                 
                 const u = snap.docs[0].data();
                 const dId = snap.docs[0].id;
-                const status = u.accountStatus || 'active';
-
                 box.classList.remove('hidden');
-
-                // Update Sidebar
                 document.getElementById('lookup-side-email').innerText = u.email;
-                document.getElementById('lookup-side-uid').innerText = "ID: " + (u.uniqueID || 'N/A');
-
-                // Update Overview Header
+                document.getElementById('lookup-side-uid').innerText = u.uniqueID || 'N/A';
                 document.getElementById('lookup-balance').innerText = `$${(u.balance || 0).toFixed(2)}`;
-                
-                // Detailed Metadata
                 document.getElementById('lookup-name').innerText = u.fullName || '---';
                 document.getElementById('lookup-email').innerText = u.email;
                 document.getElementById('lookup-doc-id').innerText = dId;
                 document.getElementById('lookup-uid').innerText = u.uniqueID || '---';
-                document.getElementById('lookup-role').innerText = u.role || 'user';
+                document.getElementById('lookup-role').innerText = (u.role || 'user').toUpperCase();
                 document.getElementById('lookup-joined').innerText = u.createdAt ? u.createdAt.toDate().toLocaleDateString() : 'N/A';
 
-                // Activity Tracking Logic
-                const now = new Date();
-                const lastActiveDate = u.createdAt ? u.createdAt.toDate() : now; 
-                const hoursDiff = Math.floor((now - lastActiveDate) / (1000 * 60 * 60));
-                
-                document.getElementById('lookup-last-active').innerText = `${lastActiveDate.toLocaleString()} (${hoursDiff} hours ago)`;
-                document.getElementById('lookup-last-online').innerText = now.toLocaleString();
+                if(u.lastOnline) {
+                    const date = u.lastOnline.toDate();
+                    const hoursDiff = Math.floor((new Date() - date) / (1000 * 60 * 60));
+                    document.getElementById('lookup-last-active').innerText = `${date.toLocaleString()} (${hoursDiff} hours ago)`;
+                    document.getElementById('lookup-last-online').innerText = date.toLocaleString();
+                }
 
-                // Status Badge UI
                 const badge = document.getElementById('lookup-status-badge');
-                badge.innerText = status.toUpperCase();
-                badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${status === 'blocked' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
+                badge.innerText = (u.accountStatus || 'active').toUpperCase();
+                badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${u.accountStatus === 'blocked' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
 
-                // Action Button Logic
-                const toggleBtn = document.getElementById('btn-toggle-status');
-                toggleBtn.innerText = status === 'blocked' ? "Restore Access" : "Block User Access";
-                toggleBtn.onclick = async () => {
-                    const nextStatus = status === 'blocked' ? 'active' : 'blocked';
-                    await updateDoc(doc(db, "users", dId), { accountStatus: nextStatus });
-                    await writeLog("Status Change", `${u.email} to ${nextStatus}`);
+                document.getElementById('btn-toggle-status').onclick = async () => {
+                    const next = u.accountStatus === 'blocked' ? 'active' : 'blocked';
+                    await updateDoc(doc(db, "users", dId), { accountStatus: next });
+                    await writeLog("Status Change", `${u.email} to ${next}`);
                     document.getElementById('btn-worker-find').click();
                 };
-
-                document.getElementById('btn-flag-suspicious').onclick = () => {
-                    Swal.fire('Security Alert', 'User has been flagged for audit.', 'warning');
-                };
-
             } catch(e) { Swal.fire('Error', e.message, 'error'); }
         };
 
-        // 📝 SYNC LOGS
-        function loadLogs() {
-            onSnapshot(collection(db, "admin_logs"), (snap) => {
-                const list = document.getElementById('logs-display-list');
-                const data = snap.docs.map(d => d.data());
-                data.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                list.innerHTML = "";
-                data.forEach(l => {
-                    list.innerHTML += `<tr class="hover:bg-white/5"><td>${l.admin}</td><td class="text-purple-400 font-bold uppercase text-[10px]">${l.action}</td><td>${l.target}</td><td class="opacity-40 text-xs">${l.timestamp?.toDate().toLocaleString() || 'just now'}</td></tr>`;
-                });
-            });
-        }
-
-        // 🚀 PROJECT DEPLOYMENT
-        document.getElementById('btn-push-project').onclick = async () => {
-            const uid = document.getElementById('targetUID').value.trim();
-            const title = document.getElementById('projectTitleSelect').value;
-            const price = parseFloat(document.getElementById('taskPrice').value) || 0;
-            const desc = document.getElementById('taskInstructions').value;
-            if(!uid) return Swal.fire('UID Missing', 'Unique ID is required.', 'warning');
-            await addDoc(collection(db, "tasks"), { assignedTo: uid, title, price, description: desc, createdAt: serverTimestamp(), targetPage: 'task_player.html' });
-            await writeLog("Project Deployed", `${title} to ${uid}`);
-            Swal.fire('Deployed', 'Project is now live.', 'success');
-        };
-
-        function loadTasks() {
-            onSnapshot(collection(db, "tasks"), snap => {
-                const area = document.getElementById('live-task-display');
-                area.innerHTML = "";
-                snap.forEach(d => {
-                    const t = d.data();
-                    area.innerHTML += `<div class="p-4 glass flex justify-between items-center rounded-2xl"><div><p class="font-bold text-sm">${t.title}</p><p class="text-[10px] text-gray-500">${t.assignedTo}</p></div><button onclick="removeTask('${d.id}')" class="text-red-500 font-bold text-xs">REMOVE</button></div>`;
-                });
-            });
-        }
-        window.removeTask = async (id) => { if(confirm('Delete Project?')) await deleteDoc(doc(db, "tasks", id)); };
-
-        // 📢 BROADCAST
+        // --- BROADCAST ---
         document.getElementById('btn-update-announcement').onclick = async () => {
             const msg = document.getElementById('announcementInput').value.trim();
             if(!msg) return;
             await setDoc(doc(db, "settings", "announcements"), { text: msg }, { merge: true });
             await addDoc(collection(db, "announcements"), { text: msg, timestamp: serverTimestamp() });
-            await writeLog("New Broadcast", msg);
-            Swal.fire('Live', 'Marquee updated.', 'success');
+            await writeLog("Broadcast", msg);
+            Swal.fire('Live', 'Updated', 'success');
         };
 
-        // 📦 DATA VAULT
+        // --- DEPLOY ---
+        document.getElementById('btn-push-project').onclick = async () => {
+            const uid = document.getElementById('targetUID').value.trim();
+            const title = document.getElementById('projectTitleSelect').value;
+            const price = parseFloat(document.getElementById('taskPrice').value) || 0;
+            if(!uid) return Swal.fire('Error', 'UID required', 'warning');
+            await addDoc(collection(db, "tasks"), { assignedTo: uid, title, price, createdAt: serverTimestamp(), targetPage: 'task_player.html' });
+            await writeLog("Deploy", `${title} to ${uid}`);
+            Swal.fire('Deployed', 'Task is live', 'success');
+        };
+
+        function loadTasks() { onSnapshot(collection(db, "tasks"), snap => { const area = document.getElementById('live-task-display'); area.innerHTML = ""; snap.forEach(d => { const t = d.data(); area.innerHTML += `<div class="p-4 glass flex justify-between items-center rounded-2xl"><div><p class="font-bold text-sm">${t.title}</p><p class="text-[10px] text-gray-500">${t.assignedTo}</p></div><button onclick="removeTask('${d.id}')" class="text-red-500 font-bold text-xs">REMOVE</button></div>`; }); }); }
+        window.removeTask = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, "tasks", id)); };
+
+        // --- VAULT ---
         document.getElementById('btn-query-vault').onclick = async () => {
-            const projQ = (document.getElementById('filterProj').value || "").toLowerCase().trim();
-            const workerQ = (document.getElementById('filterWorker').value || "").toLowerCase().trim();
             const body = document.getElementById('vault-table-body');
-            body.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse text-purple-400 font-bold">SCRUBBING...</td></tr>`;
-
-            try {
-                const [subSnap, userSnap] = await Promise.all([ getDocs(collection(db, "submissions")), getDocs(collection(db, "users")) ]);
-                const userMap = {};
-                userSnap.forEach(uDoc => { userMap[uDoc.id] = uDoc.data(); });
-
-                body.innerHTML = "";
-                exportableData = [];
-
-                subSnap.forEach(sDoc => {
-                    const s = sDoc.data();
-                    const u = userMap[s.workerUID] || {};
-                    const title = (s.projectTitle || "Untitled").toString();
-                    const workerEmail = u.email || "N/A";
-                    const workerUID = u.uniqueID || s.workerUID || "N/A";
-
-                    if ((!projQ || title.toLowerCase().includes(projQ)) && 
-                        (!workerQ || workerEmail.toLowerCase().includes(workerQ) || workerUID.toLowerCase().includes(workerQ))) {
-                        const date = s.timestamp ? s.timestamp.toDate().toLocaleString() : 'Recent';
-                        exportableData.push({ Name: u.fullName || "User", Email: workerEmail, UniqueID: workerUID, Project: title, Reward: (s.earnedAmount || 0).toFixed(4), Date: date });
-
-                        body.innerHTML += `
-                            <tr class="hover:bg-white/5 transition-all text-white border-b border-white/5">
-                                <td class="p-4"><div class="font-bold text-sm">${u.fullName || 'User'}</div><div class="text-[9px] text-gray-500 font-mono">${workerEmail}</div></td>
-                                <td class="text-purple-400 text-xs font-semibold">${title}</td>
-                                <td class="text-green-400 font-bold">$${(s.earnedAmount || 0).toFixed(4)}</td>
-                                <td><audio src="${s.audioData}" controls class="h-8 w-32 opacity-60 hover:opacity-100 transition-opacity"></audio></td>
-                                <td class="text-[10px] opacity-40">${date}</td>
-                            </tr>`;
-                    }
-                });
-                if (exportableData.length === 0) body.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-400 text-xs font-bold uppercase">No records found.</td></tr>`;
-            } catch (e) { body.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500 font-bold">ERROR: ${e.message}</td></tr>`; }
+            body.innerHTML = "<tr><td colspan='5' class='p-10 text-center animate-pulse text-purple-400'>Loading...</td></tr>";
+            const [subSnap, userSnap] = await Promise.all([getDocs(collection(db, "submissions")), getDocs(collection(db, "users"))]);
+            const userMap = {}; userSnap.forEach(uDoc => userMap[uDoc.id] = uDoc.data());
+            body.innerHTML = ""; exportableData = [];
+            subSnap.forEach(sDoc => {
+                const s = sDoc.data(); const u = userMap[s.workerUID] || {};
+                const date = s.timestamp ? s.timestamp.toDate().toLocaleString() : 'Recent';
+                exportableData.push({Name: u.fullName||"User", Email: u.email||"N/A", Project: s.projectTitle, Reward: s.earnedAmount, Date: date});
+                body.innerHTML += `<tr class="text-white border-b border-white/5"><td class="p-4"><div class="font-bold text-sm">${u.fullName||'User'}</div></td><td>${s.projectTitle}</td><td class="text-green-400">$${s.earnedAmount.toFixed(4)}</td><td><audio src="${s.audioData}" controls class="h-8 w-32"></audio></td><td class="text-[10px] opacity-40">${date}</td></tr>`;
+            });
         };
+        window.exportToCSV = () => { if(exportableData.length===0) return; let csv = "Name,Email,Project,Reward,Date\n"; exportableData.forEach(r => csv += `"${r.Name}","${r.Email}","${r.Project}","${r.Reward}","${r.Date}"\n`); const blob = new Blob([csv], {type: 'text/csv'}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download=`Payouts_${Date.now()}.csv`; link.click(); };
 
-        // 📥 EXPORT CSV
-        window.exportToCSV = () => {
-            if (exportableData.length === 0) return Swal.fire('No Data', 'Query some data first.', 'warning');
-            let csv = "Name,Email,WorkID,Project,Reward,Date\n";
-            exportableData.forEach(r => { csv += `"${r.Name}","${r.Email}","${r.UniqueID}","${r.Project}","${r.Reward}","${r.Date}"\n`; });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Payouts_${Date.now()}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        };
-
-        // 🔑 ADMIN AUTHORITY
-        document.getElementById('btn-grant-admin').onclick = async () => {
-            const email = document.getElementById('authEmailInput').value.toLowerCase().trim();
-            const q = query(collection(db, "users"), where("email", "==", email));
-            const snap = await getDocs(q);
-            if(snap.empty) return Swal.fire('Error', 'User not found.', 'error');
-            await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'admin' });
-            await writeLog("Admin Granted", email);
-            Swal.fire('Success', `${email} is Admin.`, 'success');
-        };
-
-        document.getElementById('btn-revoke-admin').onclick = async () => {
-            const email = document.getElementById('authEmailInput').value.toLowerCase().trim();
-            if(email === "as4556676@gmail.com") return Swal.fire('Error', 'Cannot revoke master.', 'error');
-            const q = query(collection(db, "users"), where("email", "==", email));
-            const snap = await getDocs(q);
-            if(snap.empty) return Swal.fire('Error', 'User not found.', 'error');
-            await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'user' });
-            await writeLog("Admin Revoked", email);
-            Swal.fire('Revoked', `${email} access removed.`, 'info');
-        };
+        // --- LOGS & AUTHORITY ---
+        function loadLogs() { onSnapshot(collection(db, "admin_logs"), snap => { const list = document.getElementById('logs-display-list'); const data = snap.docs.map(d => d.data()); data.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); list.innerHTML = ""; data.forEach(l => { list.innerHTML += `<tr class="hover:bg-white/5"><td>${l.admin}</td><td class="text-purple-400 font-bold uppercase text-[10px]">${l.action}</td><td>${l.target}</td><td class="opacity-40 text-xs">${l.timestamp?.toDate().toLocaleString() || '---'}</td></tr>`; }); }); }
+        document.getElementById('btn-grant-admin').onclick = async () => { const email = document.getElementById('authEmailInput').value.toLowerCase().trim(); const q = query(collection(db, "users"), where("email", "==", email)); const snap = await getDocs(q); if(!snap.empty) { await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'admin' }); await writeLog("Admin Grant", email); Swal.fire('Success', 'Admin added', 'success'); } };
+        document.getElementById('btn-revoke-admin').onclick = async () => { const email = document.getElementById('authEmailInput').value.toLowerCase().trim(); if(email === "as4556676@gmail.com") return; const q = query(collection(db, "users"), where("email", "==", email)); const snap = await getDocs(q); if(!snap.empty) { await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'user' }); await writeLog("Admin Revoke", email); Swal.fire('Revoked', 'Access removed', 'info'); } };
     </script>
 </body>
 </html>
