@@ -49,28 +49,88 @@
         
         <!-- 📢 BROADCAST CENTER -->
         <section id="broadcast" class="content-section active">
-            <h2 class="text-2xl font-bold mb-8">System Broadcast</h2>
+            <h2 class="text-2xl font-bold mb-8 text-white">System Broadcast</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="text" id="announcementInput" class="admin-input mb-4" placeholder="Enter scrolling message...">
-                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full transition-all">PUSH LIVE</button>
+                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full transition-all text-white">PUSH LIVE</button>
             </div>
         </section>
 
-        <!-- 🛡️ SEARCH CENTER -->
+        <!-- 🛡️ SEARCH CENTER (RE-STLYED TO USER LOOKUP) -->
         <section id="search" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Worker Lookup</h2>
+            <h2 class="text-2xl font-bold mb-8 text-white">Advanced User Lookup</h2>
+            
             <div class="flex gap-4 mb-10 max-w-2xl">
-                <input type="text" id="workerSearchInput" class="admin-input" placeholder="Enter Email or Unique ID...">
-                <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white">Find</button>
+                <input type="text" id="workerSearchInput" class="admin-input" placeholder="Search by Email or Unique ID...">
+                <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500">Lookup</button>
             </div>
-            <div id="search-results-box"></div>
+
+            <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[550px]">
+                <!-- Internal Sidebar -->
+                <div class="w-64 bg-white/5 p-6 border-r border-white/5 flex flex-col gap-2">
+                    <div class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Navigation</div>
+                    <div class="p-3 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20">Overview</div>
+                    <div class="p-3 hover:bg-white/5 text-gray-400 rounded-lg text-xs cursor-pointer">Project Activity</div>
+                    <div class="p-3 hover:bg-white/5 text-gray-400 rounded-lg text-xs cursor-pointer">Security Logs</div>
+                    
+                    <div class="mt-auto pt-6 border-t border-white/5">
+                        <p class="text-[9px] text-gray-500 uppercase font-bold mb-2">Quick Identifiers</p>
+                        <p id="lookup-side-email" class="text-[10px] text-white truncate font-mono">---</p>
+                        <p id="lookup-side-uid" class="text-[10px] text-purple-400 font-mono mt-1">---</p>
+                    </div>
+                </div>
+
+                <!-- Profile Data Body -->
+                <div class="flex-1 p-10 overflow-y-auto">
+                    <div class="flex justify-between items-start mb-12">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white mb-2">Overview</h1>
+                            <div id="lookup-status-badge" class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">---</div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-gray-500 uppercase font-bold">Current Balance</p>
+                            <p id="lookup-balance" class="text-3xl font-bold text-green-400">$0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
+                        <!-- Metadata -->
+                        <div class="space-y-6">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-2">Metadata</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-xs"><span class="text-gray-500">Name:</span> <span id="lookup-name" class="text-white font-semibold">---</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-gray-500">Email:</span> <span id="lookup-email" class="text-white">---</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-gray-500">Work ID:</span> <span id="lookup-uid" class="text-purple-400 font-mono">---</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-gray-500">Role:</span> <span id="lookup-role" class="text-white uppercase">User</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-gray-500">Member Since:</span> <span id="lookup-joined" class="text-gray-400">---</span></div>
+                            </div>
+
+                            <div class="mt-10">
+                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Worker Tags</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-gray-400 font-mono">active_worker</span>
+                                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-gray-400 font-mono">kyc_verified</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-2">System Actions</h3>
+                            <button id="btn-toggle-status" class="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-red-500/10 hover:text-red-400 transition-all">Block/Unblock Access</button>
+                            <button class="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all cursor-not-allowed opacity-50">Reset MFA Data</button>
+                            <button class="w-full py-3 bg-red-600/20 text-red-500 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all">Flag as Suspicious</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- 🚀 DEPLOY PROJECT -->
         <section id="deploy" class="content-section">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div>
-                    <h2 class="text-2xl font-bold mb-8">Deploy New Project</h2>
+                    <h2 class="text-2xl font-bold mb-8 text-white">Deploy Project</h2>
                     <div class="glass p-8 rounded-[32px] space-y-4">
                         <input type="text" id="targetUID" class="admin-input" placeholder="Worker Unique ID">
                         <select id="projectTitleSelect" class="admin-input bg-[#050510]">
@@ -84,7 +144,7 @@
                     </div>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold mb-8">Live Assignments</h2>
+                    <h2 class="text-2xl font-bold mb-8 text-white">Live Assignments</h2>
                     <div id="live-task-display" class="space-y-3"></div>
                 </div>
             </div>
@@ -94,7 +154,7 @@
         <section id="vault" class="content-section">
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 class="text-2xl font-bold mb-2">Advanced Data Vault</h2>
+                    <h2 class="text-2xl font-bold mb-2 text-white">Advanced Data Vault</h2>
                     <p class="text-gray-500 text-sm">Search by Project or Worker and Export Payouts.</p>
                 </div>
                 <button onclick="exportToCSV()" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase hover:bg-green-500 transition-all flex items-center gap-2 text-white">
@@ -118,7 +178,7 @@
 
         <!-- 📝 ACTIVITY LOGS -->
         <section id="logs" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Activity Logs</h2>
+            <h2 class="text-2xl font-bold mb-8 text-white">Activity Logs</h2>
             <div class="glass rounded-[32px] overflow-hidden">
                 <table class="w-full">
                     <thead><tr><th>Admin</th><th>Operation</th><th>Target</th><th>Time</th></tr></thead>
@@ -129,7 +189,7 @@
 
         <!-- 🔑 AUTHORITY -->
         <section id="authority" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Authority Management</h2>
+            <h2 class="text-2xl font-bold mb-8 text-white">Authority Management</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="User Email Address...">
                 <div class="flex gap-4">
@@ -189,45 +249,58 @@
             await addDoc(collection(db, "admin_logs"), { admin: activeAdminEmail, action, target, timestamp: serverTimestamp() });
         }
 
-        // 🛡️ SEARCH WORKER
+        // 🛡️ ADVANCED USER LOOKUP LOGIC
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
             const box = document.getElementById('search-results-box');
             if(!val) return;
-            box.innerHTML = `<p class="p-10 animate-pulse text-purple-400">Scanning Database...</p>`;
+
             try {
                 let q = query(collection(db, "users"), where("email", "==", val));
                 let snap = await getDocs(q);
-                if(snap.empty) { q = query(collection(db, "users"), where("uniqueID", "==", val)); snap = await getDocs(q); }
-                if(snap.empty) { box.innerHTML = `<p class="p-6 glass rounded-xl text-red-400">Worker not found.</p>`; return; }
+                if(snap.empty) {
+                    q = query(collection(db, "users"), where("uniqueID", "==", val));
+                    snap = await getDocs(q);
+                }
+
+                if(snap.empty) {
+                    box.classList.add('hidden');
+                    Swal.fire('Error', 'Worker not found.', 'error');
+                    return;
+                }
                 
                 const u = snap.docs[0].data();
                 const dId = snap.docs[0].id;
                 const status = u.accountStatus || 'active';
-                box.innerHTML = `
-                    <div class="glass p-8 rounded-[32px] border-l-4 ${status === 'blocked' ? 'border-red-500' : 'border-green-500'}">
-                        <div class="flex justify-between items-center text-white">
-                            <div>
-                                <h3 class="text-2xl font-bold">${u.fullName || 'User'}</h3>
-                                <p class="text-gray-500 text-sm font-mono">${u.email}</p>
-                                <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-10">
-                                    <div><p class="text-[10px] text-gray-500 font-bold uppercase">Balance</p><p class="text-green-400 font-bold text-xl">$${(u.balance || 0).toFixed(2)}</p></div>
-                                    <div><p class="text-[10px] text-gray-500 font-bold uppercase">Work ID</p><p class="text-purple-400 font-mono">${u.uniqueID || 'N/A'}</p></div>
-                                    <div><p class="text-[10px] text-gray-500 font-bold uppercase">Status</p><p class="font-bold uppercase">${status}</p></div>
-                                    <div><p class="text-[10px] text-gray-500 font-bold uppercase">Role</p><p class="text-xs uppercase">${u.role || 'user'}</p></div>
-                                </div>
-                            </div>
-                            <button onclick="toggleWorkerStatus('${dId}', '${status}')" class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-xs font-bold hover:bg-white/10">BLOCK / UNBLOCK</button>
-                        </div>
-                    </div>`;
-            } catch(e) { box.innerHTML = `<p class="text-red-500">${e.message}</p>`; }
-        };
 
-        window.toggleWorkerStatus = async (id, cur) => {
-            const next = cur === 'blocked' ? 'active' : 'blocked';
-            await updateDoc(doc(db, "users", id), { accountStatus: next });
-            await writeLog("Status Update", `User ${id} to ${next}`);
-            document.getElementById('btn-worker-find').click();
+                box.classList.remove('hidden');
+
+                // Update Overview
+                document.getElementById('lookup-side-email').innerText = u.email;
+                document.getElementById('lookup-side-uid').innerText = u.uniqueID || 'N/A';
+                document.getElementById('lookup-name').innerText = u.fullName || '---';
+                document.getElementById('lookup-email').innerText = u.email;
+                document.getElementById('lookup-uid').innerText = u.uniqueID || '---';
+                document.getElementById('lookup-balance').innerText = `$${(u.balance || 0).toFixed(2)}`;
+                document.getElementById('lookup-role').innerText = u.role || 'user';
+                document.getElementById('lookup-joined').innerText = u.createdAt ? u.createdAt.toDate().toLocaleDateString() : 'Unknown';
+
+                // Status Badge
+                const badge = document.getElementById('lookup-status-badge');
+                badge.innerText = status.toUpperCase();
+                badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${status === 'blocked' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
+
+                // Toggle Button
+                const toggleBtn = document.getElementById('btn-toggle-status');
+                toggleBtn.innerText = status === 'blocked' ? "Restore Access" : "Block User Access";
+                toggleBtn.onclick = async () => {
+                    const nextStatus = status === 'blocked' ? 'active' : 'blocked';
+                    await updateDoc(doc(db, "users", dId), { accountStatus: nextStatus });
+                    await writeLog("Status Change", `${u.email} to ${nextStatus}`);
+                    document.getElementById('btn-worker-find').click();
+                };
+
+            } catch(e) { Swal.fire('Error', e.message, 'error'); }
         };
 
         // 📝 SYNC LOGS
@@ -252,7 +325,7 @@
             if(!uid) return Swal.fire('UID Missing', 'Unique ID is required.', 'warning');
             await addDoc(collection(db, "tasks"), { assignedTo: uid, title, price, description: desc, createdAt: serverTimestamp(), targetPage: 'task_player.html' });
             await writeLog("Project Deployed", `${title} to ${uid}`);
-            Swal.fire('Deployed', 'Project is now live for worker.', 'success');
+            Swal.fire('Deployed', 'Project is now live.', 'success');
         };
 
         function loadTasks() {
@@ -274,42 +347,39 @@
             await setDoc(doc(db, "settings", "announcements"), { text: msg }, { merge: true });
             await addDoc(collection(db, "announcements"), { text: msg, timestamp: serverTimestamp() });
             await writeLog("New Broadcast", msg);
-            Swal.fire('Live', 'Marquee updated on all dashboards.', 'success');
+            Swal.fire('Live', 'Marquee updated.', 'success');
         };
 
-        // 📦 DATA VAULT (ERROR-PROOFED)
+        // 📦 DATA VAULT
         document.getElementById('btn-query-vault').onclick = async () => {
             const projQ = (document.getElementById('filterProj').value || "").toLowerCase().trim();
             const workerQ = (document.getElementById('filterWorker').value || "").toLowerCase().trim();
             const body = document.getElementById('vault-table-body');
-            body.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse text-purple-400 font-bold">SCRUBBING ARCHIVES...</td></tr>`;
+            body.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse text-purple-400 font-bold">SCRUBBING...</td></tr>`;
 
             try {
                 const [subSnap, userSnap] = await Promise.all([ getDocs(collection(db, "submissions")), getDocs(collection(db, "users")) ]);
                 const userMap = {};
-                userSnap.forEach(uDoc => {
-                    const ud = uDoc.data();
-                    userMap[uDoc.id] = { name: ud.fullName || "User", email: ud.email || "N/A", uid: ud.uniqueID || "N/A" };
-                });
+                userSnap.forEach(uDoc => { userMap[uDoc.id] = uDoc.data(); });
 
                 body.innerHTML = "";
                 exportableData = [];
 
                 subSnap.forEach(sDoc => {
                     const s = sDoc.data();
-                    const worker = userMap[s.workerUID] || { name: 'Unknown', email: 'N/A', uid: s.workerUID || 'N/A' };
+                    const u = userMap[s.workerUID] || {};
                     const title = (s.projectTitle || "Untitled").toString();
+                    const workerEmail = u.email || "N/A";
+                    const workerUID = u.uniqueID || s.workerUID || "N/A";
 
-                    const matchesP = !projQ || title.toLowerCase().includes(projQ);
-                    const matchesW = !workerQ || worker.email.toLowerCase().includes(workerQ) || worker.uid.toLowerCase().includes(workerQ);
-
-                    if (matchesP && matchesW) {
+                    if ((!projQ || title.toLowerCase().includes(projQ)) && 
+                        (!workerQ || workerEmail.toLowerCase().includes(workerQ) || workerUID.toLowerCase().includes(workerQ))) {
                         const date = s.timestamp ? s.timestamp.toDate().toLocaleString() : 'Recent';
-                        exportableData.push({ Name: worker.name, Email: worker.email, UniqueID: worker.uid, Project: title, Reward: (s.earnedAmount || 0).toFixed(4), Date: date });
+                        exportableData.push({ Name: u.fullName || "User", Email: workerEmail, UniqueID: workerUID, Project: title, Reward: (s.earnedAmount || 0).toFixed(4), Date: date });
 
                         body.innerHTML += `
                             <tr class="hover:bg-white/5 transition-all text-white border-b border-white/5">
-                                <td class="p-4"><div class="font-bold text-sm">${worker.name}</div><div class="text-[9px] text-gray-500 font-mono">${worker.email}</div></td>
+                                <td class="p-4"><div class="font-bold text-sm">${u.fullName || 'User'}</div><div class="text-[9px] text-gray-500 font-mono">${workerEmail}</div></td>
                                 <td class="text-purple-400 text-xs font-semibold">${title}</td>
                                 <td class="text-green-400 font-bold">$${(s.earnedAmount || 0).toFixed(4)}</td>
                                 <td><audio src="${s.audioData}" controls class="h-8 w-32 opacity-60 hover:opacity-100 transition-opacity"></audio></td>
@@ -317,19 +387,19 @@
                             </tr>`;
                     }
                 });
-                if (exportableData.length === 0) body.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-400 text-xs font-bold uppercase">No records matched your query.</td></tr>`;
+                if (exportableData.length === 0) body.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-400 text-xs font-bold uppercase">No records found.</td></tr>`;
             } catch (e) { body.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500 font-bold">ERROR: ${e.message}</td></tr>`; }
         };
 
         // 📥 EXPORT CSV
         window.exportToCSV = () => {
-            if (exportableData.length === 0) return Swal.fire('No Data', 'Fetch records first.', 'warning');
+            if (exportableData.length === 0) return Swal.fire('No Data', 'Query some data first.', 'warning');
             let csv = "Name,Email,WorkID,Project,Reward,Date\n";
             exportableData.forEach(r => { csv += `"${r.Name}","${r.Email}","${r.UniqueID}","${r.Project}","${r.Reward}","${r.Date}"\n`; });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Payouts_Export_${Date.now()}.csv`);
+            link.setAttribute("download", `Payouts_${Date.now()}.csv`);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
@@ -341,12 +411,12 @@
             if(snap.empty) return Swal.fire('Error', 'User not found.', 'error');
             await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'admin' });
             await writeLog("Admin Granted", email);
-            Swal.fire('Success', `${email} is now an administrator.`, 'success');
+            Swal.fire('Success', `${email} is Admin.`, 'success');
         };
 
         document.getElementById('btn-revoke-admin').onclick = async () => {
             const email = document.getElementById('authEmailInput').value.toLowerCase().trim();
-            if(email === "as4556676@gmail.com") return Swal.fire('Forbidden', 'Cannot revoke master admin.', 'error');
+            if(email === "as4556676@gmail.com") return Swal.fire('Error', 'Cannot revoke master.', 'error');
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
             if(snap.empty) return Swal.fire('Error', 'User not found.', 'error');
