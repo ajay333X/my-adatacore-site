@@ -10,10 +10,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #050510; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; overflow-x: hidden; }
-        
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        
         #announcement-banner {
             position: fixed; top: 20px; left: 280px; right: 20px; z-index: 50;
             background: rgba(167, 139, 250, 0.1); backdrop-filter: blur(25px);
@@ -22,10 +20,9 @@
         }
         .collapsed-banner { left: 100px !important; }
         .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
@@ -38,11 +35,12 @@
 </head>
 <body class="flex">
 
+    <!-- 📢 MODAL -->
     <div id="broadcast-modal" class="modal p-6">
         <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <h3 class="font-bold text-lg flex items-center gap-2"><span>📜</span> System Broadcasts</h3>
-                <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white">✕</button>
+                <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white">✕</button>
             </div>
             <div id="broadcast-list" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
                 <p class="text-gray-500 text-xs italic">Loading history...</p>
@@ -50,6 +48,7 @@
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
         <div class="p-6 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white">
@@ -59,14 +58,14 @@
             <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white">✨</button>
         </div>
         <nav class="flex-1 px-4 space-y-2">
-            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group">
+            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6">
                 <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">U</div>
                 <span class="nav-text text-xs font-semibold truncate text-white" id="user-display-name">Loading...</span>
             </a>
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
-            <button id="btn-open-archive" onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all">
+            <button onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10">
                 <span>🔔</span> <span class="nav-text text-sm font-medium">System News</span>
             </button>
             <div id="admin-nav-container"></div>
@@ -76,51 +75,44 @@
         </button>
     </aside>
 
-    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500 main-spacer">
+    <main id="main-content" class="ml-[260px] p-10 w-full main-spacer">
+        <!-- Banner -->
         <div id="announcement-banner" class="hidden rounded-2xl overflow-hidden flex items-center">
-            <div class="bg-purple-600 h-full flex items-center px-4 text-[9px] font-black tracking-tighter text-white whitespace-nowrap">NEW ALERT</div>
-            <div class="marquee-container">
-                <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-widest">...</p>
-            </div>
-            <button onclick="acknowledgeMsg()" class="h-full bg-white/10 hover:bg-white/20 px-5 text-[9px] font-bold border-l border-white/5 transition-all text-white whitespace-nowrap">ACKNOWLEDGE ➔</button>
+            <div class="bg-purple-600 h-full flex items-center px-4 text-[9px] font-black text-white">NEW ALERT</div>
+            <div class="marquee-container"><p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-widest">...</p></div>
+            <button onclick="acknowledgeMsg()" class="h-full bg-white/10 hover:bg-white/20 px-5 text-[9px] font-bold border-l border-white/5 text-white">ACKNOWLEDGE ➔</button>
         </div>
 
         <header class="flex justify-between items-end mb-12">
             <div>
                 <h1 id="greeting" class="text-4xl font-bold text-white">Hello</h1>
-                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-...</p>
+                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-widest uppercase">UID: Loading...</p>
             </div>
             <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-2">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Core Active</span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase">Core Active</span>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px]">
-                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
+                <p class="text-gray-500 text-[10px] uppercase font-bold mb-4">Total Balance</p>
                 <h3 class="text-4xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
             </div>
-            <div class="lg:col-span-2 glass-card p-6 rounded-[32px]">
-                <canvas id="earningChart" height="85"></canvas>
-            </div>
+            <div class="lg:col-span-2 glass-card p-6 rounded-[32px]"><canvas id="earningChart" height="85"></canvas></div>
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20">
-                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Quality Score</p>
+                <p class="text-gray-500 text-[10px] uppercase font-bold mb-4">Quality Score</p>
                 <h3 class="text-4xl font-bold text-purple-400">98%</h3>
             </div>
         </div>
 
-        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects
-        </h2>
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3"><span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects</h2>
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16"></div>
 
-        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span> Transaction Log
-        </h2>
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3"><span class="w-8 h-[1px] bg-purple-500/50"></span> Transaction Log</h2>
         <div class="glass-card rounded-[32px] overflow-hidden custom-scroll">
             <table class="w-full text-left">
-                <thead><tr class="bg-white/5 border-b border-white/5"><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Project</th><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Payout</th><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Date</th><th class="p-6 text-center text-[10px] uppercase font-bold text-gray-500">Status</th></tr></thead>
+                <thead><tr class="bg-white/5 border-b border-white/5"><th class="p-6 text-[10px] text-gray-500">PROJECT</th><th class="p-6 text-[10px] text-gray-500">PAYOUT</th><th class="p-6 text-[10px] text-gray-500">DATE</th><th class="p-6 text-center text-[10px] text-gray-500">STATUS</th></tr></thead>
                 <tbody id="history-body" class="divide-y divide-white/5"></tbody>
             </table>
         </div>
@@ -129,7 +121,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, updateDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -145,6 +137,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // UI Helpers
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
@@ -152,46 +145,31 @@
             sb.classList.toggle('collapsed');
             const isCollapsed = sb.classList.contains('collapsed');
             main.style.marginLeft = isCollapsed ? '80px' : '260px';
-            if(isCollapsed) { banner.classList.add('collapsed-banner'); } 
-            else { banner.classList.remove('collapsed-banner'); }
+            if(banner) banner.classList.toggle('collapsed-banner', isCollapsed);
         };
-
-        window.toggleModal = () => { document.getElementById('broadcast-modal').classList.toggle('active'); };
-
+        window.toggleModal = () => document.getElementById('broadcast-modal').classList.toggle('active');
         window.acknowledgeMsg = () => {
-            const currentMsg = document.getElementById('announcement-text').innerText;
-            localStorage.setItem('lastAckMsg', currentMsg);
+            localStorage.setItem('lastAckMsg', document.getElementById('announcement-text').innerText);
             document.getElementById('announcement-banner').style.display = 'none';
-            document.getElementById('btn-open-archive').classList.remove('alert-active');
         };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // ✅ फिक्स: लिस्नर के बाहर सिर्फ एक बार टाइम अपडेट करें
+                // 1. Update Last Online ONCE per login
                 try {
-                    await updateDoc(doc(db, "users", user.uid), { 
-                        lastOnline: serverTimestamp() 
-                    });
-                } catch(e) { console.error("Tracking Error:", e); }
+                    await updateDoc(doc(db, "users", user.uid), { lastOnline: serverTimestamp() });
+                } catch(e) { console.log("Tracking skip (Admin probably)"); }
 
-                // 📢 न्यूज लिस्नर
+                // 2. News Listener
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
-                        const banner = document.getElementById('announcement-banner');
-                        const btn = document.getElementById('btn-open-archive');
                         document.getElementById('announcement-text').innerText = msg;
-                        if (localStorage.getItem('lastAckMsg') === msg) {
-                            banner.style.display = 'none';
-                            btn.classList.remove('alert-active');
-                        } else {
-                            banner.style.display = 'flex';
-                            btn.classList.add('alert-active');
-                        }
+                        document.getElementById('announcement-banner').style.display = (localStorage.getItem('lastAckMsg') === msg) ? 'none' : 'flex';
                     }
                 });
 
-                // 👤 यूजर डेटा लिस्नर (यहाँ से updateDoc हटा दिया गया है)
+                // 3. Main Data Listener (No updateDoc inside here!)
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const d = snap.data();
@@ -202,14 +180,13 @@
                         
                         const h = new Date().getHours();
                         let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
-                        document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0]}`;
+                        document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0] || ''}`;
 
                         if (d.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            const adminNav = document.getElementById('admin-nav-container');
-                            if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
+                            document.getElementById('admin-nav-container').innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
                         }
                         loadMyTasks(d.uniqueID);
-                        loadHistory(user.uid);
+                        loadHistory(d.uniqueID);
                         loadBroadcasts();
                         renderChart();
                     }
@@ -218,8 +195,7 @@
         });
 
         function loadMyTasks(uid) {
-            const q = query(collection(db, "tasks"), where("assignedTo", "==", uid));
-            onSnapshot(q, (snap) => {
+            onSnapshot(query(collection(db, "tasks"), where("assignedTo", "==", uid)), (snap) => {
                 const c = document.getElementById('task-container');
                 c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card text-gray-500">No active assignments.</div>` : "";
                 snap.forEach(doc => {
@@ -230,15 +206,15 @@
         }
 
         function loadHistory(uid) {
-            const q = query(collection(db, "submissions"), where("workerUID", "==", uid));
-            onSnapshot(q, snap => {
+            onSnapshot(query(collection(db, "submissions"), where("workerUID", "==", uid)), snap => {
                 const b = document.getElementById('history-body');
-                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No transactions.</td></tr>` : "";
-                snap.docs.sort((x,y) => (y.data().timestamp?.seconds || 0) - (x.data().timestamp?.seconds || 0)).forEach(doc => {
+                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No records.</td></tr>` : "";
+                const sorted = snap.docs.sort((x,y) => (y.data().timestamp?.seconds || 0) - (x.data().timestamp?.seconds || 0));
+                sorted.forEach(doc => {
                     const s = doc.data();
                     const status = s.status || 'Pending';
                     const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
-                    b.innerHTML += `<tr class="hover:bg-white/[0.02]"><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500 uppercase">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
+                    b.innerHTML += `<tr><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
                 });
             });
         }
@@ -249,14 +225,14 @@
                 l.innerHTML = snap.empty ? `<p class="text-gray-500 text-xs italic">Empty archive.</p>` : "";
                 snap.forEach(doc => {
                     const d = doc.data();
-                    l.innerHTML += `<div class="p-5 bg-white/5 rounded-2xl border border-white/5 mb-3"><div class="flex justify-between items-start mb-2"><span class="text-[8px] font-black text-purple-400 uppercase">System Alert</span><span class="text-[9px] text-gray-600">${d.timestamp?.toDate().toLocaleString() || '---'}</span></div><p class="text-[13px] text-gray-200">${d.text}</p></div>`;
+                    l.innerHTML += `<div class="p-5 bg-white/5 rounded-2xl border border-white/5 mb-3"><div class="flex justify-between items-start mb-2"><span class="text-[8px] font-black text-purple-400 uppercase">Alert</span><span class="text-[9px] text-gray-600">${d.timestamp?.toDate().toLocaleString() || '---'}</span></div><p class="text-[13px] text-gray-200">${d.text}</p></div>`;
                 });
             });
         }
 
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
-            new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
+            new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [10, 15, 8, 20, 18, 25, 22], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
         }
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
