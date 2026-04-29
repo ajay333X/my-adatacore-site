@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/wavesurfer.js@7"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { background: #02020a; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
         .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .record-btn { width: 80px; height: 80px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
@@ -16,7 +16,6 @@
         .pulse { position: absolute; width: 100%; height: 100%; background: #ef4444; border-radius: 50%; z-index: -1; opacity: 0.5; animation: pulse-out 1.5s infinite; }
         @keyframes pulse-out { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
         .waveform-container { width: 100%; height: 100px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-top: 20px; }
-        .instruction-item { display: flex; gap: 12px; align-items: start; font-size: 13px; color: #94a3b8; line-height: 1.6; }
     </style>
 </head>
 <body class="flex">
@@ -26,57 +25,30 @@
             <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Project 101</span>
             <h1 class="text-2xl font-bold mt-1">Ajay Test Demo</h1>
         </div>
-
-        <div class="space-y-6 flex-1">
-            <h3 class="text-xs font-bold text-gray-500 uppercase">Guidelines</h3>
-            <div class="instruction-item">
-                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">1</span>
-                <p>शांत कमरे में रिकॉर्ड करें, शोर (noise) नहीं होना चाहिए।</p>
-            </div>
-            <div class="instruction-item">
-                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">2</span>
-                <p>रिकॉर्डिंग शुरू करने के बाद 2 सेकंड चुप रहें, फिर बोलना शुरू करें।</p>
-            </div>
-            <div class="instruction-item">
-                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">3</span>
-                <p>अपनी आवाज़ साफ़ और नॉर्मल स्पीड में रखें।</p>
-            </div>
+        <div class="space-y-6 flex-1 text-gray-400 text-sm">
+            <p>1. शांत कमरे में रिकॉर्ड करें।</p>
+            <p>2. शुरू में 2 सेकंड चुप रहें।</p>
         </div>
-
-        <div class="mt-auto pt-6 border-t border-white/5">
-            <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-500">Rate</span>
-                <span class="text-green-400 font-bold">$8.00 / Hr</span>
-            </div>
+        <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center text-sm">
+            <span class="text-gray-500">Rate</span>
+            <span class="text-green-400 font-bold">$8.00 / Hr</span>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col items-center justify-center p-20 relative">
-        <div class="w-full max-w-3xl text-center">
-            <div class="mb-12">
-                <div id="timer" class="text-8xl font-mono tracking-tighter mb-4 text-white/90">00:00</div>
-                <p id="status" class="text-[11px] uppercase tracking-[0.4em] text-purple-400 font-bold">Ready to Capture</p>
-            </div>
+    <main class="flex-1 flex flex-col items-center justify-center p-20">
+        <div id="timer" class="text-8xl font-mono tracking-tighter mb-4 text-white/90">00:00</div>
+        <p id="status" class="text-[11px] uppercase tracking-[0.4em] text-purple-400 font-bold mb-12">Ready to Capture</p>
 
-            <div class="flex flex-col items-center gap-10">
-                <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl z-10">
-                    <div id="pulse-ring"></div>
-                    <div id="btn-icon" class="w-5 h-5 bg-white rounded-sm"></div>
-                </button>
+        <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl">
+            <div id="pulse-ring"></div>
+            <div id="btn-icon" class="w-5 h-5 bg-white rounded-sm"></div>
+        </button>
 
-                <div id="playbackUI" class="hidden w-full space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-700">
-                    <div class="flex flex-col items-center">
-                        <div class="waveform-container" id="waveform"></div>
-                        <button id="playBtn" class="mt-4 flex items-center gap-2 bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full border border-white/10 text-[10px] font-bold transition-all">
-                            <span id="play-icon">▶</span> <span id="play-text">LISTEN AGAIN</span>
-                        </button>
-                    </div>
-                    
-                    <div class="flex gap-4 max-w-md mx-auto">
-                        <button id="discardBtn" class="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[11px] font-bold tracking-widest border border-white/10 transition-all">DISCARD</button>
-                        <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-[11px] font-bold tracking-widest shadow-xl hover:shadow-purple-500/20 transition-all">SUBMIT WORK</button>
-                    </div>
-                </div>
+        <div id="playbackUI" class="hidden w-full max-w-xl space-y-8 mt-12">
+            <div id="waveform"></div>
+            <div class="flex gap-4">
+                <button id="discardBtn" class="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold tracking-widest">DISCARD</button>
+                <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-xs font-bold tracking-widest shadow-xl">SUBMIT WORK</button>
             </div>
         </div>
     </main>
@@ -84,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, updateDoc, increment, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, increment, collection, addDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -101,56 +73,25 @@
         const db = getFirestore(app);
 
         let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob, wavesurfer;
-        const recordBtn = document.getElementById('recordBtn');
-        const playBtn = document.getElementById('playBtn');
 
         onAuthStateChanged(auth, u => { if(!u) window.location.href="auth.html"; });
 
-        const initWaveform = (url) => {
-            if(wavesurfer) wavesurfer.destroy();
-            wavesurfer = WaveSurfer.create({
-                container: '#waveform',
-                waveColor: '#4f46e5',
-                progressColor: '#a78bfa',
-                cursorColor: '#fff',
-                barWidth: 2,
-                barRadius: 3,
-                responsive: true,
-                height: 100,
-            });
-            wavesurfer.load(url);
-            
-            // Play/Pause toggle
-            playBtn.onclick = () => {
-                wavesurfer.playPause();
-                const isPlaying = wavesurfer.isPlaying();
-                document.getElementById('play-icon').innerText = isPlaying ? "⏸" : "▶";
-                document.getElementById('play-text').innerText = isPlaying ? "PAUSE" : "LISTEN AGAIN";
-            };
-
-            wavesurfer.on('finish', () => {
-                document.getElementById('play-icon').innerText = "▶";
-                document.getElementById('play-text').innerText = "LISTEN AGAIN";
-            });
-        };
-
+        const recordBtn = document.getElementById('recordBtn');
         recordBtn.onclick = async () => {
             if (mediaRecorder?.state === "recording") {
                 mediaRecorder.stop();
                 clearInterval(timerInterval);
                 recordBtn.classList.remove('recording');
                 document.getElementById('pulse-ring').classList.remove('pulse');
-                document.getElementById('status').innerText = "Recording Complete";
+                document.getElementById('status').innerText = "Complete";
             } else {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = []; duration = 0;
-                
                 mediaRecorder.onstart = () => {
                     recordBtn.classList.add('recording');
                     document.getElementById('pulse-ring').classList.add('pulse');
-                    document.getElementById('status').innerText = "Live Recording...";
-                    document.getElementById('playbackUI').classList.add('hidden');
+                    document.getElementById('status').innerText = "Live...";
                     timerInterval = setInterval(() => {
                         duration++;
                         const m = Math.floor(duration/60).toString().padStart(2,'0');
@@ -158,11 +99,9 @@
                         document.getElementById('timer').innerText = `${m}:${s}`;
                     }, 1000);
                 };
-
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    initWaveform(URL.createObjectURL(audioBlob));
                     document.getElementById('playbackUI').classList.remove('hidden');
                 };
                 mediaRecorder.start();
@@ -171,25 +110,36 @@
 
         document.getElementById('submitBtn').onclick = async () => {
             const user = auth.currentUser;
-            const earnings = (duration / 3600) * 8.00;
-            Swal.fire({ title: 'Saving...', text: 'Uploading to Adatacore Cloud.', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Saving...', text: 'Syncing with History...', didOpen: () => Swal.showLoading() });
 
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = async () => {
-                try {
+            try {
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                const workerID = userSnap.data().uniqueID;
+                const earnings = (duration / 3600) * 8.00;
+
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async () => {
                     await addDoc(collection(db, "submissions"), {
-                        workerUID: user.uid,
+                        workerID: workerID,
+                        workerEmail: user.email,
+                        projectTitle: "Ajay Test Demo",
                         audioData: reader.result,
                         durationSeconds: duration,
                         earnedAmount: parseFloat(earnings.toFixed(4)),
-                        timestamp: new Date()
+                        status: "Pending",
+                        timestamp: serverTimestamp()
                     });
-                    await updateDoc(doc(db, "users", user.uid), { balance: increment(earnings) });
-                    Swal.fire({ icon: 'success', title: 'Work Saved!', text: `Earned: $${earnings.toFixed(4)}` })
+
+                    await updateDoc(doc(db, "users", user.uid), { 
+                        balance: increment(earnings),
+                        tasksCompleted: increment(1)
+                    });
+
+                    Swal.fire({ icon: 'success', title: 'Success', text: 'Task reflected in History!' })
                     .then(() => window.location.href = "dashboard.html");
-                } catch (e) { Swal.fire('Error', e.message, 'error'); }
-            };
+                };
+            } catch (e) { Swal.fire('Error', e.message, 'error'); }
         };
 
         document.getElementById('discardBtn').onclick = () => location.reload();
