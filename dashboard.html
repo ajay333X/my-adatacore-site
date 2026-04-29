@@ -32,6 +32,11 @@
         .collapsed .nav-text { display: none; }
 
         .text-gradient { background: linear-gradient(135deg, #fff 40%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Custom Scrollbar for Table */
+        .custom-scroll::-webkit-scrollbar { height: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body class="flex">
@@ -113,12 +118,33 @@
         
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             </div>
+
+        <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.7s">
+            <span class="w-8 h-[1px] bg-purple-500/50"></span>
+            Recent Submissions
+        </h2>
+        <div class="glass-card rounded-[32px] overflow-hidden reveal-item custom-scroll" style="animation-delay: 0.8s">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-white/5 border-b border-white/5">
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Project</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Amount</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Date</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body" class="divide-y divide-white/5">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -163,6 +189,7 @@
                                 </a>`;
                         }
                         loadMyTasks(data.uniqueID);
+                        loadHistory(data.uniqueID);
                         renderChart();
                     }
                 });
@@ -178,7 +205,6 @@
                     container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500 reveal-item">Wait for your first assignment.</div>`;
                     return;
                 }
-
                 container.innerHTML = "";
                 let delay = 0.6;
                 snap.forEach((d) => {
@@ -188,16 +214,49 @@
                             <div class="flex justify-between items-start mb-8">
                                 <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🧩</div>
                                 <div class="text-right">
-                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Project Rate</p>
+                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Rate</p>
                                     <p class="text-green-400 font-bold text-lg">$${(t.price || 0).toFixed(2)}</p>
                                 </div>
                             </div>
                             <h4 class="font-bold text-xl mb-3">${t.title}</h4>
-                            <p class="text-gray-500 text-xs mb-8 leading-relaxed line-clamp-2">${t.description || 'System contribution task.'}</p>
-                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl shadow-white/5">ENGAGE PROJECT ➔</a>
+                            <p class="text-gray-500 text-xs mb-8 line-clamp-2 leading-relaxed">${t.description || 'Global project task.'}</p>
+                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest">START ➔</a>
                         </div>`;
                     container.insertAdjacentHTML('beforeend', card);
-                    delay += 0.1; // Stagger effect
+                    delay += 0.1;
+                });
+            });
+        }
+
+        // --- LOAD SUBMISSION HISTORY ---
+        function loadHistory(uid) {
+            const qSub = query(collection(db, "submissions"), where("workerID", "==", uid));
+            onSnapshot(qSub, (snap) => {
+                const body = document.getElementById('history-body');
+                if(snap.empty) {
+                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs uppercase tracking-widest">No records found</td></tr>`;
+                    return;
+                }
+                body.innerHTML = "";
+                snap.forEach(d => {
+                    const s = d.data();
+                    const statusColor = s.status === 'Approved' ? 'text-green-500' : s.status === 'Rejected' ? 'text-red-500' : 'text-yellow-500';
+                    const statusBg = s.status === 'Approved' ? 'bg-green-500/10' : s.status === 'Rejected' ? 'bg-red-500/10' : 'bg-yellow-500/10';
+                    
+                    body.innerHTML += `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="p-6">
+                                <div class="text-sm font-bold">${s.projectTitle || 'AI Task'}</div>
+                                <div class="text-[9px] text-gray-600 font-mono">Ref: ${d.id.slice(0,8)}</div>
+                            </td>
+                            <td class="p-6 text-sm font-bold text-white">$${(s.earnedAmount || 0).toFixed(2)}</td>
+                            <td class="p-6 text-xs text-gray-500">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td>
+                            <td class="p-6 text-center">
+                                <span class="px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border border-white/5 ${statusBg} ${statusColor}">
+                                    ${s.status || 'Pending'}
+                                </span>
+                            </td>
+                        </tr>`;
                 });
             });
         }
