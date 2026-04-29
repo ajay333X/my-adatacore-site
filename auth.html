@@ -6,6 +6,8 @@
     <title>Authentication — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
@@ -20,7 +22,7 @@
         .tab-btn.active { color: white; }
         .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 16px; right: 16px; height: 2px; background: #A78BFA; box-shadow: 0 0 10px #A78BFA; }
         .hidden { display: none; }
-        .social-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; }
+        .social-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; color: white; }
         .social-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); }
     </style>
 </head>
@@ -37,14 +39,14 @@
             </div>
         </div>
 
+        <!-- Login Form -->
         <div id="signin-form" class="space-y-4">
-            <div class="space-y-4">
-                <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
-                <input type="password" id="login-password" placeholder="Password" class="premium-input">
-            </div>
+            <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
+            <input type="password" id="login-password" placeholder="Password" class="premium-input">
             <button id="btn-signin" class="btn-shine">Sign In</button>
         </div>
 
+        <!-- Signup Form -->
         <div id="signup-form" class="space-y-4 hidden">
             <input type="text" id="signup-name" placeholder="Full Name" class="premium-input">
             <input type="email" id="signup-email" placeholder="Email Address" class="premium-input">
@@ -57,35 +59,20 @@
             <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 px-2">Or continue with</div>
         </div>
 
-        <div class="grid grid-cols-1 gap-4">
-            <button id="btn-google" class="social-btn">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Sign in with Google</span>
-            </button>
-        </div>
+        <button id="btn-google" class="social-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Sign in with Google</span>
+        </button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
-            authDomain: "adatacore-f.firebaseapp.com",
-            projectId: "adatacore-f",
-            storageBucket: "adatacore-f.firebasestorage.app",
-            messagingSenderId: "806498602099",
-            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
-            measurementId: "G-740M8K5M0J"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
+    <script>
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 16 Digit Lowercase ID Generator
-        function generate16DigitID() {
+        function generateUniqueID() {
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
             for (let i = 0; i < 16; i++) {
@@ -94,76 +81,93 @@
             return result;
         }
 
-        // Data Sync & ID Refixer
-        async function syncUserToFirestore(user, fullName = null) {
-            const userRef = doc(db, "users", user.uid);
-            const snap = await getDoc(userRef);
-            
-            if (!snap.exists()) {
-                const newID = generate16DigitID();
-                await setDoc(userRef, {
-                    fullName: fullName || user.displayName || "Contributor",
-                    email: user.email,
-                    uniqueID: newID,
-                    balance: 0.00,
-                    accountStatus: 'active',
-                    tasksCompleted: 0,
-                    createdAt: serverTimestamp()
-                });
-                return true;
+        // Sync User to 'users' table in Supabase
+        async function syncUserToTable(user, fullName = null) {
+            // Check if user already exists in the 'users' table
+            const { data: existingUser, error: fetchError } = await _supabase
+                .from('users')
+                .select('id')
+                .eq('id', user.id)
+                .single();
+
+            if (!existingUser) {
+                // If new user, insert into 'users' table
+                const { error: insertError } = await _supabase
+                    .from('users')
+                    .insert([{
+                        id: user.id,
+                        email: user.email,
+                        fullName: fullName || user.user_metadata.full_name || "New Worker",
+                        uniqueID: generateUniqueID(),
+                        balance: 0.00,
+                        lastOnline: new Date().toISOString()
+                    }]);
+                
+                if (insertError) console.error("Sync Error:", insertError.message);
             } else {
-                const data = snap.data();
-                // Fix if ID is not 16 digit or not lowercase
-                if (!data.uniqueID || data.uniqueID.length !== 16 || data.uniqueID !== data.uniqueID.toLowerCase()) {
-                    const fixedID = generate16DigitID();
-                    await updateDoc(userRef, { uniqueID: fixedID });
-                }
-                return true;
+                // Update last online for returning user
+                await _supabase.from('users').update({ lastOnline: new Date().toISOString() }).eq('id', user.id);
             }
         }
 
-        // --- SIGN IN ---
+        // SIGN IN LOGIC
         document.getElementById('btn-signin').onclick = async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            if(!email || !pass) return Swal.fire('Error', 'Please fill details', 'error');
-            
-            try { 
-                const cred = await signInWithEmailAndPassword(auth, email, pass);
-                await syncUserToFirestore(cred.user);
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if(!email || !password) return Swal.fire('Wait!', 'Please fill all fields', 'warning');
+
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                Swal.fire('Error', error.message, 'error');
+            } else {
+                await syncUserToTable(data.user);
                 window.location.href = "dashboard.html";
-            } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            }
         };
 
-        // --- SIGN UP ---
+        // SIGN UP LOGIC
         document.getElementById('btn-signup').onclick = async () => {
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const pass = document.getElementById('signup-password').value;
-            if(!name || !email || !pass) return Swal.fire('Error', 'Fill all fields', 'error');
-            
-            try { 
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                await syncUserToFirestore(cred.user, name);
-                window.location.href = "dashboard.html";
-            } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+
+            if(!name || !email || !password) return Swal.fire('Wait!', 'Fill everything first', 'warning');
+
+            const { data, error } = await _supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { full_name: name } }
+            });
+
+            if (error) {
+                Swal.fire('Error', error.message, 'error');
+            } else {
+                if (data.user) {
+                    await syncUserToTable(data.user, name);
+                    Swal.fire('Success!', 'Account created! Loading dashboard...', 'success');
+                    setTimeout(() => window.location.href = "dashboard.html", 1500);
+                }
+            }
         };
 
-        // --- GOOGLE ---
+        // GOOGLE AUTH LOGIC
         document.getElementById('btn-google').onclick = async () => {
-            try { 
-                const result = await signInWithPopup(auth, googleProvider);
-                await syncUserToFirestore(result.user);
-                window.location.href = "dashboard.html";
-            } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            const { error } = await _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + "/dashboard.html" }
+            });
+            if (error) Swal.fire('Error', error.message, 'error');
         };
 
+        // UI SWITCH TABS
         window.switchTab = function(type) {
             document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
             document.getElementById('tab-signin').classList.toggle('active', type === 'signin');
             document.getElementById('tab-signup').classList.toggle('active', type === 'signup');
-        }
+        };
     </script>
 </body>
 </html>
