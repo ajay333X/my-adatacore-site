@@ -20,9 +20,10 @@
         }
         .collapsed-banner { left: 100px !important; }
         .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
@@ -39,7 +40,7 @@
     <div id="broadcast-modal" class="modal p-6">
         <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-                <h3 class="font-bold text-lg flex items-center gap-2"><span>📜</span> System Broadcasts</h3>
+                <h3 class="font-bold text-lg text-white flex items-center gap-2"><span>📜</span> System Broadcasts</h3>
                 <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white">✕</button>
             </div>
             <div id="broadcast-list" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
@@ -65,7 +66,7 @@
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
-            <button onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10">
+            <button onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all">
                 <span>🔔</span> <span class="nav-text text-sm font-medium">System News</span>
             </button>
             <div id="admin-nav-container"></div>
@@ -75,8 +76,7 @@
         </button>
     </aside>
 
-    <main id="main-content" class="ml-[260px] p-10 w-full main-spacer">
-        <!-- Banner -->
+    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500 main-spacer">
         <div id="announcement-banner" class="hidden rounded-2xl overflow-hidden flex items-center">
             <div class="bg-purple-600 h-full flex items-center px-4 text-[9px] font-black text-white">NEW ALERT</div>
             <div class="marquee-container"><p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-widest">...</p></div>
@@ -95,22 +95,22 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
-            <div class="lg:col-span-1 glass-card p-6 rounded-[32px]">
+            <div class="lg:col-span-1 glass-card p-6">
                 <p class="text-gray-500 text-[10px] uppercase font-bold mb-4">Total Balance</p>
                 <h3 class="text-4xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
             </div>
-            <div class="lg:col-span-2 glass-card p-6 rounded-[32px]"><canvas id="earningChart" height="85"></canvas></div>
-            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20">
+            <div class="lg:col-span-2 glass-card p-6"><canvas id="earningChart" height="85"></canvas></div>
+            <div class="lg:col-span-1 glass-card p-6 border-purple-500/20">
                 <p class="text-gray-500 text-[10px] uppercase font-bold mb-4">Quality Score</p>
                 <h3 class="text-4xl font-bold text-purple-400">98%</h3>
             </div>
         </div>
 
-        <h2 class="text-xl font-bold mb-8 flex items-center gap-3"><span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects</h2>
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">Assigned Projects</h2>
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16"></div>
 
-        <h2 class="text-xl font-bold mb-8 flex items-center gap-3"><span class="w-8 h-[1px] bg-purple-500/50"></span> Transaction Log</h2>
-        <div class="glass-card rounded-[32px] overflow-hidden custom-scroll">
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">Transaction Log</h2>
+        <div class="glass-card rounded-[32px] overflow-hidden custom-scroll p-0">
             <table class="w-full text-left">
                 <thead><tr class="bg-white/5 border-b border-white/5"><th class="p-6 text-[10px] text-gray-500">PROJECT</th><th class="p-6 text-[10px] text-gray-500">PAYOUT</th><th class="p-6 text-[10px] text-gray-500">DATE</th><th class="p-6 text-center text-[10px] text-gray-500">STATUS</th></tr></thead>
                 <tbody id="history-body" class="divide-y divide-white/5"></tbody>
@@ -137,7 +137,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // UI Helpers
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
@@ -147,7 +146,9 @@
             main.style.marginLeft = isCollapsed ? '80px' : '260px';
             if(banner) banner.classList.toggle('collapsed-banner', isCollapsed);
         };
+
         window.toggleModal = () => document.getElementById('broadcast-modal').classList.toggle('active');
+
         window.acknowledgeMsg = () => {
             localStorage.setItem('lastAckMsg', document.getElementById('announcement-text').innerText);
             document.getElementById('announcement-banner').style.display = 'none';
@@ -155,12 +156,11 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. Update Last Online ONCE per login
-                try {
-                    await updateDoc(doc(db, "users", user.uid), { lastOnline: serverTimestamp() });
-                } catch(e) { console.log("Tracking skip (Admin probably)"); }
+                // 1. 🔥 FIX: Update activity only once per session outside the loop
+                const userRef = doc(db, "users", user.uid);
+                await updateDoc(userRef, { lastOnline: serverTimestamp() }).catch(() => {});
 
-                // 2. News Listener
+                // 2. Announcements Listener
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
@@ -169,8 +169,8 @@
                     }
                 });
 
-                // 3. Main Data Listener (No updateDoc inside here!)
-                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                // 3. User Data Listener
+                onSnapshot(userRef, (snap) => {
                     if (snap.exists()) {
                         const d = snap.data();
                         document.getElementById('user-display-name').innerText = d.fullName || "User";
@@ -183,10 +183,15 @@
                         document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0] || ''}`;
 
                         if (d.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            document.getElementById('admin-nav-container').innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
+                            const adminNav = document.getElementById('admin-nav-container');
+                            if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
                         }
-                        loadMyTasks(d.uniqueID);
-                        loadHistory(d.uniqueID);
+
+                        // Load data using the ID used for assignments
+                        if(d.uniqueID) {
+                            loadMyTasks(d.uniqueID);
+                            loadHistory(d.uniqueID);
+                        }
                         loadBroadcasts();
                         renderChart();
                     }
@@ -197,18 +202,19 @@
         function loadMyTasks(uid) {
             onSnapshot(query(collection(db, "tasks"), where("assignedTo", "==", uid)), (snap) => {
                 const c = document.getElementById('task-container');
-                c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card text-gray-500">No active assignments.</div>` : "";
+                c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card opacity-40">No active assignments.</div>` : "";
                 snap.forEach(doc => {
                     const t = doc.data();
-                    c.innerHTML += `<div class="glass-card p-8 rounded-[36px]"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-right text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START ➔</a></div>`;
+                    c.innerHTML += `<div class="glass-card p-8"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START ➔</a></div>`;
                 });
             });
         }
 
         function loadHistory(uid) {
+            // Note: Ensuring we query by workerUID which matches the dashboard's uniqueID
             onSnapshot(query(collection(db, "submissions"), where("workerUID", "==", uid)), snap => {
                 const b = document.getElementById('history-body');
-                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No records.</td></tr>` : "";
+                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center opacity-30">No history found.</td></tr>` : "";
                 const sorted = snap.docs.sort((x,y) => (y.data().timestamp?.seconds || 0) - (x.data().timestamp?.seconds || 0));
                 sorted.forEach(doc => {
                     const s = doc.data();
@@ -222,7 +228,7 @@
         function loadBroadcasts() {
             onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), snap => {
                 const l = document.getElementById('broadcast-list');
-                l.innerHTML = snap.empty ? `<p class="text-gray-500 text-xs italic">Empty archive.</p>` : "";
+                l.innerHTML = snap.empty ? `<p class="text-gray-500 text-xs italic">No news history found.</p>` : "";
                 snap.forEach(doc => {
                     const d = doc.data();
                     l.innerHTML += `<div class="p-5 bg-white/5 rounded-2xl border border-white/5 mb-3"><div class="flex justify-between items-start mb-2"><span class="text-[8px] font-black text-purple-400 uppercase">Alert</span><span class="text-[9px] text-gray-600">${d.timestamp?.toDate().toLocaleString() || '---'}</span></div><p class="text-[13px] text-gray-200">${d.text}</p></div>`;
@@ -232,7 +238,8 @@
 
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
-            new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [10, 15, 8, 20, 18, 25, 22], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
+            if(window.myChart) window.myChart.destroy();
+            window.myChart = new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
         }
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
