@@ -84,11 +84,7 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        onAuthStateChanged(auth, (user) => { 
-            if (user) { setTimeout(() => { window.location.href = "dashboard.html"; }, 1000); } 
-        });
-
-        // --- 16 Digit Lowercase ID Generator ---
+        // 16 Digit Lowercase ID Generator
         function generate16DigitID() {
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
@@ -98,13 +94,12 @@
             return result;
         }
 
-        // --- Data Sync & ID Refixer ---
+        // Data Sync & ID Refixer
         async function syncUserToFirestore(user, fullName = null) {
             const userRef = doc(db, "users", user.uid);
             const snap = await getDoc(userRef);
             
             if (!snap.exists()) {
-                // नए यूज़र के लिए फ्रेश 16-digit lowercase ID
                 const newID = generate16DigitID();
                 await setDoc(userRef, {
                     fullName: fullName || user.displayName || "Contributor",
@@ -115,43 +110,51 @@
                     tasksCompleted: 0,
                     createdAt: serverTimestamp()
                 });
+                return true;
             } else {
-                // पुराने यूज़र्स के लिए REFIXER लॉजिक
                 const data = snap.data();
-                // अगर ID 16 डिजिट की नहीं है या Uppercase है, तो उसे रिप्लेस कर दो
-                if (!data.uniqueID || data.uniqueID.length !== 16 || /[A-Z]/.test(data.uniqueID)) {
+                // Fix if ID is not 16 digit or not lowercase
+                if (!data.uniqueID || data.uniqueID.length !== 16 || data.uniqueID !== data.uniqueID.toLowerCase()) {
                     const fixedID = generate16DigitID();
                     await updateDoc(userRef, { uniqueID: fixedID });
-                    console.log("Old ID fixed to 16-digit lowercase!");
                 }
+                return true;
             }
         }
 
+        // --- SIGN IN ---
         document.getElementById('btn-signin').onclick = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             if(!email || !pass) return Swal.fire('Error', 'Please fill details', 'error');
+            
             try { 
                 const cred = await signInWithEmailAndPassword(auth, email, pass);
                 await syncUserToFirestore(cred.user);
+                window.location.href = "dashboard.html";
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
+        // --- SIGN UP ---
         document.getElementById('btn-signup').onclick = async () => {
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
             if(!name || !email || !pass) return Swal.fire('Error', 'Fill all fields', 'error');
+            
             try { 
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
                 await syncUserToFirestore(cred.user, name);
+                window.location.href = "dashboard.html";
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
+        // --- GOOGLE ---
         document.getElementById('btn-google').onclick = async () => {
             try { 
                 const result = await signInWithPopup(auth, googleProvider);
                 await syncUserToFirestore(result.user);
+                window.location.href = "dashboard.html";
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
