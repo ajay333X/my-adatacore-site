@@ -52,8 +52,9 @@
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Select Project to Audit</label>
                     <select id="auditProjectSelect" class="admin-input bg-[#050510]">
-                        <option value="">-- Choose Project --</option>
+                        <option value="">-- View All Submissions --</option>
                         <option value="Ajay demo">Ajay demo</option>
+                        <option value="Ajay Test Demo">Ajay Test Demo</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -140,52 +141,59 @@
             }
         });
 
+        // --- PROJECT VAULT LOGIC (ULTIMATE FIX) ---
         document.getElementById('btn-fetch-vault').onclick = async () => {
             const projectName = document.getElementById('auditProjectSelect').value;
             const vaultResults = document.getElementById('vault-results');
             const tableBody = document.getElementById('vault-table-body');
 
-            if (!projectName) return Swal.fire('Error', 'Please select a project first', 'warning');
-
             vaultResults.classList.remove('hidden');
-            tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center animate-pulse text-gray-500 text-xs">Accessing Adatacore Vault...</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center animate-pulse text-gray-500 text-xs">Scanning Cloud...</td></tr>`;
 
             try {
-                const q = query(
-                    collection(db, "submissions"), 
-                    where("projectTitle", "==", projectName),
-                    orderBy("timestamp", "desc")
-                );
-                
+                // 'where' और 'orderBy' हटा दिया ताकि इंडेक्स एरर न आए
+                const q = query(collection(db, "submissions"));
                 const snap = await getDocs(q);
 
                 if (snap.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-red-400 font-bold">No submissions found. Make sure names match exactly.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-red-400 font-bold">Database Empty. No submissions found.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = "";
+                let foundCount = 0;
+
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
-                    const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "N/A";
                     
-                    tableBody.innerHTML += `
-                        <tr class="animate-in fade-in slide-in-from-top-1 duration-300">
-                            <td>
-                                <div class="flex flex-col">
-                                    <span class="text-white font-bold text-xs">${data.workerEmail || 'Contributor'}</span>
-                                    <span class="text-[9px] text-gray-500 font-mono tracking-tighter">${data.workerUID || 'UID-NA'}</span>
-                                </div>
-                            </td>
-                            <td class="font-mono text-purple-400 text-xs">${data.durationSeconds || 0}s</td>
-                            <td class="text-green-400 font-bold text-xs">$${data.earnedAmount || '0.00'}</td>
-                            <td>
-                                <audio src="${data.audioData}" controls></audio>
-                            </td>
-                            <td class="text-[10px] text-gray-400">${date}</td>
-                        </tr>
-                    `;
+                    // अगर नाम खाली है तो सब दिखाओ, वरना मैच करो
+                    if (!projectName || data.projectTitle === projectName) {
+                        foundCount++;
+                        const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-IN') : "N/A";
+                        
+                        tableBody.innerHTML += `
+                            <tr class="animate-in fade-in slide-in-from-top-1 duration-300">
+                                <td>
+                                    <div class="flex flex-col">
+                                        <span class="text-white font-bold text-xs">${data.workerEmail || 'Contributor'}</span>
+                                        <span class="text-[9px] text-gray-500 font-mono">Title: ${data.projectTitle || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td class="font-mono text-purple-400 text-xs">${data.durationSeconds || 0}s</td>
+                                <td class="text-green-400 font-bold text-xs">$${data.earnedAmount || '0.00'}</td>
+                                <td>
+                                    <audio src="${data.audioData}" controls></audio>
+                                </td>
+                                <td class="text-[10px] text-gray-400">${date}</td>
+                            </tr>
+                        `;
+                    }
                 });
+
+                if(foundCount === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-yellow-400">No match for "${projectName}". Select "-- View All --" to debug.</td></tr>`;
+                }
+
             } catch (err) {
                 console.error(err);
                 Swal.fire('Fetch Error', err.message, 'error');
