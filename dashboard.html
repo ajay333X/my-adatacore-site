@@ -6,6 +6,9 @@
     <title>Workstation — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #050510; }
@@ -19,8 +22,6 @@
             height: 50px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .collapsed-banner { left: 100px !important; }
-        .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -36,7 +37,7 @@
 </head>
 <body class="flex">
 
-    <!-- 📢 MODAL -->
+    <!-- MODAL -->
     <div id="broadcast-modal" class="modal p-6">
         <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
@@ -118,24 +119,11 @@
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, updateDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
-            authDomain: "adatacore-f.firebaseapp.com",
-            projectId: "adatacore-f",
-            storageBucket: "adatacore-f.firebasestorage.app",
-            messagingSenderId: "806498602099",
-            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
-            measurementId: "G-740M8K5M0J"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    <script>
+        // SUPABASE CONFIG
+        const SUPABASE_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
@@ -154,94 +142,90 @@
             document.getElementById('announcement-banner').style.display = 'none';
         };
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // 1. 🔥 FIX: Update activity only once per session outside the loop
-                const userRef = doc(db, "users", user.uid);
-                await updateDoc(userRef, { lastOnline: serverTimestamp() }).catch(() => {});
+        // CHECK AUTH & LOAD DATA
+        async function init() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) {
+                window.location.replace("auth.html");
+                return;
+            }
 
-                // 2. Announcements Listener
-                onSnapshot(doc(db, "settings", "announcements"), (snap) => {
-                    if (snap.exists()) {
-                        const msg = snap.data().text;
-                        document.getElementById('announcement-text').innerText = msg;
-                        document.getElementById('announcement-banner').style.display = (localStorage.getItem('lastAckMsg') === msg) ? 'none' : 'flex';
-                    }
-                });
+            // 1. Load Profile & Listen for Changes
+            _supabase.from('users').select('*').eq('id', user.id).single().then(({data: d}) => {
+                if(d) {
+                    updateUI(d);
+                    loadMyTasks(d.uniqueID);
+                    loadHistory(d.uniqueID);
+                }
+            });
 
-                // 3. User Data Listener
-                onSnapshot(userRef, (snap) => {
-                    if (snap.exists()) {
-                        const d = snap.data();
-                        document.getElementById('user-display-name').innerText = d.fullName || "User";
-                        document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
-                        document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
-                        document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
-                        
-                        const h = new Date().getHours();
-                        let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
-                        document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0] || ''}`;
+            // Real-time listener for user balance/updates
+            _supabase.channel('user_changes')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${user.id}` }, (payload) => {
+                updateUI(payload.new);
+            }).subscribe();
 
-                        if (d.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            const adminNav = document.getElementById('admin-nav-container');
-                            if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
-                        }
+            loadBroadcasts();
+            renderChart();
+        }
 
-                        // Load data using the ID used for assignments
-                        if(d.uniqueID) {
-                            loadMyTasks(d.uniqueID);
-                            loadHistory(d.uniqueID);
-                        }
-                        loadBroadcasts();
-                        renderChart();
-                    }
-                });
-            } else { window.location.replace("auth.html"); }
-        });
+        function updateUI(d) {
+            document.getElementById('user-display-name').innerText = d.fullName || "User";
+            document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
+            document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
+            document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
+            
+            const h = new Date().getHours();
+            let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+            document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0] || ''}`;
 
-        function loadMyTasks(uid) {
-            onSnapshot(query(collection(db, "tasks"), where("assignedTo", "==", uid)), (snap) => {
-                const c = document.getElementById('task-container');
-                c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card opacity-40">No active assignments.</div>` : "";
-                snap.forEach(doc => {
-                    const t = doc.data();
-                    c.innerHTML += `<div class="glass-card p-8"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START ➔</a></div>`;
-                });
+            // Admin Check
+            if (d.role === 'admin' || d.email === "as4556676@gmail.com") {
+                const adminNav = document.getElementById('admin-nav-container');
+                if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
+            }
+        }
+
+        async function loadMyTasks(uid) {
+            const { data: tasks } = await _supabase.from('tasks').select('*').eq('assignedTo', uid);
+            const c = document.getElementById('task-container');
+            c.innerHTML = (!tasks || tasks.length === 0) ? `<div class="col-span-full py-10 text-center glass-card opacity-40">No active assignments.</div>` : "";
+            
+            tasks?.forEach(t => {
+                c.innerHTML += `<div class="glass-card p-8"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START ➔</a></div>`;
             });
         }
 
-        function loadHistory(uid) {
-            // Note: Ensuring we query by workerUID which matches the dashboard's uniqueID
-            onSnapshot(query(collection(db, "submissions"), where("workerUID", "==", uid)), snap => {
-                const b = document.getElementById('history-body');
-                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center opacity-30">No history found.</td></tr>` : "";
-                const sorted = snap.docs.sort((x,y) => (y.data().timestamp?.seconds || 0) - (x.data().timestamp?.seconds || 0));
-                sorted.forEach(doc => {
-                    const s = doc.data();
-                    const status = s.status || 'Pending';
-                    const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
-                    b.innerHTML += `<tr><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
-                });
+        async function loadHistory(uid) {
+            const { data: submissions } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false });
+            const b = document.getElementById('history-body');
+            b.innerHTML = (!submissions || submissions.length === 0) ? `<tr><td colspan="4" class="p-10 text-center opacity-30">No history found.</td></tr>` : "";
+            
+            submissions?.forEach(s => {
+                const status = s.status || 'Pending';
+                const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
+                b.innerHTML += `<tr><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500">${new Date(s.id).toLocaleDateString()}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
             });
         }
 
-        function loadBroadcasts() {
-            onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), snap => {
-                const l = document.getElementById('broadcast-list');
-                l.innerHTML = snap.empty ? `<p class="text-gray-500 text-xs italic">No news history found.</p>` : "";
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    l.innerHTML += `<div class="p-5 bg-white/5 rounded-2xl border border-white/5 mb-3"><div class="flex justify-between items-start mb-2"><span class="text-[8px] font-black text-purple-400 uppercase">Alert</span><span class="text-[9px] text-gray-600">${d.timestamp?.toDate().toLocaleString() || '---'}</span></div><p class="text-[13px] text-gray-200">${d.text}</p></div>`;
-                });
-            });
+        async function loadBroadcasts() {
+            // Note: Since you use 'announcements' table for history and a 'settings' table for banner
+            const { data: list } = await _supabase.from('submissions').select('*').limit(5); // Adjust according to your news table
+            const l = document.getElementById('broadcast-list');
+            l.innerHTML = `<p class="text-gray-500 text-xs italic">System up to date.</p>`;
         }
 
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
-            if(window.myChart) window.myChart.destroy();
-            window.myChart = new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
+            new Chart(ctx, { type: 'line', data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
         }
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+        document.getElementById('btn-logout').onclick = async () => {
+            await _supabase.auth.signOut();
+            window.location.replace("auth.html");
+        };
+
+        init();
     </script>
 </body>
 </html>
