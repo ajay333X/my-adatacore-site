@@ -13,51 +13,64 @@
         
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .glass-card:hover { border-color: rgba(167, 139, 250, 0.4); transform: scale(1.02) translateY(-2px); background: rgba(167, 139, 250, 0.04); }
         
-        /* 🚨 Red Alert Light */
-        .red-pulse { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; box-shadow: 0 0 10px #ff4444; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } }
+        /* 🚨 Red Alert/Blink Animation */
+        .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
         /* Marquee */
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
 
-        /* Entrance Animation */
-        @keyframes reveal { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .reveal-item { opacity: 0; animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
-        .text-gradient { background: linear-gradient(135deg, #fff 40%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Modal Style */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body class="flex">
 
+    <!-- 📢 BROADCAST ARCHIVE MODAL -->
+    <div id="broadcast-modal" class="modal p-6">
+        <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <h3 class="font-bold text-lg flex items-center gap-2"><span>📜</span> System Broadcasts</h3>
+                <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">✕</button>
+            </div>
+            <div id="broadcast-list" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
+                <p class="text-gray-500 text-xs italic">Loading history...</p>
+            </div>
+        </div>
+    </div>
+
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
         <div class="p-6 mb-8 flex items-center justify-between">
-            <div class="flex items-center gap-3 font-bold text-white tracking-tight">
+            <div class="flex items-center gap-3 font-bold text-white">
                 <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-black">A</div>
                 <span class="nav-text">Adatacore</span>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-colors text-white">✨</button>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white">✨</button>
         </div>
 
         <nav class="flex-1 px-4 space-y-2">
-            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all">
+            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group">
                 <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">U</div>
                 <span class="nav-text text-xs font-semibold truncate text-white" id="user-display-name">Loading...</span>
             </a>
+            
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
-            
-            <div id="sidebar-alert" class="hidden flex items-center gap-4 px-4 py-3 text-red-400 bg-red-400/5 rounded-xl border border-red-400/10 mt-2">
-                <div class="red-pulse"></div> <span class="nav-text text-[10px] font-bold uppercase tracking-widest">Active News</span>
-            </div>
+
+            <!-- 🚨 NEWS ARCHIVE BUTTON (Will blink if new message) -->
+            <button id="btn-open-archive" onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all">
+                <span>🔔</span> <span class="nav-text text-sm font-medium">System News</span>
+            </button>
 
             <div id="admin-nav-container"></div>
         </nav>
@@ -69,82 +82,65 @@
 
     <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
         
-        <!-- LIVE ANNOUNCEMENT BANNER -->
-        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden border-purple-500/20 shadow-2xl reveal-item">
+        <!-- TOP ANNOUNCEMENT BANNER -->
+        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden border-purple-500/20 shadow-2xl">
             <div class="flex items-center">
-                <div class="bg-purple-600 px-4 py-3 text-[9px] font-black z-10 shadow-xl tracking-tighter text-white">ANNOUNCEMENT</div>
+                <div class="bg-purple-600 px-4 py-3 text-[9px] font-black z-10 shadow-xl tracking-tighter text-white">NEW ALERT</div>
                 <div class="flex-1 overflow-hidden py-3">
-                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">Loading updates...</p>
+                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">...</p>
                 </div>
-                <button onclick="acknowledgeMsg()" class="bg-white/10 hover:bg-white/20 px-4 py-3 text-[9px] font-bold border-l border-white/5 transition-all text-white">I UNDERSTAND ➔</button>
+                <button onclick="acknowledgeMsg()" class="bg-white/10 hover:bg-white/20 px-4 py-3 text-[9px] font-bold border-l border-white/5 transition-all text-white">ACKNOWLEDGE ➔</button>
             </div>
         </div>
 
-        <header class="flex justify-between items-end mb-12 reveal-item" style="animation-delay: 0.1s">
+        <header class="flex justify-between items-end mb-12">
             <div>
                 <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello</h1>
-                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-LOADING...</p>
+                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-...</p>
             </div>
             <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-2">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Core Synchronized</span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Core Active</span>
             </div>
         </header>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
-            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.2s">
+            <div class="lg:col-span-1 glass-card p-6 rounded-[32px]">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
                 <h3 class="text-4xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
             </div>
-            <div class="lg:col-span-2 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.3s">
+            <div class="lg:col-span-2 glass-card p-6 rounded-[32px]">
                 <canvas id="earningChart" height="85"></canvas>
             </div>
-            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20 reveal-item" style="animation-delay: 0.4s">
+            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Quality Score</p>
                 <h3 class="text-4xl font-bold text-purple-400">98%</h3>
             </div>
         </div>
 
-        <h2 class="text-xl font-bold mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.5s">
+        <!-- Assignments -->
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
             <span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects
         </h2>
-        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"></div>
+        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16"></div>
 
-        <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.7s">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span> Recent Submissions
+        <!-- History -->
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
+            <span class="w-8 h-[1px] bg-purple-500/50"></span> Transaction Log
         </h2>
-        <div class="glass-card rounded-[32px] overflow-hidden reveal-item custom-scroll" style="animation-delay: 0.8s">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-white/5 border-b border-white/5">
-                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Project</th>
-                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Payout</th>
-                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500">Date</th>
-                            <th class="p-6 text-[10px] uppercase font-bold text-gray-500 text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-body" class="divide-y divide-white/5"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 📜 BROADCAST ARCHIVE (NEWLY UPDATED) -->
-        <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.9s">
-            <span class="w-8 h-[1px] bg-purple-500/50"></span> System Broadcast Log
-        </h2>
-        <div class="glass-card p-8 rounded-[32px] reveal-item" style="animation-delay: 1s">
-            <div id="broadcast-list" class="space-y-4 max-h-80 overflow-y-auto custom-scroll pr-4">
-                <p class="text-gray-600 text-[10px] uppercase tracking-widest italic">Syncing News Records...</p>
-            </div>
+        <div class="glass-card rounded-[32px] overflow-hidden custom-scroll">
+            <table class="w-full text-left">
+                <thead><tr class="bg-white/5 border-b border-white/5"><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Project</th><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Payout</th><th class="p-6 text-[10px] uppercase font-bold text-gray-500">Date</th><th class="p-6 text-center text-[10px] uppercase font-bold text-gray-500">Status</th></tr></thead>
+                <tbody id="history-body" class="divide-y divide-white/5"></tbody>
+            </table>
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -165,28 +161,34 @@
             const main = document.getElementById('main-content');
             sb.classList.toggle('collapsed');
             main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '260px';
-        }
+        };
+
+        window.toggleModal = () => {
+            document.getElementById('broadcast-modal').classList.toggle('active');
+        };
 
         window.acknowledgeMsg = () => {
             const currentMsg = document.getElementById('announcement-text').innerText;
             localStorage.setItem('lastAckMsg', currentMsg);
             document.getElementById('announcement-banner').classList.add('hidden');
-            document.getElementById('sidebar-alert').classList.remove('hidden');
+            document.getElementById('btn-open-archive').classList.remove('alert-active');
         };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 📢 Live Announcement Listener
+                // 📢 Live Announcement Logic
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
+                        const btn = document.getElementById('btn-open-archive');
                         document.getElementById('announcement-text').innerText = msg;
+
                         if (localStorage.getItem('lastAckMsg') === msg) {
                             document.getElementById('announcement-banner').classList.add('hidden');
-                            document.getElementById('sidebar-alert').classList.remove('hidden');
+                            btn.classList.remove('alert-active');
                         } else {
                             document.getElementById('announcement-banner').classList.remove('hidden');
-                            document.getElementById('sidebar-alert').classList.add('hidden');
+                            btn.classList.add('alert-active');
                         }
                     }
                 });
@@ -199,6 +201,7 @@
                         document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
                         document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
                         document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
+                        
                         const h = new Date().getHours();
                         let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
                         document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0]}`;
@@ -207,7 +210,7 @@
                             document.getElementById('admin-nav-container').innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
                         }
                         loadMyTasks(d.uniqueID);
-                        loadHistory(user.uid); // Using user.uid to match submission structure
+                        loadHistory(user.uid);
                         loadBroadcasts();
                         renderChart();
                     }
@@ -220,53 +223,34 @@
             onSnapshot(q, (snap) => {
                 const c = document.getElementById('task-container');
                 c.innerHTML = snap.empty ? `<div class="col-span-full py-10 text-center glass-card text-gray-500">No active assignments.</div>` : "";
-                let delay = 0.6;
                 snap.forEach(doc => {
                     const t = doc.data();
-                    c.innerHTML += `<div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-right text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START PROJECT ➔</a></div>`;
-                    delay += 0.1;
+                    c.innerHTML += `<div class="glass-card p-8 rounded-[36px]"><div class="flex justify-between items-start mb-8"><div class="text-2xl">🧩</div><div class="text-right text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</div></div><h4 class="font-bold text-xl mb-3">${t.title}</h4><a href="task_player.html" class="block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold uppercase tracking-widest">START ➔</a></div>`;
                 });
             });
         }
 
         function loadHistory(uid) {
-            // Updated to match 'workerUID' from submissions collection
             const q = query(collection(db, "submissions"), where("workerUID", "==", uid));
             onSnapshot(q, snap => {
                 const b = document.getElementById('history-body');
-                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500 uppercase text-[10px] tracking-widest">No transaction history.</td></tr>` : "";
-                const sorted = snap.docs.sort((x,y) => y.data().timestamp - x.data().timestamp);
-                sorted.forEach(doc => {
+                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No transactions.</td></tr>` : "";
+                snap.docs.sort((x,y) => y.data().timestamp - x.data().timestamp).forEach(doc => {
                     const s = doc.data();
                     const status = s.status || 'Pending';
                     const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
-                    b.innerHTML += `<tr class="hover:bg-white/[0.02] transition-colors"><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500 uppercase">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
+                    b.innerHTML += `<tr class="hover:bg-white/[0.02]"><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500 uppercase">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
                 });
             });
         }
 
-        // --- 📜 SYNC PREVIOUS ANNOUNCEMENTS ---
         function loadBroadcasts() {
-            // Assuming your admin panel saves history in 'announcements' collection
-            const q = query(collection(db, "announcements"), orderBy("timestamp", "desc"));
-            onSnapshot(q, snap => {
+            onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), snap => {
                 const l = document.getElementById('broadcast-list');
-                if(snap.empty) {
-                    l.innerHTML = `<p class="text-gray-600 text-[10px] uppercase tracking-widest italic">Broadcast archive is empty.</p>`;
-                    return;
-                }
-                l.innerHTML = "";
+                l.innerHTML = snap.empty ? `<p class="text-gray-500 text-xs italic">No news history found.</p>` : "";
                 snap.forEach(doc => {
                     const d = doc.data();
-                    const dateStr = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'Just now';
-                    l.innerHTML += `
-                        <div class="p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-purple-500/20 transition-all group">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="bg-purple-600/20 text-purple-400 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">System Alert</span>
-                                <span class="text-[9px] text-gray-600 font-mono">${dateStr}</span>
-                            </div>
-                            <p class="text-[13px] text-gray-200 leading-relaxed group-hover:text-white transition-colors">${d.text}</p>
-                        </div>`;
+                    l.innerHTML += `<div class="p-5 bg-white/5 rounded-2xl border border-white/5"><div class="flex justify-between items-start mb-2"><span class="text-[8px] font-black text-purple-400 uppercase">Alert</span><span class="text-[9px] text-gray-600">${d.timestamp?.toDate().toLocaleString() || 'Recent'}</span></div><p class="text-[13px] text-gray-200">${d.text}</p></div>`;
                 });
             });
         }
