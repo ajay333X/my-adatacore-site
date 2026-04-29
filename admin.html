@@ -9,7 +9,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(155, 135, 245, 0.1); border-radius: 28px; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 28px; }
         .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; font-size: 14px; }
         .admin-input:focus { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
         .hidden { display: none; }
@@ -42,6 +42,17 @@
             <button onclick="window.location.href='dashboard.html'" class="bg-white/5 px-5 py-2 rounded-xl border border-white/10 text-xs hover:bg-white/10 transition-all">➔ Dashboard</button>
         </header>
 
+        <!-- 📢 NEW: SYSTEM ANNOUNCEMENT CONTROL -->
+        <div class="glass p-8 mb-8 border-purple-500/20">
+            <h3 class="text-lg font-bold mb-6 text-purple-400 flex items-center gap-2">
+                <span>📢</span> Global System Announcement
+            </h3>
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="announcementInput" class="admin-input flex-1" placeholder="Type global scrolling message (e.g. New projects at 5 PM!)">
+                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider">UPDATE BANNER</button>
+            </div>
+        </div>
+
         <div class="glass p-8 mb-8 border-red-500/10">
             <h3 class="text-lg font-bold mb-6 text-red-400 flex items-center gap-2">
                 <span>🔑</span> Super Authority
@@ -55,6 +66,7 @@
             </div>
         </div>
 
+        <!-- REST OF THE SECTIONS (Vault, Search, Deploy) -->
         <div class="glass p-8 mb-8 border-blue-500/10">
             <h3 class="text-lg font-bold mb-6 text-blue-400 flex items-center gap-2">
                 <span>📦</span> Project Data Vault
@@ -119,7 +131,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, orderBy, where, getDocs, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, orderBy, where, getDocs, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -135,7 +147,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // मास्टर सिक्योरिटी चेक
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -144,6 +155,7 @@
                 if (isAdmin) {
                     document.getElementById('admin-content').classList.remove('hidden');
                     loadAllTasks();
+                    loadCurrentAnnouncement();
                 } else {
                     document.getElementById('access-denied').classList.remove('hidden');
                 }
@@ -152,15 +164,34 @@
             }
         });
 
+        // 📢 LOAD & UPDATE ANNOUNCEMENT
+        async function loadCurrentAnnouncement() {
+            const snap = await getDoc(doc(db, "settings", "announcements"));
+            if(snap.exists()) {
+                document.getElementById('announcementInput').value = snap.data().text || "";
+            }
+        }
+
+        document.getElementById('btn-update-announcement').onclick = async () => {
+            const msg = document.getElementById('announcementInput').value.trim();
+            if(!msg) return Swal.fire('Error', 'Announcement cannot be empty', 'warning');
+            
+            try {
+                // 'setDoc' with 'merge' ensures document is created if it doesn't exist
+                await setDoc(doc(db, "settings", "announcements"), { text: msg }, { merge: true });
+                Swal.fire('Updated', 'Global banner is now live!', 'success');
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        };
+
         // 🔑 GRANT ADMIN
         document.getElementById('btn-make-admin').onclick = async () => {
             const email = document.getElementById('adminEmailInput').value.trim().toLowerCase();
             if(!email) return Swal.fire('Error', 'Email is required', 'warning');
-            
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
-            if(snap.empty) return Swal.fire('Error', 'User not found in database', 'error');
-
+            if(snap.empty) return Swal.fire('Error', 'User not found', 'error');
             await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'admin' });
             Swal.fire('Success', email + ' is now an Admin!', 'success');
             document.getElementById('adminEmailInput').value = "";
@@ -171,11 +202,9 @@
             const email = document.getElementById('adminEmailInput').value.trim().toLowerCase();
             if(!email) return Swal.fire('Error', 'Enter email', 'warning');
             if(email === "as4556676@gmail.com") return Swal.fire('Forbidden', 'Cannot revoke Master Admin', 'error');
-
             const q = query(collection(db, "users"), where("email", "==", email));
             const snap = await getDocs(q);
             if(snap.empty) return Swal.fire('Error', 'User not found', 'error');
-
             await updateDoc(doc(db, "users", snap.docs[0].id), { role: 'user' });
             Swal.fire('Revoked', email + ' access removed.', 'info');
             document.getElementById('adminEmailInput').value = "";
@@ -187,7 +216,6 @@
             const tableBody = document.getElementById('vault-table-body');
             document.getElementById('vault-results').classList.remove('hidden');
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-10 animate-pulse text-gray-500">Accessing Cloud Files...</td></tr>`;
-
             try {
                 const q = query(collection(db, "submissions"), orderBy("timestamp", "desc"));
                 const snap = await getDocs(q);
@@ -204,7 +232,7 @@
                         </tr>`;
                     }
                 });
-            } catch (err) { Swal.fire('Error', 'Index is still building. Wait 2 mins.', 'error'); }
+            } catch (err) { Swal.fire('Error', 'Index required or building.', 'error'); }
         };
 
         // 🛡️ SEARCH & CONTROL
@@ -214,7 +242,6 @@
             let userQuery = query(collection(db, "users"), where("uniqueID", "==", input));
             let userSnap = await getDocs(userQuery);
             if(userSnap.empty) { userQuery = query(collection(db, "users"), where("email", "==", input)); userSnap = await getDocs(userQuery); }
-
             if(userSnap.empty) { resultDiv.innerHTML = "No worker found"; return; }
             const u = userSnap.docs[0].data();
             const id = userSnap.docs[0].id;
@@ -236,7 +263,6 @@
         document.getElementById('btn-assign').onclick = async () => {
             const targetID = document.getElementById('targetID').value.trim();
             if(!targetID) return Swal.fire('Error', 'Worker ID is required', 'warning');
-            
             await addDoc(collection(db, "tasks"), {
                 assignedTo: targetID,
                 title: document.getElementById('taskTitle').value,
