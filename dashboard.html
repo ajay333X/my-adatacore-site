@@ -18,7 +18,7 @@
         #announcement-banner {
             position: fixed;
             top: 20px;
-            left: 280px; /* Sidebar width + gap */
+            left: 280px; 
             right: 20px;
             z-index: 50;
             background: rgba(167, 139, 250, 0.1);
@@ -29,13 +29,11 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        /* Sidebar collapse adjustment */
         .collapsed-banner { left: 100px !important; }
 
         .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        /* Marquee Speed & Styling */
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -48,17 +46,16 @@
         .modal.active { display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-        .main-spacer { padding-top: 80px; } /* Space for fixed banner */
+        .main-spacer { padding-top: 80px; }
     </style>
 </head>
 <body class="flex">
 
-    <!-- 📢 BROADCAST ARCHIVE MODAL -->
     <div id="broadcast-modal" class="modal p-6">
         <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <h3 class="font-bold text-lg flex items-center gap-2"><span>📜</span> System Broadcasts</h3>
-                <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">✕</button>
+                <button onclick="toggleModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white">✕</button>
             </div>
             <div id="broadcast-list" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
                 <p class="text-gray-500 text-xs italic">Loading history...</p>
@@ -66,7 +63,6 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
         <div class="p-6 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white">
@@ -98,10 +94,8 @@
         </button>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500 main-spacer">
         
-        <!-- 📢 FIXED ANNOUNCEMENT BANNER -->
         <div id="announcement-banner" class="hidden rounded-2xl overflow-hidden flex items-center">
             <div class="bg-purple-600 h-full flex items-center px-4 text-[9px] font-black tracking-tighter text-white whitespace-nowrap">NEW ALERT</div>
             <div class="marquee-container">
@@ -121,7 +115,6 @@
             </div>
         </header>
 
-        <!-- Stats Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px]">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
@@ -136,13 +129,11 @@
             </div>
         </div>
 
-        <!-- Assignments -->
         <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
             <span class="w-8 h-[1px] bg-purple-500/50"></span> Assigned Projects
         </h2>
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16"></div>
 
-        <!-- History -->
         <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
             <span class="w-8 h-[1px] bg-purple-500/50"></span> Transaction Log
         </h2>
@@ -157,7 +148,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -173,15 +164,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- FIXED SIDEBAR & BANNER TOGGLE ---
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
             const banner = document.getElementById('announcement-banner');
-            
             sb.classList.toggle('collapsed');
             const isCollapsed = sb.classList.contains('collapsed');
-            
             main.style.marginLeft = isCollapsed ? '80px' : '260px';
             if(isCollapsed) { banner.classList.add('collapsed-banner'); } 
             else { banner.classList.remove('collapsed-banner'); }
@@ -198,13 +186,13 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // 📢 Live Announcement Listener
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
                         const banner = document.getElementById('announcement-banner');
                         const btn = document.getElementById('btn-open-archive');
                         document.getElementById('announcement-text').innerText = msg;
-
                         if (localStorage.getItem('lastAckMsg') === msg) {
                             banner.style.display = 'none';
                             btn.classList.remove('alert-active');
@@ -215,9 +203,16 @@
                     }
                 });
 
-                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                // User Sync + Track Activity
+                onSnapshot(doc(db, "users", user.uid), async (snap) => {
                     if (snap.exists()) {
                         const d = snap.data();
+                        
+                        // 🕒 REAL TIME TRACKING (This updates the DB for Admin Panel)
+                        await updateDoc(doc(db, "users", user.uid), { 
+                            lastOnline: serverTimestamp() 
+                        });
+
                         document.getElementById('user-display-name').innerText = d.fullName || "User";
                         document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
                         document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
@@ -238,6 +233,8 @@
             } else { window.location.replace("auth.html"); }
         });
 
+        // ... बाकी फंक्शन (loadMyTasks, loadHistory, loadBroadcasts, renderChart) वही रहेंगे ...
+        // (जो आपके पास पहले से थे)
         function loadMyTasks(uid) {
             const q = query(collection(db, "tasks"), where("assignedTo", "==", uid));
             onSnapshot(q, (snap) => {
