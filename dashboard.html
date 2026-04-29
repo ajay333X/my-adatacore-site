@@ -14,23 +14,41 @@
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* 🚨 Red Alert/Blink Animation */
+        /* 🚨 FIXED BANNER LOGIC */
+        #announcement-banner {
+            position: fixed;
+            top: 20px;
+            left: 280px; /* Sidebar width + gap */
+            right: 20px;
+            z-index: 50;
+            background: rgba(167, 139, 250, 0.1);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            height: 50px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Sidebar collapse adjustment */
+        .collapsed-banner { left: 100px !important; }
+
         .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        /* Marquee */
+        /* Marquee Speed & Styling */
+        .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
+        .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; }
 
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
         
-        /* Modal Style */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        .main-spacer { padding-top: 80px; } /* Space for fixed banner */
     </style>
 </head>
 <body class="flex">
@@ -48,6 +66,7 @@
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
         <div class="p-6 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white">
@@ -67,7 +86,6 @@
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
 
-            <!-- 🚨 NEWS ARCHIVE BUTTON (Will blink if new message) -->
             <button id="btn-open-archive" onclick="toggleModal()" class="w-full flex items-center gap-4 px-4 py-3 text-gray-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all">
                 <span>🔔</span> <span class="nav-text text-sm font-medium">System News</span>
             </button>
@@ -80,22 +98,21 @@
         </button>
     </aside>
 
-    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
+    <!-- MAIN CONTENT -->
+    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500 main-spacer">
         
-        <!-- TOP ANNOUNCEMENT BANNER -->
-        <div id="announcement-banner" class="hidden mb-10 glass rounded-2xl overflow-hidden border-purple-500/20 shadow-2xl">
-            <div class="flex items-center">
-                <div class="bg-purple-600 px-4 py-3 text-[9px] font-black z-10 shadow-xl tracking-tighter text-white">NEW ALERT</div>
-                <div class="flex-1 overflow-hidden py-3">
-                    <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-wider">...</p>
-                </div>
-                <button onclick="acknowledgeMsg()" class="bg-white/10 hover:bg-white/20 px-4 py-3 text-[9px] font-bold border-l border-white/5 transition-all text-white">ACKNOWLEDGE ➔</button>
+        <!-- 📢 FIXED ANNOUNCEMENT BANNER -->
+        <div id="announcement-banner" class="hidden rounded-2xl overflow-hidden flex items-center">
+            <div class="bg-purple-600 h-full flex items-center px-4 text-[9px] font-black tracking-tighter text-white whitespace-nowrap">NEW ALERT</div>
+            <div class="marquee-container">
+                <p id="announcement-text" class="marquee-content text-[11px] font-semibold text-purple-100 uppercase tracking-widest">...</p>
             </div>
+            <button onclick="acknowledgeMsg()" class="h-full bg-white/10 hover:bg-white/20 px-5 text-[9px] font-bold border-l border-white/5 transition-all text-white whitespace-nowrap">ACKNOWLEDGE ➔</button>
         </div>
 
         <header class="flex justify-between items-end mb-12">
             <div>
-                <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello</h1>
+                <h1 id="greeting" class="text-4xl font-bold text-white">Hello</h1>
                 <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-...</p>
             </div>
             <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-2">
@@ -156,44 +173,48 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- FIXED SIDEBAR & BANNER TOGGLE ---
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
+            const banner = document.getElementById('announcement-banner');
+            
             sb.classList.toggle('collapsed');
-            main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '260px';
+            const isCollapsed = sb.classList.contains('collapsed');
+            
+            main.style.marginLeft = isCollapsed ? '80px' : '260px';
+            if(isCollapsed) { banner.classList.add('collapsed-banner'); } 
+            else { banner.classList.remove('collapsed-banner'); }
         };
 
-        window.toggleModal = () => {
-            document.getElementById('broadcast-modal').classList.toggle('active');
-        };
+        window.toggleModal = () => { document.getElementById('broadcast-modal').classList.toggle('active'); };
 
         window.acknowledgeMsg = () => {
             const currentMsg = document.getElementById('announcement-text').innerText;
             localStorage.setItem('lastAckMsg', currentMsg);
-            document.getElementById('announcement-banner').classList.add('hidden');
+            document.getElementById('announcement-banner').style.display = 'none';
             document.getElementById('btn-open-archive').classList.remove('alert-active');
         };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 📢 Live Announcement Logic
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
+                        const banner = document.getElementById('announcement-banner');
                         const btn = document.getElementById('btn-open-archive');
                         document.getElementById('announcement-text').innerText = msg;
 
                         if (localStorage.getItem('lastAckMsg') === msg) {
-                            document.getElementById('announcement-banner').classList.add('hidden');
+                            banner.style.display = 'none';
                             btn.classList.remove('alert-active');
                         } else {
-                            document.getElementById('announcement-banner').classList.remove('hidden');
+                            banner.style.display = 'flex';
                             btn.classList.add('alert-active');
                         }
                     }
                 });
 
-                // User Sync
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const d = snap.data();
@@ -201,7 +222,6 @@
                         document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
                         document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
                         document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
-                        
                         const h = new Date().getHours();
                         let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
                         document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0]}`;
