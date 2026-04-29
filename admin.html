@@ -6,32 +6,27 @@
     <title>Master Control — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; overflow-x: hidden; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 16px; color: #94a3b8; transition: 0.3s; cursor: pointer; font-size: 14px; font-weight: 600; }
         .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
         .nav-link.active { background: #A78BFA; color: #000; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; font-size: 13px; }
-        .content-section { display: none; animation: fadeIn 0.4s ease-out forwards; }
-        .content-section.active { display: block; }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        table { width: 100%; border-spacing: 0 8px; border-collapse: separate; }
-        th { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; padding: 0 16px; text-align: left; }
-        td { background: rgba(255,255,255,0.02); padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        td { background: rgba(255,255,255,0.02); padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
     </style>
 </head>
 <body class="flex">
 
     <!-- SIDEBAR -->
-    <aside class="w-72 h-screen border-r border-white/5 p-6 flex flex-col gap-8 shrink-0">
+    <aside class="w-72 h-screen border-r border-white/5 p-6 flex flex-col gap-8 shrink-0 sticky top-0">
         <div class="flex items-center gap-3 px-2">
-            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold">A</div>
+            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold text-white">A</div>
             <span class="font-bold tracking-tight text-lg text-white">Adatacore Admin</span>
         </div>
         <nav class="flex flex-col gap-1">
@@ -47,7 +42,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 h-screen overflow-y-auto p-12 text-white">
+    <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
         
         <!-- BROADCAST CENTER -->
         <section id="broadcast" class="content-section active">
@@ -66,39 +61,32 @@
                 <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500 transition-all">Lookup</button>
             </div>
 
-            <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[600px]">
-                <!-- Sidebar Results -->
+            <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[500px]">
                 <div class="w-64 bg-white/5 p-8 border-r border-white/5 flex flex-col gap-2">
                     <div class="text-[10px] font-bold text-gray-500 uppercase mb-6 tracking-widest">Navigation</div>
-                    <div class="p-3 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20">Overview</div>
+                    <div class="p-3 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-bold">Overview</div>
                     <div class="mt-auto pt-6 border-t border-white/5">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold mb-2">Metadata Summary</p>
                         <p id="lookup-side-email" class="text-[10px] text-white truncate font-mono">---</p>
                         <p id="lookup-side-uid" class="text-[10px] text-purple-400 font-mono mt-1 uppercase">---</p>
                     </div>
                 </div>
 
-                <!-- Main Results -->
-                <div class="flex-1 p-12 overflow-y-auto">
+                <div class="flex-1 p-12">
                     <div class="flex justify-between items-start mb-12">
                         <div>
-                            <h1 class="text-3xl font-bold text-white mb-2">Overview</h1>
+                            <h1 id="lookup-name" class="text-3xl font-bold text-white mb-2">User Name</h1>
                             <div id="lookup-status-badge" class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-500/20 text-green-400">ACTIVE</div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Current Balance</p>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Balance</p>
                             <p id="lookup-balance" class="text-4xl font-bold text-green-400">$0.00</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                        <div class="space-y-6">
-                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Metadata</h3>
-                            <div id="lookup-details-container" class="space-y-4">
-                                <!-- Data injected here -->
-                            </div>
+                        <div id="lookup-details-container" class="space-y-4">
+                            <!-- Injected Metadata -->
                         </div>
-
                         <div class="space-y-4">
                             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Actions</h3>
                             <button id="btn-edit-balance" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-purple-500/20 transition-all uppercase">Edit Balance</button>
@@ -115,7 +103,7 @@
                 <div>
                     <h2 class="text-2xl font-bold mb-8 text-white">Deploy Project</h2>
                     <div class="glass p-8 rounded-[32px] space-y-4">
-                        <input type="text" id="targetUID" class="admin-input" placeholder="Worker Unique ID">
+                        <input type="text" id="targetUID" class="admin-input" placeholder="Worker Unique ID (e.g. AD-1234)">
                         <input type="text" id="projectTitleInput" class="admin-input" placeholder="Project Title">
                         <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
                         <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase transition-all hover:bg-yellow-500">DEPLOY PROJECT 🚀</button>
@@ -130,45 +118,41 @@
 
         <!-- DATA VAULT -->
         <section id="vault" class="content-section">
-            <div class="flex justify-between items-end mb-8">
-                <div><h2 class="text-2xl font-bold mb-2">Data Vault</h2><p class="text-gray-500 text-sm">Export Submissions.</p></div>
-                <button id="btn-export-csv" class="bg-green-600 px-6 py-2 rounded-xl text-xs font-bold uppercase text-white hover:bg-green-500 transition-all">📥 Export CSV</button>
-            </div>
+            <h2 class="text-2xl font-bold mb-8">Data Vault</h2>
             <div class="glass rounded-[32px] overflow-hidden">
-                <table class="w-full">
-                    <thead><tr><th>Worker UID</th><th>Project</th><th>Reward</th><th>Audio</th></tr></thead>
+                <table class="w-full text-left">
+                    <thead class="text-[10px] text-gray-500 uppercase"><tr><th class="p-4">UID</th><th class="p-4">Project</th><th class="p-4">Reward</th><th class="p-4">File</th></tr></thead>
                     <tbody id="vault-table-body"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- ACTIVITY LOGS -->
-        <section id="logs" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Activity Logs</h2>
-            <div class="glass rounded-[32px] overflow-hidden">
-                <table class="w-full">
-                    <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Time</th></tr></thead>
-                    <tbody id="logs-display-list"></tbody>
                 </table>
             </div>
         </section>
 
         <!-- AUTHORITY -->
         <section id="authority" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 text-white">Authority Management</h2>
+            <h2 class="text-2xl font-bold mb-8">Authority Management</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="Worker Email Address...">
                 <div class="flex gap-4">
-                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white hover:bg-red-500">GRANT ADMIN</button>
-                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10 hover:bg-gray-700">REVOKE ADMIN</button>
+                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white">GRANT ADMIN</button>
+                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10">REVOKE ADMIN</button>
                 </div>
+            </div>
+        </section>
+
+        <!-- LOGS -->
+        <section id="logs" class="content-section">
+            <h2 class="text-2xl font-bold mb-8">Activity Logs</h2>
+            <div class="glass rounded-[32px] overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="text-[10px] text-gray-500 uppercase"><tr><th class="p-4">Admin</th><th class="p-4">Action</th><th class="p-4">Target</th><th class="p-4">Time</th></tr></thead>
+                    <tbody id="logs-display-list"></tbody>
+                </table>
             </div>
         </section>
 
     </main>
 
     <script>
-        // --- SUPABASE SETUP ---
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
@@ -184,65 +168,52 @@
 
         async function writeLog(action, target) {
             await _supabase.from('admin_logs').insert([{ admin: activeAdminEmail, action, target }]);
+            loadLogs();
         }
 
-        // --- AUTH CHECK ---
         async function init() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = "auth.html"; return; }
-            
             activeAdminEmail = user.email;
-            
-            // Check if user is the master admin or has admin role
+
             const { data: profile } = await _supabase.from('users').select('role').eq('id', user.id).single();
             if (user.email !== "as4556676@gmail.com" && (!profile || profile.role !== 'admin')) {
                 window.location.href = "dashboard.html";
                 return;
             }
-
-            loadTasks();
-            loadLogs();
-            loadVault();
+            loadTasks(); loadLogs(); loadVault();
         }
 
-        // --- SEARCH CENTER ---
+        // --- LOOKUP ---
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
-            if(!val) return;
+            const { data: user, error } = await _supabase.from('users').select('*').or(`email.eq.${val},uniqueID.eq.${val}`).single();
 
-            const { data: user, error } = await _supabase
-                .from('users')
-                .select('*')
-                .or(`email.eq.${val},uniqueID.eq.${val}`)
-                .single();
+            if(error || !user) return Swal.fire('Error', 'User not found.', 'error');
 
-            if(error || !user) return Swal.fire('Error', 'Worker not found.', 'error');
-
-            const box = document.getElementById('search-results-box');
-            box.classList.remove('hidden');
-
+            document.getElementById('search-results-box').classList.remove('hidden');
             document.getElementById('lookup-side-email').innerText = user.email;
             document.getElementById('lookup-side-uid').innerText = user.uniqueID;
-            document.getElementById('lookup-name').innerText = user.fullName;
-            document.getElementById('lookup-balance').innerText = `$${user.balance.toFixed(2)}`;
+            document.getElementById('lookup-name').innerText = user.fullName || "No Name";
+            document.getElementById('lookup-balance').innerText = `$${(user.balance || 0).toFixed(2)}`;
 
             const container = document.getElementById('lookup-details-container');
             container.innerHTML = `
-                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Work ID:</span> <span class="text-purple-400 font-mono font-bold">${user.uniqueID}</span></div>
-                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Last Active:</span> <span class="text-yellow-500">${new Date(user.lastOnline).toLocaleString()}</span></div>
+                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Occupation:</span> <span>${user.occupation || 'N/A'}</span></div>
+                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Education:</span> <span>${user.education || 'N/A'}</span></div>
+                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Phone:</span> <span>${user.phone || 'N/A'}</span></div>
             `;
 
-            const badge = document.getElementById('lookup-status-badge');
             const isBlocked = user.accountStatus === 'blocked';
+            const badge = document.getElementById('lookup-status-badge');
             badge.innerText = isBlocked ? 'BLOCKED' : 'ACTIVE';
             badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isBlocked ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-400'}`;
 
-            // Buttons
             document.getElementById('btn-edit-balance').onclick = async () => {
-                const { value: newBal } = await Swal.fire({ title: 'Adjust Balance', input: 'number', inputValue: user.balance });
+                const { value: newBal } = await Swal.fire({ title: 'New Balance', input: 'number', inputValue: user.balance });
                 if(newBal) {
                     await _supabase.from('users').update({ balance: parseFloat(newBal) }).eq('id', user.id);
-                    await writeLog("Balance Update", `${user.email} -> $${newBal}`);
+                    await writeLog("Balance Edit", `${user.email} -> $${newBal}`);
                     document.getElementById('btn-worker-find').click();
                 }
             };
@@ -250,35 +221,21 @@
             document.getElementById('btn-toggle-status').onclick = async () => {
                 const next = isBlocked ? 'active' : 'blocked';
                 await _supabase.from('users').update({ accountStatus: next }).eq('id', user.id);
-                await writeLog("Status Change", `${user.email} -> ${next}`);
+                await writeLog("Status Update", `${user.email} -> ${next}`);
                 document.getElementById('btn-worker-find').click();
             };
         };
 
-        // --- BROADCAST ---
-        document.getElementById('btn-update-announcement').onclick = async () => {
-            const msg = document.getElementById('announcementInput').value.trim();
-            if(!msg) return;
-            // Assuming a settings table or similar for global announcement
-            const { error } = await _supabase.from('settings').upsert({ id: 1, announcement: msg });
-            if(!error) {
-                await writeLog("Broadcast Updated", msg);
-                Swal.fire('Success', 'Broadcast Live', 'success');
-            }
-        };
-
-        // --- DEPLOY TASK ---
+        // --- TASK DEPLOY ---
         document.getElementById('btn-push-project').onclick = async () => {
             const uid = document.getElementById('targetUID').value.trim();
             const title = document.getElementById('projectTitleInput').value.trim();
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
 
-            if(!uid || !title) return;
-
             const { error } = await _supabase.from('tasks').insert([{ assignedTo: uid, title, price }]);
             if(!error) {
-                await writeLog("Task Deployed", `${title} to ${uid}`);
-                Swal.fire('Success', 'Task Pushed', 'success');
+                await writeLog("Task Pushed", `${title} to ${uid}`);
+                Swal.fire('Deployed', 'Task is now live', 'success');
                 loadTasks();
             }
         };
@@ -286,58 +243,43 @@
         async function loadTasks() {
             const { data: tasks } = await _supabase.from('tasks').select('*');
             const area = document.getElementById('live-task-display');
-            area.innerHTML = "";
-            tasks?.forEach(t => {
-                area.innerHTML += `<div class="p-4 glass flex justify-between items-center rounded-2xl">
-                    <div><p class="font-bold text-sm">${t.title}</p><p class="text-[10px] text-gray-500">${t.assignedTo}</p></div>
+            area.innerHTML = tasks?.map(t => `
+                <div class="p-4 glass flex justify-between items-center rounded-2xl">
+                    <div><p class="font-bold text-sm">${t.title}</p><p class="text-[10px] text-gray-500">Target: ${t.assignedTo}</p></div>
                     <button onclick="delTask(${t.id})" class="text-red-500 font-bold text-xs">REMOVE</button>
-                </div>`;
-            });
+                </div>
+            `).join('') || "";
         }
         window.delTask = async (id) => { await _supabase.from('tasks').delete().eq('id', id); loadTasks(); };
 
-        // --- VAULT ---
+        // --- VAULT & LOGS ---
         async function loadVault() {
-            const { data: subs } = await _supabase.from('submissions').select('*').order('id', { ascending: false });
-            const body = document.getElementById('vault-table-body');
-            body.innerHTML = "";
-            subs?.forEach(s => {
-                body.innerHTML += `<tr>
-                    <td class="p-4 text-xs font-mono text-purple-400">${s.workerUID}</td>
-                    <td>${s.projectTitle}</td>
-                    <td class="text-green-400 font-mono">$${s.earnedAmount.toFixed(4)}</td>
-                    <td><a href="${s.audioData}" target="_blank" class="text-blue-400 text-[10px] underline">VIEW FILE</a></td>
-                </tr>`;
-            });
+            const { data } = await _supabase.from('submissions').select('*').order('id', { ascending: false });
+            document.getElementById('vault-table-body').innerHTML = data?.map(s => `
+                <tr><td class="p-4 font-mono text-purple-400">${s.workerUID}</td><td>${s.projectTitle}</td><td class="text-green-400">$${s.earnedAmount.toFixed(2)}</td><td><a href="${s.audioData}" target="_blank" class="text-blue-400 text-xs underline">Link</a></td></tr>
+            `).join('') || "";
         }
 
-        // --- LOGS ---
         async function loadLogs() {
-            const { data: logs } = await _supabase.from('admin_logs').select('*').order('created_at', { ascending: false });
-            const body = document.getElementById('logs-display-list');
-            body.innerHTML = "";
-            logs?.forEach(v => {
-                body.innerHTML += `<tr>
-                    <td class="opacity-40 text-xs">${v.admin}</td>
-                    <td class="font-bold text-purple-400 uppercase text-[10px]">${v.action}</td>
-                    <td class="text-white">${v.target}</td>
-                    <td class="opacity-40 text-[10px]">${new Date(v.created_at).toLocaleString()}</td>
-                </tr>`;
-            });
+            const { data } = await _supabase.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(20);
+            document.getElementById('logs-display-list').innerHTML = data?.map(l => `
+                <tr><td class="p-4 opacity-50">${l.admin}</td><td class="font-bold text-purple-400">${l.action}</td><td>${l.target}</td><td class="opacity-50">${new Date(l.created_at).toLocaleTimeString()}</td></tr>
+            `).join('') || "";
         }
+
+        // --- BROADCAST ---
+        document.getElementById('btn-update-announcement').onclick = async () => {
+            const msg = document.getElementById('announcementInput').value.trim();
+            const { error } = await _supabase.from('settings').upsert({ id: 1, announcement: msg });
+            if(!error) { await writeLog("Broadcast", msg); Swal.fire('Updated', 'Live broadcast pushed', 'success'); }
+        };
 
         // --- AUTHORITY ---
         document.getElementById('btn-grant-admin').onclick = async () => {
             const email = document.getElementById('authEmailInput').value.trim();
-            const { error } = await _supabase.from('users').update({ role: 'admin' }).eq('email', email);
-            if(!error) { await writeLog("Admin Granted", email); Swal.fire('Success', 'Admin added', 'success'); }
-        };
-
-        document.getElementById('btn-revoke-admin').onclick = async () => {
-            const email = document.getElementById('authEmailInput').value.trim();
-            if(email === "as4556676@gmail.com") return;
-            const { error } = await _supabase.from('users').update({ role: 'user' }).eq('email', email);
-            if(!error) { await writeLog("Admin Revoked", email); Swal.fire('Success', 'Admin removed', 'info'); }
+            await _supabase.from('users').update({ role: 'admin' }).eq('email', email);
+            await writeLog("Admin Granted", email);
+            Swal.fire('Success', email + ' is now Admin', 'success');
         };
 
         init();
