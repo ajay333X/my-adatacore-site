@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Authentication — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
@@ -26,10 +27,10 @@
 <body class="grid-pattern">
     <div class="glass w-full max-w-[440px] p-10 relative z-10">
         <div class="flex flex-col items-center mb-8">
-            <a href="index.html" class="flex items-center gap-2.5 font-bold text-white text-xl mb-6">
+            <div class="flex items-center gap-2.5 font-bold text-white text-xl mb-6">
                 <svg viewBox="0 0 64 64" class="w-8 h-8"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
-            </a>
+            </div>
             <div class="flex gap-4 border-b border-white/5 w-full justify-center">
                 <button onclick="switchTab('signin')" id="tab-signin" class="tab-btn active">Sign In</button>
                 <button onclick="switchTab('signup')" id="tab-signup" class="tab-btn">Sign Up</button>
@@ -37,7 +38,7 @@
         </div>
 
         <div id="signin-form" class="space-y-4">
-            <div id="email-signin-group" class="space-y-4">
+            <div class="space-y-4">
                 <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
                 <input type="password" id="login-password" placeholder="Password" class="premium-input">
             </div>
@@ -66,9 +67,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // अपडेटेड कॉन्फिग (New Project)
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
             authDomain: "adatacore-f.firebaseapp.com",
@@ -84,58 +84,77 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        onAuthStateChanged(auth, (user) => { if (user) window.location.href = "dashboard.html"; });
+        onAuthStateChanged(auth, (user) => { 
+            if (user) { setTimeout(() => { window.location.href = "dashboard.html"; }, 1000); } 
+        });
 
-        // Helper: Create User Document (New Project Logic)
-        async function createUserDoc(user, fullName) {
+        // --- 16 Digit Lowercase ID Generator ---
+        function generate16DigitID() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 16; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // --- Data Sync & ID Refixer ---
+        async function syncUserToFirestore(user, fullName = null) {
             const userRef = doc(db, "users", user.uid);
             const snap = await getDoc(userRef);
             
             if (!snap.exists()) {
-                const uniqueID = "AD-" + Math.random().toString(36).substr(2, 4).toUpperCase() + "-" + Math.random().toString(36).substr(2, 4).toUpperCase();
+                // नए यूज़र के लिए फ्रेश 16-digit lowercase ID
+                const newID = generate16DigitID();
                 await setDoc(userRef, {
-                    fullName: fullName || user.displayName || "Adatacore User",
+                    fullName: fullName || user.displayName || "Contributor",
                     email: user.email,
-                    uniqueID: uniqueID,
+                    uniqueID: newID,
                     balance: 0.00,
+                    accountStatus: 'active',
                     tasksCompleted: 0,
-                    createdAt: new Date()
+                    createdAt: serverTimestamp()
                 });
+            } else {
+                // पुराने यूज़र्स के लिए REFIXER लॉजिक
+                const data = snap.data();
+                // अगर ID 16 डिजिट की नहीं है या Uppercase है, तो उसे रिप्लेस कर दो
+                if (!data.uniqueID || data.uniqueID.length !== 16 || /[A-Z]/.test(data.uniqueID)) {
+                    const fixedID = generate16DigitID();
+                    await updateDoc(userRef, { uniqueID: fixedID });
+                    console.log("Old ID fixed to 16-digit lowercase!");
+                }
             }
         }
 
-        // Email Sign In
         document.getElementById('btn-signin').onclick = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            if(!email || !pass) { alert("Please fill details"); return; }
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (err) { alert(err.message); }
-        };
-
-        // Google Sign In
-        document.getElementById('btn-google').onclick = async () => {
+            if(!email || !pass) return Swal.fire('Error', 'Please fill details', 'error');
             try { 
-                const result = await signInWithPopup(auth, googleProvider);
-                await createUserDoc(result.user);
-            } catch (err) { alert(err.message); }
+                const cred = await signInWithEmailAndPassword(auth, email, pass);
+                await syncUserToFirestore(cred.user);
+            } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
-        // Signup Logic (With Firestore Entry)
         document.getElementById('btn-signup').onclick = async () => {
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
-            
-            if(!name || !email || !pass) { alert("Please fill all fields"); return; }
-
+            if(!name || !email || !pass) return Swal.fire('Error', 'Fill all fields', 'error');
             try { 
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                await createUserDoc(cred.user, name);
-            } catch (err) { alert(err.message); }
+                await syncUserToFirestore(cred.user, name);
+            } catch (err) { Swal.fire('Error', err.message, 'error'); }
         };
 
-        // UI Helpers
+        document.getElementById('btn-google').onclick = async () => {
+            try { 
+                const result = await signInWithPopup(auth, googleProvider);
+                await syncUserToFirestore(result.user);
+            } catch (err) { Swal.fire('Error', err.message, 'error'); }
+        };
+
         window.switchTab = function(type) {
             document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
             document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
