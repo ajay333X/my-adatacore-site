@@ -3,43 +3,79 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Workstation Player — Adatacore</title>
+    <title>Production Lab — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
     <style>
-        body { background: #050510; color: white; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 40px; }
-        .record-btn { width: 90px; height: 90px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .recording { background: #ff4757 !important; transform: scale(1.1); box-shadow: 0 0 40px rgba(255, 71, 87, 0.4); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap');
+        body { background: #02020a; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
+        .record-btn { width: 80px; height: 80px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .recording { background: #ef4444 !important; transform: scale(1.1); box-shadow: 0 0 50px rgba(239, 68, 68, 0.3); }
+        .pulse { position: absolute; width: 100%; height: 100%; background: #ef4444; border-radius: 50%; z-index: -1; opacity: 0.5; animation: pulse-out 1.5s infinite; }
+        @keyframes pulse-out { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
+        .waveform-container { width: 100%; height: 100px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-top: 20px; }
+        .instruction-item { display: flex; gap: 12px; align-items: start; font-size: 13px; color: #94a3b8; line-height: 1.6; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="flex">
 
-    <div class="glass w-full max-w-2xl p-12 text-center relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
-        
-        <h2 class="text-3xl font-bold mb-2">Ajay Test Demo</h2>
-        <p id="pay-rate-display" class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-10">Rate: $8.00 / Hour</p>
-
-        <div class="mb-12">
-            <div id="timer" class="text-7xl font-mono mb-4 tracking-tighter">00:00</div>
-            <p id="status" class="text-[10px] uppercase tracking-[0.3em] text-gray-500">System Ready</p>
+    <aside class="w-80 h-screen glass-panel p-8 flex flex-col border-r border-white/5">
+        <div class="mb-10">
+            <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Project 101</span>
+            <h1 class="text-2xl font-bold mt-1">Ajay Test Demo</h1>
         </div>
 
-        <div class="flex flex-col items-center gap-8">
-            <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl">
-                <div id="btn-icon" class="w-4 h-4 bg-white rounded-sm"></div>
-            </button>
+        <div class="space-y-6 flex-1">
+            <h3 class="text-xs font-bold text-gray-500 uppercase">Guidelines</h3>
+            <div class="instruction-item">
+                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">1</span>
+                <p>शांत कमरे में रिकॉर्ड करें, शोर (noise) नहीं होना चाहिए।</p>
+            </div>
+            <div class="instruction-item">
+                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">2</span>
+                <p>रिकॉर्डिंग शुरू करने के बाद 2 सेकंड चुप रहें, फिर बोलना शुरू करें।</p>
+            </div>
+            <div class="instruction-item">
+                <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px] shrink-0">3</span>
+                <p>अपनी आवाज़ साफ़ और नॉर्मल स्पीड में रखें।</p>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-white/5">
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Rate</span>
+                <span class="text-green-400 font-bold">$8.00 / Hr</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col items-center justify-center p-20 relative">
+        <div class="w-full max-w-3xl text-center">
             
-            <div id="playbackSection" class="hidden w-full space-y-6 animate-in fade-in zoom-in duration-300">
-                <audio id="audioPlayer" controls class="w-full h-10 opacity-80"></audio>
-                <div class="flex gap-4">
-                    <button id="discardBtn" class="flex-1 py-4 bg-white/5 rounded-2xl text-xs font-bold border border-white/10 hover:bg-white/10 transition-all">DISCARD</button>
-                    <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-xs font-bold shadow-xl">SUBMIT WORK</button>
+            <div class="mb-12">
+                <div id="timer" class="text-8xl font-mono tracking-tighter mb-4 text-white/90">00:00</div>
+                <p id="status" class="text-[11px] uppercase tracking-[0.4em] text-purple-400 font-bold">Ready to Capture</p>
+            </div>
+
+            <div class="flex flex-col items-center gap-10">
+                <button id="recordBtn" class="record-btn bg-purple-600 flex items-center justify-center shadow-2xl z-10">
+                    <div id="pulse-ring"></div>
+                    <div id="btn-icon" class="w-5 h-5 bg-white rounded-sm"></div>
+                </button>
+
+                <div id="playbackUI" class="hidden w-full space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-700">
+                    <div class="waveform-container" id="waveform"></div>
+                    
+                    <div class="flex gap-4 max-w-md mx-auto">
+                        <button id="discardBtn" class="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[11px] font-bold tracking-widest border border-white/10 transition-all">DISCARD</button>
+                        <button id="submitBtn" class="flex-1 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-[11px] font-bold tracking-widest shadow-xl hover:shadow-purple-500/20 transition-all">SUBMIT WORK</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -60,77 +96,90 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob;
+        let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob, wavesurfer;
         const recordBtn = document.getElementById('recordBtn');
-        const audioPlayer = document.getElementById('audioPlayer');
 
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "auth.html"; });
+        onAuthStateChanged(auth, u => { if(!u) window.location.href="auth.html"; });
+
+        // Initialize WaveSurfer
+        const initWaveform = (url) => {
+            if(wavesurfer) wavesurfer.destroy();
+            wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: '#4f46e5',
+                progressColor: '#a78bfa',
+                cursorColor: '#fff',
+                barWidth: 2,
+                barRadius: 3,
+                responsive: true,
+                height: 100,
+            });
+            wavesurfer.load(url);
+        };
 
         recordBtn.onclick = async () => {
-            if (mediaRecorder && mediaRecorder.state === "recording") {
+            if (mediaRecorder?.state === "recording") {
                 mediaRecorder.stop();
                 clearInterval(timerInterval);
                 recordBtn.classList.remove('recording');
-                document.getElementById('status').innerText = "Review Recording";
+                document.getElementById('pulse-ring').classList.remove('pulse');
+                document.getElementById('status').innerText = "Recording Complete";
             } else {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = []; duration = 0;
+                
+                mediaRecorder.onstart = () => {
+                    recordBtn.classList.add('recording');
+                    document.getElementById('pulse-ring').classList.add('pulse');
+                    document.getElementById('status').innerText = "Live Recording...";
+                    document.getElementById('playbackUI').classList.add('hidden');
+                    timerInterval = setInterval(() => {
+                        duration++;
+                        const m = Math.floor(duration/60).toString().padStart(2,'0');
+                        const s = (duration%60).toString().padStart(2,'0');
+                        document.getElementById('timer').innerText = `${m}:${s}`;
+                    }, 1000);
+                };
+
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    audioPlayer.src = URL.createObjectURL(audioBlob);
-                    document.getElementById('playbackSection').classList.remove('hidden');
+                    const url = URL.createObjectURL(audioBlob);
+                    document.getElementById('playbackUI').classList.remove('hidden');
+                    initWaveform(url);
                 };
+
                 mediaRecorder.start();
-                recordBtn.classList.add('recording');
-                document.getElementById('status').innerText = "Recording Live";
-                timerInterval = setInterval(() => {
-                    duration++;
-                    const m = Math.floor(duration/60).toString().padStart(2,'0');
-                    const s = (duration%60).toString().padStart(2,'0');
-                    document.getElementById('timer').innerText = `${m}:${s}`;
-                }, 1000);
             }
         };
 
         document.getElementById('submitBtn').onclick = async () => {
             const user = auth.currentUser;
-            const payRate = 8.00;
-            const earnings = (duration / 3600) * payRate;
+            const earnings = (duration / 3600) * 8.00;
             
-            Swal.fire({ title: 'Saving...', text: 'Finalizing your work...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Encrypting...', text: 'Converting voice to secure data string.', didOpen: () => Swal.showLoading() });
 
-            // ऑडियो फाइल को Base64 टेक्स्ट में बदलना
             const reader = new FileReader();
             reader.readAsDataURL(audioBlob);
             reader.onloadend = async () => {
-                const base64Audio = reader.result;
-
                 try {
-                    // सीधे Firestore में टेक्स्ट की तरह सेव करना
                     await addDoc(collection(db, "submissions"), {
                         workerUID: user.uid,
-                        workerEmail: user.email,
-                        projectTitle: "Ajay Test Demo",
-                        audioData: base64Audio, // यहाँ ऑडियो डेटा टेक्स्ट के रूप में है
+                        audioData: reader.result,
                         durationSeconds: duration,
                         earnedAmount: parseFloat(earnings.toFixed(4)),
                         timestamp: new Date()
                     });
 
-                    // यूज़र का बैलेंस अपडेट करना
                     await updateDoc(doc(db, "users", user.uid), {
                         balance: increment(earnings)
                     });
 
-                    Swal.fire({ icon: 'success', title: 'Work Submitted!', text: `You earned $${earnings.toFixed(4)}`, background: '#050510', color: '#fff' })
+                    Swal.fire({ icon: 'success', title: 'Great Work!', text: `You earned $${earnings.toFixed(4)}`, background: '#02020a', color: '#fff' })
                     .then(() => window.location.href = "dashboard.html");
-
-                } catch (err) { 
-                    console.error(err);
-                    Swal.fire('Error', 'Submission failed: ' + err.message, 'error'); 
-                }
+                } catch (e) { Swal.fire('Error', e.message, 'error'); }
             };
         };
 
