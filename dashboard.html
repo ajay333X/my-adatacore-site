@@ -14,34 +14,21 @@
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* 🚨 FIXED BANNER LOGIC */
         #announcement-banner {
-            position: fixed;
-            top: 20px;
-            left: 280px; 
-            right: 20px;
-            z-index: 50;
-            background: rgba(167, 139, 250, 0.1);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(167, 139, 250, 0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            height: 50px;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: fixed; top: 20px; left: 280px; right: 20px; z-index: 50;
+            background: rgba(167, 139, 250, 0.1); backdrop-filter: blur(25px);
+            border: 1px solid rgba(167, 139, 250, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            height: 50px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
         .collapsed-banner { left: 100px !important; }
-
         .alert-active { animation: pulse-red 1.5s infinite; border: 1px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
         .marquee-content { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 20px; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
-        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
@@ -51,7 +38,6 @@
 </head>
 <body class="flex">
 
-    <!-- 📢 BROADCAST MODAL -->
     <div id="broadcast-modal" class="modal p-6">
         <div class="glass-card w-full max-w-lg rounded-[32px] overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
@@ -72,7 +58,6 @@
             </div>
             <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white">✨</button>
         </div>
-
         <nav class="flex-1 px-4 space-y-2">
             <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group">
                 <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">U</div>
@@ -86,7 +71,6 @@
             </button>
             <div id="admin-nav-container"></div>
         </nav>
-
         <button id="btn-logout" class="m-4 flex items-center gap-4 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl">
             <span>🚪</span> <span class="nav-text text-white">Logout</span>
         </button>
@@ -112,7 +96,6 @@
             </div>
         </header>
 
-        <!-- Stats -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px]">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
@@ -182,9 +165,16 @@
             document.getElementById('btn-open-archive').classList.remove('alert-active');
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 📢 News Listener
+                // ✅ फिक्स: लिस्नर के बाहर सिर्फ एक बार टाइम अपडेट करें
+                try {
+                    await updateDoc(doc(db, "users", user.uid), { 
+                        lastOnline: serverTimestamp() 
+                    });
+                } catch(e) { console.error("Tracking Error:", e); }
+
+                // 📢 न्यूज लिस्नर
                 onSnapshot(doc(db, "settings", "announcements"), (snap) => {
                     if (snap.exists()) {
                         const msg = snap.data().text;
@@ -201,16 +191,10 @@
                     }
                 });
 
-                // User Sync + Activity TRACKER
-                onSnapshot(doc(db, "users", user.uid), async (snap) => {
+                // 👤 यूजर डेटा लिस्नर (यहाँ से updateDoc हटा दिया गया है)
+                onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const d = snap.data();
-                        
-                        // 🔥 UPDATING LAST ONLINE FIELD
-                        await updateDoc(doc(db, "users", user.uid), { 
-                            lastOnline: serverTimestamp() 
-                        });
-
                         document.getElementById('user-display-name').innerText = d.fullName || "User";
                         document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
                         document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
@@ -221,7 +205,8 @@
                         document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0]}`;
 
                         if (d.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            document.getElementById('admin-nav-container').innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
+                            const adminNav = document.getElementById('admin-nav-container');
+                            if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
                         }
                         loadMyTasks(d.uniqueID);
                         loadHistory(user.uid);
@@ -248,8 +233,8 @@
             const q = query(collection(db, "submissions"), where("workerUID", "==", uid));
             onSnapshot(q, snap => {
                 const b = document.getElementById('history-body');
-                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No records.</td></tr>` : "";
-                snap.docs.sort((x,y) => y.data().timestamp - x.data().timestamp).forEach(doc => {
+                b.innerHTML = snap.empty ? `<tr><td colspan="4" class="p-10 text-center text-gray-500">No transactions.</td></tr>` : "";
+                snap.docs.sort((x,y) => (y.data().timestamp?.seconds || 0) - (x.data().timestamp?.seconds || 0)).forEach(doc => {
                     const s = doc.data();
                     const status = s.status || 'Pending';
                     const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
