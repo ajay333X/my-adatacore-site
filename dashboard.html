@@ -60,12 +60,12 @@
                     <h3 class="text-2xl font-bold" id="active-count">0</h3>
                 </div>
 
-                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="window.open('https://slack.com', '_blank')">
+                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="joinSlack()">
                     <div class="flex justify-between items-center mb-1">
                         <p class="text-indigo-400 text-[10px] uppercase font-bold tracking-widest">Slack Community</p>
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     </div>
-                    <h3 class="text-xl font-bold">Join Now ➔</h3>
+                    <h3 class="text-xl font-bold group-hover:text-indigo-300 transition-colors">Join Now ➔</h3>
                     <p class="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">Support & Real-time Updates</p>
                 </div>
             </div>
@@ -104,7 +104,6 @@
                     if (snap.exists()) {
                         const data = snap.data();
 
-                        // SECURITY CHECK: अगर एडमिन ने ब्लॉक किया है
                         if(data.accountStatus === 'blocked') {
                             alert("⚠️ Your account has been deactivated. Please contact Slack Support.");
                             signOut(auth);
@@ -155,6 +154,12 @@
                 });
             });
         }
+
+        // SLACK REDIRECT FUNCTION
+        window.joinSlack = function() {
+            const inviteLink = "https://join.slack.com/t/adatacore/shared_invite/zt-3wykfbp68-I8XlYSMFTxb5_3JrNA~gAQ";
+            window.open(inviteLink, '_blank');
+        };
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
