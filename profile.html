@@ -84,7 +84,6 @@
     <div class="grid-pattern"></div>
 
     <div class="relative min-h-screen flex flex-col">
-        
         <nav class="p-6 max-w-5xl w-full mx-auto flex justify-between items-center text-white">
             <a href="dashboard.html" class="flex items-center gap-2 font-bold text-lg">
                 <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
@@ -159,12 +158,11 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // ✅ आपकी Supabase Keys (अब एकदम सही हैं)
-const supabaseUrl = 'https://llmhyezgcnbognmmsnzq.supabase.co'; 
-const supabaseKey = 'sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
-const supabase = createClient(supabaseUrl, supabaseKey);
+        // ✅ आपकी Supabase Keys (Verified)
+        const supabaseUrl = 'https://llmhyezgcnbognmmsnzq.supabase.co'; 
+        const supabaseKey = 'sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // 1. डेटा लोड करने का फंक्शन
         async function init() {
             const { data: { user } } = await supabase.auth.getUser();
 
@@ -175,6 +173,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
             document.getElementById('email').value = user.email;
 
+            // ✅ डेटाबेस से डेटा खींचना
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
@@ -182,15 +181,16 @@ const supabase = createClient(supabaseUrl, supabaseKey);
                 .single();
 
             if (data) {
+                // टेबल कॉलम नामों के अनुसार मैपिंग (fullName, Date of Birth)
                 document.getElementById('fullName').value = data.fullName || "";
                 document.getElementById('phone').value = data.phone || "";
-                document.getElementById('dob').value = data.dob || "";
+                document.getElementById('dob').value = data["Date of Birth"] || ""; 
                 document.getElementById('occupation').value = data.occupation || "";
                 document.getElementById('education').value = data.education || "Bachelors";
             }
         }
 
-        // 2. सेव बटन का फंक्शन
+        // ✅ डेटा अपडेट करना
         document.getElementById('saveBtn').onclick = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -198,7 +198,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
             const updateData = {
                 fullName: document.getElementById('fullName').value,
                 phone: document.getElementById('phone').value,
-                dob: document.getElementById('dob').value,
+                "Date of Birth": document.getElementById('dob').value,
                 occupation: document.getElementById('occupation').value,
                 education: document.getElementById('education').value
             };
@@ -209,22 +209,25 @@ const supabase = createClient(supabaseUrl, supabaseKey);
                 .eq('id', user.id);
 
             if (!error) {
-                Swal.fire({ icon: 'success', title: 'Saved!', text: 'Profile updated.', background: '#1A1A2E', color: '#fff' });
+                Swal.fire({ 
+                    icon: 'success', title: 'Saved!', text: 'Profile updated.', 
+                    background: '#1A1A2E', color: '#fff', confirmButtonColor: '#A78BFA' 
+                });
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: error.message });
             }
         };
 
-        // 3. पासवर्ड रिसेट फंक्शन (फीचर वापस जोड़ दिया)
+        // ✅ पासवर्ड रिसेट
         document.getElementById('resetBtn').onclick = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                    redirectTo: 'https://www.adatacore.com/auth.html',
+                    redirectTo: window.location.origin + '/auth.html',
                 });
                 
                 if (!error) {
-                    Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox for the reset link.', background: '#1A1A2E', color: '#fff' });
+                    Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox.', background: '#1A1A2E', color: '#fff' });
                 } else {
                     Swal.fire({ icon: 'error', title: 'Error', text: error.message });
                 }
