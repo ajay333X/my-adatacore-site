@@ -10,7 +10,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
         
-        /* स्क्रॉलिंग फिक्स करने के लिए ज़रूरी सेटिंग्स */
         html, body {
             height: auto;
             min-height: 100%;
@@ -20,7 +19,7 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            overflow-y: auto; /* स्क्रॉल इनेबल */
+            overflow-y: auto;
         }
 
         .grid-pattern { 
@@ -61,7 +60,6 @@
             margin-bottom: 8px; display: block; 
         }
 
-        /* बटन बार जो नीचे चिपका रहेगा */
         .sticky-footer {
             position: sticky;
             bottom: 0;
@@ -80,12 +78,6 @@
             border-radius: 24px !important;
             color: white !important;
         }
-        
-        /* क्लिक करने के लिए बटन्स को 'Relative' और 'Z-index' देना ज़रूरी है */
-        button, a, select, input {
-            position: relative;
-            z-index: 10;
-        }
     </style>
 </head>
 <body>
@@ -93,17 +85,17 @@
 
     <div class="relative min-h-screen flex flex-col">
         
-        <nav class="p-6 max-w-5xl w-full mx-auto flex justify-between items-center">
+        <nav class="p-6 max-w-5xl w-full mx-auto flex justify-between items-center text-white">
             <a href="dashboard.html" class="flex items-center gap-2 font-bold text-lg">
                 <svg viewBox="0 0 64 64" class="w-7 h-7"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
                 Adatacore
             </a>
-            <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all">← Back</a>
+            <a href="dashboard.html" class="text-sm text-gray-400 hover:text-white transition-all">← Back to Dashboard</a>
         </nav>
 
         <main class="max-w-4xl w-full mx-auto p-6 flex-grow">
             <header class="mb-12">
-                <h1 class="text-4xl font-bold mb-2">Account Settings</h1>
+                <h1 class="text-4xl font-bold mb-2 text-white">Account Settings</h1>
                 <p class="text-gray-400">Update your profile information and manage account security.</p>
             </header>
 
@@ -151,7 +143,7 @@
                 <h3 class="text-xl font-bold mb-8 text-red-500 border-b border-white/5 pb-4">Security</h3>
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium">Reset Password via Email</p>
-                    <button onclick="resetPass()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all">Send Link</button>
+                    <button onclick="window.resetPass()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-all text-white">Send Link</button>
                 </div>
             </div>
         </main>
@@ -159,7 +151,7 @@
         <footer class="sticky-footer">
             <div class="max-w-4xl mx-auto flex justify-end gap-6 items-center">
                 <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-gray-500 hover:text-white transition-all">Cancel</button>
-                <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all">Save Changes</button>
+                <button id="saveBtn" class="bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-all text-white">Save Changes</button>
             </div>
         </footer>
 
@@ -170,14 +162,15 @@
         import { getAuth, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // ✅ Updated New Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyAJqNsBMv6Z6mbPe8TeMW00lLRbFI1OGz4",
-            authDomain: "adatacoresite.firebaseapp.com",
-            projectId: "adatacoresite",
-            storageBucket: "adatacoresite.firebasestorage.app",
-            messagingSenderId: "108144458736",
-            appId: "1:108144458736:web:1fd765735fe8eaebdcfb35",
-            measurementId: "G-PTS16DVVYE"
+            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
+            authDomain: "adatacore-f.firebaseapp.com",
+            projectId: "adatacore-f",
+            storageBucket: "adatacore-f.firebasestorage.app",
+            messagingSenderId: "806498602099",
+            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
+            measurementId: "G-740M8K5M0J"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -187,22 +180,33 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('email').value = user.email;
-                const docSnap = await getDoc(doc(db, "users", user.uid));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('fullName').value = data.fullName || "";
-                    document.getElementById('phone').value = data.phone || "";
-                    document.getElementById('dob').value = data.dob || "";
-                    document.getElementById('occupation').value = data.occupation || "";
-                    document.getElementById('education').value = data.education || "Bachelors";
+                try {
+                    const docSnap = await getDoc(doc(db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('fullName').value = data.fullName || "";
+                        document.getElementById('phone').value = data.phone || "";
+                        document.getElementById('dob').value = data.dob || "";
+                        document.getElementById('occupation').value = data.occupation || "";
+                        document.getElementById('education').value = data.education || "Bachelors";
+                    }
+                } catch (err) {
+                    console.error("Error loading document:", err);
                 }
             } else {
-                window.location.href = "auth.html";
+                // Login check delay to prevent flickering
+                setTimeout(() => {
+                    if (!auth.currentUser) {
+                        window.location.replace("auth.html");
+                    }
+                }, 1000);
             }
         });
 
         document.getElementById('saveBtn').onclick = async () => {
             const user = auth.currentUser;
+            if (!user) return;
+
             const updateData = {
                 fullName: document.getElementById('fullName').value,
                 phone: document.getElementById('phone').value,
@@ -213,16 +217,31 @@
 
             try {
                 await setDoc(doc(db, "users", user.uid), updateData, { merge: true });
-                Swal.fire({ icon: 'success', title: 'Saved!', text: 'Profile updated successfully.', background: '#1A1A2E', color: '#fff', confirmButtonColor: '#7C3AED' });
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'Saved!', 
+                    text: 'Profile updated successfully.', 
+                    background: '#1A1A2E', 
+                    color: '#fff', 
+                    confirmButtonColor: '#7C3AED' 
+                });
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'Error', text: err.message });
             }
         };
 
         window.resetPass = () => {
-            sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
-                Swal.fire({ icon: 'success', title: 'Email Sent!', text: 'Check your inbox.', background: '#1A1A2E', color: '#fff' });
-            });
+            if (auth.currentUser) {
+                sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Email Sent!', 
+                        text: 'Check your inbox for password reset instructions.', 
+                        background: '#1A1A2E', 
+                        color: '#fff' 
+                    });
+                });
+            }
         };
     </script>
 </body>
