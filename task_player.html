@@ -53,7 +53,6 @@
 
     <main class="flex-1 flex flex-col items-center justify-center p-20 relative">
         <div class="w-full max-w-3xl text-center">
-            
             <div class="mb-12">
                 <div id="timer" class="text-8xl font-mono tracking-tighter mb-4 text-white/90">00:00</div>
                 <p id="status" class="text-[11px] uppercase tracking-[0.4em] text-purple-400 font-bold">Ready to Capture</p>
@@ -66,7 +65,12 @@
                 </button>
 
                 <div id="playbackUI" class="hidden w-full space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-700">
-                    <div class="waveform-container" id="waveform"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="waveform-container" id="waveform"></div>
+                        <button id="playBtn" class="mt-4 flex items-center gap-2 bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full border border-white/10 text-[10px] font-bold transition-all">
+                            <span id="play-icon">▶</span> <span id="play-text">LISTEN AGAIN</span>
+                        </button>
+                    </div>
                     
                     <div class="flex gap-4 max-w-md mx-auto">
                         <button id="discardBtn" class="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[11px] font-bold tracking-widest border border-white/10 transition-all">DISCARD</button>
@@ -98,10 +102,10 @@
 
         let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob, wavesurfer;
         const recordBtn = document.getElementById('recordBtn');
+        const playBtn = document.getElementById('playBtn');
 
         onAuthStateChanged(auth, u => { if(!u) window.location.href="auth.html"; });
 
-        // Initialize WaveSurfer
         const initWaveform = (url) => {
             if(wavesurfer) wavesurfer.destroy();
             wavesurfer = WaveSurfer.create({
@@ -115,6 +119,19 @@
                 height: 100,
             });
             wavesurfer.load(url);
+            
+            // Play/Pause toggle
+            playBtn.onclick = () => {
+                wavesurfer.playPause();
+                const isPlaying = wavesurfer.isPlaying();
+                document.getElementById('play-icon').innerText = isPlaying ? "⏸" : "▶";
+                document.getElementById('play-text').innerText = isPlaying ? "PAUSE" : "LISTEN AGAIN";
+            };
+
+            wavesurfer.on('finish', () => {
+                document.getElementById('play-icon').innerText = "▶";
+                document.getElementById('play-text').innerText = "LISTEN AGAIN";
+            });
         };
 
         recordBtn.onclick = async () => {
@@ -143,14 +160,11 @@
                 };
 
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const url = URL.createObjectURL(audioBlob);
+                    initWaveform(URL.createObjectURL(audioBlob));
                     document.getElementById('playbackUI').classList.remove('hidden');
-                    initWaveform(url);
                 };
-
                 mediaRecorder.start();
             }
         };
@@ -158,8 +172,7 @@
         document.getElementById('submitBtn').onclick = async () => {
             const user = auth.currentUser;
             const earnings = (duration / 3600) * 8.00;
-            
-            Swal.fire({ title: 'Encrypting...', text: 'Converting voice to secure data string.', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Saving...', text: 'Uploading to Adatacore Cloud.', didOpen: () => Swal.showLoading() });
 
             const reader = new FileReader();
             reader.readAsDataURL(audioBlob);
@@ -172,12 +185,8 @@
                         earnedAmount: parseFloat(earnings.toFixed(4)),
                         timestamp: new Date()
                     });
-
-                    await updateDoc(doc(db, "users", user.uid), {
-                        balance: increment(earnings)
-                    });
-
-                    Swal.fire({ icon: 'success', title: 'Great Work!', text: `You earned $${earnings.toFixed(4)}`, background: '#02020a', color: '#fff' })
+                    await updateDoc(doc(db, "users", user.uid), { balance: increment(earnings) });
+                    Swal.fire({ icon: 'success', title: 'Work Saved!', text: `Earned: $${earnings.toFixed(4)}` })
                     .then(() => window.location.href = "dashboard.html");
                 } catch (e) { Swal.fire('Error', e.message, 'error'); }
             };
