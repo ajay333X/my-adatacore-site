@@ -27,7 +27,7 @@
 
             <div class="mb-8">
                 <a href="profile.html" class="flex items-center gap-3 p-4 glass rounded-[24px] border border-white/5 hover:border-purple-500 transition-all group">
-                    <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white">U</div>
+                    <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white uppercase">U</div>
                     <div>
                         <p id="user-display-name" class="text-sm font-bold truncate">Loading...</p>
                         <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Manage Profile ➔</p>
@@ -36,7 +36,7 @@
             </div>
             
             <nav class="flex-1 space-y-1">
-                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white rounded-xl">🏠 Dashboard</div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white rounded-xl cursor-default">🏠 Dashboard</div>
             </nav>
 
             <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
@@ -46,7 +46,7 @@
             <header class="flex justify-between items-start mb-10">
                 <div>
                     <h1 class="text-3xl font-bold text-gradient">Workstation</h1>
-                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold">ID: AD-0000-0000-0000</p>
+                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold text-gradient">ID: AD-0000-0000-0000</p>
                 </div>
             </header>
 
@@ -58,6 +58,15 @@
                 <div class="glass p-7 rounded-[32px] border border-white/5">
                     <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Active Tasks</p>
                     <h3 class="text-2xl font-bold" id="active-count">0</h3>
+                </div>
+
+                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="window.open('https://slack.com', '_blank')">
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-indigo-400 text-[10px] uppercase font-bold tracking-widest">Slack Community</p>
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    </div>
+                    <h3 class="text-xl font-bold">Join Now ➔</h3>
+                    <p class="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">Support & Real-time Updates</p>
                 </div>
             </div>
 
@@ -75,7 +84,6 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // अपडेटेड नया कॉन्फिग
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
             authDomain: "adatacore-f.firebaseapp.com",
@@ -95,13 +103,21 @@
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
+
+                        // SECURITY CHECK: अगर एडमिन ने ब्लॉक किया है
+                        if(data.accountStatus === 'blocked') {
+                            alert("⚠️ Your account has been deactivated. Please contact Slack Support.");
+                            signOut(auth);
+                            window.location.href = "auth.html";
+                            return;
+                        }
+
                         const myID = data.uniqueID;
-                        document.getElementById('user-display-name').innerText = data.fullName || user.email.split('@')[0];
+                        const fullName = data.fullName || "User";
+                        document.getElementById('user-display-name').innerText = fullName;
+                        document.getElementById('user-initials').innerText = fullName.charAt(0);
                         document.getElementById('display-uid').innerText = "ID: " + myID;
-                        
-                        // बैलेंस को प्रोफेशनल दिखाने के लिए toFixed(2)
-                        const balance = data.balance || 0;
-                        document.getElementById('stat-balance').innerText = balance.toFixed(2);
+                        document.getElementById('stat-balance').innerText = (data.balance || 0).toFixed(2);
 
                         loadMyTasks(myID);
                     }
@@ -113,7 +129,6 @@
 
         function loadMyTasks(userUniqueID) {
             const taskQuery = query(collection(db, "tasks"), where("assignedTo", "==", userUniqueID));
-            
             onSnapshot(taskQuery, (querySnapshot) => {
                 const container = document.getElementById('task-container');
                 document.getElementById('active-count').innerText = querySnapshot.size;
@@ -127,10 +142,10 @@
                 querySnapshot.forEach((doc) => {
                     const task = doc.data();
                     container.innerHTML += `
-                        <div class="task-card p-8">
+                        <div class="task-card p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div class="flex justify-between items-start mb-6">
                                 <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">${task.type || 'Project'}</span>
-                                <p class="text-green-400 font-bold">$${task.price || '0.00'}</p>
+                                <p class="text-green-400 font-bold">$${(task.price || 0).toFixed(2)}</p>
                             </div>
                             <h4 class="text-lg font-bold mb-2">${task.title}</h4>
                             <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description || 'No description provided.'}</p>
