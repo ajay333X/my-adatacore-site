@@ -95,7 +95,7 @@
         <main class="max-w-4xl w-full mx-auto p-6 flex-grow">
             <header class="mb-12">
                 <h1 class="text-4xl font-bold mb-2 text-white">Account Settings</h1>
-                <p class="text-gray-400">Update your profile information and manage account security.</p>
+                <p id="displayUid" class="text-accent font-mono text-sm">UID: Loading...</p>
             </header>
 
             <div class="glass-card p-8 mb-8">
@@ -158,7 +158,6 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // ✅ आपकी Supabase Keys (Verified)
         const supabaseUrl = 'https://llmhyezgcnbognmmsnzq.supabase.co'; 
         const supabaseKey = 'sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
         const supabase = createClient(supabaseUrl, supabaseKey);
@@ -174,19 +173,28 @@
             document.getElementById('email').value = user.email;
 
             // ✅ डेटाबेस से डेटा खींचना
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
                 .single();
 
             if (data) {
-                // टेबल कॉलम नामों के अनुसार मैपिंग (fullName, Date of Birth)
                 document.getElementById('fullName').value = data.fullName || "";
                 document.getElementById('phone').value = data.phone || "";
                 document.getElementById('dob').value = data["Date of Birth"] || ""; 
                 document.getElementById('occupation').value = data.occupation || "";
                 document.getElementById('education').value = data.education || "Bachelors";
+
+                // ✅ Auto UID Generation Logic
+                if (!data.uniqueID || data.uniqueID === "NULL") {
+                    const newUID = "AD-" + Math.floor(1000 + Math.random() * 9000);
+                    // डेटाबेस में अपडेट करें
+                    await supabase.from('users').update({ uniqueID: newUID }).eq('id', user.id);
+                    document.getElementById('displayUid').innerText = "UID: " + newUID;
+                } else {
+                    document.getElementById('displayUid').innerText = "UID: " + data.uniqueID;
+                }
             }
         }
 
