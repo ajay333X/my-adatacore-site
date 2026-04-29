@@ -14,6 +14,8 @@
         .text-gradient { background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .task-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 24px; transition: all 0.3s ease; }
         .task-card:hover { transform: translateY(-5px); border-color: var(--accent); background: rgba(167, 139, 250, 0.05); }
+        .admin-btn { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); color: #EAB308; }
+        .admin-btn:hover { background: rgba(234, 179, 8, 0.2); }
     </style>
 </head>
 <body class="grid-pattern">
@@ -30,13 +32,15 @@
                     <div id="user-initials" class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-white uppercase">U</div>
                     <div>
                         <p id="user-display-name" class="text-sm font-bold truncate">Loading...</p>
-                        <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Manage Profile ➔</p>
+                        <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Settings ➔</p>
                     </div>
                 </a>
             </div>
             
-            <nav class="flex-1 space-y-1">
+            <nav id="main-nav" class="flex-1 space-y-1">
                 <div class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium bg-white/5 text-white rounded-xl cursor-default">🏠 Dashboard</div>
+                
+                <div id="admin-nav-container"></div>
             </nav>
 
             <button id="btn-logout" class="mt-auto flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">🚪 Logout</button>
@@ -46,7 +50,7 @@
             <header class="flex justify-between items-start mb-10">
                 <div>
                     <h1 class="text-3xl font-bold text-gradient">Workstation</h1>
-                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold text-gradient">ID: AD-0000-0000-0000</p>
+                    <p id="display-uid" class="text-[11px] font-mono text-purple-400 mt-1 uppercase tracking-widest font-bold">ID: LOADING...</p>
                 </div>
             </header>
 
@@ -59,21 +63,16 @@
                     <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Active Tasks</p>
                     <h3 class="text-2xl font-bold" id="active-count">0</h3>
                 </div>
-
-                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="joinSlack()">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-indigo-400 text-[10px] uppercase font-bold tracking-widest">Slack Community</p>
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    </div>
-                    <h3 class="text-xl font-bold group-hover:text-indigo-300 transition-colors">Join Now ➔</h3>
-                    <p class="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">Support & Real-time Updates</p>
+                <div class="glass p-7 rounded-[32px] border border-indigo-500/20 hover:border-indigo-500/50 transition-all cursor-pointer group" onclick="window.open('https://join.slack.com/t/adatacore/shared_invite/zt-3wykfbp68-I8XlYSMFTxb5_3JrNA~gAQ', '_blank')">
+                    <p class="text-indigo-400 text-[10px] uppercase font-bold tracking-widest mb-1">Slack Community</p>
+                    <h3 class="text-xl font-bold">Join Now ➔</h3>
                 </div>
             </div>
 
             <h2 class="text-xl font-bold mb-6">Assigned Projects</h2>
             <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="col-span-full py-20 text-center glass rounded-[40px] border-dashed border-white/10">
-                    <p class="text-gray-600">No projects assigned to your ID yet.</p>
+                    <p class="text-gray-600">Loading your assignments...</p>
                 </div>
             </div>
         </main>
@@ -100,66 +99,69 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // रीयल-टाइम डेटा लिसनर (Admin Access यहाँ चेक होगा)
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
-
+                        
+                        // ब्लॉक चेक
                         if(data.accountStatus === 'blocked') {
-                            alert("⚠️ Your account has been deactivated. Please contact Slack Support.");
                             signOut(auth);
-                            window.location.href = "auth.html";
                             return;
                         }
 
-                        const myID = data.uniqueID;
-                        const fullName = data.fullName || "User";
-                        document.getElementById('user-display-name').innerText = fullName;
-                        document.getElementById('user-initials').innerText = fullName.charAt(0);
-                        document.getElementById('display-uid').innerText = "ID: " + myID;
+                        // प्रोफाइल UI अपडेट
+                        document.getElementById('user-display-name').innerText = data.fullName || "User";
+                        document.getElementById('user-initials').innerText = (data.fullName || "U").charAt(0);
+                        document.getElementById('display-uid').innerText = "ID: " + (data.uniqueID || "N/A");
                         document.getElementById('stat-balance').innerText = (data.balance || 0).toFixed(2);
 
-                        loadMyTasks(myID);
+                        // 🔥 DYNAMIC ADMIN BUTTON LOGIC
+                        const adminContainer = document.getElementById('admin-nav-container');
+                        if (data.role === 'admin' || user.email === "as4556676@gmail.com") {
+                            adminContainer.innerHTML = `
+                                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold admin-btn rounded-xl transition-all mt-4 animate-pulse">
+                                    🛡️ Admin Space
+                                </a>`;
+                        } else {
+                            adminContainer.innerHTML = ""; // अगर एक्सेस छीना गया तो बटन गायब
+                        }
+
+                        loadMyTasks(data.uniqueID);
                     }
                 });
             } else {
-                window.location.href = "auth.html";
+                window.location.replace("auth.html");
             }
         });
 
-        function loadMyTasks(userUniqueID) {
-            const taskQuery = query(collection(db, "tasks"), where("assignedTo", "==", userUniqueID));
-            onSnapshot(taskQuery, (querySnapshot) => {
+        function loadMyTasks(uid) {
+            if(!uid) return;
+            const qTasks = query(collection(db, "tasks"), where("assignedTo", "==", uid));
+            onSnapshot(qTasks, (snap) => {
                 const container = document.getElementById('task-container');
-                document.getElementById('active-count').innerText = querySnapshot.size;
+                document.getElementById('active-count').innerText = snap.size;
                 
-                if (querySnapshot.empty) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center glass rounded-[40px] border-dashed border-white/10"><p class="text-gray-600">No special projects assigned to ID: ${userUniqueID}</p></div>`;
+                if (snap.empty) {
+                    container.innerHTML = `<div class="col-span-full py-10 text-center glass rounded-3xl border-dashed border-white/10 text-gray-500">No tasks for ID: ${uid}</div>`;
                     return;
                 }
 
                 container.innerHTML = "";
-                querySnapshot.forEach((doc) => {
-                    const task = doc.data();
+                snap.forEach((d) => {
+                    const t = d.data();
                     container.innerHTML += `
-                        <div class="task-card p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">${task.type || 'Project'}</span>
-                                <p class="text-green-400 font-bold">$${(task.price || 0).toFixed(2)}</p>
+                        <div class="task-card p-8">
+                            <div class="flex justify-between mb-4">
+                                <span class="text-[10px] font-bold text-purple-300 uppercase">${t.type || 'Task'}</span>
+                                <p class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</p>
                             </div>
-                            <h4 class="text-lg font-bold mb-2">${task.title}</h4>
-                            <p class="text-gray-500 text-xs mb-6 leading-relaxed">${task.description || 'No description provided.'}</p>
-                            <a href="${task.targetPage || '#'}" class="w-full inline-block text-center py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 hover:border-purple-600 transition-all">START TASK ➔</a>
-                        </div>
-                    `;
+                            <h4 class="font-bold text-lg mb-2">${t.title}</h4>
+                            <a href="${t.targetPage || 'task_player.html'}" class="block w-full text-center py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:bg-purple-600 transition-all">START ➔</a>
+                        </div>`;
                 });
             });
         }
-
-        // SLACK REDIRECT FUNCTION
-        window.joinSlack = function() {
-            const inviteLink = "https://join.slack.com/t/adatacore/shared_invite/zt-3wykfbp68-I8XlYSMFTxb5_3JrNA~gAQ";
-            window.open(inviteLink, '_blank');
-        };
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
