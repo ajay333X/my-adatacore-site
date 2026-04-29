@@ -13,14 +13,12 @@
         
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        /* Haptic & Apple Feel Hover */
         .glass-card:hover { border-color: rgba(167, 139, 250, 0.4); transform: scale(1.02) translateY(-2px); background: rgba(167, 139, 250, 0.04); }
+        
         .btn-haptic { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .btn-haptic:hover { transform: scale(1.05); filter: brightness(1.1); }
         .btn-haptic:active { transform: scale(0.95); }
 
-        /* Staggered Entrance Animation */
         @keyframes reveal {
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -30,12 +28,8 @@
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
         #sidebar.collapsed { width: 80px; }
         .collapsed .nav-text { display: none; }
-
         .text-gradient { background: linear-gradient(135deg, #fff 40%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Custom Scrollbar for Table */
         .custom-scroll::-webkit-scrollbar { height: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
@@ -47,13 +41,13 @@
                 <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">A</div>
                 <span class="nav-text">Adatacore</span>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">✨</button>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-colors text-white">✨</button>
         </div>
 
         <nav class="flex-1 px-4 space-y-2">
             <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all hover:border-purple-500/30">
-                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">U</div>
-                <span class="nav-text text-xs font-semibold truncate" id="user-display-name">Loading...</span>
+                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white">U</div>
+                <span class="nav-text text-xs font-semibold truncate text-white" id="user-display-name">Loading...</span>
             </a>
             <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
                 <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
@@ -62,14 +56,14 @@
         </nav>
 
         <button id="btn-logout" class="m-4 flex items-center gap-4 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
-            <span>🚪</span> <span class="nav-text">Logout</span>
+            <span>🚪</span> <span class="nav-text text-white">Logout</span>
         </button>
     </aside>
 
     <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
         <header class="flex justify-between items-end mb-12 reveal-item" style="animation-delay: 0.1s">
             <div>
-                <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello, Ajay</h1>
+                <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello</h1>
                 <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-LOADING...</p>
             </div>
             <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-2">
@@ -81,17 +75,14 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
             <div class="lg:col-span-1 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.2s">
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
-                <h3 class="text-4xl font-bold">$<span id="stat-balance">0.00</span></h3>
-                <p class="text-[10px] text-green-400 mt-2 font-semibold">↑ 3.2% from today's work</p>
+                <h3 class="text-4xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
+                <p class="text-[10px] text-green-400 mt-2 font-semibold">↑ Verified in Real-time</p>
             </div>
 
             <div class="lg:col-span-2 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.3s">
                 <div class="flex justify-between items-center mb-4">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Earnings Stream</p>
-                    <div class="flex gap-2">
-                        <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                        <span class="w-2 h-2 bg-gray-700 rounded-full"></span>
-                    </div>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Performance Stream</p>
+                    <div class="flex gap-2"><span class="w-2 h-2 bg-purple-500 rounded-full"></span><span class="w-2 h-2 bg-gray-700 rounded-full"></span></div>
                 </div>
                 <canvas id="earningChart" height="85"></canvas>
             </div>
@@ -101,12 +92,12 @@
                 <div class="flex items-center justify-between">
                     <h3 class="text-4xl font-bold text-purple-400">98%</h3>
                     <div class="text-right">
-                        <div class="text-[10px] text-white font-bold">EXCELLENT</div>
-                        <div class="text-[8px] text-gray-500 uppercase">Tier 1 Contributor</div>
+                        <div class="text-[10px] text-white font-bold uppercase">Excellent</div>
+                        <div class="text-[8px] text-gray-500 uppercase tracking-tighter font-bold">Tier 1 Elite</div>
                     </div>
                 </div>
                 <div class="w-full bg-white/5 h-1.5 mt-6 rounded-full overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-600 to-indigo-400 h-full w-[98%] shadow-[0_0_10px_#7C3AED]"></div>
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-400 h-full w-[98%] shadow-[0_0_10px_rgba(167,139,250,0.4)]"></div>
                 </div>
             </div>
         </div>
@@ -115,9 +106,7 @@
             <span class="w-8 h-[1px] bg-purple-500/50"></span>
             Assigned Projects
         </h2>
-        
-        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            </div>
+        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"></div>
 
         <h2 class="text-xl font-bold mt-16 mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.7s">
             <span class="w-8 h-[1px] bg-purple-500/50"></span>
@@ -128,14 +117,13 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr class="bg-white/5 border-b border-white/5">
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Project</th>
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Amount</th>
-                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Date</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Project Name</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Payout</th>
+                            <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500">Timestamp</th>
                             <th class="p-6 text-[10px] uppercase font-bold tracking-widest text-gray-500 text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="history-body" class="divide-y divide-white/5">
-                        </tbody>
+                    <tbody id="history-body" class="divide-y divide-white/5"></tbody>
                 </table>
             </div>
         </div>
@@ -144,7 +132,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
@@ -202,14 +190,14 @@
             onSnapshot(qTasks, (snap) => {
                 const container = document.getElementById('task-container');
                 if (snap.empty) {
-                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500 reveal-item">Wait for your first assignment.</div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500">No active assignments for ID: ${uid}</div>`;
                     return;
                 }
                 container.innerHTML = "";
                 let delay = 0.6;
                 snap.forEach((d) => {
                     const t = d.data();
-                    const card = `
+                    container.innerHTML += `
                         <div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s">
                             <div class="flex justify-between items-start mb-8">
                                 <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🧩</div>
@@ -219,42 +207,38 @@
                                 </div>
                             </div>
                             <h4 class="font-bold text-xl mb-3">${t.title}</h4>
-                            <p class="text-gray-500 text-xs mb-8 line-clamp-2 leading-relaxed">${t.description || 'Global project task.'}</p>
-                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest">START ➔</a>
+                            <p class="text-gray-500 text-xs mb-8 line-clamp-2 leading-relaxed">${t.description || 'System contribution task.'}</p>
+                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl">START ➔</a>
                         </div>`;
-                    container.insertAdjacentHTML('beforeend', card);
                     delay += 0.1;
                 });
             });
         }
 
-        // --- LOAD SUBMISSION HISTORY ---
-        function loadHistory(uid) {
-            const qSub = query(collection(db, "submissions"), where("workerID", "==", uid));
+        function loadHistory(uniqueID) {
+            const qSub = query(collection(db, "submissions"), where("workerID", "==", uniqueID));
             onSnapshot(qSub, (snap) => {
                 const body = document.getElementById('history-body');
                 if(snap.empty) {
-                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs uppercase tracking-widest">No records found</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600 text-xs tracking-widest">No previous submissions found</td></tr>`;
                     return;
                 }
                 body.innerHTML = "";
-                snap.forEach(d => {
+                const sorted = snap.docs.sort((a,b) => b.data().timestamp - a.data().timestamp);
+                sorted.forEach(d => {
                     const s = d.data();
-                    const statusColor = s.status === 'Approved' ? 'text-green-500' : s.status === 'Rejected' ? 'text-red-500' : 'text-yellow-500';
-                    const statusBg = s.status === 'Approved' ? 'bg-green-500/10' : s.status === 'Rejected' ? 'bg-red-500/10' : 'bg-yellow-500/10';
-                    
+                    const status = s.status || 'Pending';
+                    const color = status === 'Approved' ? 'text-green-400 border-green-500/20 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 border-red-500/20 bg-red-500/10' : 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10';
                     body.innerHTML += `
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="p-6">
-                                <div class="text-sm font-bold">${s.projectTitle || 'AI Task'}</div>
-                                <div class="text-[9px] text-gray-600 font-mono">Ref: ${d.id.slice(0,8)}</div>
+                                <div class="text-sm font-bold text-white">${s.projectTitle || 'AI Task'}</div>
+                                <div class="text-[9px] text-gray-600 font-mono">REF: ${d.id.slice(0,8)}</div>
                             </td>
-                            <td class="p-6 text-sm font-bold text-white">$${(s.earnedAmount || 0).toFixed(2)}</td>
-                            <td class="p-6 text-xs text-gray-500">${s.timestamp?.toDate().toLocaleDateString() || 'Recent'}</td>
+                            <td class="p-6 text-sm font-bold text-white">$${(s.earnedAmount || 0).toFixed(4)}</td>
+                            <td class="p-6 text-xs text-gray-500">${s.timestamp?.toDate().toLocaleString() || 'Recent'}</td>
                             <td class="p-6 text-center">
-                                <span class="px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border border-white/5 ${statusBg} ${statusColor}">
-                                    ${s.status || 'Pending'}
-                                </span>
+                                <span class="px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border ${color}">${status}</span>
                             </td>
                         </tr>`;
                 });
@@ -270,20 +254,12 @@
                     datasets: [{
                         data: [5, 12, 8, 15, 10, 20, 18],
                         borderColor: '#A78BFA',
-                        borderWidth: 3,
-                        pointRadius: 0,
-                        tension: 0.4,
-                        fill: true,
+                        borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true,
                         backgroundColor: 'rgba(167, 139, 250, 0.05)'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        x: { grid: { display: false }, ticks: { color: '#444', font: { size: 9 } } },
-                        y: { display: false } 
-                    }
+                options: { responsive: true, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { color: '#444', font: { size: 9 } } }, y: { display: false } }
                 }
             });
         }
