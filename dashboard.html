@@ -11,48 +11,47 @@
         :root { --accent: #A78BFA; --bg-dark: #050510; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; overflow-x: hidden; }
         
-        /* Glassmorphism Logic */
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(167, 139, 250, 0.1); }
-        .glass-card { background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass-card:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(167, 139, 250, 0.1); transform: translateY(-4px); }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* Sidebar Transition */
-        #sidebar { transition: width 0.3s ease; width: 280px; overflow: hidden; }
-        #sidebar.collapsed { width: 80px; }
-        .nav-text { transition: opacity 0.2s; }
-        .collapsed .nav-text { opacity: 0; display: none; }
-        
-        /* Skeleton Animation */
-        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 12px; }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Haptic & Apple Feel Hover */
+        .glass-card:hover { border-color: rgba(167, 139, 250, 0.4); transform: scale(1.02) translateY(-2px); background: rgba(167, 139, 250, 0.04); }
+        .btn-haptic { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-haptic:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-haptic:active { transform: scale(0.95); }
 
-        .text-gradient { background: linear-gradient(to right, #fff, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Staggered Entrance Animation */
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .reveal-item { opacity: 0; animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; }
+        #sidebar.collapsed { width: 80px; }
+        .collapsed .nav-text { display: none; }
+
+        .text-gradient { background: linear-gradient(135deg, #fff 40%, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body class="flex">
 
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 z-30">
-        <div class="p-6 mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-3 font-bold text-white text-lg">
-                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">A</div>
+        <div class="p-6 mb-8 flex items-center justify-between">
+            <div class="flex items-center gap-3 font-bold text-white tracking-tight">
+                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">A</div>
                 <span class="nav-text">Adatacore</span>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/5 rounded-lg">⚡</button>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">✨</button>
         </div>
 
-        <div class="px-4 mb-10">
-            <a href="profile.html" class="flex items-center gap-3 p-3 glass-card rounded-2xl">
-                <div id="user-initials" class="w-10 h-10 min-w-[40px] bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg">U</div>
-                <div class="nav-text">
-                    <p id="user-display-name" class="text-xs font-bold truncate w-32">Loading...</p>
-                    <p class="text-[8px] text-purple-400 font-bold uppercase tracking-widest">Settings</p>
-                </div>
-            </a>
-        </div>
-        
         <nav class="flex-1 px-4 space-y-2">
-            <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl border border-purple-600/20">
-                <span>🏠</span> <span class="nav-text text-sm font-medium">Dashboard</span>
+            <a href="profile.html" class="flex items-center gap-4 px-4 py-3 bg-white/5 rounded-xl border border-white/5 mb-6 group transition-all hover:border-purple-500/30">
+                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">U</div>
+                <span class="nav-text text-xs font-semibold truncate" id="user-display-name">Loading...</span>
+            </a>
+            <div class="flex items-center gap-4 px-4 py-3 bg-purple-600/10 text-purple-400 rounded-xl">
+                <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
             </div>
             <div id="admin-nav-container"></div>
         </nav>
@@ -62,52 +61,58 @@
         </button>
     </aside>
 
-    <main id="main-content" class="ml-[280px] p-8 w-full transition-all duration-300">
-        <header class="flex justify-between items-center mb-12">
+    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
+        <header class="flex justify-between items-end mb-12 reveal-item" style="animation-delay: 0.1s">
             <div>
-                <h1 id="greeting" class="text-3xl font-bold text-gradient">Good Morning</h1>
-                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-1 uppercase tracking-widest">UID: AD-LOADING-16-DIGIT</p>
+                <h1 id="greeting" class="text-4xl font-bold text-gradient">Hello, Ajay</h1>
+                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">UID: AD-LOADING...</p>
             </div>
-            <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-3">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
-                <span class="text-[10px] font-bold text-gray-400">SERVER LIVE</span>
+            <div class="glass px-4 py-2 rounded-full border-white/5 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Core Synchronized</span>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-            <div class="space-y-6">
-                <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 text-4xl">💰</div>
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Balance</p>
-                    <h3 class="text-3xl font-bold text-white">$<span id="stat-balance">0.00</span></h3>
-                </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Tasks Completed Today</p>
-                    <h3 class="text-3xl font-bold" id="active-count">0</h3>
-                    <div class="w-full bg-white/5 h-1.5 mt-4 rounded-full overflow-hidden">
-                        <div class="bg-purple-500 h-full w-[40%]"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
+            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.2s">
+                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Total Balance</p>
+                <h3 class="text-4xl font-bold">$<span id="stat-balance">0.00</span></h3>
+                <p class="text-[10px] text-green-400 mt-2 font-semibold">↑ 3.2% from today's work</p>
+            </div>
+
+            <div class="lg:col-span-2 glass-card p-6 rounded-[32px] reveal-item" style="animation-delay: 0.3s">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Earnings Stream</p>
+                    <div class="flex gap-2">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                        <span class="w-2 h-2 bg-gray-700 rounded-full"></span>
                     </div>
                 </div>
+                <canvas id="earningChart" height="85"></canvas>
             </div>
-            
-            <div class="lg:col-span-2 glass-card p-6 rounded-3xl">
-                <div class="flex justify-between items-center mb-6">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Weekly Performance</p>
-                    <span class="text-[10px] text-green-400">+12.5% vs last week</span>
+
+            <div class="lg:col-span-1 glass-card p-6 rounded-[32px] border-purple-500/20 reveal-item" style="animation-delay: 0.4s">
+                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4">Quality Score</p>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-4xl font-bold text-purple-400">98%</h3>
+                    <div class="text-right">
+                        <div class="text-[10px] text-white font-bold">EXCELLENT</div>
+                        <div class="text-[8px] text-gray-500 uppercase">Tier 1 Contributor</div>
+                    </div>
                 </div>
-                <canvas id="earningChart" height="100"></canvas>
+                <div class="w-full bg-white/5 h-1.5 mt-6 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-400 h-full w-[98%] shadow-[0_0_10px_#7C3AED]"></div>
+                </div>
             </div>
         </div>
 
-        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-            <span>⚡</span> Active Assignments
+        <h2 class="text-xl font-bold mb-8 flex items-center gap-3 reveal-item" style="animation-delay: 0.5s">
+            <span class="w-8 h-[1px] bg-purple-500/50"></span>
+            Assigned Projects
         </h2>
         
-        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div class="skeleton h-48 w-full"></div>
-            <div class="skeleton h-48 w-full"></div>
-            <div class="skeleton h-48 w-full"></div>
-        </div>
+        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            </div>
     </main>
 
     <script type="module">
@@ -129,54 +134,39 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- Sidebar & Greeting Logic ---
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
             sb.classList.toggle('collapsed');
-            main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '280px';
+            main.style.marginLeft = sb.classList.contains('collapsed') ? '80px' : '260px';
         }
 
-        function setGreeting(name) {
-            const hrs = new Date().getHours();
-            let msg = "Good Morning";
-            if (hrs >= 12) msg = "Good Afternoon";
-            if (hrs >= 17) msg = "Good Evening";
-            document.getElementById('greeting').innerText = `${msg}, ${name}!`;
-        }
-
-        // --- Firebase Auth & Data ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 onSnapshot(doc(db, "users", user.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
-                        if(data.accountStatus === 'blocked') { signOut(auth); return; }
-
-                        const fullName = data.fullName || "Contributor";
-                        document.getElementById('user-display-name').innerText = fullName;
-                        document.getElementById('user-initials').innerText = fullName.charAt(0).toUpperCase();
+                        const name = data.fullName || "User";
+                        document.getElementById('user-display-name').innerText = name;
+                        document.getElementById('user-initials').innerText = name.charAt(0).toUpperCase();
                         document.getElementById('display-uid').innerText = "UID: " + (data.uniqueID || "N/A");
                         document.getElementById('stat-balance').innerText = (data.balance || 0).toFixed(2);
                         
-                        setGreeting(fullName.split(' ')[0]);
+                        const hrs = new Date().getHours();
+                        let msg = hrs < 12 ? "Good Morning" : hrs < 17 ? "Good Afternoon" : "Good Evening";
+                        document.getElementById('greeting').innerText = `${msg}, ${name.split(' ')[0]}`;
 
-                        // Admin Space Logic
-                        const adminContainer = document.getElementById('admin-nav-container');
                         if (data.role === 'admin' || user.email === "as4556676@gmail.com") {
-                            adminContainer.innerHTML = `
-                                <a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition-all">
+                            document.getElementById('admin-nav-container').innerHTML = `
+                                <a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">
                                     <span>🛡️</span> <span class="nav-text">Admin Space</span>
                                 </a>`;
                         }
-
                         loadMyTasks(data.uniqueID);
-                        renderChart(); // चार्ट लोड करें
+                        renderChart();
                     }
                 });
-            } else {
-                window.location.replace("auth.html");
-            }
+            } else { window.location.replace("auth.html"); }
         });
 
         function loadMyTasks(uid) {
@@ -184,57 +174,56 @@
             const qTasks = query(collection(db, "tasks"), where("assignedTo", "==", uid));
             onSnapshot(qTasks, (snap) => {
                 const container = document.getElementById('task-container');
-                document.getElementById('active-count').innerText = snap.size;
-                
                 if (snap.empty) {
-                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500">No active projects for your ID.</div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 text-center glass-card rounded-[40px] border-dashed border-white/10 text-gray-500 reveal-item">Wait for your first assignment.</div>`;
                     return;
                 }
 
                 container.innerHTML = "";
+                let delay = 0.6;
                 snap.forEach((d) => {
                     const t = d.data();
-                    container.innerHTML += `
-                        <div class="glass-card p-6 rounded-3xl animate-in fade-in zoom-in duration-500">
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="p-3 bg-purple-600/10 rounded-2xl text-xl">🎙️</div>
+                    const card = `
+                        <div class="glass-card p-8 rounded-[36px] reveal-item" style="animation-delay: ${delay}s">
+                            <div class="flex justify-between items-start mb-8">
+                                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🧩</div>
                                 <div class="text-right">
-                                    <p class="text-[10px] text-gray-500 uppercase font-bold">Reward</p>
-                                    <p class="text-green-400 font-bold">$${(t.price || 0).toFixed(2)}</p>
+                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Project Rate</p>
+                                    <p class="text-green-400 font-bold text-lg">$${(t.price || 0).toFixed(2)}</p>
                                 </div>
                             </div>
-                            <h4 class="font-bold text-lg mb-2 truncate">${t.title}</h4>
-                            <p class="text-gray-500 text-xs mb-6 line-clamp-2">${t.description || 'Global processing task.'}</p>
-                            <a href="${t.targetPage || 'task_player.html'}" class="block w-full text-center py-3 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-black transition-all shadow-lg shadow-purple-600/20">START PROJECT ➔</a>
+                            <h4 class="font-bold text-xl mb-3">${t.title}</h4>
+                            <p class="text-gray-500 text-xs mb-8 leading-relaxed line-clamp-2">${t.description || 'System contribution task.'}</p>
+                            <a href="${t.targetPage || 'task_player.html'}" class="btn-haptic block w-full text-center py-4 bg-white text-black rounded-2xl text-xs font-bold tracking-widest shadow-xl shadow-white/5">ENGAGE PROJECT ➔</a>
                         </div>`;
+                    container.insertAdjacentHTML('beforeend', card);
+                    delay += 0.1; // Stagger effect
                 });
             });
         }
 
-        // Chart.js Configuration
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
                     datasets: [{
-                        label: 'Earnings ($)',
-                        data: [12, 19, 15, 25, 22, 30, 28], // यहाँ डेटाबेस से डेटा भी ला सकते हैं
+                        data: [5, 12, 8, 15, 10, 20, 18],
                         borderColor: '#A78BFA',
-                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
-                        fill: true,
-                        tension: 0.4,
                         borderWidth: 3,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(167, 139, 250, 0.05)'
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { display: false }, ticks: { display: false }, border: { display: false } },
-                        x: { grid: { display: false }, ticks: { color: '#6B7280', font: { size: 10 } }, border: { display: false } }
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: '#444', font: { size: 9 } } },
+                        y: { display: false } 
                     }
                 }
             });
