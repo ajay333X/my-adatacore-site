@@ -9,36 +9,37 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        :root { --accent: #A78BFA; --bg-dark: #050510; --card-bg: #0a0a1a; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        :root { --accent: #A78BFA; --bg-dark: #050510; --card-bg: rgba(13, 13, 31, 0.6); }
         
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--bg-dark); 
-            color: #e2e8f0; 
+            color: #f8fafc; 
             min-height: 100vh; 
             overflow-x: hidden;
-            background-image: radial-gradient(circle at 0% 0%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+            background-image: radial-gradient(circle at 10% 10%, rgba(167, 139, 250, 0.05) 0%, transparent 40%);
         }
 
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
         
         .glass-card { 
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.05); 
-            border-radius: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 32px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .glass-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 30px -10px rgba(167, 139, 250, 0.1); }
+        .glass-card:hover { border-color: rgba(167, 139, 250, 0.3); transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5); }
 
         #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; z-index: 100;}
         #sidebar.collapsed { width: 80px; }
         
-        .nav-item { transition: all 0.2s ease; border-radius: 12px; margin-bottom: 4px; color: #94a3b8; }
-        .nav-item.active { background: rgba(167, 139, 250, 0.1); color: var(--accent); border: 1px solid rgba(167, 139, 250, 0.2); }
+        .nav-item { transition: all 0.2s ease; border-radius: 16px; margin-bottom: 6px; color: #64748b; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, transparent 100%); color: var(--accent); border: 1px solid rgba(167, 139, 250, 0.2); }
         
-        .feed-item { border-left: 2px solid rgba(167, 139, 250, 0.2); transition: 0.3s; }
-        .feed-item:hover { border-left-color: var(--accent); background: rgba(255,255,255,0.02); }
+        .progress-bar { background: rgba(255,255,255,0.05); border-radius: 99px; height: 6px; overflow: hidden; }
+        .progress-fill { background: linear-gradient(90deg, #A78BFA, #4F46E5); width: 45%; height: 100%; transition: 1s ease-in-out; }
 
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.2); border-radius: 10px; }
@@ -48,106 +49,117 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5">
-        <div class="p-6 mb-8 flex items-center justify-between">
+        <div class="p-8 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white">
-                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-black">A</div>
-                <span class="nav-text tracking-tighter uppercase text-sm">ADATACORE</span>
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center font-black shadow-lg shadow-purple-500/20">A</div>
+                <span class="nav-text tracking-tighter uppercase text-sm font-black">ADATACORE</span>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white">✨</button>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white transition-all">✨</button>
         </div>
         
         <nav class="flex-1 px-4">
-            <div class="nav-item active flex items-center gap-4 px-4 py-3 cursor-pointer">
-                <span>📊</span> <span class="nav-text text-sm font-medium">Dashboard</span>
+            <div class="nav-item active flex items-center gap-4 px-5 py-4 cursor-pointer">
+                <span>📊</span> <span class="nav-text text-sm font-semibold">Workspace</span>
             </div>
-            <div onclick="location.href='profile.html'" class="nav-item flex items-center gap-4 px-4 py-3 cursor-pointer hover:text-white">
-                <span>👤</span> <span class="nav-text text-sm font-medium">Account</span>
+            <div onclick="location.href='profile.html'" class="nav-item flex items-center gap-4 px-5 py-4 cursor-pointer hover:text-white transition-all">
+                <span>👤</span> <span class="nav-text text-sm font-semibold">Settings</span>
             </div>
             <div id="admin-nav-container"></div>
         </nav>
 
-        <div class="p-4 border-t border-white/5">
-            <div id="btn-logout" class="flex items-center gap-4 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl cursor-pointer">
-                <span>🚪</span> <span class="nav-text text-sm font-medium text-white">Logout</span>
+        <div class="p-6 border-t border-white/5">
+            <div id="btn-logout" class="flex items-center gap-4 px-5 py-4 text-red-400 hover:bg-red-500/10 rounded-2xl cursor-pointer transition-all">
+                <span>🚪</span> <span class="nav-text text-sm font-bold text-white uppercase tracking-widest">Logout</span>
             </div>
         </div>
     </aside>
 
-    <main id="main-content" class="ml-[260px] p-8 w-full transition-all duration-500">
-        <header class="flex justify-between items-center mb-10">
+    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
+        <header class="flex justify-between items-center mb-12">
             <div>
-                <h1 id="greeting" class="text-3xl font-bold text-white uppercase tracking-tight">Welcome Back</h1>
-                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-1 tracking-widest uppercase">UID: Loading...</p>
+                <h1 id="greeting" class="text-4xl font-bold text-white tracking-tight">System Active</h1>
+                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">User Authentication: Success</p>
             </div>
-            <div class="flex items-center gap-3 glass px-4 py-2 rounded-2xl border-white/5">
-                <div id="user-initials" class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">U</div>
+            <div class="flex items-center gap-4 glass px-6 py-3 rounded-[24px] border-white/5 shadow-xl">
+                <div id="user-initials" class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-sm font-bold border-2 border-white/10">U</div>
                 <div class="text-left">
-                    <p id="user-display-name" class="text-xs font-bold leading-none">User</p>
-                    <p class="text-[9px] text-green-500 font-bold uppercase mt-1">Verified</p>
+                    <p id="user-display-name" class="text-sm font-bold leading-none text-white">User</p>
+                    <p class="text-[9px] text-green-400 font-bold uppercase mt-2 tracking-widest flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> Network Online
+                    </p>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
             <!-- Balance Card -->
-            <div class="glass-card p-6 border-l-4 border-green-500/50">
-                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Total Balance</p>
-                <h3 class="text-3xl font-bold text-white mt-1">$<span id="stat-balance">0.00</span></h3>
-                <div class="mt-4 flex items-center gap-2 text-[10px] text-green-500 font-bold">
-                    <span>↑ 12%</span> <span class="text-gray-600 font-normal">vs last month</span>
+            <div class="glass-card p-8 group">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💰</div>
+                    <span class="text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">+12.5%</span>
                 </div>
+                <p class="text-gray-500 text-[11px] uppercase font-bold tracking-widest">Wallet Balance</p>
+                <h3 class="text-4xl font-bold text-white mt-2">$<span id="stat-balance">0.00</span></h3>
+            </div>
+
+            <!-- Goal Section -->
+            <div class="glass-card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-2xl">🎯</div>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Daily Goal</p>
+                </div>
+                <div class="flex justify-between items-end mb-3">
+                    <span class="text-2xl font-bold text-white">$4.20</span>
+                    <span class="text-[10px] text-gray-500 font-bold">42% Completed</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill"></div></div>
             </div>
 
             <!-- Chart Section -->
-            <div class="lg:col-span-2 glass-card p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-gray-500 text-[10px] uppercase font-bold">Earnings Flow</p>
+            <div class="lg:col-span-2 glass-card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <p class="text-gray-500 text-[11px] uppercase font-bold tracking-widest">Performance Matrix</p>
                     <div class="flex gap-2">
-                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                        <span class="w-2 h-2 rounded-full bg-gray-700"></span>
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase">Live Statistics</span>
                     </div>
                 </div>
-                <div class="h-[100px]"><canvas id="earningChart"></canvas></div>
-            </div>
-
-            <!-- Leaderboard Preview -->
-            <div class="glass-card p-6 bg-gradient-to-br from-purple-900/10 to-transparent">
-                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Global Rank</p>
-                <h3 class="text-3xl font-bold text-purple-400 mt-1">#<span id="stat-rank">124</span></h3>
-                <div class="mt-4 flex items-center gap-2">
-                    <div class="flex -space-x-2">
-                        <div class="w-5 h-5 rounded-full bg-gray-800 border border-white/10"></div>
-                        <div class="w-5 h-5 rounded-full bg-purple-600 border border-white/10"></div>
-                    </div>
-                    <span class="text-[9px] text-gray-500 font-bold uppercase">Top 5% Performers</span>
-                </div>
+                <div class="h-[120px]"><canvas id="earningChart"></canvas></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
             <!-- Projects Section -->
             <div class="xl:col-span-2">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold uppercase tracking-tight">🧩 Assigned Projects</h2>
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Current Projects</h2>
+                    <div class="h-px flex-1 bg-white/5 mx-6"></div>
                 </div>
-                <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
                 
-                <h2 class="text-xl font-bold mt-12 mb-6 uppercase tracking-tight">📜 Recent Activity</h2>
+                <div class="flex justify-between items-center mt-16 mb-8">
+                    <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Ledger History</h2>
+                    <div class="h-px flex-1 bg-white/5 mx-6"></div>
+                </div>
                 <div class="glass-card overflow-hidden">
                     <table class="w-full text-left">
-                        <thead class="bg-white/5"><tr class="text-[10px] text-gray-500 uppercase tracking-widest"><th class="p-5">Project</th><th class="p-5">Payout</th><th class="p-5 text-center">Status</th></tr></thead>
+                        <thead><tr class="text-[11px] text-gray-500 uppercase tracking-widest border-b border-white/5"><th class="p-6">Project Name</th><th class="p-6">Net Payout</th><th class="p-6 text-center">Status</th></tr></thead>
                         <tbody id="history-body" class="divide-y divide-white/5"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Activity Feed -->
-            <div class="space-y-6">
-                <h2 class="text-xl font-bold uppercase tracking-tight">🔔 Activity Feed</h2>
-                <div id="activity-feed" class="glass-card p-6 space-y-6 max-h-[600px] overflow-y-auto custom-scroll">
-                    <div class="feed-item p-4">
-                        <p class="text-xs font-bold text-white">System Ready</p>
-                        <p class="text-[10px] text-gray-500 mt-1">Welcome to Adatacore Workstation. All systems active.</p>
+            <!-- Sidebar Info -->
+            <div class="space-y-8">
+                <h2 class="text-xl font-bold text-white uppercase tracking-tighter">Live Activity</h2>
+                <div id="activity-feed" class="glass-card p-8 space-y-8 max-h-[700px] overflow-y-auto custom-scroll">
+                    <!-- Initial Welcome -->
+                    <div class="flex gap-4 group">
+                        <div class="w-1 h-12 bg-indigo-600 rounded-full group-hover:scale-y-110 transition-transform"></div>
+                        <div>
+                            <p class="text-xs font-bold text-white">Station Online</p>
+                            <p class="text-[10px] text-gray-500 mt-2 leading-relaxed">System connection established. Dashboard ready for processing.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,7 +201,7 @@
         function updateUI(d) {
             document.getElementById('user-display-name').innerText = d.fullName || "User";
             document.getElementById('user-initials').innerText = (d.fullName || "U").charAt(0).toUpperCase();
-            document.getElementById('display-uid').innerText = "UID: " + (d.uniqueID || "N/A");
+            document.getElementById('display-uid').innerText = "Session ID: " + (d.uniqueID || "N/A");
             document.getElementById('stat-balance').innerText = (d.balance || 0).toFixed(2);
             
             const h = new Date().getHours();
@@ -198,8 +210,63 @@
 
             if (d.role === 'admin' || d.email === "as4556676@gmail.com") {
                 const adminContainer = document.getElementById('admin-nav-container');
-                adminContainer.innerHTML = `<div onclick="location.href='admin.html'" class="nav-item flex items-center gap-4 px-4 py-3 mt-4 text-yellow-500 font-bold cursor-pointer transition-all hover:bg-yellow-500/10"><span>🛡️</span> <span class="nav-text text-sm uppercase">Master Control</span></div>`;
+                adminContainer.innerHTML = `<div onclick="location.href='admin.html'" class="nav-item flex items-center gap-4 px-5 py-4 mt-6 text-yellow-500 font-bold cursor-pointer hover:bg-yellow-500/10 transition-all border border-yellow-500/20 rounded-2xl"><span>🛡️</span> <span class="nav-text text-sm uppercase">Admin Panel</span></div>`;
             }
+        }
+
+        async function updateActivityFeed(uid) {
+            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(3);
+            const feed = document.getElementById('activity-feed');
+            
+            subs?.forEach(s => {
+                const statusColor = s.status === 'Approved' ? 'bg-green-500' : s.status === 'Rejected' ? 'bg-red-500' : 'bg-yellow-500';
+                feed.innerHTML = `
+                    <div class="flex gap-4 group">
+                        <div class="w-1 h-12 ${statusColor} rounded-full group-hover:scale-y-110 transition-transform"></div>
+                        <div>
+                            <p class="text-xs font-bold text-white uppercase">${s.status || 'Processing'}</p>
+                            <p class="text-[10px] text-gray-500 mt-2 leading-relaxed">Project <b>${s.projectTitle}</b> submission logged at $${s.earnedAmount}.</p>
+                        </div>
+                    </div>
+                ` + feed.innerHTML;
+            });
+        }
+
+        async function loadMyTasks(uid) {
+            const { data: tasks } = await _supabase.from('tasks').select('*').eq('assignedTo', uid);
+            const c = document.getElementById('task-container');
+            c.innerHTML = (!tasks || tasks.length === 0) ? `<div class="col-span-full py-24 text-center glass-card opacity-30 uppercase font-black tracking-widest">Awaiting New Data Packs...</div>` : "";
+            
+            tasks?.forEach(t => {
+                c.innerHTML += `
+                    <div class="glass-card p-8 border-t-2 border-purple-600/30">
+                        <div class="flex justify-between items-start mb-8">
+                            <span class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-xl">🧩</span>
+                            <span class="text-green-400 font-black text-xl">$${(t.price || 0).toFixed(2)}</span>
+                        </div>
+                        <h4 class="font-bold text-lg mb-6 uppercase tracking-tight line-clamp-1">${t.title}</h4>
+                        <button onclick="location.href='task_player.html'" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-indigo-600 transition-all shadow-xl">Initialize Task ➔</button>
+                    </div>`;
+            });
+        }
+
+        async function loadHistory(uid) {
+            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(6);
+            const b = document.getElementById('history-body');
+            b.innerHTML = (!subs || subs.length === 0) ? `<tr><td colspan="3" class="p-12 text-center text-gray-500 italic uppercase font-bold tracking-widest opacity-20">Zero Transactions Found</td></tr>` : "";
+            
+            subs?.forEach(s => {
+                const status = s.status || 'Pending';
+                const statusStyle = status === 'Approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : status === 'Rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                b.innerHTML += `
+                    <tr class="hover:bg-white/5 transition-all">
+                        <td class="p-6 text-sm font-bold uppercase tracking-tight text-white">${s.projectTitle}</td>
+                        <td class="p-6 text-sm font-mono font-black text-gray-400 tracking-tighter">$${(s.earnedAmount || 0).toFixed(3)}</td>
+                        <td class="p-6 text-center">
+                            <span class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase border ${statusStyle}">${status}</span>
+                        </td>
+                    </tr>`;
+            });
         }
 
         async function loadAnnouncement() {
@@ -211,13 +278,13 @@
 
                 if (currentMsg !== lastAck && !sessionShown) {
                     Swal.fire({
-                        title: '📢 System Alert',
+                        title: 'SYSTEM BROADCAST',
                         text: currentMsg,
-                        background: '#0a0a1a',
+                        background: '#050510',
                         color: '#fff',
                         confirmButtonText: 'ACKNOWLEDGE',
-                        confirmButtonColor: '#A78BFA',
-                        allowOutsideClick: false
+                        confirmButtonColor: '#4F46E5',
+                        customClass: { popup: 'rounded-[32px] border border-white/10' }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             localStorage.setItem('lastAckMsg', currentMsg);
@@ -228,65 +295,11 @@
             }
         }
 
-        async function updateActivityFeed(uid) {
-            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(3);
-            const feed = document.getElementById('activity-feed');
-            
-            if (subs && subs.length > 0) {
-                subs.forEach(s => {
-                    const statusText = s.status === 'Approved' ? 'approved and paid' : s.status === 'Rejected' ? 'needs revision' : 'is under review';
-                    feed.innerHTML = `
-                        <div class="feed-item p-4 mb-4">
-                            <p class="text-xs font-bold text-white">Task Update</p>
-                            <p class="text-[10px] text-gray-500 mt-1">Your submission for <b>${s.projectTitle}</b> ${statusText}.</p>
-                        </div>
-                    ` + feed.innerHTML;
-                });
-            }
-        }
-
-        async function loadMyTasks(uid) {
-            const { data: tasks } = await _supabase.from('tasks').select('*').eq('assignedTo', uid);
-            const c = document.getElementById('task-container');
-            c.innerHTML = (!tasks || tasks.length === 0) ? `<div class="col-span-full py-20 text-center glass-card opacity-40 italic">Waiting for assignments...</div>` : "";
-            
-            tasks?.forEach(t => {
-                c.innerHTML += `
-                    <div class="glass-card p-6 border-l-4 border-purple-600">
-                        <div class="flex justify-between items-start mb-6">
-                            <span class="text-purple-400 font-black text-xl">🧩</span>
-                            <span class="text-green-400 font-bold text-lg">$${(t.price || 0).toFixed(2)}</span>
-                        </div>
-                        <h4 class="font-bold text-lg mb-4 uppercase tracking-tight">${t.title}</h4>
-                        <button onclick="location.href='task_player.html'" class="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all shadow-xl">Start Project ➔</button>
-                    </div>`;
-            });
-        }
-
-        async function loadHistory(uid) {
-            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(5);
-            const b = document.getElementById('history-body');
-            b.innerHTML = (!subs || subs.length === 0) ? `<tr><td colspan="3" class="p-10 text-center text-gray-500 italic">No recent transactions.</td></tr>` : "";
-            
-            subs?.forEach(s => {
-                const status = s.status || 'Pending';
-                const color = status === 'Approved' ? 'bg-green-500' : status === 'Rejected' ? 'bg-red-500' : 'bg-yellow-500';
-                b.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-colors">
-                        <td class="p-5 text-sm font-semibold uppercase tracking-tighter">${s.projectTitle}</td>
-                        <td class="p-5 text-sm font-mono text-gray-400">$${(s.earnedAmount || 0).toFixed(3)}</td>
-                        <td class="p-5 text-center">
-                            <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase text-white ${color}">${status}</span>
-                        </td>
-                    </tr>`;
-            });
-        }
-
         function renderChart() {
             const ctx = document.getElementById('earningChart').getContext('2d');
             new Chart(ctx, { 
                 type: 'line', 
-                data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [5, 12, 8, 15, 10, 18, 14], borderColor: '#A78BFA', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(167, 139, 250, 0.05)' }] }, 
+                data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#6366f1', borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)' }] }, 
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } 
             });
         }
