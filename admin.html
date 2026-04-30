@@ -19,6 +19,9 @@
         .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         td { background: rgba(255,255,255,0.02); padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        
+        /* Audio Player Styling */
+        audio::-webkit-media-controls-panel { background-color: #A78BFA; }
     </style>
 </head>
 <body class="flex">
@@ -27,13 +30,13 @@
     <aside class="w-72 h-screen border-r border-white/5 p-6 flex flex-col gap-8 shrink-0 sticky top-0">
         <div class="flex items-center gap-3 px-2">
             <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold text-white">A</div>
-            <span class="font-bold tracking-tight text-lg text-white">Adatacore Admin</span>
+            <span class="font-bold tracking-tight text-lg text-white uppercase">Adatacore Admin</span>
         </div>
         <nav class="flex flex-col gap-1">
             <div onclick="showSection('broadcast')" class="nav-link active" id="btn-broadcast">📢 <span>Broadcast</span></div>
-            <div onclick="showSection('search')" class="nav-link" id="btn-search">🛡️ <span>Search Center</span></div>
+            <div onclick="showSection('vault')" class="nav-link" id="btn-vault">📦 <span>Review Center</span></div>
+            <div onclick="showSection('search')" class="nav-link" id="btn-search">🛡️ <span>User Lookup</span></div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">🚀 <span>Deploy Task</span></div>
-            <div onclick="showSection('vault')" class="nav-link" id="btn-vault">📦 <span>Data Vault</span></div>
             <div onclick="showSection('authority')" class="nav-link" id="btn-authority">🔑 <span>Authority</span></div>
             <div onclick="showSection('logs')" class="nav-link" id="btn-logs">📝 <span>Activity Logs</span></div>
         </nav>
@@ -46,16 +49,38 @@
         
         <!-- BROADCAST CENTER -->
         <section id="broadcast" class="content-section active">
-            <h2 class="text-2xl font-bold mb-8">System Broadcast</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">System Broadcast</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="text" id="announcementInput" class="admin-input mb-4" placeholder="Enter live scrolling message...">
-                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full text-white transition-all">PUSH LIVE</button>
+                <button id="btn-update-announcement" class="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-xl font-bold text-sm w-full text-white transition-all">PUSH LIVE BROADCAST</button>
+            </div>
+        </section>
+
+        <!-- REVIEW CENTER (VAULT) -->
+        <section id="vault" class="content-section">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold uppercase tracking-tighter">Review Center</h2>
+                <button onclick="loadVault()" class="text-xs font-bold text-purple-400 hover:text-white transition-all">REFRESH LIST ↻</button>
+            </div>
+            <div class="glass rounded-[32px] overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="text-[10px] text-gray-500 uppercase font-black tracking-widest bg-white/5">
+                        <tr>
+                            <th class="p-6">Worker (UID)</th>
+                            <th class="p-6">Project</th>
+                            <th class="p-6">Playback</th>
+                            <th class="p-6">Earnings</th>
+                            <th class="p-6 text-center">Status / Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vault-table-body"></tbody>
+                </table>
             </div>
         </section>
 
         <!-- SEARCH CENTER -->
         <section id="search" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Advanced User Lookup</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Advanced User Lookup</h2>
             <div class="flex gap-4 mb-10 max-w-2xl">
                 <input type="text" id="workerSearchInput" class="admin-input" placeholder="Search by Email or UID...">
                 <button id="btn-worker-find" class="bg-purple-600 px-10 rounded-xl font-bold text-xs uppercase text-white hover:bg-purple-500 transition-all">Lookup</button>
@@ -63,8 +88,7 @@
 
             <div id="search-results-box" class="hidden flex border border-white/5 rounded-[32px] overflow-hidden bg-[#0a0a15] min-h-[500px]">
                 <div class="w-64 bg-white/5 p-8 border-r border-white/5 flex flex-col gap-2">
-                    <div class="text-[10px] font-bold text-gray-500 uppercase mb-6 tracking-widest">Navigation</div>
-                    <div class="p-3 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-bold">Overview</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase mb-6 tracking-widest text-center">Identity</div>
                     <div class="mt-auto pt-6 border-t border-white/5">
                         <p id="lookup-side-email" class="text-[10px] text-white truncate font-mono">---</p>
                         <p id="lookup-side-uid" class="text-[10px] text-purple-400 font-mono mt-1 uppercase">---</p>
@@ -86,9 +110,9 @@
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
                         <div id="lookup-details-container" class="space-y-4"></div>
                         <div class="space-y-4">
-                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Actions</h3>
-                            <button id="btn-edit-balance" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-purple-500/20 transition-all uppercase">Edit Balance</button>
-                            <button id="btn-toggle-status" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-red-500/10 hover:text-red-400 transition-all uppercase">Toggle Status</button>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Security Actions</h3>
+                            <button id="btn-edit-balance" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-purple-500/20 transition-all uppercase">Edit Wallet Balance</button>
+                            <button id="btn-toggle-status" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-red-500/10 hover:text-red-400 transition-all uppercase">Toggle Account Status</button>
                         </div>
                     </div>
                 </div>
@@ -99,50 +123,41 @@
         <section id="deploy" class="content-section">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div>
-                    <h2 class="text-2xl font-bold mb-8 text-white">Deploy Project</h2>
+                    <h2 class="text-2xl font-bold mb-8 text-white uppercase tracking-tighter">Deploy Project</h2>
                     <div class="glass p-8 rounded-[32px] space-y-4">
                         <input type="text" id="targetUID" class="admin-input" placeholder="Worker Unique ID (e.g. AD-1234)">
                         <input type="text" id="projectTitleInput" class="admin-input" placeholder="Project Title">
                         <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
-                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase transition-all hover:bg-yellow-500">DEPLOY PROJECT 🚀</button>
+                        <button id="btn-push-project" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase transition-all hover:bg-yellow-500">PUSH TO WORKER 🚀</button>
                     </div>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold mb-8 text-white">Live Assignments</h2>
+                    <h2 class="text-2xl font-bold mb-8 text-white uppercase tracking-tighter">Active Assignments</h2>
                     <div id="live-task-display" class="space-y-3"></div>
                 </div>
             </div>
         </section>
 
-        <!-- DATA VAULT -->
-        <section id="vault" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Data Vault</h2>
-            <div class="glass rounded-[32px] overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="text-[10px] text-gray-500 uppercase"><tr><th class="p-4">UID</th><th class="p-4">Project</th><th class="p-4">Reward</th><th class="p-4">File</th></tr></thead>
-                    <tbody id="vault-table-body"></tbody>
-                </table>
-            </div>
-        </section>
-
         <!-- AUTHORITY -->
         <section id="authority" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Authority Management</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Authority Management</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl">
                 <input type="email" id="authEmailInput" class="admin-input mb-4" placeholder="Worker Email Address...">
                 <div class="flex gap-4">
-                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white">GRANT ADMIN</button>
-                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10">REVOKE ADMIN</button>
+                    <button id="btn-grant-admin" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-xs text-white uppercase">GRANT ADMIN</button>
+                    <button id="btn-revoke-admin" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold text-xs text-white border border-white/10 uppercase">REVOKE ADMIN</button>
                 </div>
             </div>
         </section>
 
         <!-- LOGS -->
         <section id="logs" class="content-section">
-            <h2 class="text-2xl font-bold mb-8">Activity Logs</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Activity Logs</h2>
             <div class="glass rounded-[32px] overflow-hidden">
                 <table class="w-full text-left">
-                    <thead class="text-[10px] text-gray-500 uppercase"><tr><th class="p-4">Admin</th><th class="p-4">Action</th><th class="p-4">Target</th><th class="p-4">Time</th></tr></thead>
+                    <thead class="text-[10px] text-gray-500 uppercase font-black tracking-widest bg-white/5">
+                        <tr><th class="p-6">Admin</th><th class="p-6">Action</th><th class="p-6">Target</th><th class="p-6">Time</th></tr>
+                    </thead>
                     <tbody id="logs-display-list"></tbody>
                 </table>
             </div>
@@ -182,27 +197,82 @@
             loadTasks(); loadLogs(); loadVault();
         }
 
-        // --- BROADCAST (FIXED) ---
+        // --- BROADCAST ---
         document.getElementById('btn-update-announcement').onclick = async () => {
             const msg = document.getElementById('announcementInput').value.trim();
             if(!msg) return;
-
-            // OVERWRITE FIX: ID 1 वाली रो को ही अपडेट करेगा
-            const { error } = await _supabase
-                .from('settings')
-                .update({ announcement: msg })
-                .eq('id', 1); 
-
+            const { error } = await _supabase.from('settings').update({ announcement: msg }).eq('id', 1); 
             if(!error) {
                 await writeLog("Broadcast Updated", msg);
                 Swal.fire('Success', 'Broadcast Live!', 'success');
                 document.getElementById('announcementInput').value = "";
-            } else {
-                Swal.fire('Error', error.message, 'error');
             }
         };
 
-        // --- LOOKUP ---
+        // --- REVIEW CENTER (VAULT) ---
+        async function loadVault() {
+            const { data } = await _supabase.from('submissions').select('*').order('id', { ascending: false });
+            const tableBody = document.getElementById('vault-table-body');
+            
+            tableBody.innerHTML = data?.map(s => {
+                const status = s.status || 'Pending';
+                const statusColor = status === 'Approved' ? 'text-green-400' : status === 'Rejected' ? 'text-red-500' : 'text-yellow-400';
+                
+                return `
+                    <tr>
+                        <td class="p-6 font-mono text-purple-400 text-xs">${s.workerUID}</td>
+                        <td class="p-6 font-bold text-xs">${s.projectTitle}</td>
+                        <td class="p-6">
+                            <audio controls class="h-8 w-48">
+                                <source src="${s.audioData}" type="audio/wav">
+                            </audio>
+                        </td>
+                        <td class="p-6 text-green-400 font-bold">$${(s.earnedAmount || 0).toFixed(4)}</td>
+                        <td class="p-6 text-center">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-[9px] font-black uppercase tracking-widest ${statusColor}">${status}</span>
+                                ${status === 'Pending' ? `
+                                    <div class="flex gap-2">
+                                        <button onclick="reviewSubmission(${s.id}, '${s.workerUID}', ${s.earnedAmount}, 'Approved')" class="px-2 py-1 bg-green-600 rounded text-[9px] font-bold">APPROVE</button>
+                                        <button onclick="reviewSubmission(${s.id}, '${s.workerUID}', ${s.earnedAmount}, 'Rejected')" class="px-2 py-1 bg-red-600 rounded text-[9px] font-bold">REJECT</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || "";
+        }
+
+        window.reviewSubmission = async (subId, workerUID, amount, action) => {
+            const confirm = await Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to ${action} this work?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Proceed'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            // 1. Update Submission Status
+            await _supabase.from('submissions').update({ status: action }).eq('id', subId);
+
+            // 2. If Rejected, deduct balance
+            if (action === 'Rejected') {
+                const { data: user } = await _supabase.from('users').select('id, balance').eq('uniqueID', workerUID).single();
+                if (user) {
+                    const newBalance = (user.balance || 0) - amount;
+                    await _supabase.from('users').update({ balance: newBalance }).eq('id', user.id);
+                }
+            }
+
+            await writeLog(`${action} Work`, workerUID);
+            loadVault();
+            Swal.fire('Updated', `Submission ${action}`, 'success');
+        };
+
+        // --- LOOKUP & OTHERS ---
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
             const { data: user, error } = await _supabase.from('users').select('*').or(`email.eq.${val},uniqueID.eq.${val}`).single();
@@ -217,10 +287,9 @@
             const container = document.getElementById('lookup-details-container');
             container.innerHTML = `
                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Occupation:</span> <span>${user.occupation || 'N/A'}</span></div>
-                <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Education:</span> <span>${user.education || 'N/A'}</span></div>
                 <div class="flex justify-between text-xs border-b border-white/5 pb-2"><span class="text-gray-500">Phone:</span> <span>${user.phone || 'N/A'}</span></div>
             `;
-
+            
             const isBlocked = user.accountStatus === 'blocked';
             const badge = document.getElementById('lookup-status-badge');
             badge.innerText = isBlocked ? 'BLOCKED' : 'ACTIVE';
@@ -233,6 +302,13 @@
                     await writeLog("Balance Edit", `${user.email} -> $${newBal}`);
                     document.getElementById('btn-worker-find').click();
                 }
+            };
+
+            document.getElementById('btn-toggle-status').onclick = async () => {
+                const next = isBlocked ? 'active' : 'blocked';
+                await _supabase.from('users').update({ accountStatus: next }).eq('id', user.id);
+                await writeLog("Status Update", `${user.email} -> ${next}`);
+                document.getElementById('btn-worker-find').click();
             };
         };
 
@@ -261,17 +337,10 @@
         }
         window.delTask = async (id) => { await _supabase.from('tasks').delete().eq('id', id); loadTasks(); };
 
-        async function loadVault() {
-            const { data } = await _supabase.from('submissions').select('*').order('id', { ascending: false });
-            document.getElementById('vault-table-body').innerHTML = data?.map(s => `
-                <tr><td class="p-4 font-mono text-purple-400">${s.workerUID}</td><td>${s.projectTitle}</td><td class="text-green-400">$${(s.earnedAmount || 0).toFixed(2)}</td><td><a href="${s.audioData}" target="_blank" class="text-blue-400 text-xs underline">Link</a></td></tr>
-            `).join('') || "";
-        }
-
         async function loadLogs() {
             const { data } = await _supabase.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(20);
             document.getElementById('logs-display-list').innerHTML = data?.map(l => `
-                <tr><td class="p-4 opacity-50">${l.admin}</td><td class="font-bold text-purple-400">${l.action}</td><td>${l.target}</td><td class="opacity-50">${new Date(l.created_at).toLocaleTimeString()}</td></tr>
+                <tr><td class="p-6 opacity-50">${l.admin}</td><td class="font-bold text-purple-400 uppercase text-xs">${l.action}</td><td class="text-xs">${l.target}</td><td class="opacity-50 text-[10px]">${new Date(l.created_at).toLocaleTimeString()}</td></tr>
             `).join('') || "";
         }
 
