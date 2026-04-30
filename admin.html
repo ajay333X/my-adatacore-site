@@ -56,13 +56,13 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
-                <!-- Step 1: Identity & Theme -->
+                <!-- 01 Identity & Style -->
                 <div class="space-y-6">
                     <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">01. Identity & Style</h3>
                     <div class="glass p-6 rounded-[32px] space-y-4">
                         <div>
-                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Unique Project Name</label>
-                            <input type="text" id="lab-project-name" class="admin-input" placeholder="Hindi_Audio_Phase_1">
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Project Name</label>
+                            <input type="text" id="lab-project-name" class="admin-input" placeholder="Podcast_Collection_Live">
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Accent Color</label>
@@ -75,69 +75,76 @@
                     </div>
                 </div>
 
-                <!-- Step 2: Component Builder -->
+                <!-- 02 Structure Builder -->
                 <div class="space-y-6">
                     <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">02. Structure Builder</h3>
                     <div class="glass p-6 rounded-[32px] space-y-4">
-                        <p class="text-[10px] text-gray-500 uppercase font-bold">Select Active Modules:</p>
+                        <p class="text-[10px] text-gray-500 uppercase font-bold">Activate Components:</p>
                         <div class="grid grid-cols-1 gap-2">
                             <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
-                                <span class="text-xs font-bold">🎙️ Audio Recording Box</span>
+                                <span class="text-xs font-bold">🎙️ Audio Recorder Unit</span>
                                 <input type="checkbox" id="mod-audio" class="w-4 h-4 accent-purple-500">
                             </label>
                             <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
-                                <span class="text-xs font-bold">✍️ Transcription Textbox</span>
+                                <span class="text-xs font-bold">✍️ Text Transcription Box</span>
                                 <input type="checkbox" id="mod-text" class="w-4 h-4 accent-purple-500">
                             </label>
                             <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
-                                <span class="text-xs font-bold">📺 Video Player Unit</span>
+                                <span class="text-xs font-bold">📺 Media Player Unit</span>
                                 <input type="checkbox" id="mod-video" class="w-4 h-4 accent-purple-500">
                             </label>
                             <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
-                                <span class="text-xs font-bold">🖼️ Reference Image Box</span>
+                                <span class="text-xs font-bold">🖼️ Frame Reference Box</span>
                                 <input type="checkbox" id="mod-image" class="w-4 h-4 accent-purple-500">
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Logic & Publish -->
+                <!-- 03 Logic & Publish -->
                 <div class="space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">03. Logic & Deployment</h3>
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">03. Deployment Logic</h3>
                     <div class="glass p-6 rounded-[32px] space-y-4">
                         <div>
-                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Custom JS Logic Injection</label>
-                            <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// window.onLoad = () => { alert('Hello'); }"></textarea>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">JS Logic Injection</label>
+                            <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// Code to match users or handle recording..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Raw CSS/HTML Overwrite</label>
-                            <textarea id="lab-html-code" class="admin-input h-32 font-mono text-[10px]" placeholder="<style> .btn { border-radius: 0; } </style>"></textarea>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">HTML/CSS Overwrite</label>
+                            <textarea id="lab-html-code" class="admin-input h-32 font-mono text-[10px]" placeholder="<style> .custom-btn { color: gold; } </style>"></textarea>
                         </div>
-                        <button onclick="publishProjectInstance()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all">GENERATE & DEPLOY 🚀</button>
+                        <button onclick="publishProjectInstance()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-xl">PUBLISH INSTANCE 🚀</button>
                     </div>
                 </div>
             </div>
             
-            <!-- List of Managed Projects -->
             <div class="mt-12">
-                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-6 border-b border-white/5 pb-4">Managed Lab Projects</h3>
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-6 border-b border-white/5 pb-4">Live Generator Registry</h3>
                 <div id="managed-projects-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
             </div>
         </section>
 
-        <!-- (Other sections remain here...) -->
+        <!-- ASSIGN TASK SECTION -->
         <section id="deploy" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Assign Task</h2>
-            <div class="glass p-8 rounded-[32px] max-w-2xl space-y-4">
-                <input type="text" id="targetUID" class="admin-input" placeholder="Enter Worker UID (e.g., AD-123)">
-                <select id="deploy-project-select" class="admin-input bg-[#0a0a15]">
-                    <option value="">-- Choose Generated Project --</option>
-                </select>
-                <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
-                <button onclick="assignGeneratedTask()" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase">Send to Worker ➔</button>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Task Assignment Center</h2>
+            <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-yellow-600">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Target Worker UID</label>
+                    <input type="text" id="targetUID" class="admin-input" placeholder="e.g. AD-552">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Available Lab Project</label>
+                    <select id="deploy-project-select" class="admin-input bg-[#0a0a15] text-purple-400 font-bold uppercase"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Payout Amount ($)</label>
+                    <input type="number" id="taskPrice" class="admin-input" placeholder="0.00">
+                </div>
+                <button onclick="assignGeneratedTask()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-black shadow-lg">DEPLOY TASK TO WORKER ➔</button>
             </div>
         </section>
 
+        <!-- (Other sections like Search, Analytics, etc. should stay here) -->
     </main>
 
     <script>
@@ -148,8 +155,10 @@
         window.showSection = (id) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(document.getElementById('btn-' + id)) document.getElementById('btn-' + id).classList.add('active');
+            const sec = document.getElementById(id);
+            const btn = document.getElementById('btn-' + id);
+            if(sec) sec.classList.add('active');
+            if(btn) btn.classList.add('active');
         };
 
         async function init() {
@@ -158,10 +167,9 @@
             loadManagedProjects();
         }
 
-        // --- PROJECT GENERATOR LOGIC ---
         async function publishProjectInstance() {
             const name = document.getElementById('lab-project-name').value.trim();
-            if(!name) return Swal.fire('Error', 'Unique Name Required', 'error');
+            if(!name) return Swal.fire('Error', 'Unique Project Name is mandatory', 'error');
 
             const blueprint = {
                 accent: document.getElementById('lab-accent-color').value,
@@ -176,7 +184,7 @@
                 html_overwrite: document.getElementById('lab-html-code').value
             };
 
-            Swal.fire({ title: 'Deploying Instance...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Generating Logic...', didOpen: () => Swal.showLoading() });
 
             const { error } = await _supabase.from('project_lab').insert([{
                 project_name: name,
@@ -185,8 +193,9 @@
             }]);
 
             if(!error) {
-                Swal.fire('Deployed!', `Project instance '${name}' created.`, 'success');
+                Swal.fire('Deployed', `Instance '${name}' is now active in registry.`, 'success');
                 loadManagedProjects();
+                document.getElementById('lab-project-name').value = "";
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -198,16 +207,16 @@
             const select = document.getElementById('deploy-project-select');
 
             grid.innerHTML = data?.map(p => `
-                <div class="glass p-6 rounded-[24px] border-t-2" style="border-color: ${p.config.accent}">
-                    <h4 class="font-bold text-sm uppercase mb-1">${p.project_name}</h4>
-                    <p class="text-[9px] text-gray-500 uppercase mb-4">Instance ID: ${p.id}</p>
-                    <div class="flex gap-2">
-                        <button onclick="deleteInstance(${p.id})" class="text-[9px] font-black text-red-500 uppercase">Destroy</button>
+                <div class="glass p-6 rounded-[28px] border-l-4" style="border-color: ${p.config.accent}">
+                    <h4 class="font-bold text-xs uppercase tracking-tight text-white">${p.project_name}</h4>
+                    <p class="text-[8px] text-gray-500 uppercase mt-1">Registry ID: ${p.id}</p>
+                    <div class="mt-4">
+                        <button onclick="deleteInstance(${p.id})" class="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline">DESTROY INSTANCE</button>
                     </div>
                 </div>
             `).join('') || "";
 
-            select.innerHTML = '<option value="">-- Choose Generated Project --</option>' + 
+            select.innerHTML = '<option value="">-- SELECT FROM REGISTRY --</option>' + 
                 data?.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
         }
 
@@ -216,7 +225,7 @@
             const pName = document.getElementById('deploy-project-select').value;
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
 
-            if(!uid || !pName) return Swal.fire('Error', 'Missing Fields', 'error');
+            if(!uid || !pName) return Swal.fire('Error', 'Incomplete assignment data', 'error');
 
             const { error } = await _supabase.from('tasks').insert([{
                 assignedTo: uid,
@@ -224,7 +233,7 @@
                 price: price
             }]);
 
-            if(!error) Swal.fire('Success', 'Task assigned to ' + uid, 'success');
+            if(!error) Swal.fire('Task Dispatched', `Project assigned to Worker: ${uid}`, 'success');
         }
 
         window.deleteInstance = async (id) => {
