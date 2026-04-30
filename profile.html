@@ -172,7 +172,6 @@
 
             document.getElementById('email').value = user.email;
 
-            // ✅ डेटाबेस से डेटा खींचना
             let { data, error } = await supabase
                 .from('users')
                 .select('*')
@@ -186,10 +185,8 @@
                 document.getElementById('occupation').value = data.occupation || "";
                 document.getElementById('education').value = data.education || "Bachelors";
 
-                // ✅ Auto UID Generation Logic
                 if (!data.uniqueID || data.uniqueID === "NULL") {
                     const newUID = "AD-" + Math.floor(1000 + Math.random() * 9000);
-                    // डेटाबेस में अपडेट करें
                     await supabase.from('users').update({ uniqueID: newUID }).eq('id', user.id);
                     document.getElementById('displayUid').innerText = "UID: " + newUID;
                 } else {
@@ -198,15 +195,16 @@
             }
         }
 
-        // ✅ डेटा अपडेट करना
+        // ✅ DATA UPDATE (FIXED ERROR)
         document.getElementById('saveBtn').onclick = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // सिर्फ वो डेटा भेजें जो text fields हैं
             const updateData = {
                 fullName: document.getElementById('fullName').value,
                 phone: document.getElementById('phone').value,
-                "Date of Birth": document.getElementById('dob').value,
+                "Date of Birth": document.getElementById('dob').value || null, // खाली डेट को null भेजें
                 occupation: document.getElementById('occupation').value,
                 education: document.getElementById('education').value
             };
@@ -222,11 +220,12 @@
                     background: '#1A1A2E', color: '#fff', confirmButtonColor: '#A78BFA' 
                 });
             } else {
+                console.error(error);
                 Swal.fire({ icon: 'error', title: 'Error', text: error.message });
             }
         };
 
-        // ✅ पासवर्ड रिसेट
+        // ✅ PASSWORD RESET
         document.getElementById('resetBtn').onclick = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
