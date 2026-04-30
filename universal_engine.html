@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Adatacore — Universal Engine v3</title>
+    <title>Adatacore — Universal Engine v3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -47,34 +47,45 @@
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+        // ग्लोबल एक्सेस के लिए विंडो ऑब्जेक्ट्स सेट करना
+        window._supabase = _supabase;
+        window.Swal = Swal;
+
         const urlParams = new URLSearchParams(window.location.search);
         const projectKey = urlParams.get('project');
-        let currentUserData = null; // ग्लोबल एक्सेस के लिए
+        window.currentUserData = null; 
 
         async function bootEngine() {
-            // 1. यूजर प्रोफाइल गेट करना
-            const { data: { user } } = await _supabase.auth.getUser();
-            const { data: profile } = await _supabase.from('users').select('*').eq('id', user.id).single();
-            currentUserData = profile;
+            try {
+                // 1. यूजर प्रोफाइल गेट करना
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (!user) throw new Error("Auth failed");
 
-            if (!projectKey) {
-                Swal.fire('Error', 'Invalid Engine Route', 'error').then(() => location.href='dashboard.html');
-                return;
+                const { data: profile } = await _supabase.from('users').select('*').eq('id', user.id).single();
+                window.currentUserData = profile;
+
+                if (!projectKey) {
+                    Swal.fire('Error', 'Invalid Engine Route', 'error').then(() => location.href='dashboard.html');
+                    return;
+                }
+
+                // 2. एडमिन ब्लूप्रिंट फेच करना
+                const { data: blueprint, error } = await _supabase
+                    .from('project_lab')
+                    .select('*')
+                    .eq('project_name', projectKey)
+                    .single();
+
+                if (error || !blueprint) {
+                    Swal.fire('Offline', 'Instance no longer available.', 'warning');
+                    return;
+                }
+
+                assembleProject(blueprint);
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Could not initialize session.', 'error');
             }
-
-            // 2. एडमिन ब्लूप्रिंट फेच करना
-            const { data: blueprint, error } = await _supabase
-                .from('project_lab')
-                .select('*')
-                .eq('project_name', projectKey)
-                .single();
-
-            if (error || !blueprint) {
-                Swal.fire('Offline', 'Instance no longer available.', 'warning');
-                return;
-            }
-
-            assembleProject(blueprint);
         }
 
         function assembleProject(p) {
@@ -87,11 +98,12 @@
             document.getElementById('engine-status').innerHTML = `<span class="status-dot bg-green-500"></span> ${p.project_name} Live`;
 
             // थीम अप्लाई करना
-            document.getElementById('final-submit-btn').style.backgroundColor = config.accent;
-            document.getElementById('final-submit-btn').style.boxShadow = `0 20px 40px -15px ${config.accent}60`;
+            const accentColor = config.accent || "#A78BFA";
+            document.getElementById('final-submit-btn').style.backgroundColor = accentColor;
+            document.getElementById('final-submit-btn').style.boxShadow = `0 20px 40px -15px ${accentColor}60`;
 
             // मॉड्यूल्स लोड करना
-            const mods = config.modules;
+            const mods = config.modules || {};
             if (mods.audio) workspace.innerHTML += `<div id="audio-module" class="mb-10 text-center py-10 glass rounded-3xl border-white/5"><span class="text-3xl">🎙️</span><p class="text-[10px] mt-4 font-bold opacity-40 uppercase tracking-widest">Audio Stream Active</p></div>`;
             if (mods.video) workspace.innerHTML += `<div id="video-module" class="mb-10 aspect-video glass rounded-3xl flex items-center justify-center bg-black/40 border-dashed border border-white/10 text-[10px] font-bold opacity-20 uppercase tracking-widest">Live Feed Container</div>`;
             if (mods.text) workspace.innerHTML += `<div id="text-module" class="mb-6"><textarea id="output-text" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:border-purple-500 outline-none h-40" placeholder="Logging data..."></textarea></div>`;
@@ -101,13 +113,15 @@
                 document.getElementById('custom-html-point').innerHTML = config.html_overwrite;
             }
 
-            // कस्टम JS लॉजिक इंजेक्ट करना ( EVAL )
+            // कस्टम JS लॉजिक इंजेक्ट करना
             if (config.logic) {
                 try {
-                    const dynamicLogic = new Function('_supabase', 'currentUserData', config.logic);
-                    dynamicLogic(_supabase, currentUserData);
+                    // लॉजिक को रन करने का सबसे सुरक्षित तरीका
+                    const executeLogic = new Function(config.logic);
+                    executeLogic.call(window); 
                 } catch (e) {
                     console.error("Logic Engine Error:", e);
+                    Swal.fire('Code Error', 'Check Project Lab Logic Injection', 'error');
                 }
             }
 
