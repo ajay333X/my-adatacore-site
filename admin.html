@@ -84,9 +84,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                        <div id="lookup-details-container" class="space-y-4">
-                            <!-- Injected Metadata -->
-                        </div>
+                        <div id="lookup-details-container" class="space-y-4"></div>
                         <div class="space-y-4">
                             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Actions</h3>
                             <button id="btn-edit-balance" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white hover:bg-purple-500/20 transition-all uppercase">Edit Balance</button>
@@ -184,11 +182,30 @@
             loadTasks(); loadLogs(); loadVault();
         }
 
+        // --- BROADCAST (FIXED) ---
+        document.getElementById('btn-update-announcement').onclick = async () => {
+            const msg = document.getElementById('announcementInput').value.trim();
+            if(!msg) return;
+
+            // OVERWRITE FIX: ID 1 वाली रो को ही अपडेट करेगा
+            const { error } = await _supabase
+                .from('settings')
+                .update({ announcement: msg })
+                .eq('id', 1); 
+
+            if(!error) {
+                await writeLog("Broadcast Updated", msg);
+                Swal.fire('Success', 'Broadcast Live!', 'success');
+                document.getElementById('announcementInput').value = "";
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
+        };
+
         // --- LOOKUP ---
         document.getElementById('btn-worker-find').onclick = async () => {
             const val = document.getElementById('workerSearchInput').value.trim();
             const { data: user, error } = await _supabase.from('users').select('*').or(`email.eq.${val},uniqueID.eq.${val}`).single();
-
             if(error || !user) return Swal.fire('Error', 'User not found.', 'error');
 
             document.getElementById('search-results-box').classList.remove('hidden');
@@ -217,13 +234,6 @@
                     document.getElementById('btn-worker-find').click();
                 }
             };
-
-            document.getElementById('btn-toggle-status').onclick = async () => {
-                const next = isBlocked ? 'active' : 'blocked';
-                await _supabase.from('users').update({ accountStatus: next }).eq('id', user.id);
-                await writeLog("Status Update", `${user.email} -> ${next}`);
-                document.getElementById('btn-worker-find').click();
-            };
         };
 
         // --- TASK DEPLOY ---
@@ -231,7 +241,6 @@
             const uid = document.getElementById('targetUID').value.trim();
             const title = document.getElementById('projectTitleInput').value.trim();
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
-
             const { error } = await _supabase.from('tasks').insert([{ assignedTo: uid, title, price }]);
             if(!error) {
                 await writeLog("Task Pushed", `${title} to ${uid}`);
@@ -252,11 +261,10 @@
         }
         window.delTask = async (id) => { await _supabase.from('tasks').delete().eq('id', id); loadTasks(); };
 
-        // --- VAULT & LOGS ---
         async function loadVault() {
             const { data } = await _supabase.from('submissions').select('*').order('id', { ascending: false });
             document.getElementById('vault-table-body').innerHTML = data?.map(s => `
-                <tr><td class="p-4 font-mono text-purple-400">${s.workerUID}</td><td>${s.projectTitle}</td><td class="text-green-400">$${s.earnedAmount.toFixed(2)}</td><td><a href="${s.audioData}" target="_blank" class="text-blue-400 text-xs underline">Link</a></td></tr>
+                <tr><td class="p-4 font-mono text-purple-400">${s.workerUID}</td><td>${s.projectTitle}</td><td class="text-green-400">$${(s.earnedAmount || 0).toFixed(2)}</td><td><a href="${s.audioData}" target="_blank" class="text-blue-400 text-xs underline">Link</a></td></tr>
             `).join('') || "";
         }
 
@@ -267,14 +275,6 @@
             `).join('') || "";
         }
 
-        // --- BROADCAST ---
-        document.getElementById('btn-update-announcement').onclick = async () => {
-            const msg = document.getElementById('announcementInput').value.trim();
-            const { error } = await _supabase.from('settings').upsert({ id: 1, announcement: msg });
-            if(!error) { await writeLog("Broadcast", msg); Swal.fire('Updated', 'Live broadcast pushed', 'success'); }
-        };
-
-        // --- AUTHORITY ---
         document.getElementById('btn-grant-admin').onclick = async () => {
             const email = document.getElementById('authEmailInput').value.trim();
             await _supabase.from('users').update({ role: 'admin' }).eq('email', email);
