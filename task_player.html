@@ -6,7 +6,6 @@
     <title>Production Lab — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -112,7 +111,7 @@
             }
         };
 
-        // SUBMISSION LOGIC (FINAL FIXED VERSION)
+        // SUBMISSION LOGIC (STRICT NUMERIC FIX)
         document.getElementById('submitBtn').onclick = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
             if(!user || !audioBlob) return;
@@ -125,7 +124,7 @@
             });
 
             try {
-                // 1. Fetch User Data
+                // 1. Fetch Profile
                 const { data: profile, error: profileError } = await _supabase
                     .from('users')
                     .select('uniqueID, balance')
@@ -135,26 +134,26 @@
                 if (profileError) throw profileError;
 
                 const earnings = (duration / 3600) * 8.00;
-                const finalAmount = Number(earnings.toFixed(4)); // Ensure numeric format
+                const finalAmount = parseFloat(earnings.toFixed(4)); 
 
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = async () => {
                     const base64Audio = reader.result;
 
-                    // 2. Insert into Submissions Table
+                    // 2. Insert with exactly matching columns from Screenshot 8.08.12 AM
                     const { error: subError } = await _supabase.from('submissions').insert([{
-                        workerUID: profile.uniqueID || "N/A",
+                        workerUID: profile.uniqueID,
                         projectTitle: "Ajay Test Demo",
                         audioData: base64Audio,
-                        earnedAmount: finalAmount,
+                        earnedAmount: finalAmount, // Numeric
                         status: "Pending"
                     }]);
 
                     if(subError) throw subError;
 
-                    // 3. Update User Balance
-                    const newBalance = Number((profile.balance || 0) + finalAmount);
+                    // 3. Update Balance
+                    const newBalance = parseFloat(((profile.balance || 0) + finalAmount).toFixed(4));
                     const { error: updateError } = await _supabase
                         .from('users')
                         .update({ balance: newBalance })
@@ -162,16 +161,13 @@
 
                     if(updateError) throw updateError;
 
-                    Swal.fire({ 
-                        icon: 'success', 
-                        title: 'Work Saved!', 
-                        text: 'Submission successful and balance updated.',
-                        confirmButtonColor: '#A78BFA'
-                    }).then(() => window.location.href = "dashboard.html");
+                    Swal.fire({ icon: 'success', title: 'Work Saved!', text: 'Submission successful.' })
+                    .then(() => window.location.href = "dashboard.html");
                 };
             } catch (e) { 
-                console.error("Submission failed:", e);
-                Swal.fire('Submission Failed', e.message || "Please check your database permissions.", 'error'); 
+                console.error("Critical Error:", e);
+                // अगर 400 एरर आता है, तो यह मैसेज साफ़ बताएगा क्यों
+                Swal.fire('Error', e.message || "Bad Request: Check table columns", 'error'); 
             }
         };
 
