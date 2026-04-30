@@ -19,6 +19,8 @@
         .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         td { background: rgba(255,255,255,0.02); padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+        .component-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .component-card:hover { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
     </style>
 </head>
 <body class="flex">
@@ -44,84 +46,97 @@
 
     <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
         
-        <!-- PROJECT LAB SECTION -->
+        <!-- PROJECT LAB (GENERATOR MODE) -->
         <section id="project-lab" class="content-section">
-            <div class="flex justify-between items-end mb-8">
+            <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h2 class="text-2xl font-bold uppercase tracking-tighter">Project Lab</h2>
-                    <p class="text-[10px] text-gray-500 uppercase mt-1">Design and publish dynamic projects</p>
+                    <h2 class="text-3xl font-bold uppercase tracking-tighter">Project Lab</h2>
+                    <p class="text-[10px] text-gray-400 uppercase mt-1 tracking-widest">Generator Engine v2.0</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <!-- Project Builder -->
-                <div class="glass p-8 rounded-[32px] space-y-6">
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Project Name</label>
-                        <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g., Hindi Audio Collection">
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Primary Category</label>
-                        <div class="flex gap-2">
-                            <button onclick="setProjectType('audio')" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold type-btn" id="type-audio">AUDIO</button>
-                            <button onclick="setProjectType('text')" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold type-btn" id="type-text">TEXT</button>
-                            <button onclick="setProjectType('video')" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold type-btn" id="type-video">VIDEO</button>
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
+                <!-- Step 1: Identity & Theme -->
+                <div class="space-y-6">
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">01. Identity & Style</h3>
+                    <div class="glass p-6 rounded-[32px] space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Unique Project Name</label>
+                            <input type="text" id="lab-project-name" class="admin-input" placeholder="Hindi_Audio_Phase_1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Accent Color</label>
+                            <input type="color" id="lab-accent-color" class="w-full h-10 bg-transparent border-none cursor-pointer" value="#A78BFA">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Execution Period (Days)</label>
+                            <input type="number" id="lab-period" class="admin-input" value="7">
                         </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Layout Components (JSON/Config)</label>
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <label class="flex items-center gap-2 text-xs bg-white/5 p-3 rounded-xl cursor-pointer">
-                                <input type="checkbox" id="comp-audio-rec" checked> Audio Recorder
+                <!-- Step 2: Component Builder -->
+                <div class="space-y-6">
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">02. Structure Builder</h3>
+                    <div class="glass p-6 rounded-[32px] space-y-4">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold">Select Active Modules:</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
+                                <span class="text-xs font-bold">🎙️ Audio Recording Box</span>
+                                <input type="checkbox" id="mod-audio" class="w-4 h-4 accent-purple-500">
                             </label>
-                            <label class="flex items-center gap-2 text-xs bg-white/5 p-3 rounded-xl cursor-pointer">
-                                <input type="checkbox" id="comp-text-box"> Text Input
+                            <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
+                                <span class="text-xs font-bold">✍️ Transcription Textbox</span>
+                                <input type="checkbox" id="mod-text" class="w-4 h-4 accent-purple-500">
                             </label>
-                            <label class="flex items-center gap-2 text-xs bg-white/5 p-3 rounded-xl cursor-pointer">
-                                <input type="checkbox" id="comp-video-player"> Video Player
+                            <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
+                                <span class="text-xs font-bold">📺 Video Player Unit</span>
+                                <input type="checkbox" id="mod-video" class="w-4 h-4 accent-purple-500">
                             </label>
-                            <label class="flex items-center gap-2 text-xs bg-white/5 p-3 rounded-xl cursor-pointer">
-                                <input type="checkbox" id="comp-image-preview"> Image Box
+                            <label class="component-card p-4 rounded-2xl flex justify-between items-center cursor-pointer">
+                                <span class="text-xs font-bold">🖼️ Reference Image Box</span>
+                                <input type="checkbox" id="mod-image" class="w-4 h-4 accent-purple-500">
                             </label>
                         </div>
                     </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Custom Code Injection (Optional HTML)</label>
-                        <textarea id="lab-custom-code" class="admin-input h-32 font-mono text-[11px]" placeholder="<div style='color:red'>Custom UI...</div>"></textarea>
-                    </div>
-
-                    <button onclick="saveProjectToLab()" class="w-full bg-purple-600 py-4 rounded-xl font-bold text-sm uppercase transition-all hover:bg-purple-500 shadow-xl shadow-purple-500/20">SAVE & PUBLISH PROJECT 🚀</button>
                 </div>
 
-                <!-- Existing Lab Projects -->
-                <div class="space-y-4">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-3">Available Templates</h3>
-                    <div id="lab-project-list" class="space-y-3">
-                        <!-- Dynamic List -->
+                <!-- Step 3: Logic & Publish -->
+                <div class="space-y-6">
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-[0.2em]">03. Logic & Deployment</h3>
+                    <div class="glass p-6 rounded-[32px] space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Custom JS Logic Injection</label>
+                            <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// window.onLoad = () => { alert('Hello'); }"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-2">Raw CSS/HTML Overwrite</label>
+                            <textarea id="lab-html-code" class="admin-input h-32 font-mono text-[10px]" placeholder="<style> .btn { border-radius: 0; } </style>"></textarea>
+                        </div>
+                        <button onclick="publishProjectInstance()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all">GENERATE & DEPLOY 🚀</button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- List of Managed Projects -->
+            <div class="mt-12">
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-6 border-b border-white/5 pb-4">Managed Lab Projects</h3>
+                <div id="managed-projects-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
             </div>
         </section>
 
-        <!-- (Keep your existing sections here: Analytics, Vault, Search, etc.) -->
-        <section id="analytics" class="content-section active"><h2>Analytics Loading...</h2></section>
-        <section id="vault" class="content-section"><h2>Vault Loading...</h2></section>
-        <section id="search" class="content-section"><h2>Search Loading...</h2></section>
+        <!-- (Other sections remain here...) -->
         <section id="deploy" class="content-section">
             <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Assign Task</h2>
             <div class="glass p-8 rounded-[32px] max-w-2xl space-y-4">
-                <input type="text" id="targetUID" class="admin-input" placeholder="Worker UID">
+                <input type="text" id="targetUID" class="admin-input" placeholder="Enter Worker UID (e.g., AD-123)">
                 <select id="deploy-project-select" class="admin-input bg-[#0a0a15]">
-                    <option value="">-- Select Lab Project --</option>
+                    <option value="">-- Choose Generated Project --</option>
                 </select>
-                <input type="number" id="taskPrice" class="admin-input" placeholder="Reward Amount ($)">
-                <button onclick="assignLabProject()" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase">Assign Project ➔</button>
+                <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
+                <button onclick="assignGeneratedTask()" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black uppercase">Send to Worker ➔</button>
             </div>
         </section>
-        <section id="broadcast" class="content-section"><h2>Broadcast Loading...</h2></section>
 
     </main>
 
@@ -129,8 +144,6 @@
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
-        
-        let selectedType = 'audio';
 
         window.showSection = (id) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -142,80 +155,68 @@
         async function init() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = "auth.html"; return; }
-            loadLabProjects();
+            loadManagedProjects();
         }
 
-        // --- PROJECT LAB LOGIC ---
-        window.setProjectType = (type) => {
-            selectedType = type;
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('bg-purple-600', 'text-black'));
-            document.getElementById('type-' + type).classList.add('bg-purple-600', 'text-black');
-        };
-
-        async function saveProjectToLab() {
+        // --- PROJECT GENERATOR LOGIC ---
+        async function publishProjectInstance() {
             const name = document.getElementById('lab-project-name').value.trim();
-            if(!name) return Swal.fire('Error', 'Project Name is required', 'error');
+            if(!name) return Swal.fire('Error', 'Unique Name Required', 'error');
 
-            const config = {
-                audio_recorder: document.getElementById('comp-audio-rec').checked,
-                text_input: document.getElementById('comp-text-box').checked,
-                video_player: document.getElementById('comp-video-player').checked,
-                image_preview: document.getElementById('comp-image-preview').checked
+            const blueprint = {
+                accent: document.getElementById('lab-accent-color').value,
+                period: document.getElementById('lab-period').value,
+                modules: {
+                    audio: document.getElementById('mod-audio').checked,
+                    text: document.getElementById('mod-text').checked,
+                    video: document.getElementById('mod-video').checked,
+                    image: document.getElementById('mod-image').checked
+                },
+                logic: document.getElementById('lab-logic-code').value,
+                html_overwrite: document.getElementById('lab-html-code').value
             };
 
-            const customCode = document.getElementById('lab-custom-code').value;
-
-            Swal.fire({ title: 'Publishing...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Deploying Instance...', didOpen: () => Swal.showLoading() });
 
             const { error } = await _supabase.from('project_lab').insert([{
                 project_name: name,
-                project_type: selectedType,
-                config: config,
-                style_config: { custom_html: customCode },
+                config: blueprint,
                 is_published: true
             }]);
 
             if(!error) {
-                Swal.fire('Success', 'Project Lab Template Created!', 'success');
-                loadLabProjects();
-                document.getElementById('lab-project-name').value = "";
+                Swal.fire('Deployed!', `Project instance '${name}' created.`, 'success');
+                loadManagedProjects();
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
         }
 
-        async function loadLabProjects() {
+        async function loadManagedProjects() {
             const { data } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
-            const list = document.getElementById('lab-project-list');
+            const grid = document.getElementById('managed-projects-grid');
             const select = document.getElementById('deploy-project-select');
 
-            list.innerHTML = data?.map(p => `
-                <div class="p-4 glass flex justify-between items-center rounded-2xl border-l-4 border-purple-600">
-                    <div>
-                        <p class="font-bold text-sm uppercase">${p.project_name}</p>
-                        <p class="text-[9px] text-gray-500 uppercase">${p.project_type} • Created: ${new Date(p.created_at).toLocaleDateString()}</p>
+            grid.innerHTML = data?.map(p => `
+                <div class="glass p-6 rounded-[24px] border-t-2" style="border-color: ${p.config.accent}">
+                    <h4 class="font-bold text-sm uppercase mb-1">${p.project_name}</h4>
+                    <p class="text-[9px] text-gray-500 uppercase mb-4">Instance ID: ${p.id}</p>
+                    <div class="flex gap-2">
+                        <button onclick="deleteInstance(${p.id})" class="text-[9px] font-black text-red-500 uppercase">Destroy</button>
                     </div>
-                    <button onclick="deleteLabProject(${p.id})" class="text-red-500 text-[10px] font-bold">DELETE</button>
                 </div>
             `).join('') || "";
 
-            // Populate assignment dropdown
-            select.innerHTML = '<option value="">-- Select Lab Project --</option>' + 
+            select.innerHTML = '<option value="">-- Choose Generated Project --</option>' + 
                 data?.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
         }
 
-        window.deleteLabProject = async (id) => {
-            const { error } = await _supabase.from('project_lab').delete().eq('id', id);
-            loadLabProjects();
-        };
-
-        // --- TASK ASSIGNMENT LOGIC ---
-        async function assignLabProject() {
+        async function assignGeneratedTask() {
             const uid = document.getElementById('targetUID').value.trim();
             const pName = document.getElementById('deploy-project-select').value;
             const price = parseFloat(document.getElementById('taskPrice').value) || 0;
 
-            if(!uid || !pName) return Swal.fire('Error', 'UID and Project are required', 'error');
+            if(!uid || !pName) return Swal.fire('Error', 'Missing Fields', 'error');
 
             const { error } = await _supabase.from('tasks').insert([{
                 assignedTo: uid,
@@ -223,12 +224,13 @@
                 price: price
             }]);
 
-            if(!error) {
-                Swal.fire('Assigned', `Project ${pName} assigned to ${uid}`, 'success');
-            } else {
-                Swal.fire('Error', error.message, 'error');
-            }
+            if(!error) Swal.fire('Success', 'Task assigned to ' + uid, 'success');
         }
+
+        window.deleteInstance = async (id) => {
+            const { error } = await _supabase.from('project_lab').delete().eq('id', id);
+            loadManagedProjects();
+        };
 
         init();
     </script>
