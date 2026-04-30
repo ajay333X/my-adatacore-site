@@ -39,7 +39,6 @@
 
     <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
         
-        <!-- PROJECT LAB -->
         <section id="project-lab" class="content-section active">
             <h2 class="text-3xl font-bold uppercase tracking-tighter mb-8 text-white">Project Lab</h2>
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
@@ -75,12 +74,11 @@
             </div>
         </section>
 
-        <!-- REVOKE TASK (FULLY FIXED) -->
+        <!-- REVOKE TASK -->
         <section id="revoke" class="content-section">
             <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter text-white">Revoke Task</h2>
             <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-red-600">
-                <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 text-white">Enter exact User ID/Email to remove project</p>
-                <input type="text" id="revoke-email" class="admin-input" placeholder="Worker Email/UID (Exactly as in DB)">
+                <input type="text" id="revoke-email" class="admin-input" placeholder="Worker Email/UID">
                 <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-400 uppercase font-bold sync-projects"></select>
                 <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-xl hover:bg-red-700 transition-all">REVOKE FROM USER ACCOUNT ➔</button>
             </div>
@@ -113,16 +111,48 @@
 
         async function loadData() {
             const { data } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
-            
             document.getElementById('registry-grid').innerHTML = data.map(p => `
                 <div class="glass p-6 rounded-[28px] border-l-4" style="border-color:${p.config.accent}">
                     <h4 class="text-xs font-bold uppercase text-white">${p.project_name}</h4>
-                    <button onclick="deleteInstance(${p.id})" class="text-[9px] text-red-500 mt-4 font-black uppercase hover:underline text-white">Destroy</button>
+                    <button onclick="deleteInstance(${p.id}, '${p.project_name}')" class="text-[9px] text-red-500 mt-4 font-black uppercase hover:underline text-white">Destroy & Wiped All User Task</button>
                 </div>
             `).join('');
-
             const opts = '<option value="">-- SELECT PROJECT --</option>' + data.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
             document.querySelectorAll('.sync-projects').forEach(d => d.innerHTML = opts);
+        }
+
+        // --- UPDATED DESTROY LOGIC ---
+        async function deleteInstance(id, projectName) {
+            const { value: confirm } = await Swal.fire({
+                title: 'Global Destruction?',
+                text: `This will delete project '${projectName}' and REMOVE it from ALL assigned users!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, Wipe Everything!',
+                background: '#0a0a15',
+                color: '#fff'
+            });
+
+            if (confirm) {
+                Swal.fire({ title: 'Wiping...', didOpen: () => Swal.showLoading() });
+
+                // 1. Delete Blueprint
+                await _supabase.from('project_lab').delete().eq('id', id);
+
+                // 2. Global Wipe: Remove this project from ALL users' tasks table
+                const { error } = await _supabase
+                    .from('tasks')
+                    .delete()
+                    .eq('title', projectName);
+
+                if (!error) {
+                    Swal.fire('Wiped!', 'Project and all active assignments removed.', 'success');
+                    loadData();
+                } else {
+                    Swal.fire('Error', 'Blueprint removed but task cleanup failed.', 'error');
+                }
+            }
         }
 
         async function assignTask() {
@@ -137,43 +167,9 @@
         async function revokeTask() {
             const email = document.getElementById('revoke-email').value.trim();
             const project = document.getElementById('project-select-revoke').value;
-
-            if(!email || !project) return Swal.fire('Wait', 'Enter User ID and select Project', 'warning');
-
-            const { value: confirm } = await Swal.fire({
-                title: 'Revoke Access?',
-                text: `Removing '${project}' from account '${email}'`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                background: '#0a0a15',
-                color: '#fff'
-            });
-
-            if(confirm) {
-                Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
-
-                // Exact match logic with count check
-                const { error, count } = await _supabase
-                    .from('tasks')
-                    .delete({ count: 'exact' })
-                    .eq('assignedTo', email)
-                    .eq('title', project);
-
-                if (error) {
-                    Swal.fire('Error', error.message, 'error');
-                } else if (count === 0) {
-                    Swal.fire('Not Found', 'No such project found for this User ID. Check spelling or case-sensitivity.', 'info');
-                } else {
-                    Swal.fire('Revoked!', 'Project removed from user dashboard.', 'success');
-                    document.getElementById('revoke-email').value = "";
-                }
-            }
-        }
-
-        async function deleteInstance(id) {
-            const { error } = await _supabase.from('project_lab').delete().eq('id', id);
-            if (!error) loadData();
+            if(!email || !project) return Swal.fire('Wait', 'Fill all fields', 'warning');
+            const { error } = await _supabase.from('tasks').delete().eq('assignedTo', email).eq('title', project);
+            if (!error) Swal.fire('Revoked!', 'Removed from user.', 'success');
         }
 
         loadData();
