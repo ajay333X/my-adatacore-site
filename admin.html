@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Master Control — Adatacore</title>
+    <title>Adatacore — Master Admin v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,61 +40,59 @@
 
     <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
         
-        <!-- SECTION 1: PROJECT LAB -->
+        <!-- SECTION 1: PROJECT LAB (Creation & Registry) -->
         <section id="project-lab" class="content-section active">
             <h2 class="text-3xl font-bold uppercase tracking-tighter mb-8">Project Lab</h2>
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
-                <div class="space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">01. Identity</h3>
-                    <div class="glass p-6 rounded-[32px] space-y-4">
-                        <input type="text" id="lab-project-name" class="admin-input" placeholder="Project Name">
-                        <input type="color" id="lab-accent-color" class="w-full h-10 bg-transparent border-none cursor-pointer" value="#A78BFA">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <div class="glass p-8 rounded-[32px] space-y-6">
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">Create New Project</h3>
+                    <input type="text" id="lab-project-name" class="admin-input" placeholder="Project Name (e.g. Podcast_Live)">
+                    <div class="flex items-center gap-4">
+                        <label class="text-[10px] uppercase font-bold text-gray-500">Theme Color:</label>
+                        <input type="color" id="lab-accent-color" class="w-10 h-10 bg-transparent border-none cursor-pointer" value="#A78BFA">
                     </div>
+                    <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[10px]" placeholder="// Inject JS Logic here..."></textarea>
+                    <button onclick="publishProject()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-xl">PUBLISH PROJECT 🚀</button>
                 </div>
-                <div class="space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">02. Logic Injection</h3>
-                    <div class="glass p-6 rounded-[32px] space-y-4">
-                        <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// Paste Podcasting/WebRTC Logic Here..."></textarea>
-                        <button onclick="publishProject()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-xl">PUBLISH INSTANCE 🚀</button>
-                    </div>
-                </div>
-            </div>
 
-            <div class="mt-12">
-                <h3 class="text-xs font-black text-gray-500 uppercase mb-6">Live Generator Registry</h3>
-                <div id="registry-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                <div class="space-y-6">
+                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Active Registry</h3>
+                    <div id="registry-grid" class="grid grid-cols-1 gap-4"></div>
+                </div>
             </div>
         </section>
 
-        <!-- SECTION 2: ASSIGN TASK -->
+        <!-- SECTION 2: ASSIGN TASK (Deployment) -->
         <section id="deploy" class="content-section">
             <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Assign Task</h2>
             <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-yellow-600">
-                <input type="text" id="targetUID" class="admin-input" placeholder="Worker Email or UID">
-                <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 uppercase font-bold project-sync-dropdown"></select>
+                <input type="text" id="targetUID" class="admin-input" placeholder="User Email or Unique ID">
+                <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 uppercase font-bold sync-dropdown"></select>
                 <input type="number" id="taskPrice" class="admin-input" placeholder="Payout Amount ($)">
-                <button onclick="assignTask()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs text-black shadow-lg">DEPLOY TASK TO WORKER ➔</button>
+                <button onclick="assignTask()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs text-black shadow-lg">DEPLOY TASK ➔</button>
             </div>
         </section>
 
-        <!-- SECTION 3: REVOKE TASK -->
+        <!-- SECTION 3: REVOKE TASK (Removal) -->
         <section id="revoke" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Revoke Task</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Revoke Task Access</h2>
             <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-red-600">
-                <p class="text-[10px] text-gray-400 uppercase font-bold mb-4">Remove a specific project from a specific user</p>
-                <input type="text" id="revoke-email" class="admin-input" placeholder="Worker Email or UID">
-                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-400 uppercase font-bold project-sync-dropdown"></select>
-                <button onclick="revokeIndividualTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">Revoke User Access ➔</button>
+                <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">Remove a project from a specific user's dashboard</p>
+                <input type="text" id="revoke-email" class="admin-input" placeholder="User Email or Unique ID">
+                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-400 uppercase font-bold sync-dropdown"></select>
+                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">REVOKE ACCESS ➔</button>
             </div>
         </section>
 
     </main>
 
     <script>
+        // Supabase Configuration
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+        // Section Toggling
         window.showSection = (id) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -102,104 +100,82 @@
             document.getElementById('btn-' + id).classList.add('active');
         };
 
+        // 1. Publish Project
         async function publishProject() {
             const name = document.getElementById('lab-project-name').value.trim();
-            if(!name) return Swal.fire('Error', 'Project name is required', 'error');
+            const logic = document.getElementById('lab-logic-code').value;
+            const accent = document.getElementById('lab-accent-color').value;
 
-            const config = {
-                accent: document.getElementById('lab-accent-color').value,
-                logic: document.getElementById('lab-logic-code').value,
-                modules: { audio: true, text: true }
-            };
+            if(!name) return Swal.fire('Error', 'Project Name is required', 'error');
 
-            const { error } = await _supabase.from('project_lab').insert([{ project_name: name, config, is_published: true }]);
-            if (!error) { 
-                Swal.fire('Success', name + ' is now live!', 'success'); 
-                loadData(); 
-            } else {
-                Swal.fire('Error', error.message, 'error');
+            const { error } = await _supabase.from('project_lab').insert([{
+                project_name: name,
+                config: { accent, logic, modules: { audio: true, text: true } },
+                is_published: true
+            }]);
+
+            if(!error) {
+                Swal.fire('Success', 'Project Published!', 'success');
+                loadData();
             }
         }
 
+        // 2. Load Data & Sync Dropdowns
         async function loadData() {
             const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
             
-            // Render Registry
+            // Render Registry Cards
             document.getElementById('registry-grid').innerHTML = projects.map(p => `
-                <div class="glass p-6 rounded-[28px] border-l-4" style="border-color:${p.config.accent}">
-                    <h4 class="text-xs font-bold uppercase text-white">${p.project_name}</h4>
-                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] text-red-500 mt-4 font-black uppercase hover:underline">Destroy & Wipe All</button>
+                <div class="glass p-5 rounded-2xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
+                    <div>
+                        <h4 class="text-sm font-bold uppercase">${p.project_name}</h4>
+                        <p class="text-[8px] text-gray-500 uppercase mt-1">ID: ${p.id}</p>
+                    </div>
+                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[10px] font-black text-red-500 hover:underline uppercase">Destroy</button>
                 </div>
             `).join('');
 
             // Sync Dropdowns
             const options = '<option value="">-- SELECT PROJECT --</option>' + projects.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
-            document.querySelectorAll('.project-sync-dropdown').forEach(d => d.innerHTML = options);
+            document.querySelectorAll('.sync-dropdown').forEach(d => d.innerHTML = options);
         }
 
-        // --- 100% WORKING GLOBAL DESTROY ---
-        async function globalDestroy(id, projectName) {
-            const { value: confirmed } = await Swal.fire({
-                title: 'Global Destruction?',
-                text: `This will delete project blueprint and REMOVE it from EVERY user dashboard!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Yes, Wipe Everything!',
-                background: '#0a0a15',
-                color: '#fff'
-            });
-
-            if (confirmed) {
-                Swal.fire({ title: 'Wiping Global Instances...', didOpen: () => Swal.showLoading() });
-
-                // 1. Wipe from Tasks table (User Dashboards)
-                const { error: taskError, count } = await _supabase
-                    .from('tasks')
-                    .delete({ count: 'exact' })
-                    .eq('title', projectName.trim());
-
-                // 2. Wipe from Project Lab table
-                const { error: labError } = await _supabase.from('project_lab').delete().eq('id', id);
-
-                if (!labError) {
-                    Swal.fire('Wiped!', `Blueprint removed and deleted from ${count || 0} user accounts.`, 'success');
-                    loadData();
-                } else {
-                    Swal.fire('Error', 'Wipe failed: ' + (labError.message || taskError.message), 'error');
-                }
-            }
-        }
-
+        // 3. Assign Task
         async function assignTask() {
-            const uid = document.getElementById('targetUID').value.trim();
+            const target = document.getElementById('targetUID').value.trim();
             const project = document.getElementById('project-select-assign').value;
             const price = document.getElementById('taskPrice').value;
 
-            if(!uid || !project) return Swal.fire('Error', 'Incomplete data', 'warning');
+            if(!target || !project) return Swal.fire('Error', 'Missing details', 'warning');
 
-            const { error } = await _supabase.from('tasks').insert([{ assignedTo: uid, title: project, price: price }]);
-            if (!error) Swal.fire('Deployed', 'Project assigned to ' + uid, 'success');
+            const { error } = await _supabase.from('tasks').insert([{ assignedTo: target, title: project, price }]);
+            if(!error) Swal.fire('Deployed', 'Task assigned to ' + target, 'success');
         }
 
-        // --- 100% WORKING INDIVIDUAL REVOKE ---
-        async function revokeIndividualTask() {
-            const email = document.getElementById('revoke-email').value.trim();
+        // 4. Revoke Task (Individual Removal)
+        async function revokeTask() {
+            const target = document.getElementById('revoke-email').value.trim();
             const project = document.getElementById('project-select-revoke').value;
 
-            if(!email || !project) return Swal.fire('Error', 'Email and Project are required', 'warning');
+            const { error, count } = await _supabase.from('tasks').delete({ count: 'exact' }).eq('assignedTo', target).eq('title', project);
+            if(!error && count > 0) Swal.fire('Revoked', 'Project removed from user dashboard', 'success');
+            else Swal.fire('Not Found', 'Could not find this task for the user', 'info');
+        }
 
-            const { error, count } = await _supabase
-                .from('tasks')
-                .delete({ count: 'exact' })
-                .eq('assignedTo', email)
-                .eq('title', project);
+        // 5. Global Destroy (Delete from all users)
+        async function globalDestroy(id, name) {
+            const { value: confirm } = await Swal.fire({
+                title: 'Destroy Project?',
+                text: `This will remove '${name}' from ALL user dashboards and the registry!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444'
+            });
 
-            if (!error && count > 0) {
-                Swal.fire('Revoked!', 'Project removed from ' + email, 'success');
-                document.getElementById('revoke-email').value = "";
-            } else {
-                Swal.fire('Not Found', 'Could not find this project for the specified user.', 'info');
+            if(confirm) {
+                await _supabase.from('tasks').delete().eq('title', name); // Wipe from users
+                await _supabase.from('project_lab').delete().eq('id', id); // Wipe from lab
+                loadData();
             }
         }
 
