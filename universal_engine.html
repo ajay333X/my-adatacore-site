@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Adatacore — Dynamic Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style id="dynamic-styles">
+        /* Admin द्वारा भेजा गया CSS यहाँ आएगा */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; transition: 0.5s; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .engine-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="engine-container">
+        <!-- Header: Project Info -->
+        <header class="flex justify-between items-center mb-10">
+            <button onclick="location.href='dashboard.html'" class="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-all">← Abort Task</button>
+            <div class="text-right">
+                <h2 id="engine-project-name" class="text-2xl font-black uppercase tracking-tighter text-white">Project Engine</h2>
+                <p id="engine-status" class="text-[9px] font-bold uppercase tracking-[0.3em] opacity-40">Syncing Blueprint...</p>
+            </div>
+        </header>
+
+        <!-- Main Workspace: एडमिन के मॉड्यूल्स यहाँ लोड होंगे -->
+        <div id="engine-workspace" class="glass p-10 rounded-[48px] border border-white/5 relative overflow-hidden">
+            <div id="boot-loader" class="py-20 text-center italic opacity-30 animate-pulse text-sm uppercase font-bold">Initializing Instance...</div>
+        </div>
+
+        <!-- Custom HTML Injection Point -->
+        <div id="custom-html-point" class="mt-6"></div>
+
+        <!-- Submit Module -->
+        <div id="engine-submit-control" class="hidden mt-12">
+            <button id="final-submit-btn" class="w-full py-6 rounded-3xl font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl">Push Final Submission</button>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
+        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        // URL से प्रोजेक्ट का नाम पकड़ना
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectKey = urlParams.get('project');
+
+        async function bootEngine() {
+            if (!projectKey) {
+                Swal.fire('Error', 'Invalid Engine Route', 'error').then(() => location.href='dashboard.html');
+                return;
+            }
+
+            // 1. डेटाबेस से ब्लूप्रिंट (Blueprint) लाना
+            const { data: blueprint, error } = await _supabase
+                .from('project_lab')
+                .select('*')
+                .eq('project_name', projectKey)
+                .single();
+
+            if (error || !blueprint) {
+                Swal.fire('Offline', 'This project instance is no longer active.', 'warning');
+                return;
+            }
+
+            assembleProject(blueprint);
+        }
+
+        function assembleProject(p) {
+            const config = p.config; // एडमिन से आया JSON
+            const workspace = document.getElementById('engine-workspace');
+            const submitBtn = document.getElementById('final-submit-btn');
+            
+            workspace.innerHTML = ""; // क्लीन अप
+            document.getElementById('engine-project-name').innerText = p.project_name;
+            document.getElementById('engine-status').innerText = "Instance Live";
+
+            // 2. स्टाइलिंग और कलर्स सेट करना (Theme)
+            document.getElementById('final-submit-btn').style.backgroundColor = config.accent;
+            document.getElementById('engine-status').style.color = config.accent;
+
+            // 3. मॉड्यूल्स को असेंबल करना (Dynamic Layout)
+            const mods = config.modules;
+            
+            if (mods.audio) {
+                workspace.innerHTML += `
+                    <div class="mb-12 text-center">
+                        <div class="w-20 h-20 rounded-full mx-auto flex items-center justify-center border-2 mb-4" style="border-color: ${config.accent}40; background: ${config.accent}10">
+                            <span class="text-2xl">🎙️</span>
+                        </div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest opacity-50">Capture Audio Input</p>
+                    </div>
+                `;
+            }
+
+            if (mods.video) {
+                workspace.innerHTML += `
+                    <div class="mb-10 aspect-video glass rounded-3xl flex items-center justify-center bg-black/50 border-dashed border-2 border-white/5">
+                        <span class="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">External Media Stream</span>
+                    </div>
+                `;
+            }
+
+            if (mods.text) {
+                workspace.innerHTML += `
+                    <div class="mb-6">
+                        <textarea class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:border-purple-500 outline-none transition-all h-40" placeholder="Enter output data..."></textarea>
+                    </div>
+                `;
+            }
+
+            if (mods.image) {
+                workspace.innerHTML += `
+                    <div class="mb-10 w-full h-40 glass rounded-3xl flex items-center justify-center italic text-xs opacity-20">Reference_Frame_Loader</div>
+                `;
+            }
+
+            // 4. Custom HTML और Logic इंजेक्ट करना
+            if (p.config.html_overwrite) {
+                document.getElementById('custom-html-point').innerHTML = p.config.html_overwrite;
+            }
+
+            if (p.config.logic) {
+                try {
+                    eval(p.config.logic); // एडमिन का लिखा JS यहाँ रन होगा
+                } catch (e) {
+                    console.error("Logic Injection Error:", e);
+                }
+            }
+
+            document.getElementById('engine-submit-control').classList.remove('hidden');
+        }
+
+        document.getElementById('final-submit-btn').onclick = () => {
+            Swal.fire({
+                title: 'Confirm Final Push?',
+                background: '#050510',
+                color: '#fff',
+                confirmButtonColor: '#4F46E5',
+                confirmButtonText: 'SEND TO REVIEW'
+            }).then((res) => {
+                if(res.isConfirmed) location.href='dashboard.html';
+            });
+        };
+
+        bootEngine();
+    </script>
+</body>
+</html>
