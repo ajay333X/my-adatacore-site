@@ -151,13 +151,12 @@
             }
 
             // 1. Load Profile & Listen for Changes
-            _supabase.from('users').select('*').eq('id', user.id).single().then(({data: d}) => {
-                if(d) {
-                    updateUI(d);
-                    loadMyTasks(d.uniqueID);
-                    loadHistory(d.uniqueID);
-                }
-            });
+            const { data: d } = await _supabase.from('users').select('*').eq('id', user.id).single();
+            if(d) {
+                updateUI(d);
+                loadMyTasks(d.uniqueID);
+                loadHistory(d.uniqueID);
+            }
 
             // Real-time listener for user balance/updates
             _supabase.channel('user_changes')
@@ -165,7 +164,7 @@
                 updateUI(payload.new);
             }).subscribe();
 
-            loadBroadcasts();
+            loadAnnouncement(); // Banner load fix
             renderChart();
         }
 
@@ -179,11 +178,34 @@
             let g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
             document.getElementById('greeting').innerText = `${g}, ${d.fullName?.split(' ')[0] || ''}`;
 
-            // Admin Check
             if (d.role === 'admin' || d.email === "as4556676@gmail.com") {
                 const adminNav = document.getElementById('admin-nav-container');
                 if(adminNav) adminNav.innerHTML = `<a href="admin.html" class="flex items-center gap-4 px-4 py-3 text-sm font-bold text-yellow-500 hover:bg-yellow-500/10 rounded-xl mt-4">🛡️ <span class="nav-text text-white">Admin Space</span></a>`;
             }
+        }
+
+        async function loadAnnouncement() {
+            const { data, error } = await _supabase.from('settings').select('announcement').eq('id', 1).single();
+            if (data && data.announcement) {
+                const banner = document.getElementById('announcement-banner');
+                const text = document.getElementById('announcement-text');
+                const lastAck = localStorage.getItem('lastAckMsg');
+
+                if (data.announcement !== lastAck) {
+                    text.innerText = data.announcement;
+                    banner.classList.remove('hidden');
+                }
+            }
+
+            // Real-time listen for announcement changes
+            _supabase.channel('setting_changes')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings', filter: 'id=eq.1' }, (payload) => {
+                const newMsg = payload.new.announcement;
+                if (newMsg !== localStorage.getItem('lastAckMsg')) {
+                    document.getElementById('announcement-text').innerText = newMsg;
+                    document.getElementById('announcement-banner').classList.remove('hidden');
+                }
+            }).subscribe();
         }
 
         async function loadMyTasks(uid) {
@@ -206,13 +228,6 @@
                 const color = status === 'Approved' ? 'text-green-400 bg-green-500/10' : status === 'Rejected' ? 'text-red-400 bg-red-500/10' : 'text-yellow-400 bg-yellow-500/10';
                 b.innerHTML += `<tr><td class="p-6 text-sm font-bold text-white">${s.projectTitle || 'Project'}</td><td class="p-6 text-sm text-white font-mono">$${(s.earnedAmount || 0).toFixed(4)}</td><td class="p-6 text-[10px] text-gray-500">${new Date(s.id).toLocaleDateString()}</td><td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[8px] font-black border border-white/5 ${color}">${status.toUpperCase()}</span></td></tr>`;
             });
-        }
-
-        async function loadBroadcasts() {
-            // Note: Since you use 'announcements' table for history and a 'settings' table for banner
-            const { data: list } = await _supabase.from('submissions').select('*').limit(5); // Adjust according to your news table
-            const l = document.getElementById('broadcast-list');
-            l.innerHTML = `<p class="text-gray-500 text-xs italic">System up to date.</p>`;
         }
 
         function renderChart() {
