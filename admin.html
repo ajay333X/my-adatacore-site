@@ -18,8 +18,6 @@
         .content-section { display: none; }
         .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .component-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-        .component-card:hover { border-color: #A78BFA; background: rgba(167, 139, 250, 0.05); }
     </style>
 </head>
 <body class="flex">
@@ -34,7 +32,6 @@
             <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">🧪 <span>Project Lab</span></div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">🚀 <span>Assign Task</span></div>
             <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">🛡️ <span>Revoke Task</span></div>
-            <div onclick="showSection('analytics')" class="nav-link" id="btn-analytics">📊 <span>Stats</span></div>
         </nav>
         <div class="mt-auto">
             <button onclick="window.location.href='dashboard.html'" class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold tracking-widest hover:bg-white/10 transition-all uppercase text-white">← Dashboard</button>
@@ -55,22 +52,9 @@
                     </div>
                 </div>
                 <div class="space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">02. Structure</h3>
-                    <div class="glass p-6 rounded-[32px] space-y-2">
-                        <label class="component-card p-4 rounded-xl flex justify-between items-center cursor-pointer">
-                            <span class="text-xs font-bold">🎙️ Audio Module</span>
-                            <input type="checkbox" id="mod-audio" class="accent-purple-500">
-                        </label>
-                        <label class="component-card p-4 rounded-xl flex justify-between items-center cursor-pointer">
-                            <span class="text-xs font-bold">✍️ Text Box</span>
-                            <input type="checkbox" id="mod-text" class="accent-purple-500">
-                        </label>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">03. Logic</h3>
+                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">02. Logic</h3>
                     <div class="glass p-6 rounded-[32px] space-y-4">
-                        <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// JS Logic"></textarea>
+                        <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[10px]" placeholder="// JS Logic Injection"></textarea>
                         <button onclick="publishProject()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all">PUBLISH 🚀</button>
                     </div>
                 </div>
@@ -86,19 +70,20 @@
             <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Assign Task</h2>
             <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-yellow-600">
                 <input type="text" id="targetUID" class="admin-input" placeholder="Worker Email/UID">
-                <select id="project-select" class="admin-input bg-[#0a0a15] text-purple-400 uppercase font-bold"></select>
+                <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 uppercase font-bold project-dropdown-sync"></select>
                 <input type="number" id="taskPrice" class="admin-input" placeholder="Price ($)">
                 <button onclick="assignTask()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs text-black">DEPLOY TASK ➔</button>
             </div>
         </section>
 
-        <!-- 3. REVOKE TASK (NEW) -->
+        <!-- 3. REVOKE TASK (FIXED WITH DROP-DOWN) -->
         <section id="revoke" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Revoke Access</h2>
+            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter text-white">Revoke Task</h2>
             <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-red-600">
-                <input type="text" id="revoke-email" class="admin-input" placeholder="User Email/UID">
-                <input type="text" id="revoke-project" class="admin-input" placeholder="Project Name (Verbatim)">
-                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white">REMOVE FROM ACCOUNT ➔</button>
+                <p class="text-[10px] text-gray-500 uppercase font-bold mb-2">Remove assigned project from worker</p>
+                <input type="text" id="revoke-email" class="admin-input" placeholder="Worker Email/UID">
+                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-400 uppercase font-bold project-dropdown-sync"></select>
+                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">Revoke Access ➔</button>
             </div>
         </section>
 
@@ -120,8 +105,8 @@
             const name = document.getElementById('lab-project-name').value;
             const config = {
                 accent: document.getElementById('lab-accent-color').value,
-                modules: { audio: document.getElementById('mod-audio').checked, text: document.getElementById('mod-text').checked },
-                logic: document.getElementById('lab-logic-code').value
+                logic: document.getElementById('lab-logic-code').value,
+                modules: { audio: true, text: true } 
             };
             const { error } = await _supabase.from('project_lab').insert([{ project_name: name, config, is_published: true }]);
             if (!error) { Swal.fire('Live!', name + ' published', 'success'); loadData(); }
@@ -129,19 +114,30 @@
 
         async function loadData() {
             const { data } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
+            
+            // Registry Grid
             document.getElementById('registry-grid').innerHTML = data.map(p => `
                 <div class="glass p-6 rounded-[28px] border-l-4" style="border-color:${p.config.accent}">
                     <h4 class="text-xs font-bold uppercase">${p.project_name}</h4>
                     <button onclick="deleteInstance(${p.id})" class="text-[9px] text-red-500 mt-4 font-black uppercase">Destroy</button>
                 </div>
             `).join('');
-            document.getElementById('project-select').innerHTML = '<option>-- Select Project --</option>' + data.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
+
+            // Sync all drop-downs
+            const options = '<option value="">-- SELECT PROJECT --</option>' + data.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
+            document.querySelectorAll('.project-dropdown-sync').forEach(dropdown => {
+                dropdown.innerHTML = options;
+            });
         }
 
         async function assignTask() {
+            const uid = document.getElementById('targetUID').value;
+            const project = document.getElementById('project-select-assign').value;
+            if(!uid || !project) return Swal.fire('Error', 'Fill all details', 'error');
+
             const { error } = await _supabase.from('tasks').insert([{
-                assignedTo: document.getElementById('targetUID').value,
-                title: document.getElementById('project-select').value,
+                assignedTo: uid,
+                title: project,
                 price: document.getElementById('taskPrice').value
             }]);
             if (!error) Swal.fire('Sent!', 'Task assigned', 'success');
@@ -149,9 +145,25 @@
 
         async function revokeTask() {
             const email = document.getElementById('revoke-email').value;
-            const project = document.getElementById('revoke-project').value;
-            const { error } = await _supabase.from('tasks').delete().eq('assignedTo', email).eq('title', project);
-            if (!error) Swal.fire('Revoked!', 'Project removed from user', 'success');
+            const project = document.getElementById('project-select-revoke').value;
+
+            if(!email || !project) return Swal.fire('Error', 'Select User and Project', 'error');
+
+            const { value: confirm } = await Swal.fire({
+                title: 'Revoke Access?',
+                text: `Removing '${project}' from '${email}'`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                background: '#0a0a15',
+                color: '#fff'
+            });
+
+            if(confirm) {
+                const { error } = await _supabase.from('tasks').delete().eq('assignedTo', email).eq('title', project);
+                if (!error) Swal.fire('Revoked!', 'Project removed from user', 'success');
+                else Swal.fire('Error', error.message, 'error');
+            }
         }
 
         async function deleteInstance(id) {
