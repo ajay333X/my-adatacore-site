@@ -6,27 +6,19 @@
     <title>Production Lab — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { background: #02020a; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
-        
-        /* Focus Mode Transitions */
+        body { background: #02020a; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
         #sidebar { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); width: 320px; }
-        #main-area { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        
         .focus-active #sidebar { margin-left: -320px; opacity: 0; }
-        .focus-active #main-area { padding-left: 0; }
-
         .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
-        .record-btn { width: 90px; height: 90px; border-radius: 50%; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .record-btn { width: 90px; height: 90px; border-radius: 50%; transition: 0.4s; position: relative; }
         .recording { background: #ef4444 !important; transform: scale(1.1); box-shadow: 0 0 50px rgba(239, 68, 68, 0.3); }
         .pulse { position: absolute; width: 100%; height: 100%; background: #ef4444; border-radius: 50%; z-index: -1; opacity: 0.5; animation: pulse-out 1.5s infinite; }
         @keyframes pulse-out { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
-        
-        /* Focus Toggle Styling */
-        .toggle-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 99px; font-size: 10px; font-bold; tracking-widest; transition: 0.3s; }
-        .toggle-btn:hover { background: rgba(167, 139, 250, 0.1); border-color: #A78BFA; }
+        .toggle-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 99px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body class="flex" id="body-wrapper">
@@ -38,9 +30,9 @@
             <h1 class="text-2xl font-bold mt-1">Ajay Test Demo</h1>
         </div>
         <div class="space-y-6 flex-1 text-gray-400 text-sm leading-relaxed">
-            <p class="flex gap-3"><span class="text-purple-500 font-bold">01</span> शांत कमरे में रिकॉर्ड करें, शोर नहीं होना चाहिए।</p>
-            <p class="flex gap-3"><span class="text-purple-500 font-bold">02</span> शुरू में 2 सेकंड चुप रहें, फिर बोलना शुरू करें।</p>
-            <p class="flex gap-3"><span class="text-purple-500 font-bold">03</span> अपनी आवाज़ साफ़ और नॉर्मल स्पीड में रखें।</p>
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">01</span> शांत कमरे में रिकॉर्ड करें।</p>
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">02</span> शुरू में 2 सेकंड चुप रहें।</p>
+            <p class="flex gap-3"><span class="text-purple-500 font-bold">03</span> साफ़ आवाज़ में बोलें।</p>
         </div>
         <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center text-sm">
             <span class="text-gray-500 font-medium text-xs">Project Rate</span>
@@ -50,9 +42,7 @@
 
     <main id="main-area" class="flex-1 flex flex-col items-center justify-center p-20 relative">
         <div class="absolute top-10 right-10 z-50">
-            <button onclick="toggleFocus()" class="toggle-btn text-white uppercase font-bold">
-                <span id="focus-text">✨ Focus Mode</span>
-            </button>
+            <button onclick="toggleFocus()" class="toggle-btn text-white uppercase font-bold"><span id="focus-text">✨ Focus Mode</span></button>
         </div>
 
         <div id="timer" class="text-[120px] font-mono tracking-tighter mb-4 text-white/90 leading-none">00:00</div>
@@ -63,46 +53,29 @@
             <div id="btn-icon" class="w-6 h-6 bg-white rounded-sm"></div>
         </button>
 
-        <div id="playbackUI" class="hidden w-full max-w-xl space-y-10 mt-12 animate-in fade-in slide-in-from-bottom-5">
-            <div id="waveform" class="w-full"></div>
+        <div id="playbackUI" class="hidden w-full max-w-xl space-y-10 mt-12">
             <div class="flex gap-6">
-                <button id="discardBtn" class="flex-1 py-5 bg-white/5 border border-white/10 rounded-[24px] text-xs font-bold tracking-widest hover:bg-white/10 transition-all">DISCARD</button>
-                <button id="submitBtn" class="flex-1 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-[24px] text-xs font-bold tracking-widest shadow-2xl hover:scale-105 transition-all">SUBMIT WORK</button>
+                <button id="discardBtn" class="flex-1 py-5 bg-white/5 border border-white/10 rounded-[24px] text-xs font-bold text-white uppercase">DISCARD</button>
+                <button id="submitBtn" class="flex-1 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-[24px] text-xs font-bold text-white uppercase">SUBMIT WORK</button>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, updateDoc, increment, collection, addDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAPBpzQfnilr2vm7kdRiNqOH89u7uxCjrk",
-            authDomain: "adatacore-f.firebaseapp.com",
-            projectId: "adatacore-f",
-            storageBucket: "adatacore-f.firebasestorage.app",
-            messagingSenderId: "806498602099",
-            appId: "1:806498602099:web:426b145c9c0a0bd9c7ae06",
-            measurementId: "G-740M8K5M0J"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    <script>
+        // SUPABASE SETUP
+        const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
+        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
         let mediaRecorder, audioChunks = [], timerInterval, duration = 0, audioBlob;
 
-        // Focus Mode Logic
         window.toggleFocus = () => {
             const body = document.getElementById('body-wrapper');
-            const btnText = document.getElementById('focus-text');
             body.classList.toggle('focus-active');
-            btnText.innerText = body.classList.contains('focus-active') ? '👁️ Standard Mode' : '✨ Focus Mode';
+            document.getElementById('focus-text').innerText = body.classList.contains('focus-active') ? '👁️ Standard Mode' : '✨ Focus Mode';
         };
 
-        onAuthStateChanged(auth, u => { if(!u) window.location.href="auth.html"; });
-
+        // RECORDING LOGIC
         const recordBtn = document.getElementById('recordBtn');
         recordBtn.onclick = async () => {
             if (mediaRecorder?.state === "recording") {
@@ -136,45 +109,50 @@
                     };
                     mediaRecorder.start();
                 } catch (err) {
-                    Swal.fire('Mic Error', 'Please allow microphone access.', 'error');
+                    Swal.fire('Error', 'Microphone access denied.', 'error');
                 }
             }
         };
 
+        // SUBMISSION LOGIC (FIXED FOR SUPABASE)
         document.getElementById('submitBtn').onclick = async () => {
-            const user = auth.currentUser;
-            if(!audioBlob) return;
+            const { data: { user } } = await _supabase.auth.getUser();
+            if(!user || !audioBlob) return;
             
-            Swal.fire({ title: 'Saving...', text: 'Syncing with workstation...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Submitting...', text: 'Uploading to Adatacore...', didOpen: () => Swal.showLoading() });
 
             try {
-                const userSnap = await getDoc(doc(db, "users", user.uid));
-                const workerID = userSnap.data().uniqueID;
+                // 1. Get User UID
+                const { data: profile } = await _supabase.from('users').select('uniqueID, balance').eq('id', user.id).single();
                 const earnings = (duration / 3600) * 8.00;
 
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = async () => {
-                    await addDoc(collection(db, "submissions"), {
-                        workerID: workerID,
-                        workerEmail: user.email,
+                    const base64Audio = reader.result;
+
+                    // 2. Insert into Submissions
+                    const { error: subError } = await _supabase.from('submissions').insert([{
+                        workerUID: profile.uniqueID,
                         projectTitle: "Ajay Test Demo",
-                        audioData: reader.result,
-                        durationSeconds: duration,
+                        audioData: base64Audio,
                         earnedAmount: parseFloat(earnings.toFixed(4)),
-                        status: "Pending",
-                        timestamp: serverTimestamp()
-                    });
+                        status: "Pending"
+                    }]);
 
-                    await updateDoc(doc(db, "users", user.uid), { 
-                        balance: increment(earnings),
-                        tasksCompleted: increment(1)
-                    });
+                    if(subError) throw subError;
 
-                    Swal.fire({ icon: 'success', title: 'Work Submitted!', text: 'Earnings added to balance.' })
+                    // 3. Update User Balance
+                    await _supabase.from('users').update({ 
+                        balance: (profile.balance || 0) + earnings 
+                    }).eq('id', user.id);
+
+                    Swal.fire({ icon: 'success', title: 'Success!', text: 'Work submitted and balance updated.' })
                     .then(() => window.location.href = "dashboard.html");
                 };
-            } catch (e) { Swal.fire('Error', e.message, 'error'); }
+            } catch (e) { 
+                Swal.fire('Error', e.message, 'error'); 
+            }
         };
 
         document.getElementById('discardBtn').onclick = () => location.reload();
