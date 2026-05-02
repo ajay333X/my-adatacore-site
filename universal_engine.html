@@ -7,11 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Live Communication Library -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style id="dynamic-styles">
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; transition: 0.5s; }
+        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; transition: 0.5s; overflow-x: hidden; }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .engine-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
@@ -19,7 +18,8 @@
 </head>
 <body>
 
-    <div class="engine-container">
+    <!-- Main Engine UI -->
+    <div id="main-engine-ui" class="engine-container">
         <header class="flex justify-between items-center mb-10">
             <button onclick="location.href='dashboard.html'" class="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-all">← Abort Task</button>
             <div class="text-right">
@@ -34,7 +34,6 @@
             <div id="boot-loader" class="py-20 text-center italic opacity-30 animate-pulse text-sm uppercase font-bold">Initializing Components...</div>
         </div>
 
-        <!-- Custom Code Point -->
         <div id="custom-html-point" class="mt-6"></div>
 
         <div id="engine-submit-control" class="hidden mt-12">
@@ -47,7 +46,6 @@
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // ग्लोबल एक्सेस के लिए विंडो ऑब्जेक्ट्स सेट करना
         window._supabase = _supabase;
         window.Swal = Swal;
 
@@ -57,7 +55,6 @@
 
         async function bootEngine() {
             try {
-                // 1. यूजर प्रोफाइल गेट करना
                 const { data: { user } } = await _supabase.auth.getUser();
                 if (!user) throw new Error("Auth failed");
 
@@ -69,7 +66,6 @@
                     return;
                 }
 
-                // 2. एडमिन ब्लूप्रिंट फेच करना
                 const { data: blueprint, error } = await _supabase
                     .from('project_lab')
                     .select('*')
@@ -91,41 +87,41 @@
         function assembleProject(p) {
             const config = p.config;
             const workspace = document.getElementById('engine-workspace');
+            const engineStatus = document.getElementById('engine-status');
             
-            workspace.innerHTML = ""; 
+            // UI Update
             document.getElementById('engine-project-name').innerText = p.project_name;
-            document.querySelector('.status-dot').classList.replace('bg-yellow-500', 'bg-green-500');
-            document.getElementById('engine-status').innerHTML = `<span class="status-dot bg-green-500"></span> ${p.project_name} Live`;
-
-            // थीम अप्लाई करना
-            const accentColor = config.accent || "#A78BFA";
-            document.getElementById('final-submit-btn').style.backgroundColor = accentColor;
-            document.getElementById('final-submit-btn').style.boxShadow = `0 20px 40px -15px ${accentColor}60`;
-
-            // मॉड्यूल्स लोड करना
-            const mods = config.modules || {};
-            if (mods.audio) workspace.innerHTML += `<div id="audio-module" class="mb-10 text-center py-10 glass rounded-3xl border-white/5"><span class="text-3xl">🎙️</span><p class="text-[10px] mt-4 font-bold opacity-40 uppercase tracking-widest">Audio Stream Active</p></div>`;
-            if (mods.video) workspace.innerHTML += `<div id="video-module" class="mb-10 aspect-video glass rounded-3xl flex items-center justify-center bg-black/40 border-dashed border border-white/10 text-[10px] font-bold opacity-20 uppercase tracking-widest">Live Feed Container</div>`;
-            if (mods.text) workspace.innerHTML += `<div id="text-module" class="mb-6"><textarea id="output-text" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:border-purple-500 outline-none h-40" placeholder="Logging data..."></textarea></div>`;
-
-            // कस्टम HTML/CSS इंजेक्ट करना
-            if (config.html_overwrite) {
-                document.getElementById('custom-html-point').innerHTML = config.html_overwrite;
+            
+            if (engineStatus) {
+                engineStatus.innerHTML = `<span class="status-dot bg-green-500"></span> ${p.project_name} Live`;
             }
 
-            // कस्टम JS लॉजिक इंजेक्ट करना
+            // अगर कस्टम लॉजिक मौजूद है, तो हम इंजन के डिफ़ॉल्ट UI को छुपा देंगे ताकि अल्ट्रा UI दिखे
             if (config.logic) {
+                document.getElementById('main-engine-ui').style.display = 'none';
+                
                 try {
-                    // लॉजिक को रन करने का सबसे सुरक्षित तरीका
+                    // लॉजिक इंजेक्ट करना
                     const executeLogic = new Function(config.logic);
                     executeLogic.call(window); 
                 } catch (e) {
                     console.error("Logic Engine Error:", e);
+                    // एरर होने पर इंजन UI वापस दिखाएँ ताकि यूजर को पता चले
+                    document.getElementById('main-engine-ui').style.display = 'block';
                     Swal.fire('Code Error', 'Check Project Lab Logic Injection', 'error');
                 }
+            } else {
+                // डिफ़ॉल्ट मॉड्यूल्स अगर लॉजिक नहीं है
+                workspace.innerHTML = ""; 
+                const mods = config.modules || {};
+                if (mods.audio) workspace.innerHTML += `<div id="audio-module" class="mb-10 text-center py-10 glass rounded-3xl border-white/5"><span class="text-3xl">🎙️</span><p class="text-[10px] mt-4 font-bold opacity-40 uppercase tracking-widest">Audio Stream Active</p></div>`;
+                if (mods.text) workspace.innerHTML += `<div id="text-module" class="mb-6"><textarea id="output-text" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:border-purple-500 outline-none h-40" placeholder="Logging data..."></textarea></div>`;
+                document.getElementById('engine-submit-control').classList.remove('hidden');
             }
 
-            document.getElementById('engine-submit-control').classList.remove('hidden');
+            if (config.html_overwrite) {
+                document.getElementById('custom-html-point').innerHTML = config.html_overwrite;
+            }
         }
 
         bootEngine();
