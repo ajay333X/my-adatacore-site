@@ -3,96 +3,153 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Adatacore — Master Admin v3.0</title>
+    <title>Adatacore — Master Admin v4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #030308; color: white; min-height: 100vh; overflow-x: hidden; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 16px; color: #94a3b8; transition: 0.3s; cursor: pointer; font-size: 14px; font-weight: 600; }
         .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
-        .nav-link.active { background: #A78BFA; color: #000; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.1); }
-        .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; width: 100%; outline: none; font-size: 13px; }
+        .nav-link.active { background: #A78BFA; color: #000; box-shadow: 0 0 20px rgba(167, 139, 250, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; color: white; width: 100%; outline: none; font-size: 13px; transition: 0.3s; }
+        .admin-input:focus { border-color: #A78BFA; background: rgba(255,255,255,0.08); }
         .content-section { display: none; }
         .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .label-text { font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 1px; margin-bottom: 6px; display: block; }
     </style>
 </head>
 <body class="flex">
 
     <!-- SIDEBAR -->
-    <aside class="w-72 h-screen border-r border-white/5 p-6 flex flex-col gap-8 shrink-0 sticky top-0">
-        <div class="flex items-center gap-3 px-2">
-            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg">A</div>
-            <span class="font-bold tracking-tight text-lg text-white uppercase">Adatacore Admin</span>
+    <aside class="w-72 h-screen border-r border-white/5 p-8 flex flex-col gap-10 shrink-0 sticky top-0 bg-[#030308]">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg rotate-3">A</div>
+            <div>
+                <span class="block font-black tracking-tighter text-xl text-white uppercase">Adatacore</span>
+                <span class="block text-[9px] font-bold text-purple-400 tracking-[3px] uppercase">Elite Admin</span>
+            </div>
         </div>
+        
         <nav class="flex flex-col gap-1">
             <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">🧪 <span>Project Lab</span></div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">🚀 <span>Assign Task</span></div>
-            <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">🛡️ <span>Revoke Task</span></div>
+            <div onclick="showSection('l3-audit')" class="nav-link" id="btn-l3-audit">🛡️ <span>L3 Final Audit</span></div>
+            <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">🗑️ <span>Revoke System</span></div>
         </nav>
+
         <div class="mt-auto">
-            <button onclick="window.location.href='dashboard.html'" class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold tracking-widest hover:bg-white/10 transition-all uppercase text-white">← Dashboard</button>
+            <button onclick="window.location.href='dashboard.html'" class="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black tracking-widest hover:bg-white/10 transition-all uppercase text-white">← System Dashboard</button>
         </div>
     </aside>
 
-    <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
+    <main class="flex-1 min-h-screen p-16 text-white overflow-y-auto">
         
-        <!-- SECTION 1: PROJECT LAB -->
+        <!-- SECTION 1: PROJECT LAB (Tiered Pricing) -->
         <section id="project-lab" class="content-section active">
-            <h2 class="text-3xl font-bold uppercase tracking-tighter mb-8">Project Lab</h2>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                <div class="glass p-8 rounded-[32px] space-y-6">
-                    <h3 class="text-xs font-black text-purple-400 uppercase tracking-widest">Create New Project</h3>
-                    <input type="text" id="lab-project-name" class="admin-input" placeholder="Project Name (e.g. Live_Audio_v1)">
-                    <div class="flex items-center gap-4">
-                        <label class="text-[10px] uppercase font-bold text-gray-500">Theme Color:</label>
-                        <input type="color" id="lab-accent-color" class="w-10 h-10 bg-transparent border-none cursor-pointer" value="#A78BFA">
+            <h2 class="text-4xl font-black uppercase tracking-tighter mb-10">Project Lab <span class="text-purple-500">.</span></h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+                <div class="glass p-10 rounded-[40px] space-y-8">
+                    <div>
+                        <label class="label-text">Global Identifier</label>
+                        <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. Babel_Audio_Sync_v1">
                     </div>
-                    <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[10px]" placeholder="// Paste the Live Audio V14 logic here..."></textarea>
-                    <button onclick="publishProject()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-xl">PUBLISH PROJECT 🚀</button>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="label-text text-yellow-500">L1 Production Rate ($)</label>
+                            <input type="number" id="lab-l1-rate" class="admin-input" placeholder="Rate for Callers">
+                        </div>
+                        <div>
+                            <label class="label-text text-blue-500">L2 Review Rate ($)</label>
+                            <input type="number" id="lab-l2-rate" class="admin-input" placeholder="Rate for Reviewers">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label-text">UI Accent Color</label>
+                        <input type="color" id="lab-accent-color" class="w-12 h-12 bg-transparent border-none cursor-pointer" value="#A78BFA">
+                    </div>
+
+                    <div>
+                        <label class="label-text">V17 Engine Logic Injection</label>
+                        <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[11px] leading-relaxed" placeholder="// Paste Logic here..."></textarea>
+                    </div>
+
+                    <button onclick="publishProject()" class="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-2xl">Initialize Project Layer ➔</button>
                 </div>
 
                 <div class="space-y-6">
-                    <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Active Registry</h3>
+                    <label class="label-text">Active Project Registry</label>
                     <div id="registry-grid" class="grid grid-cols-1 gap-4"></div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: ASSIGN TASK -->
+        <!-- SECTION 2: ASSIGN TASK (Layer Selective) -->
         <section id="deploy" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Assign Task</h2>
-            <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-yellow-600">
-                <input type="text" id="targetUID" class="admin-input" placeholder="User Email or Unique ID">
-                <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 uppercase font-bold sync-dropdown"></select>
-                <input type="number" id="taskPrice" class="admin-input" placeholder="Payout Amount ($)">
-                <button onclick="assignTask()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs text-black shadow-lg">DEPLOY TASK ➔</button>
+            <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter">Deploy Infrastructure</h2>
+            <div class="glass p-12 rounded-[48px] max-w-2xl space-y-8 relative overflow-hidden border-t-4 border-yellow-500">
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="label-text">Target User ID / Email</label>
+                        <input type="text" id="targetUID" class="admin-input" placeholder="Worker Identity">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="label-text">Select Module</label>
+                            <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 font-bold sync-dropdown"></select>
+                        </div>
+                        <div>
+                            <label class="label-text">Operation Layer</label>
+                            <select id="taskLayer" class="admin-input bg-[#0a0a15] font-bold">
+                                <option value="L1">L1: Production (Recording)</option>
+                                <option value="L2">L2: Review (QA/Rubric)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="assignTask()" class="w-full bg-yellow-500 py-5 rounded-2xl font-black text-xs text-black uppercase tracking-widest shadow-xl">Deploy Operation ➔</button>
             </div>
         </section>
 
-        <!-- SECTION 3: REVOKE TASK -->
+        <!-- SECTION 3: L3 FINAL AUDIT (NEW) -->
+        <section id="l3-audit" class="content-section">
+            <h2 class="text-3xl font-black mb-4 uppercase tracking-tighter text-blue-400">L3 Final Audit</h2>
+            <p class="text-gray-500 text-xs mb-10 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
+            
+            <div class="mb-10">
+                <label class="label-text">Filter by Project</label>
+                <select id="l3-project-filter" class="admin-input max-w-md sync-dropdown" onchange="loadL3Tasks()"></select>
+            </div>
+
+            <div id="l3-task-list" class="grid grid-cols-1 gap-4">
+                <!-- L2 Tasks will appear here -->
+                <div class="py-20 text-center glass rounded-3xl opacity-30 italic">Select a project to begin audit...</div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: REVOKE TASK -->
         <section id="revoke" class="content-section">
-            <h2 class="text-2xl font-bold mb-8 uppercase tracking-tighter">Revoke Task Access</h2>
-            <div class="glass p-10 rounded-[40px] max-w-2xl space-y-5 border-t-4 border-red-600">
-                <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">Remove a project from a specific user's dashboard</p>
-                <input type="text" id="revoke-email" class="admin-input" placeholder="User Email or Unique ID">
-                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-400 uppercase font-bold sync-dropdown"></select>
-                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">REVOKE ACCESS ➔</button>
+            <h2 class="text-2xl font-bold mb-10 uppercase tracking-tighter">System Access Revoke</h2>
+            <div class="glass p-10 rounded-[40px] max-w-2xl space-y-6 border-t-4 border-red-600">
+                <input type="text" id="revoke-email" class="admin-input" placeholder="User UID">
+                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-500 font-bold sync-dropdown"></select>
+                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">Terminate Access</button>
             </div>
         </section>
 
     </main>
 
     <script>
-        // Supabase Configuration
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // Section Toggling
         window.showSection = (id) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -100,104 +157,113 @@
             document.getElementById('btn-' + id).classList.add('active');
         };
 
-        // 1. Publish Project
         async function publishProject() {
             const name = document.getElementById('lab-project-name').value.trim();
             const logic = document.getElementById('lab-logic-code').value;
             const accent = document.getElementById('lab-accent-color').value;
+            const l1_rate = document.getElementById('lab-l1-rate').value || 0;
+            const l2_rate = document.getElementById('lab-l2-rate').value || 0;
 
-            if(!name) return Swal.fire('Error', 'Project Name is required', 'error');
+            if(!name) return Swal.fire('Error', 'Identity required', 'error');
 
             const { error } = await _supabase.from('project_lab').insert([{
                 project_name: name,
                 config: { accent, logic, modules: { audio: true, text: true } },
+                l1_rate: parseFloat(l1_rate),
+                l2_rate: parseFloat(l2_rate),
                 is_published: true
             }]);
 
             if(!error) {
-                Swal.fire('Success', 'Project Published!', 'success');
-                document.getElementById('lab-project-name').value = '';
-                document.getElementById('lab-logic-code').value = '';
+                Swal.fire('Success', 'Project Infrastructure Initialized', 'success');
                 loadData();
-            } else {
-                Swal.fire('Error', error.message, 'error');
             }
         }
 
-        // 2. Load Data & Sync Dropdowns
         async function loadData() {
-            const { data: projects, error } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
+            const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
             
-            if(error) return console.error("Load Error:", error);
-
-            // Render Registry Cards
             document.getElementById('registry-grid').innerHTML = projects.map(p => `
-                <div class="glass p-5 rounded-2xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
+                <div class="glass p-6 rounded-3xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
                     <div>
-                        <h4 class="text-sm font-bold uppercase">${p.project_name}</h4>
-                        <p class="text-[8px] text-gray-500 uppercase mt-1">ID: ${p.id}</p>
+                        <h4 class="text-sm font-black uppercase">${p.project_name}</h4>
+                        <div class="flex gap-4 mt-2">
+                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
+                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
+                        </div>
                     </div>
-                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[10px] font-black text-red-500 hover:underline uppercase">Destroy</button>
+                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
                 </div>
             `).join('');
 
-            // Sync Dropdowns
             const options = '<option value="">-- SELECT PROJECT --</option>' + projects.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
             document.querySelectorAll('.sync-dropdown').forEach(d => d.innerHTML = options);
         }
 
-        // 3. Assign Task (Fixed Logic)
         async function assignTask() {
             const target = document.getElementById('targetUID').value.trim();
             const project = document.getElementById('project-select-assign').value;
-            const price = document.getElementById('taskPrice').value;
+            const layer = document.getElementById('taskLayer').value;
 
-            if(!target || !project || !price) return Swal.fire('Error', 'Missing details', 'warning');
+            if(!target || !project) return Swal.fire('Error', 'Missing ID or Module', 'warning');
 
-            Swal.showLoading();
+            // फेच प्रोजेक्ट रेट्स
+            const { data: pData } = await _supabase.from('project_lab').select('*').eq('project_name', project).single();
+            const rate = (layer === 'L1') ? pData.l1_rate : pData.l2_rate;
+
             const { error } = await _supabase.from('tasks').insert([{ 
                 assignedTo: target, 
                 title: project, 
-                price: parseFloat(price),
+                price: rate,
+                layer: layer, // L1 or L2
                 status: 'pending' 
             }]);
 
-            if(!error) {
-                Swal.fire('Deployed', 'Task assigned to ' + target, 'success');
-                document.getElementById('targetUID').value = '';
-                document.getElementById('taskPrice').value = '';
-            } else {
-                Swal.fire('Error', error.message, 'error');
-            }
+            if(!error) Swal.fire('Success', `Task Deployed at ${layer} Layer`, 'success');
         }
 
-        // 4. Revoke Task
+        // L3 AUDIT LOGIC (Placeholder for next step)
+        async function loadL3Tasks() {
+            const project = document.getElementById('l3-project-filter').value;
+            if(!project) return;
+
+            const { data: submittedTasks } = await _supabase.from('tasks')
+                .select('*')
+                .eq('title', project)
+                .eq('layer', 'L2')
+                .eq('status', 'submitted');
+
+            if(submittedTasks.length === 0) {
+                document.getElementById('l3-task-list').innerHTML = `<div class="py-20 text-center glass rounded-3xl opacity-30 italic">No L2 submissions found for this project.</div>`;
+                return;
+            }
+
+            document.getElementById('l3-task-list').innerHTML = submittedTasks.map(t => `
+                <div class="glass p-8 rounded-3xl flex justify-between items-center">
+                    <div>
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded mb-2 inline-block">AUDIT PENDING</span>
+                        <h4 class="font-bold uppercase">${t.assignedTo}</h4>
+                        <p class="text-[10px] text-gray-500 mt-1 font-mono">TASK_ID: ${t.id}</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="bg-white text-black px-6 py-2 rounded-xl text-[10px] font-bold uppercase" onclick="openAuditTool('${t.id}')">Review Rubric</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         async function revokeTask() {
             const target = document.getElementById('revoke-email').value.trim();
             const project = document.getElementById('project-select-revoke').value;
-
-            if(!target || !project) return Swal.fire('Error', 'Missing details', 'warning');
-
-            const { error, count } = await _supabase.from('tasks').delete({ count: 'exact' }).eq('assignedTo', target).eq('title', project);
-            
-            if(!error && count > 0) Swal.fire('Revoked', 'Project removed from user dashboard', 'success');
-            else if (count === 0) Swal.fire('Not Found', 'No such task assigned to this user', 'info');
-            else Swal.fire('Error', error.message, 'error');
+            const { count } = await _supabase.from('tasks').delete({ count: 'exact' }).eq('assignedTo', target).eq('title', project);
+            if(count > 0) Swal.fire('Revoked', 'Access Terminated', 'success');
         }
 
-        // 5. Global Destroy
         async function globalDestroy(id, name) {
-            const { isConfirmed } = await Swal.fire({
-                title: 'Destroy Project?',
-                text: `This will remove '${name}' from ALL user dashboards and the registry!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444'
-            });
-
+            const { isConfirmed } = await Swal.fire({ title: 'Wipe?', icon: 'warning', showCancelButton: true });
             if(isConfirmed) {
-                await _supabase.from('tasks').delete().eq('title', name); 
-                await _supabase.from('project_lab').delete().eq('id', id); 
+                await _supabase.from('tasks').delete().eq('title', name);
+                await _supabase.from('project_lab').delete().eq('id', id);
                 loadData();
             }
         }
