@@ -48,14 +48,14 @@
 
     <main class="flex-1 min-h-screen p-16 text-white overflow-y-auto">
         
-        <!-- SECTION 1: PROJECT LAB (Tiered Pricing) -->
+        <!-- SECTION 1: PROJECT LAB -->
         <section id="project-lab" class="content-section active">
             <h2 class="text-4xl font-black uppercase tracking-tighter mb-10">Project Lab <span class="text-purple-500">.</span></h2>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
                 <div class="glass p-10 rounded-[40px] space-y-8">
                     <div>
                         <label class="label-text">Global Identifier</label>
-                        <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. Babel_Audio_Sync_v1">
+                        <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. V19_Audio_Sync">
                     </div>
 
                     <div class="grid grid-cols-2 gap-6">
@@ -75,8 +75,8 @@
                     </div>
 
                     <div>
-                        <label class="label-text">V17 Engine Logic Injection</label>
-                        <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[11px] leading-relaxed" placeholder="// Paste Logic here..."></textarea>
+                        <label class="label-text">Engine Logic Injection (V19+ Master)</label>
+                        <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[11px] leading-relaxed" placeholder="// Paste V19 Logic Here..."></textarea>
                     </div>
 
                     <button onclick="publishProject()" class="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-2xl">Initialize Project Layer ➔</button>
@@ -89,14 +89,14 @@
             </div>
         </section>
 
-        <!-- SECTION 2: ASSIGN TASK (Layer Selective) -->
+        <!-- SECTION 2: ASSIGN TASK -->
         <section id="deploy" class="content-section">
             <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter">Deploy Infrastructure</h2>
             <div class="glass p-12 rounded-[48px] max-w-2xl space-y-8 relative overflow-hidden border-t-4 border-yellow-500">
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="label-text">Target User ID / Email</label>
-                        <input type="text" id="targetUID" class="admin-input" placeholder="Worker Identity">
+                        <input type="text" id="targetUID" class="admin-input" placeholder="ajay.sahani9713@gmail.com">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-6">
@@ -117,19 +117,21 @@
             </div>
         </section>
 
-        <!-- SECTION 3: L3 FINAL AUDIT (NEW) -->
+        <!-- SECTION 3: L3 FINAL AUDIT -->
         <section id="l3-audit" class="content-section">
             <h2 class="text-3xl font-black mb-4 uppercase tracking-tighter text-blue-400">L3 Final Audit</h2>
             <p class="text-gray-500 text-xs mb-10 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
             
-            <div class="mb-10">
-                <label class="label-text">Filter by Project</label>
-                <select id="l3-project-filter" class="admin-input max-w-md sync-dropdown" onchange="loadL3Tasks()"></select>
+            <div class="mb-10 flex gap-4 items-end">
+                <div class="flex-1 max-w-md">
+                    <label class="label-text">Filter by Project</label>
+                    <select id="l3-project-filter" class="admin-input sync-dropdown"></select>
+                </div>
+                <button onclick="loadL3Tasks()" class="bg-blue-600 px-8 py-4 rounded-xl text-[10px] font-black uppercase">Refresh Audit Queue</button>
             </div>
 
             <div id="l3-task-list" class="grid grid-cols-1 gap-4">
-                <!-- L2 Tasks will appear here -->
-                <div class="py-20 text-center glass rounded-3xl opacity-30 italic">Select a project to begin audit...</div>
+                <div class="py-20 text-center glass rounded-3xl opacity-30 italic">Select a project and refresh to audit...</div>
             </div>
         </section>
 
@@ -164,8 +166,9 @@
             const l1_rate = document.getElementById('lab-l1-rate').value || 0;
             const l2_rate = document.getElementById('lab-l2-rate').value || 0;
 
-            if(!name) return Swal.fire('Error', 'Identity required', 'error');
+            if(!name) return Swal.fire('Error', 'Project name is required', 'error');
 
+            Swal.showLoading();
             const { error } = await _supabase.from('project_lab').insert([{
                 project_name: name,
                 config: { accent, logic, modules: { audio: true, text: true } },
@@ -177,6 +180,8 @@
             if(!error) {
                 Swal.fire('Success', 'Project Infrastructure Initialized', 'success');
                 loadData();
+            } else {
+                Swal.fire('Error', error.message, 'error');
             }
         }
 
@@ -188,8 +193,8 @@
                     <div>
                         <h4 class="text-sm font-black uppercase">${p.project_name}</h4>
                         <div class="flex gap-4 mt-2">
-                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
-                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
+                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1 Rate: $${p.l1_rate}</span>
+                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2 Rate: $${p.l2_rate}</span>
                         </div>
                     </div>
                     <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
@@ -205,62 +210,82 @@
             const project = document.getElementById('project-select-assign').value;
             const layer = document.getElementById('taskLayer').value;
 
-            if(!target || !project) return Swal.fire('Error', 'Missing ID or Module', 'warning');
+            if(!target || !project) return Swal.fire('Error', 'Target Email and Project are mandatory', 'warning');
 
-            // फेच प्रोजेक्ट रेट्स
+            Swal.showLoading();
+            
+            // Auto-fetch correct rate based on layer
             const { data: pData } = await _supabase.from('project_lab').select('*').eq('project_name', project).single();
-            const rate = (layer === 'L1') ? pData.l1_rate : pData.l2_rate;
+            const finalRate = (layer === 'L1') ? pData.l1_rate : pData.l2_rate;
 
             const { error } = await _supabase.from('tasks').insert([{ 
                 assignedTo: target, 
                 title: project, 
-                price: rate,
-                layer: layer, // L1 or L2
+                price: finalRate,
+                layer: layer,
                 status: 'pending' 
             }]);
 
-            if(!error) Swal.fire('Success', `Task Deployed at ${layer} Layer`, 'success');
+            if(!error) {
+                Swal.fire('Deployed! 🚀', `Assigned to ${target} as ${layer}`, 'success');
+                document.getElementById('targetUID').value = "";
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
         }
 
-        // L3 AUDIT LOGIC (Placeholder for next step)
         async function loadL3Tasks() {
             const project = document.getElementById('l3-project-filter').value;
-            if(!project) return;
+            if(!project) return Swal.fire('Wait', 'Select a project first', 'info');
 
-            const { data: submittedTasks } = await _supabase.from('tasks')
+            const { data: tasks, error } = await _supabase.from('tasks')
                 .select('*')
                 .eq('title', project)
-                .eq('layer', 'L2')
-                .eq('status', 'submitted');
+                .eq('status', 'submitted')
+                .eq('layer', 'L3'); // L2 can upgrade task to L3 status
 
-            if(submittedTasks.length === 0) {
-                document.getElementById('l3-task-list').innerHTML = `<div class="py-20 text-center glass rounded-3xl opacity-30 italic">No L2 submissions found for this project.</div>`;
-                return;
+            if(tasks && tasks.length > 0) {
+                document.getElementById('l3-task-list').innerHTML = tasks.map(t => `
+                    <div class="glass p-8 rounded-3xl flex justify-between items-center border-l-4 border-blue-500">
+                        <div>
+                            <span class="text-[9px] font-black bg-blue-500 text-black px-2 py-1 rounded uppercase mb-2 inline-block">Audit Ready</span>
+                            <h4 class="font-bold text-lg">${t.assignedTo}</h4>
+                            <p class="text-[10px] text-gray-500 font-mono mt-1">Ref Task ID: ${t.id}</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="approvePayout('${t.id}')" class="bg-green-600 text-white px-6 py-3 rounded-xl text-[10px] font-bold uppercase">Approve Payout ($${t.price})</button>
+                            <button onclick="rejectAudit('${t.id}')" class="bg-red-600 text-white px-6 py-3 rounded-xl text-[10px] font-bold uppercase">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('l3-task-list').innerHTML = `<div class="py-20 text-center glass rounded-3xl opacity-30 italic">No tasks currently awaiting L3 Audit.</div>`;
             }
+        }
 
-            document.getElementById('l3-task-list').innerHTML = submittedTasks.map(t => `
-                <div class="glass p-8 rounded-3xl flex justify-between items-center">
-                    <div>
-                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded mb-2 inline-block">AUDIT PENDING</span>
-                        <h4 class="font-bold uppercase">${t.assignedTo}</h4>
-                        <p class="text-[10px] text-gray-500 mt-1 font-mono">TASK_ID: ${t.id}</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button class="bg-white text-black px-6 py-2 rounded-xl text-[10px] font-bold uppercase" onclick="openAuditTool('${t.id}')">Review Rubric</button>
-                    </div>
-                </div>
-            `).join('');
+        async function approvePayout(id) {
+            const { isConfirmed } = await Swal.fire({ title: 'Approve Payment?', icon: 'question', showCancelButton: true });
+            if(isConfirmed) {
+                await _supabase.from('tasks').update({ status: 'paid' }).eq('id', id);
+                Swal.fire('Success', 'Payment Authorized', 'success');
+                loadL3Tasks();
+            }
         }
 
         async function revokeTask() {
             const target = document.getElementById('revoke-email').value.trim();
             const project = document.getElementById('project-select-revoke').value;
-            const { count } = await _supabase.from('tasks').delete({ count: 'exact' }).eq('assignedTo', target).eq('title', project);
-            if(count > 0) Swal.fire('Revoked', 'Access Terminated', 'success');
+            const { error } = await _supabase.from('tasks').delete().eq('assignedTo', target).eq('title', project);
+            if(!error) Swal.fire('Revoked', 'Access Terminated', 'success');
         }
 
         async function globalDestroy(id, name) {
-            const { isConfirmed } = await Swal.fire({ title: 'Wipe?', icon: 'warning', showCancelButton: true });
+            const { isConfirmed } = await Swal.fire({ 
+                title: `Wipe ${name}?`, 
+                text: "This will delete all tasks and configurations!",
+                icon: 'warning', 
+                showCancelButton: true 
+            });
             if(isConfirmed) {
                 await _supabase.from('tasks').delete().eq('title', name);
                 await _supabase.from('project_lab').delete().eq('id', id);
