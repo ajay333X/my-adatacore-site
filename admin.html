@@ -37,6 +37,7 @@
         <nav class="flex flex-col gap-1">
             <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">🧪 <span>Project Lab</span></div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">🚀 <span>Assign Task</span></div>
+            <div onclick="showSection('social-sync')" class="nav-link" id="btn-social-sync">📱 <span>Social Sync</span></div>
             <div onclick="showSection('l3-audit')" class="nav-link" id="btn-l3-audit">🛡️ <span>L3 Final Audit</span></div>
             <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">🗑️ <span>Revoke System</span></div>
         </nav>
@@ -85,6 +86,39 @@
                 <div class="space-y-6">
                     <label class="label-text">Active Project Registry</label>
                     <div id="registry-grid" class="grid grid-cols-1 gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SOCIAL SYNC (NEW FEATURE) -->
+        <section id="social-sync" class="content-section">
+            <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter text-pink-500">Social Automator</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+                <div class="glass p-10 rounded-[40px] space-y-6 border-t-4 border-pink-600">
+                    <div>
+                        <label class="label-text">Video Link (Reels / Shorts)</label>
+                        <input type="text" id="social-url" class="admin-input" placeholder="https://www.instagram.com/reels/...">
+                    </div>
+                    <div>
+                        <label class="label-text">Post Caption</label>
+                        <textarea id="social-caption" class="admin-input h-32" placeholder="Write the perfect caption with #hashtags..."></textarea>
+                    </div>
+                    <div>
+                        <label class="label-text">Target Platform</label>
+                        <select id="social-platform" class="admin-input bg-[#0a0a15] font-bold">
+                            <option value="Instagram">Instagram Reels</option>
+                            <option value="YouTube">YouTube Shorts</option>
+                            <option value="Both">Both Platforms</option>
+                        </select>
+                    </div>
+                    <button onclick="submitToSocialQueue()" class="w-full bg-pink-600 py-5 rounded-2xl font-black text-xs text-white uppercase tracking-widest shadow-xl">Add to Download Queue ➔</button>
+                </div>
+
+                <div class="space-y-6">
+                    <label class="label-text">Download & Posting Queue</label>
+                    <div id="social-queue-list" class="grid grid-cols-1 gap-4">
+                        <div class="py-10 text-center glass rounded-3xl opacity-30 italic">No videos in queue...</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -157,6 +191,7 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
+            if(id === 'social-sync') loadSocialQueue();
         };
 
         async function publishProject() {
@@ -205,6 +240,43 @@
             document.querySelectorAll('.sync-dropdown').forEach(d => d.innerHTML = options);
         }
 
+        async function submitToSocialQueue() {
+            const url = document.getElementById('social-url').value.trim();
+            const caption = document.getElementById('social-caption').value.trim();
+            const platform = document.getElementById('social-platform').value;
+
+            if(!url) return Swal.fire('Error', 'Link is required', 'warning');
+
+            Swal.showLoading();
+            const { error } = await _supabase.from('social_sync').insert([{
+                url, caption, platform, status: 'queued'
+            }]);
+
+            if(!error) {
+                Swal.fire('Queued', 'Added to marketing download queue', 'success');
+                document.getElementById('social-url').value = "";
+                document.getElementById('social-caption').value = "";
+                loadSocialQueue();
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        async function loadSocialQueue() {
+            const { data } = await _supabase.from('social_sync').select('*').order('created_at', {ascending: false});
+            if(data && data.length > 0) {
+                document.getElementById('social-queue-list').innerHTML = data.map(item => `
+                    <div class="glass p-5 rounded-2xl border-l-2 border-pink-500 flex justify-between items-center">
+                        <div class="max-w-[70%]">
+                            <p class="text-[10px] font-bold text-pink-400 uppercase tracking-widest">${item.platform} • ${item.status}</p>
+                            <p class="text-xs truncate opacity-60 mt-1">${item.url}</p>
+                        </div>
+                        <button onclick="deleteSocialTask(${item.id})" class="text-red-500 text-[10px] font-black">Cancel</button>
+                    </div>
+                `).join('');
+            }
+        }
+
         async function assignTask() {
             const target = document.getElementById('targetUID').value.trim();
             const project = document.getElementById('project-select-assign').value;
@@ -213,8 +285,6 @@
             if(!target || !project) return Swal.fire('Error', 'Target Email and Project are mandatory', 'warning');
 
             Swal.showLoading();
-            
-            // Auto-fetch correct rate based on layer
             const { data: pData } = await _supabase.from('project_lab').select('*').eq('project_name', project).single();
             const finalRate = (layer === 'L1') ? pData.l1_rate : pData.l2_rate;
 
@@ -238,11 +308,8 @@
             const project = document.getElementById('l3-project-filter').value;
             if(!project) return Swal.fire('Wait', 'Select a project first', 'info');
 
-            const { data: tasks, error } = await _supabase.from('tasks')
-                .select('*')
-                .eq('title', project)
-                .eq('status', 'submitted')
-                .eq('layer', 'L3'); // L2 can upgrade task to L3 status
+            const { data: tasks } = await _supabase.from('tasks')
+                .select('*').eq('title', project).eq('status', 'submitted').eq('layer', 'L3');
 
             if(tasks && tasks.length > 0) {
                 document.getElementById('l3-task-list').innerHTML = tasks.map(t => `
@@ -277,6 +344,11 @@
             const project = document.getElementById('project-select-revoke').value;
             const { error } = await _supabase.from('tasks').delete().eq('assignedTo', target).eq('title', project);
             if(!error) Swal.fire('Revoked', 'Access Terminated', 'success');
+        }
+
+        async function deleteSocialTask(id) {
+            await _supabase.from('social_sync').delete().eq('id', id);
+            loadSocialQueue();
         }
 
         async function globalDestroy(id, name) {
