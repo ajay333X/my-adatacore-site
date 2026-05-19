@@ -10,56 +10,74 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #030308; color: white; min-height: 100vh; overflow-x: hidden; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 16px; color: #94a3b8; transition: 0.3s; cursor: pointer; font-size: 14px; font-weight: 600; }
-        .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
-        .nav-link.active { background: #A78BFA; color: #000; box-shadow: 0 0 20px rgba(167, 139, 250, 0.3); }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .admin-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; color: white; width: 100%; outline: none; font-size: 13px; transition: 0.3s; }
-        .admin-input:focus { border-color: #A78BFA; background: rgba(255,255,255,0.08); }
+        
+        /* Refined Sidebar Items Styling */
+        .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 14px; color: #94a3b8; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; font-size: 13px; font-weight: 600; border: 1px solid transparent; }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: white; border-color: rgba(255,255,255,0.03); }
+        .nav-link.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, transparent 100%); color: #A78BFA; border: 1px solid rgba(167, 139, 250, 0.2); box-shadow: 0 10px 30px -10px rgba(167, 139, 250, 0.15); }
+        .nav-icon-box { w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0 transition-all duration-300; }
+        .nav-link.active .nav-icon-box { background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.3); }
+
+        .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.04); }
+        .admin-input { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 14px; color: white; width: 100%; outline: none; font-size: 13px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .admin-input:focus { border-color: #A78BFA; background: rgba(255,255,255,0.06); box-shadow: 0 0 15px rgba(167, 139, 250, 0.1); }
         .content-section { display: none; }
-        .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content-section.active { display: block; animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .label-text { font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 1px; margin-bottom: 6px; display: block; }
     </style>
 </head>
 <body class="flex">
 
-    <!-- SIDEBAR -->
-    <aside class="w-72 h-screen border-r border-white/5 p-8 flex flex-col gap-10 shrink-0 sticky top-0 bg-[#030308]">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg rotate-3">A</div>
+    <aside class="w-72 h-screen border-r border-white/5 p-6 flex flex-col gap-8 shrink-0 sticky top-0 bg-[#030308]">
+        <div class="flex items-center gap-3.5 px-2">
+            <div class="w-9 h-9 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-purple-500/10 rotate-3 shrink-0">A</div>
             <div>
-                <span class="block font-black tracking-tighter text-xl text-white uppercase">Adatacore</span>
-                <span class="block text-[9px] font-bold text-purple-400 tracking-[3px] uppercase">Elite Admin</span>
+                <span class="block font-black tracking-tight text-base text-white uppercase">Adatacore</span>
+                <span class="block text-[8px] font-bold text-purple-400 tracking-[3px] uppercase mt-0.5">Elite Admin</span>
             </div>
         </div>
         
-        <nav class="flex flex-col gap-1">
-            <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">🧪 <span>Project Lab</span></div>
-            <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">🚀 <span>Assign Task</span></div>
-            <div onclick="showSection('social-sync')" class="nav-link" id="btn-social-sync">📱 <span>Social Sync</span></div>
-            <div onclick="showSection('l3-audit')" class="nav-link" id="btn-l3-audit">🛡️ <span>L3 Final Audit</span></div>
-            <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">🗑️ <span>Revoke System</span></div>
+        <nav class="flex flex-col gap-1.5 flex-1">
+            <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">
+                <div class="nav-icon-box w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🧪</div> 
+                <span>Project Lab</span>
+            </div>
+            <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">
+                <div class="nav-icon-box w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🚀</div> 
+                <span>Assign Task</span>
+            </div>
+            <div onclick="showSection('social-sync')" class="nav-link" id="btn-social-sync">
+                <div class="nav-icon-box w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">📱</div> 
+                <span>Social Sync</span>
+            </div>
+            <div onclick="showSection('l3-audit')" class="nav-link" id="btn-l3-audit">
+                <div class="nav-icon-box w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🛡️</div> 
+                <span>L3 Final Audit</span>
+            </div>
+            <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">
+                <div class="nav-icon-box w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🗑️</div> 
+                <span>Revoke System</span>
+            </div>
         </nav>
 
-        <div class="mt-auto">
-            <button onclick="window.location.href='dashboard.html'" class="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black tracking-widest hover:bg-white/10 transition-all uppercase text-white">← System Dashboard</button>
+        <div class="px-2">
+            <button onclick="window.location.href='dashboard'" class="w-full py-3.5 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black tracking-widest hover:bg-white/10 hover:border-white/20 transition-all uppercase text-white">← System Dashboard</button>
         </div>
     </aside>
 
-    <main class="flex-1 min-h-screen p-16 text-white overflow-y-auto">
+    <main class="flex-1 min-h-screen p-12 text-white overflow-y-auto">
         
-        <!-- SECTION 1: PROJECT LAB -->
         <section id="project-lab" class="content-section active">
-            <h2 class="text-4xl font-black uppercase tracking-tighter mb-10">Project Lab <span class="text-purple-500">.</span></h2>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
-                <div class="glass p-10 rounded-[40px] space-y-8">
+            <h2 class="text-3xl font-black uppercase tracking-tight mb-8">Project Lab <span class="text-purple-500">.</span></h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <div class="glass p-8 rounded-[32px] space-y-6">
                     <div>
                         <label class="label-text">Global Identifier</label>
                         <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. V19_Audio_Sync">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 gap-5">
                         <div>
                             <label class="label-text text-yellow-500">L1 Production Rate ($)</label>
                             <input type="number" id="lab-l1-rate" class="admin-input" placeholder="Rate for Callers">
@@ -72,15 +90,15 @@
 
                     <div>
                         <label class="label-text">UI Accent Color</label>
-                        <input type="color" id="lab-accent-color" class="w-12 h-12 bg-transparent border-none cursor-pointer" value="#A78BFA">
+                        <input type="color" id="lab-accent-color" class="w-10 h-10 bg-transparent border-none cursor-pointer" value="#A78BFA">
                     </div>
 
                     <div>
                         <label class="label-text">Engine Logic Injection (V19+ Master)</label>
-                        <textarea id="lab-logic-code" class="admin-input h-48 font-mono text-[11px] leading-relaxed" placeholder="// Paste V19 Logic Here..."></textarea>
+                        <textarea id="lab-logic-code" class="admin-input h-40 font-mono text-[11px] leading-relaxed" placeholder="// Paste V19 Logic Here..."></textarea>
                     </div>
 
-                    <button onclick="publishProject()" class="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-2xl">Initialize Project Layer ➔</button>
+                    <button onclick="publishProject()" class="w-full bg-white text-black py-4 rounded-xl font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-xl">Initialize Project Layer ➔</button>
                 </div>
 
                 <div class="space-y-6">
@@ -90,18 +108,17 @@
             </div>
         </section>
 
-        <!-- SECTION: SOCIAL SYNC (NEW FEATURE) -->
         <section id="social-sync" class="content-section">
-            <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter text-pink-500">Social Automator</h2>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
-                <div class="glass p-10 rounded-[40px] space-y-6 border-t-4 border-pink-600">
+            <h2 class="text-3xl font-black mb-8 uppercase tracking-tight text-pink-500">Social Automator</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <div class="glass p-8 rounded-[32px] space-y-5 border-t-2 border-pink-600/30">
                     <div>
                         <label class="label-text">Video Link (Reels / Shorts)</label>
                         <input type="text" id="social-url" class="admin-input" placeholder="https://www.instagram.com/reels/...">
                     </div>
                     <div>
                         <label class="label-text">Post Caption</label>
-                        <textarea id="social-caption" class="admin-input h-32" placeholder="Write the perfect caption with #hashtags..."></textarea>
+                        <textarea id="social-caption" class="admin-input h-28" placeholder="Write the perfect caption with #hashtags..."></textarea>
                     </div>
                     <div>
                         <label class="label-text">Target Platform</label>
@@ -111,29 +128,28 @@
                             <option value="Both">Both Platforms</option>
                         </select>
                     </div>
-                    <button onclick="submitToSocialQueue()" class="w-full bg-pink-600 py-5 rounded-2xl font-black text-xs text-white uppercase tracking-widest shadow-xl">Add to Download Queue ➔</button>
+                    <button onclick="submitToSocialQueue()" class="w-full bg-pink-600 py-4 rounded-xl font-black text-xs text-white uppercase tracking-widest shadow-xl">Add to Download Queue ➔</button>
                 </div>
 
                 <div class="space-y-6">
                     <label class="label-text">Download & Posting Queue</label>
                     <div id="social-queue-list" class="grid grid-cols-1 gap-4">
-                        <div class="py-10 text-center glass rounded-3xl opacity-30 italic">No videos in queue...</div>
+                        <div class="py-10 text-center glass rounded-2xl opacity-30 italic">No videos in queue...</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: ASSIGN TASK -->
         <section id="deploy" class="content-section">
-            <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter">Deploy Infrastructure</h2>
-            <div class="glass p-12 rounded-[48px] max-w-2xl space-y-8 relative overflow-hidden border-t-4 border-yellow-500">
-                <div class="grid grid-cols-1 gap-6">
+            <h2 class="text-3xl font-black mb-8 uppercase tracking-tight">Deploy Infrastructure</h2>
+            <div class="glass p-10 rounded-[36px] max-w-2xl space-y-6 relative overflow-hidden border-t-2 border-yellow-500/30">
+                <div class="grid grid-cols-1 gap-5">
                     <div>
                         <label class="label-text">Target User ID / Email</label>
                         <input type="text" id="targetUID" class="admin-input" placeholder="ajay.sahani9713@gmail.com">
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 gap-5">
                         <div>
                             <label class="label-text">Select Module</label>
                             <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 font-bold sync-dropdown"></select>
@@ -147,35 +163,39 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="assignTask()" class="w-full bg-yellow-500 py-5 rounded-2xl font-black text-xs text-black uppercase tracking-widest shadow-xl">Deploy Operation ➔</button>
+                <button onclick="assignTask()" class="w-full bg-yellow-500 py-4 rounded-xl font-black text-xs text-black uppercase tracking-widest shadow-xl">Deploy Operation ➔</button>
             </div>
         </section>
 
-        <!-- SECTION 3: L3 FINAL AUDIT -->
         <section id="l3-audit" class="content-section">
-            <h2 class="text-3xl font-black mb-4 uppercase tracking-tighter text-blue-400">L3 Final Audit</h2>
-            <p class="text-gray-500 text-xs mb-10 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
+            <h2 class="text-3xl font-black mb-2 uppercase tracking-tight text-blue-400">L3 Final Audit</h2>
+            <p class="text-gray-500 text-[10px] mb-8 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
             
-            <div class="mb-10 flex gap-4 items-end">
+            <div class="mb-8 flex gap-4 items-end">
                 <div class="flex-1 max-w-md">
                     <label class="label-text">Filter by Project</label>
                     <select id="l3-project-filter" class="admin-input sync-dropdown"></select>
                 </div>
-                <button onclick="loadL3Tasks()" class="bg-blue-600 px-8 py-4 rounded-xl text-[10px] font-black uppercase">Refresh Audit Queue</button>
+                <button onclick="loadL3Tasks()" class="bg-blue-600 px-6 py-3.5 rounded-xl text-[10px] font-black uppercase">Refresh Queue</button>
             </div>
 
             <div id="l3-task-list" class="grid grid-cols-1 gap-4">
-                <div class="py-20 text-center glass rounded-3xl opacity-30 italic">Select a project and refresh to audit...</div>
+                <div class="py-16 text-center glass rounded-2xl opacity-30 italic text-xs">Select a project and refresh to audit...</div>
             </div>
         </section>
 
-        <!-- SECTION 4: REVOKE TASK -->
         <section id="revoke" class="content-section">
-            <h2 class="text-2xl font-bold mb-10 uppercase tracking-tighter">System Access Revoke</h2>
-            <div class="glass p-10 rounded-[40px] max-w-2xl space-y-6 border-t-4 border-red-600">
-                <input type="text" id="revoke-email" class="admin-input" placeholder="User UID">
-                <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-500 font-bold sync-dropdown"></select>
-                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs text-white uppercase shadow-lg">Terminate Access</button>
+            <h2 class="text-3xl font-black mb-8 uppercase tracking-tight">System Access Revoke</h2>
+            <div class="glass p-8 rounded-[32px] max-w-2xl space-y-5 border-t-2 border-red-600/30">
+                <div>
+                    <label class="label-text">User UID / Email</label>
+                    <input type="text" id="revoke-email" class="admin-input" placeholder="User UID">
+                </div>
+                <div>
+                    <label class="label-text">Select Project</label>
+                    <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-500 font-bold sync-dropdown"></select>
+                </div>
+                <button onclick="revokeTask()" class="w-full bg-red-600 py-4 rounded-xl font-black text-xs text-white uppercase shadow-lg">Terminate Access</button>
             </div>
         </section>
 
@@ -224,15 +244,15 @@
             const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
             
             document.getElementById('registry-grid').innerHTML = projects.map(p => `
-                <div class="glass p-6 rounded-3xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
+                <div class="glass p-5 rounded-2xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
                     <div>
-                        <h4 class="text-sm font-black uppercase">${p.project_name}</h4>
-                        <div class="flex gap-4 mt-2">
-                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1 Rate: $${p.l1_rate}</span>
-                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2 Rate: $${p.l2_rate}</span>
+                        <h4 class="text-xs font-black uppercase tracking-wide">${p.project_name}</h4>
+                        <div class="flex gap-4 mt-1.5">
+                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
+                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
                         </div>
                     </div>
-                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
+                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-400 hover:text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
                 </div>
             `).join('');
 
@@ -266,14 +286,16 @@
             const { data } = await _supabase.from('social_sync').select('*').order('created_at', {ascending: false});
             if(data && data.length > 0) {
                 document.getElementById('social-queue-list').innerHTML = data.map(item => `
-                    <div class="glass p-5 rounded-2xl border-l-2 border-pink-500 flex justify-between items-center">
-                        <div class="max-w-[70%]">
-                            <p class="text-[10px] font-bold text-pink-400 uppercase tracking-widest">${item.platform} • ${item.status}</p>
+                    <div class="glass p-4 rounded-xl border-l-2 border-pink-500 flex justify-between items-center">
+                        <div class="max-w-[75%]">
+                            <p class="text-[9px] font-bold text-pink-400 uppercase tracking-widest">${item.platform} • ${item.status}</p>
                             <p class="text-xs truncate opacity-60 mt-1">${item.url}</p>
                         </div>
-                        <button onclick="deleteSocialTask(${item.id})" class="text-red-500 text-[10px] font-black">Cancel</button>
+                        <button onclick="deleteSocialTask(${item.id})" class="text-red-400 hover:text-red-500 text-[10px] font-black uppercase">Cancel</button>
                     </div>
                 `).join('');
+            } else {
+                document.getElementById('social-queue-list').innerHTML = `<div class="py-10 text-center glass rounded-2xl opacity-30 italic text-xs">No videos in queue...</div>`;
             }
         }
 
@@ -313,20 +335,20 @@
 
             if(tasks && tasks.length > 0) {
                 document.getElementById('l3-task-list').innerHTML = tasks.map(t => `
-                    <div class="glass p-8 rounded-3xl flex justify-between items-center border-l-4 border-blue-500">
+                    <div class="glass p-6 rounded-2xl flex justify-between items-center border-l-4 border-blue-500">
                         <div>
-                            <span class="text-[9px] font-black bg-blue-500 text-black px-2 py-1 rounded uppercase mb-2 inline-block">Audit Ready</span>
-                            <h4 class="font-bold text-lg">${t.assignedTo}</h4>
-                            <p class="text-[10px] text-gray-500 font-mono mt-1">Ref Task ID: ${t.id}</p>
+                            <span class="text-[8px] font-black bg-blue-500 text-black px-2 py-0.5 rounded uppercase mb-1.5 inline-block">Audit Ready</span>
+                            <h4 class="font-bold text-base">${t.assignedTo}</h4>
+                            <p class="text-[10px] text-gray-500 font-mono mt-0.5">Ref Task ID: ${t.id}</p>
                         </div>
-                        <div class="flex gap-4">
-                            <button onclick="approvePayout('${t.id}')" class="bg-green-600 text-white px-6 py-3 rounded-xl text-[10px] font-bold uppercase">Approve Payout ($${t.price})</button>
-                            <button onclick="rejectAudit('${t.id}')" class="bg-red-600 text-white px-6 py-3 rounded-xl text-[10px] font-bold uppercase">Reject</button>
+                        <div class="flex gap-3">
+                            <button onclick="approvePayout('${t.id}')" class="bg-green-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase">Approve ($${t.price})</button>
+                            <button onclick="rejectAudit('${t.id}')" class="bg-red-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase">Reject</button>
                         </div>
                     </div>
                 `).join('');
             } else {
-                document.getElementById('l3-task-list').innerHTML = `<div class="py-20 text-center glass rounded-3xl opacity-30 italic">No tasks currently awaiting L3 Audit.</div>`;
+                document.getElementById('l3-task-list').innerHTML = `<div class="py-16 text-center glass rounded-2xl opacity-30 italic text-xs">No tasks currently awaiting L3 Audit.</div>`;
             }
         }
 
