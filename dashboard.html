@@ -53,6 +53,59 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.1); border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.2); }
+
+        /* PREMIUM THEME ENGINE ANIMATION LOGIC */
+        .theme-transition, .theme-transition * {
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .cosmic-toggle-btn {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
+        }
+        .cosmic-toggle-btn:hover {
+            border-color: rgba(167, 139, 250, 0.3);
+            background: rgba(255, 255, 255, 0.02);
+            transform: scale(1.02);
+        }
+        .cosmic-toggle-btn:active { transform: scale(0.98); }
+        .sun-icon { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; filter: drop-shadow(0 0 6px #fbbf24); }
+        .moon-icon { transform: translateY(40px) rotate(-90deg) scale(0); opacity: 0; filter: drop-shadow(0 0 6px #a78bfa); }
+        
+        body.light-theme .sun-icon { transform: translateY(-40px) rotate(90deg) scale(0); opacity: 0; }
+        body.light-theme .moon-icon { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+        body.light-theme {
+            --bg-dark: #f1f5f9;
+            color: #0f172a !important;
+            background-image: radial-gradient(circle at 50% -20%, rgba(167, 139, 250, 0.12) 0%, transparent 60%) !important;
+        }
+        body.light-theme .glass {
+            background: rgba(255, 255, 255, 0.6) !important;
+            border-color: rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02) !important;
+        }
+        body.light-theme .glass-card {
+            background: rgba(255, 255, 255, 0.7) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03) !important;
+        }
+        body.light-theme .glass-card:hover {
+            border-color: rgba(167, 139, 250, 0.4) !important;
+            box-shadow: 0 15px 30px -15px rgba(167, 139, 250, 0.15) !important;
+        }
+        body.light-theme h1, body.light-theme h2, body.light-theme h3, body.light-theme h4, body.light-theme th, body.light-theme .text-white {
+            color: #0f172a !important;
+        }
+        body.light-theme .logo-text {
+            background: linear-gradient(135deg, #0f172a, #334155) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+        }
     </style>
 </head>
 <body class="flex">
@@ -75,6 +128,23 @@
             </div>
             <div id="admin-nav-container"></div>
         </nav>
+
+        <div class="px-3 mb-2">
+            <div onclick="executePremiumThemeEngine(this)" class="cosmic-toggle-btn w-full px-4 py-3 flex items-center justify-between group theme-transition select-none">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center relative overflow-hidden shrink-0">
+                        <svg class="sun-icon w-3.5 h-3.5 text-amber-400 absolute theme-transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 11H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <svg class="moon-icon w-3.5 h-3.5 text-indigo-400 absolute theme-transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </div>
+                    <span id="theme-status-text" class="nav-text text-[10px] uppercase tracking-wider font-bold text-gray-400 group-hover:text-white theme-transition">Dark Core</span>
+                </div>
+                <span class="nav-text text-[8px] font-mono opacity-20 group-hover:opacity-50 theme-transition">SYS</span>
+            </div>
+        </div>
 
         <div class="p-4 border-t border-white/5 bg-[#030308]/40">
             <div id="btn-logout" class="flex items-center gap-4 px-4 py-3.5 text-red-400/80 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/10 rounded-xl cursor-pointer transition-all">
@@ -176,6 +246,51 @@
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
         let performanceChart = null;
 
+        // Persistent Theme Sync Engine Initialization
+        if (localStorage.getItem('datacore-theme') === 'light') {
+            document.body.classList.add('light-theme');
+            setTimeout(() => {
+                const txt = document.getElementById('theme-status-text');
+                if(txt) txt.innerText = "Light Core";
+            }, 50);
+        }
+
+        function executePremiumThemeEngine(element) {
+            document.body.classList.add('theme-transition');
+            document.querySelectorAll('.glass, .glass-card, h1, h2, h3, h4, p, span, div, th').forEach(el => {
+                el.classList.add('theme-transition');
+            });
+
+            if (document.body.classList.contains('light-theme')) {
+                document.body.classList.remove('light-theme');
+                localStorage.setItem('datacore-theme', 'dark');
+                element.querySelector('#theme-status-text').innerText = "Dark Core";
+                
+                if (performanceChart !== null) {
+                    performanceChart.options.scales.x.ticks.color = '#334155';
+                    performanceChart.data.datasets[0].borderColor = '#A78BFA';
+                    performanceChart.data.datasets[0].backgroundColor = 'rgba(167, 139, 250, 0.02)';
+                    performanceChart.update();
+                }
+            } else {
+                document.body.classList.add('light-theme');
+                localStorage.setItem('datacore-theme', 'light');
+                element.querySelector('#theme-status-text').innerText = "Light Core";
+                
+                if (performanceChart !== null) {
+                    performanceChart.options.scales.x.ticks.color = '#94a3b8';
+                    performanceChart.data.datasets[0].borderColor = '#4F46E5';
+                    performanceChart.data.datasets[0].backgroundColor = 'rgba(79, 70, 229, 0.01)';
+                    performanceChart.update();
+                }
+            }
+
+            setTimeout(() => {
+                document.body.classList.remove('theme-transition');
+                document.querySelectorAll('.theme-transition').forEach(el => el.classList.remove('theme-transition'));
+            }, 600);
+        }
+
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
@@ -222,7 +337,6 @@
         }
 
         async function loadHistoryAndMetrics(uid) {
-            // Fetch raw submissions to populate history, daily goals, and performance metrics
             const { data: subs, error } = await _supabase
                 .from('submissions')
                 .select('*')
@@ -231,7 +345,6 @@
 
             if (error) return;
 
-            // 1. Live Activity Feed Rendering
             const feed = document.getElementById('activity-feed');
             feed.innerHTML = (!subs || subs.length === 0) ? `<div class="py-10 text-center text-gray-600 text-xs uppercase font-bold tracking-wider">No Activity Logged</div>` : "";
             
@@ -247,7 +360,6 @@
                     </div>`;
             });
 
-            // 2. Ledger History Table Rendering
             const b = document.getElementById('history-body');
             b.innerHTML = (!subs || subs.length === 0) ? `<tr><td colspan="3" class="p-10 text-center text-gray-600 text-xs uppercase font-bold tracking-widest opacity-40">Zero Transactions Found</td></tr>` : "";
             
@@ -264,25 +376,21 @@
                     </tr>`;
             });
 
-            // 3. Dynamic Daily Goal Computation
             const todayStr = new Date().toISOString().split('T')[0];
             const todayEarnings = subs
                 ?.filter(s => s.created_at && s.created_at.startsWith(todayStr) && s.status === 'Approved')
                 .reduce((sum, current) => sum + (current.earnedAmount || 0), 0) || 0;
 
-            const targetGoal = 10.00; // Customizable static baseline target
+            const targetGoal = 10.00;
             const targetPct = Math.min(Math.round((todayEarnings / targetGoal) * 100), 100);
 
             document.getElementById('target-earned').innerText = `$${todayEarnings.toFixed(2)}`;
             document.getElementById('target-percentage').innerText = `${targetPct}% Completed`;
             document.getElementById('target-progress-fill').style.width = `${targetPct}%`;
 
-            // 4. Real Performance Chart Calculation (Last 7 Days Breakdown)
             const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const chartData = [0, 0, 0, 0, 0, 0, 0];
-            const currentDayIndex = new Date().getDay();
 
-            // Structure data chronologically ending on today
             const dynamicLabels = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
@@ -297,7 +405,6 @@
                 chartData[6 - i] = dayTotal;
             }
 
-            // Fallback safety to dummy curve if user is brand new (keeps dashboard visual texture clean)
             const absoluteSum = chartData.reduce((a, b) => a + b, 0);
             const finalChartDataset = absoluteSum > 0 ? chartData : [5, 12, 8, 20, 15, 28, 22];
 
@@ -365,19 +472,21 @@
             const ctx = document.getElementById('earningChart').getContext('2d');
             if (performanceChart) { performanceChart.destroy(); }
             
+            const isLight = document.body.classList.contains('light-theme');
+            
             performanceChart = new Chart(ctx, { 
                 type: 'line', 
                 data: { 
                     labels: labels, 
                     datasets: [{ 
                         data: data, 
-                        borderColor: '#A78BFA', 
+                        borderColor: isLight ? '#4F46E5' : '#A78BFA', 
                         borderWidth: 2, 
                         pointRadius: 1,
-                        pointBackgroundColor: '#A78BFA',
+                        pointBackgroundColor: isLight ? '#4F46E5' : '#A78BFA',
                         tension: 0.4, 
                         fill: true, 
-                        backgroundColor: 'rgba(167, 139, 250, 0.02)' 
+                        backgroundColor: isLight ? 'rgba(79, 70, 229, 0.01)' : 'rgba(167, 139, 250, 0.02)' 
                     }] 
                 }, 
                 options: { 
@@ -385,7 +494,7 @@
                     maintainAspectRatio: false, 
                     plugins: { legend: { display: false } }, 
                     scales: { 
-                        x: { display: true, grid: { display: false }, cookies: { display: false }, ticks: { color: '#334155', font: { size: 8, weight: 'bold' } } }, 
+                        x: { display: true, grid: { display: false }, cookies: { display: false }, ticks: { color: isLight ? '#94a3b8' : '#334155', font: { size: 8, weight: 'bold' } } }, 
                         y: { display: false, grid: { display: false } } 
                     } 
                 } 
