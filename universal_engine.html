@@ -3,545 +3,552 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Universal Voice Engine — Adatacore</title>
+    <title>Voice Production Terminal — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         :root { --accent: #A78BFA; --bg-dark: #030308; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-dark); color: #f8fafc; min-height: 100vh; overflow-x: hidden; }
-        .glass-card { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 24px; }
-        .status-pulse { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .animate-recording { animation: recPulse 1.5s infinite ease-in-out; }
-        @keyframes recPulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
-        .custom-btn { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .custom-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px -10px rgba(167, 139, 250, 0.3); }
-        .hidden-state { display: none !important; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #030308; 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            background-image: radial-gradient(circle at 50% 30%, rgba(167, 139, 250, 0.05) 0%, transparent 60%);
+        }
+        .glass-panel { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 32px; box-shadow: 0 30px 70px rgba(0,0,0,0.8); }
+        .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(167, 139, 250, 0.2); background: rgba(255, 255, 255, 0.03); }
+        
+        .status-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; }
+        .action-btn { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .action-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .action-btn:active:not(:disabled) { transform: translateY(0); }
+        
+        /* Recording Animation Light */
+        .rec-pulse { animation: microPulse 1.6s infinite ease-in-out; }
+        @keyframes microPulse { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+        
+        .stage-section { display: none !important; }
+        .stage-section.active { display: block !important; animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.98) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.1); border-radius: 10px; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center p-4 md:p-8">
+<body class="p-4 md:p-8 w-full">
 
-    <div class="w-full max-w-4xl mx-auto my-auto space-y-6">
+    <div class="w-full max-w-4xl mx-auto space-y-6">
         
         <div class="flex items-center justify-between border-b border-white/5 pb-4">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-black rotate-3">A</div>
+                <div class="w-9 h-9 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg rotate-3">A</div>
                 <div>
-                    <h1 id="engine-project-title" class="text-sm font-black uppercase tracking-wider text-white">Project Stream Matrix</h1>
-                    <p class="text-[9px] text-gray-500 font-mono tracking-widest mt-0.5">VOICE ENGINE LAYER v5.0</p>
+                    <h1 id="project-identity-title" class="text-sm font-black uppercase tracking-wider text-white">Live Voice Module</h1>
+                    <p class="text-[9px] text-purple-400 font-mono tracking-widest mt-0.5">P2P STREAM ENCODING TERMINAL v5.0</p>
                 </div>
             </div>
-            <div class="glass-card px-3 py-1.5 flex items-center gap-2">
-                <span id="global-status-dot" class="status-pulse bg-amber-500"></span>
-                <span id="global-status-text" class="text-[9px] font-black text-gray-400 uppercase tracking-wider">Uninitialized</span>
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='dashboard'" class="text-[9px] font-bold text-gray-500 hover:text-white uppercase tracking-wider border border-white/5 hover:border-white/10 px-3 py-1.5 rounded-lg bg-white/[0.01] transition-all">← Abort Session</button>
+                <div class="glass-card px-3 py-1.5 flex items-center gap-2">
+                    <span id="global-indicator-dot" class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                    <span id="global-indicator-text" class="text-[9px] font-black text-gray-400 uppercase tracking-wider">Uninitialized</span>
+                </div>
             </div>
         </div>
 
-        <div id="panel-landing" class="glass-card p-6 md:p-8 space-y-6">
-            <div class="border-b border-white/5 pb-4">
-                <h2 class="text-xl font-black text-white uppercase tracking-tight">Instructions & Operational Standard</h2>
-                <p class="text-xs text-purple-400 font-medium mt-1">Please review the configuration protocols before joining the match queue.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-gray-400">
-                <div class="space-y-3 bg-white/[0.01] p-4 rounded-xl border border-white/5">
-                    <p class="font-bold text-white uppercase tracking-wide text-[10px] text-purple-300">Environment Verification</p>
-                    <p>• Ensure you are inside a completely quiet, isolated environment free from background audio interference.</p>
-                    <p>• Headsets equipped with dedicated close-proximity microphones are strictly recommended for this task.</p>
+        <div id="stage-landing" class="stage-section active glass-panel p-6 md:p-8 space-y-6">
+            <div class="border-b border-white/5 pb-4 flex justify-between items-start">
+                <div>
+                    <span class="text-[9px] font-black text-purple-400 uppercase tracking-widest bg-purple-500/5 border border-purple-500/10 px-2 py-0.5 rounded">Operational Rules</span>
+                    <h2 class="text-xl font-black text-white uppercase tracking-tight mt-1.5">Dual-Agent Live Voice Sequence</h2>
                 </div>
-                <div class="space-y-3 bg-white/[0.01] p-4 rounded-xl border border-white/5">
-                    <p class="font-bold text-white uppercase tracking-wide text-[10px] text-purple-300">System Permissions</p>
-                    <p>• Click the action button below to trigger and explicitly authorize browser microphone access permissions.</p>
-                    <p>• Do not close, navigate away, or refresh this page at any point once matched into a live logging sequence.</p>
+                <span class="text-xs font-mono text-gray-600 font-bold uppercase tracking-widest">Step 01/04</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-card p-4 space-y-2">
+                    <div class="text-xl">🎙️</div>
+                    <h4 class="font-bold text-xs text-white uppercase">Hardware Sync</h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">Ensure a sterile, non-reflective audio space. Dedicate external acoustic microphones to prevent cross-channel leakage.</p>
+                </div>
+                <div class="glass-card p-4 space-y-2">
+                    <div class="text-xl">⚠️</div>
+                    <h4 class="font-bold text-xs text-white uppercase">Lock Restriction</h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">Do not refresh, close, or switch browser tab targets once matching connects. Page drops result in structural session forfeit.</p>
+                </div>
+                <div class="glass-card p-4 space-y-2">
+                    <div class="text-xl">🔒</div>
+                    <h4 class="font-bold text-xs text-white uppercase">Mutual Consent</h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">Recording states require cryptographic token agreement approvals from both connected participants simultaneously.</p>
                 </div>
             </div>
-            <button onclick="requestPermissionsAndQueue()" class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs custom-btn shadow-lg">Authorize Microphones & Join Queue ➔</button>
+
+            <div class="bg-white/[0.005] border border-white/5 rounded-xl p-4 space-y-2 text-xs text-gray-400">
+                <p class="flex items-center gap-2 font-semibold text-gray-300 text-[11px] uppercase tracking-wide"><span class="w-1 h-1 bg-purple-500 rounded-full"></span> Participant Core Responsibility Checklist</p>
+                <p>• You must speak clearly in a professional voice tone throughout the interaction matrix pipeline.</p>
+                <p>• The audio recording file compilation uploads automatically to the Admin Ledger Vault upon successful termination.</p>
+            </div>
+
+            <button onclick="triggerHardwareAuth()" class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs action-btn font-black tracking-widest shadow-xl shadow-purple-600/10">Authorize Audio Hardware & Join Pool ➔</button>
         </div>
 
-        <div id="panel-matching" class="glass-card p-12 text-center space-y-6 hidden-state">
-            <div class="relative w-16 h-16 mx-auto">
-                <div class="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
+        <div id="stage-matching" class="stage-section glass-panel p-12 text-center space-y-6">
+            <div class="relative w-14 h-14 mx-auto">
+                <div class="absolute inset-0 border-2 border-purple-500/10 rounded-full"></div>
+                <div class="absolute inset-0 border-2 border-t-purple-400 rounded-full animate-spin"></div>
             </div>
-            <div>
-                <h3 class="text-base font-black uppercase text-white tracking-wide">Searching For Active Participant</h3>
-                <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Scanning database directory for an available cross-layer resource matching your current project matrix...</p>
+            <div class="space-y-1.5">
+                <h3 class="text-sm font-black uppercase text-white tracking-wider">Establishing Peer Alignment</h3>
+                <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">Scanning Adatacore directory instances to match an available operational peer inside your project lane parameter...</p>
             </div>
-            <button onclick="abortMatchingQueue()" class="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-red-600/10 hover:border-red-500/20 text-red-400 rounded-lg text-[10px] custom-btn">Abort Connection Request</button>
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-mono tracking-wide text-gray-400">
+                <span class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span> Live Handshake Polling...
+            </div>
+            <div class="pt-2">
+                <button onclick="terminateQueueSequence()" class="px-5 py-2 bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 text-red-400 rounded-lg text-[10px] action-btn">Cancel Routing Request</button>
+            </div>
         </div>
 
-        <div id="panel-room" class="space-y-6 hidden-state">
+        <div id="stage-room" class="stage-section space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass-card p-5 border-t-2 border-purple-500/30 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[9px] font-bold tracking-widest text-purple-400 uppercase bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10">Local Terminal</span>
-                        <div class="flex items-center gap-1.5">
-                            <span class="status-pulse bg-green-500"></span>
-                            <span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Authenticated</span>
-                        </div>
+                <div class="glass-panel p-5 border-t-2 border-purple-500/30 flex justify-between items-center">
+                    <div class="space-y-1 min-w-0">
+                        <span class="status-badge bg-purple-500/5 border border-purple-500/10 text-purple-400">HOST TERMINAL</span>
+                        <h4 id="identity-local-label" class="font-black text-sm text-white truncate mt-2">user@adatacore.com</h4>
+                        <p class="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Hardware Node: Connected</p>
                     </div>
-                    <div>
-                        <h4 id="local-user-identity" class="font-black text-sm text-white truncate">User@adatacore.com</h4>
-                        <p id="local-user-role" class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Role: Unassigned</p>
-                    </div>
+                    <div class="w-10 h-10 bg-purple-600/10 border border-purple-600/20 rounded-xl flex items-center justify-center text-sm shadow-inner">👤</div>
                 </div>
 
-                <div class="glass-card p-5 border-t-2 border-indigo-500/30 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[9px] font-bold tracking-widest text-indigo-400 uppercase bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">Remote Participant</span>
-                        <div class="flex items-center gap-1.5">
-                            <span id="remote-pulse-dot" class="status-pulse bg-green-500"></span>
-                            <span id="remote-pulse-text" class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Connected</span>
-                        </div>
+                <div class="glass-panel p-5 border-t-2 border-indigo-500/30 flex justify-between items-center">
+                    <div class="space-y-1 min-w-0">
+                        <span id="badge-peer-status" class="status-badge bg-indigo-500/5 border border-indigo-500/10 text-indigo-400">GUEST PARTICIPANT</span>
+                        <h4 id="identity-remote-label" class="font-black text-sm text-white truncate mt-2">Syncing Allocation Matrix...</h4>
+                        <p id="hardware-peer-label" class="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Hardware Node: Awaiting Link</p>
                     </div>
-                    <div>
-                        <h4 id="remote-user-identity" class="font-black text-sm text-white truncate">Connecting Stream...</h4>
-                        <p id="remote-user-role" class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Role: Unassigned</p>
-                    </div>
+                    <div id="icon-peer-box" class="w-10 h-10 bg-indigo-600/5 border border-indigo-600/10 rounded-xl flex items-center justify-center text-sm animate-pulse">🛰️</div>
                 </div>
             </div>
 
-            <div class="glass-card p-6 md:p-8 text-center space-y-6 relative overflow-hidden">
+            <div class="glass-panel p-6 md:p-8 text-center space-y-6 relative overflow-hidden">
                 
-                <div id="recording-light-strip" class="hidden-state bg-red-600/5 border border-red-500/20 py-2 px-4 rounded-xl flex items-center justify-center gap-2 max-w-xs mx-auto animate-recording">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <span class="text-[10px] font-black text-red-400 uppercase tracking-widest">LOCAL ENCODER ACTIVE</span>
+                <div id="indicator-rec-strip" class="stage-section bg-red-600/5 border border-red-500/10 py-1.5 px-3 rounded-lg flex items-center justify-center gap-2 max-w-xs mx-auto rec-pulse">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                    <span class="text-[9px] font-black text-red-400 uppercase tracking-widest">HIGH-FIDELITY LOCAL ENCODER LOGGING</span>
                 </div>
 
-                <div class="space-y-1">
-                    <p class="text-gray-500 text-[9px] font-black uppercase tracking-widest">Elapsed Operational Time</p>
-                    <h2 id="timer-display" class="text-5xl font-black text-white tracking-tighter font-mono">00:00</h2>
+                <div class="space-y-0.5">
+                    <p class="text-gray-500 text-[9px] font-black uppercase tracking-widest">STREAM RECORDING DURATION</p>
+                    <h2 id="clock-timer-text" class="text-5xl font-black text-white tracking-tighter font-mono">00:00</h2>
                 </div>
 
-                <div class="flex justify-center gap-6 text-[10px] font-bold tracking-wider text-gray-500 uppercase py-2">
-                    <div id="badge-host-ready" class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span> Host Signed</div>
-                    <div id="badge-guest-ready" class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span> Guest Signed</div>
+                <div class="flex justify-center gap-6 text-[9px] font-bold tracking-widest text-gray-500 uppercase py-1 border-y border-white/5 max-w-md mx-auto bg-white/[0.002]">
+                    <div id="consent-host-node" class="flex items-center gap-2"><span class="w-1 h-1 bg-gray-600 rounded-full"></span> Host Sign Off</div>
+                    <div id="consent-guest-node" class="flex items-center gap-2"><span class="w-1 h-1 bg-gray-600 rounded-full"></span> Guest Sign Off</div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto pt-2">
-                    <button id="btn-start-rec" onclick="signalRecordingInitialization()" class="flex-1 py-3.5 bg-white text-black text-xs custom-btn rounded-xl">Request Recording Start</button>
-                    <button id="btn-stop-rec" onclick="signalRecordingTermination()" class="flex-1 py-3.5 bg-red-600 hover:bg-red-500 text-white text-xs custom-btn rounded-xl" disabled>Terminate & Submit</button>
+                    <button id="ctrl-btn-start" onclick="initiateRecordingConsent()" class="flex-1 py-3 bg-white text-black text-xs action-btn font-black rounded-xl hover:bg-purple-500 hover:text-white shadow-xl">Initialize Live Logging</button>
+                    <button id="ctrl-btn-stop" onclick="terminateRecordingConsent()" class="flex-1 py-3 bg-red-600/10 border border-red-600/20 hover:bg-red-600 text-white text-xs action-btn font-black rounded-xl" disabled>Halt & Push Pipeline</button>
                 </div>
             </div>
         </div>
 
-        <div id="panel-submitting" class="glass-card p-12 text-center space-y-6 hidden-state">
-            <div class="w-12 h-12 border-2 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin mx-auto"></div>
-            <div>
-                <h3 class="text-base font-black uppercase text-white tracking-wide">Compiling & Securing Asset Stream</h3>
-                <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Assembling audio track binaries. Encoding container packets and shifting securely into storage blocks. Do not close this terminal.</p>
+        <div id="stage-submitting" class="stage-section glass-panel p-12 text-center space-y-6">
+            <div class="w-10 h-10 border-2 border-purple-500/10 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
+            <div class="space-y-2">
+                <h3 class="text-sm font-black uppercase text-white tracking-wider">Securing Conversation Elements Array</h3>
+                <p class="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">Packing frame chunks, processing binary audio stream sequences, and deploying assets into the encrypted repository layer safely. Do not interrupt connection paths.</p>
             </div>
         </div>
 
     </div>
 
-    <audio id="remote-audio-sink" autoplay class="hidden"></audio>
+    <audio id="native-stream-sink" autoplay class="hidden"></audio>
 
     <script>
-        // Extract initialization variables directly from deployment environment configuration query values
+        // Parse pipeline route properties injected via standard deployment actions
         const urlParams = new URLSearchParams(window.location.search);
-        const PROJECT_TITLE = urlParams.get('project') || "Default_Voice_Matrix";
+        const INSTANCE_PROJECT_KEY = urlParams.get('project') || "Default_Voice_Matrix";
 
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
-        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml"; // Inject authentic key constraints
+        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // State machine lifecycle bindings
-        let localUser = null;
-        let queueRecordId = null;
-        let currentSessionId = null;
-        let assignedRole = null; // 'Host' or 'Guest'
-        let matchedPeerEmail = null;
+        // Core data state wrappers
+        let activeUserToken = null;
+        let poolRowAllocationId = null;
+        let executionSessionId = null;
+        let operationalClientRole = null; // 'Host' or 'Guest'
+        let targetPeerIdentityEmail = null;
         
-        // WebRTC & Media stream references
-        let localStream = null;
-        let peerConnection = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
+        // Media architecture nodes
+        let browserAudioStream = null;
+        let rtcPeerConnectionNode = null;
+        let localMediaRecorderNode = null;
+        let streamingChunksCollector = [];
         
-        // Signaling Pipeline Channel
-        let syncChannel = null;
-        let tickerInterval = null;
-        let operationalSeconds = 0;
+        // Timer infrastructure
+        let operationalClockTimer = null;
+        let matrixTrackedSeconds = 0;
+        let broadcastSignalingChannel = null;
 
-        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        const stunServersConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        async function resolveIdentityAndBootstrap() {
-            document.getElementById('engine-project-title').innerText = PROJECT_TITLE.replace(/_/g, ' ');
+        async function verifyIdentityAndPrepareTerminal() {
+            document.getElementById('project-identity-title').innerText = INSTANCE_PROJECT_KEY.replace(/_/g, ' ');
             
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) {
-                Swal.fire('Identity Lost', 'Please login to refresh user token contexts.', 'error')
+                Swal.fire('Session Deadlock', 'Identity verification context missing. Redirecting to workspace gate.', 'error')
                     .then(() => window.location.replace('auth'));
                 return;
             }
-            localUser = user;
-            updateGlobalStatus('Initialized', 'bg-blue-500');
+            activeUserToken = user;
+            shiftGlobalUIIndicator('Ready to Connect', 'bg-blue-500');
         }
 
-        function updateGlobalStatus(txt, colorClass) {
-            const dot = document.getElementById('global-status-dot');
-            dot.className = `status-pulse ${colorClass}`;
-            document.getElementById('global-status-text').innerText = txt;
+        function shiftGlobalUIIndicator(text, colorClass) {
+            const dot = document.getElementById('global-indicator-dot');
+            dot.className = `w-1.5 h-1.5 rounded-full ${colorClass}`;
+            document.getElementById('global-indicator-text').innerText = text;
         }
 
-        function showSection(targetId) {
-            ['panel-landing', 'panel-matching', 'panel-room', 'panel-submitting'].forEach(id => {
-                document.getElementById(id).classList.add('hidden-state');
+        function renderActiveStageFrame(frameId) {
+            document.querySelectorAll('.stage-section').forEach(section => {
+                section.classList.remove('active');
             });
-            document.getElementById(targetId).classList.remove('hidden-state');
+            document.getElementById(frameId).classList.add('active');
         }
 
-        // ====================================================================
-        // ENGINE LAYER STATE 1 & 2: PERMISSIONS & TRANSACTIONAL MATCHING LOGIC
-        // ====================================================================
-        async function requestPermissionsAndQueue() {
+        // ========================================================
+        // STAGE 1 & 2 ROUTING: PERMISSIONS & INTERLOCK ALIGNMENT
+        // ========================================================
+        async function triggerHardwareAuth() {
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                updateGlobalStatus('Microphone Access Verified', 'bg-purple-500');
-                showSection('panel-matching');
-                executeMatchingStrategy();
+                browserAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                shiftGlobalUIIndicator('Audio Matrix Active', 'bg-purple-500');
+                renderActiveStageFrame('stage-matching');
+                executeP2PRoutingStrategy();
             } catch (err) {
-                Swal.fire('Hardware Lockout', 'Microphone parameters must be authorized to start tasks.', 'error');
+                Swal.fire('Device Exception', 'Microphone pipelines must be cleared to allow production work.', 'error');
             }
         }
 
-        async function executeMatchingStrategy() {
-            // Check for available peers waiting for this project matrix entry
-            const { data: candidates, error } = await _supabase
+        async function executeP2PRoutingStrategy() {
+            const { data: queueCandidates } = await _supabase
                 .from('voice_queue')
                 .select('*')
-                .eq('project_title', PROJECT_TITLE)
+                .eq('project_title', INSTANCE_PROJECT_KEY)
                 .eq('status', 'waiting')
-                .not('user_email', 'eq', localUser.email)
+                .not('user_email', 'eq', activeUserToken.email)
                 .order('created_at', { ascending: true });
 
-            if (candidates && candidates.length > 0) {
-                // Available match found. Target older record as Host, local user binds as Guest
-                const peer = candidates[0];
-                assignedRole = 'Guest';
-                matchedPeerEmail = peer.user_email;
-                const targetSessionUUID = crypto.randomUUID();
+            if (queueCandidates && queueCandidates.length > 0) {
+                const legacyPeer = queueCandidates[0];
+                operationalClientRole = 'Guest';
+                targetPeerIdentityEmail = legacyPeer.user_email;
+                const secureSessionUUID = crypto.randomUUID();
 
-                // Atomically claim the matching lock constraint matrix row entry
-                const { data: matchClaim, error: claimErr } = await _supabase
+                const { data: capturedClaim } = await _supabase
                     .from('voice_queue')
-                    .update({ status: 'matched', matched_session_id: targetSessionUUID })
-                    .eq('id', peer.id)
+                    .update({ status: 'matched', matched_session_id: secureSessionUUID })
+                    .eq('id', legacyPeer.id)
                     .eq('status', 'waiting')
                     .select();
 
-                if (matchClaim && matchClaim.length > 0) {
-                    // Create master transaction table row entry mapping
+                if (capturedClaim && capturedClaim.length > 0) {
                     await _supabase.from('voice_sessions').insert([{
-                        session_id: targetSessionUUID,
-                        project_title: PROJECT_TITLE,
-                        host_email: peer.user_email,
-                        guest_email: localUser.email,
+                        session_id: secureSessionUUID,
+                        project_title: INSTANCE_PROJECT_KEY,
+                        host_email: legacyPeer.user_email,
+                        guest_email: activeUserToken.email,
                         status: 'connected'
                     }]);
 
-                    // Register local configuration token identity row mapping
-                    const { data: localReg } = await _supabase.from('voice_queue').insert([{
-                        project_title: PROJECT_TITLE,
-                        user_email: localUser.email,
-                        user_uid: localUser.id,
+                    const { data: identityBnd } = await _supabase.from('voice_queue').insert([{
+                        project_title: INSTANCE_PROJECT_KEY,
+                        user_email: activeUserToken.email,
+                        user_uid: activeUserToken.id,
                         role_preference: 'Guest',
                         status: 'matched',
-                        matched_session_id: targetSessionUUID
+                        matched_session_id: secureSessionUUID
                     }]).select();
 
-                    queueRecordId = localReg[0].id;
-                    currentSessionId = targetSessionUUID;
+                    poolRowAllocationId = identityBnd[0].id;
+                    executionSessionId = secureSessionUUID;
                     
-                    initializeControlRoom();
+                    assembleOperationalRoom();
                     return;
                 }
             }
 
-            // No active matching peer found. Enter queue pool context as Master Host node
-            assignedRole = 'Host';
-            const { data: entry, error: entryErr } = await _supabase.from('voice_queue').insert([{
-                project_title: PROJECT_TITLE,
-                user_email: localUser.email,
-                user_uid: localUser.id,
+            operationalClientRole = 'Host';
+            const { data: freshPoolRow, error: queueErr } = await _supabase.from('voice_queue').insert([{
+                project_title: INSTANCE_PROJECT_KEY,
+                user_email: activeUserToken.email,
+                user_uid: activeUserToken.id,
                 role_preference: 'Host',
                 status: 'waiting'
             }]).select();
 
-            if (entryErr) {
-                // Clear stale rows if lingering duplicates break unique key constraints
-                await _supabase.from('voice_queue').delete().eq('user_email', localUser.email);
-                executeMatchingStrategy();
+            if (queueErr) {
+                await _supabase.from('voice_queue').delete().eq('user_email', activeUserToken.email);
+                executeP2PRoutingStrategy();
                 return;
             }
 
-            queueRecordId = entry[0].id;
-            listenForIncomingConnections();
+            poolRowAllocationId = freshPoolRow[0].id;
+            awaitListenForRemoteAgents();
         }
 
-        function listenForIncomingConnections() {
-            // Subscribe to targeted real-time table modifications via transactional logging updates
-            _supabase.channel(`match_tracking_${queueRecordId}`)
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'voice_queue', filter: `id=eq.${queueRecordId}` }, async (payload) => {
+        function awaitListenForRemoteAgents() {
+            _supabase.channel(`match_pipeline_hook_${poolRowAllocationId}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'voice_queue', filter: `id=eq.${poolRowAllocationId}` }, async (payload) => {
                 if (payload.new.status === 'matched') {
-                    currentSessionId = payload.new.matched_session_id;
-                    
-                    // Pull matched records directly to extract metadata parameters
-                    const { data: sess } = await _supabase.from('voice_sessions').select('*').eq('session_id', currentSessionId).single();
-                    if (sess) {
-                        matchedPeerEmail = sess.guest_email;
-                        initializeControlRoom();
+                    executionSessionId = payload.new.matched_session_id;
+                    const { data: recordLookup } = await _supabase.from('voice_sessions').select('*').eq('session_id', executionSessionId).single();
+                    if (recordLookup) {
+                        targetPeerIdentityEmail = recordLookup.guest_email;
+                        assembleOperationalRoom();
                     }
                 }
             }).subscribe();
         }
 
-        async function abortMatchingQueue() {
-            if (queueRecordId) {
-                await _supabase.from('voice_queue').delete().eq('id', queueRecordId);
+        async function terminateQueueSequence() {
+            if (poolRowAllocationId) {
+                await _supabase.from('voice_queue').delete().eq('id', poolRowAllocationId);
             }
-            showSection('panel-landing');
-            updateGlobalStatus('Initialized', 'bg-blue-500');
+            renderActiveStageFrame('stage-landing');
+            shiftGlobalUIIndicator('Ready to Connect', 'bg-blue-500');
         }
 
-        // ====================================================================
-        // ENGINE LAYER STATE 3: PEER COMMUNICATION ENGINE & SIGNALLING PROTOCOLS
-        // ====================================================================
-        async function initializeControlRoom() {
-            showSection('panel-room');
-            updateGlobalStatus('Live Connection Room Active', 'bg-green-500');
+        // ========================================================
+        // STAGE 3 ENVIRONMENT: ROOM SYSTEMS & WEB AUDIO MATRIX   
+        // ========================================================
+        async function assembleOperationalRoom() {
+            renderActiveStageFrame('stage-room');
+            shiftGlobalUIIndicator('Secure Production Call Active', 'bg-green-500');
 
-            document.getElementById('local-user-identity').innerText = localUser.email;
-            document.getElementById('local-user-role').innerText = `Role: ${assignedRole}`;
-            document.getElementById('remote-user-identity').innerText = matchedPeerEmail;
-            document.getElementById('remote-user-role').innerText = `Role: ${assignedRole === 'Host' ? 'Guest' : 'Host'}`;
+            document.getElementById('identity-local-label').innerText = activeUserToken.email;
+            document.getElementById('identity-remote-label').innerText = targetPeerIdentityEmail;
+            
+            const peerBadge = document.getElementById('badge-peer-status');
+            peerBadge.innerText = operationalClientRole === 'Host' ? 'GUEST PARTICIPANT' : 'HOST TERMINAL';
+            document.getElementById('hardware-peer-label').innerText = 'Hardware Node: Interlocked';
+            
+            const peerIconBox = document.getElementById('icon-peer-box');
+            peerIconBox.className = "w-10 h-10 bg-green-600/10 border border-green-500/20 rounded-xl flex items-center justify-center text-sm";
+            peerIconBox.innerText = "👤";
 
-            Swal.fire({ title: 'Connection Confirmed!', text: 'Secure channels generated with matching target.', icon: 'success', timer: 2000, showConfirmButton: false });
+            Swal.fire({ title: 'Peer Sync Confirmed', text: 'Live secure cross-connections established cleanly.', icon: 'success', timer: 1800, showConfirmButton: false });
 
-            // Initialize broadcast real-time messaging pipeline channel mapping for low-latency signaling parameters
-            syncChannel = _supabase.channel(`session_broadcast_${currentSessionId}`);
+            broadcastSignalingChannel = _supabase.channel(`session_broadcast_matrix_${executionSessionId}`);
 
-            syncChannel.on('broadcast', { event: 'rtc-signaling' }, async ({ payload }) => {
-                if (payload.target === assignedRole) {
+            broadcastSignalingChannel.on('broadcast', { event: 'rtc-signaling' }, async ({ payload }) => {
+                if (payload.target === operationalClientRole) {
                     if (payload.sdp) {
-                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                        await rtcPeerConnectionNode.setRemoteDescription(new RTCSessionDescription(payload.sdp));
                         if (payload.sdp.type === 'offer') {
-                            const answer = await peerConnection.createAnswer();
-                            await peerConnection.setLocalDescription(answer);
-                            syncChannel.send({ type: 'broadcast', event: 'rtc-signaling', payload: { target: 'Host', sdp: answer } });
+                            const nativeAnswer = await rtcPeerConnectionNode.createAnswer();
+                            await rtcPeerConnectionNode.setLocalDescription(nativeAnswer);
+                            broadcastSignalingChannel.send({ type: 'broadcast', event: 'rtc-signaling', payload: { target: 'Host', sdp: nativeAnswer } });
                         }
                     } else if (payload.candidate) {
-                        try { await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e){}
+                        try { await rtcPeerConnectionNode.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e){}
                     }
                 }
             })
             .on('broadcast', { event: 'rec-control' }, ({ payload }) => {
-                handleIncomingRecordingSignal(payload.action);
+                processIncomingConsentRequests(payload.action);
             })
             .on('broadcast', { event: 'rec-agreement' }, ({ payload }) => {
-                updateAgreementBadges(payload.party, payload.state);
+                evaluateMutualConsentMatrixStates(payload.party, payload.state);
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    bootstrapRTCPeerPipeline();
+                    buildRTCPeerTransportChannel();
                 }
             });
         }
 
-        async function bootstrapRTCPeerPipeline() {
-            peerConnection = new RTCPeerConnection(rtcConfig);
+        async function buildRTCPeerTransportChannel() {
+            rtcPeerConnectionNode = new RTCPeerConnection(stunServersConfig);
             
-            // Map tracks into hardware routing layer parameters
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            browserAudioStream.getTracks().forEach(track => rtcPeerConnectionNode.addTrack(track, browserAudioStream));
 
-            peerConnection.ontrack = (event) => {
-                const sink = document.getElementById('remote-audio-sink');
-                if (sink) sink.srcObject = event.streams[0];
+            rtcPeerConnectionNode.ontrack = (event) => {
+                const elementSink = document.getElementById('native-stream-sink');
+                if (elementSink) elementSink.srcObject = event.streams[0];
             };
 
-            peerConnection.onicecandidate = (event) => {
+            rtcPeerConnectionNode.onicecandidate = (event) => {
                 if (event.candidate) {
-                    syncChannel.send({
+                    broadcastSignalingChannel.send({
                         type: 'broadcast',
                         event: 'rtc-signaling',
-                        payload: { target: assignedRole === 'Host' ? 'Guest' : 'Host', candidate: event.candidate }
+                        payload: { target: operationalClientRole === 'Host' ? 'Guest' : 'Host', candidate: event.candidate }
                     });
                 }
             };
 
-            if (assignedRole === 'Host') {
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                syncChannel.send({
+            if (operationalClientRole === 'Host') {
+                const localOfferSdp = await rtcPeerConnectionNode.createOffer();
+                await rtcPeerConnectionNode.setLocalDescription(localOfferSdp);
+                broadcastSignalingChannel.send({
                     type: 'broadcast',
                     event: 'rtc-signaling',
-                    payload: { target: 'Guest', sdp: offer }
+                    payload: { target: 'Guest', sdp: localOfferSdp }
                 });
             }
         }
 
-        // ====================================================================
-        // CONVERSATION RECORDING FRAMEWORK & CONSENT MATRIX PROTOCOLS
-        // ====================================================================
-        let hostAccepted = false;
-        let guestAccepted = false;
+        // ========================================================
+        // MULTI-TOKEN RECORDING PROTOCOLS & SYNCHRONIZED TIMERS   
+        // ========================================================
+        let hostConsentMatrixPassed = false;
+        let guestConsentMatrixPassed = false;
 
-        function updateAgreementBadges(party, state) {
-            if (party === 'Host') hostAccepted = state;
-            if (party === 'Guest') guestAccepted = state;
+        function evaluateMutualConsentMatrixStates(party, state) {
+            if (party === 'Host') hostConsentMatrixPassed = state;
+            if (party === 'Guest') guestConsentMatrixPassed = state;
 
-            const hostBadge = document.getElementById('badge-host-ready');
-            const guestBadge = document.getElementById('badge-guest-ready');
+            const hostIndicatorBadge = document.getElementById('consent-host-node');
+            const guestIndicatorBadge = document.getElementById('consent-guest-node');
 
-            if (hostAccepted) { hostBadge.className = "flex items-center gap-1.5 text-green-400"; hostBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Host Ready`; }
-            if (guestAccepted) { guestBadge.className = "flex items-center gap-1.5 text-green-400"; guestBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Guest Ready`; }
+            if (hostConsentMatrixPassed) { hostIndicatorBadge.className = "flex items-center gap-2 text-green-400"; hostIndicatorBadge.innerHTML = `<span class="w-1 h-1 bg-green-400 rounded-full"></span> Host Signed`; }
+            if (guestConsentMatrixPassed) { guestIndicatorBadge.className = "flex items-center gap-2 text-green-400"; guestIndicatorBadge.innerHTML = `<span class="w-1 h-1 bg-green-400 rounded-full"></span> Guest Signed`; }
 
-            if (hostAccepted && guestAccepted) {
-                executeLocalRecordingStart();
+            if (hostConsentMatrixPassed && guestConsentMatrixPassed) {
+                executeSystemHardwareRecordingStart();
             }
         }
 
-        function signalRecordingInitialization() {
-            if (assignedRole === 'Host') hostAccepted = true;
-            if (assignedRole === 'Guest') guestAccepted = true;
+        function initiateRecordingConsent() {
+            if (operationalClientRole === 'Host') hostConsentMatrixPassed = true;
+            if (operationalClientRole === 'Guest') guestConsentMatrixPassed = true;
 
-            updateAgreementBadges(assignedRole, true);
+            evaluateMutualConsentMatrixStates(operationalClientRole, true);
             
-            syncChannel.send({
-                type: 'broadcast',
-                event: 'rec-control',
-                payload: { action: 'request_start' }
-            });
-            
-            syncChannel.send({
-                type: 'broadcast',
-                event: 'rec-agreement',
-                payload: { party: assignedRole, state: true }
-            });
+            broadcastSignalingChannel.send({ type: 'broadcast', event: 'rec-control', payload: { action: 'request_start' } });
+            broadcastSignalingChannel.send({ type: 'broadcast', event: 'rec-agreement', payload: { party: operationalClientRole, state: true } });
         }
 
-        async function handleIncomingRecordingSignal(action) {
-            if (action === 'request_start' && !((assignedRole === 'Host' && hostAccepted) || (assignedRole === 'Guest' && guestAccepted))) {
+        async function processIncomingConsentRequests(action) {
+            if (action === 'request_start' && !((operationalClientRole === 'Host' && hostConsentMatrixPassed) || (operationalClientRole === 'Guest' && guestConsentMatrixPassed))) {
                 const { isConfirmed } = await Swal.fire({
-                    title: 'Start Recording Request',
-                    text: 'The remote participant wants to start recording the call. Confirm when ready.',
-                    icon: 'info',
+                    title: 'Recording Auth Token Needed',
+                    text: 'The secondary linked peer wants to initialize live conversation recording. Confirm readiness alignment.',
+                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#A78BFA',
-                    confirmButtonText: 'Accept Recording'
+                    confirmButtonText: 'Authorize Stream Logging'
                 });
 
                 if (isConfirmed) {
-                    if (assignedRole === 'Host') hostAccepted = true;
-                    if (assignedRole === 'Guest') guestAccepted = true;
-                    updateAgreementBadges(assignedRole, true);
+                    if (operationalClientRole === 'Host') hostConsentMatrixPassed = true;
+                    if (operationalClientRole === 'Guest') guestConsentMatrixPassed = true;
+                    evaluateMutualConsentMatrixStates(operationalClientRole, true);
 
-                    syncChannel.send({
-                        type: 'broadcast',
-                        event: 'rec-agreement',
-                        payload: { party: assignedRole, state: true }
-                    });
+                    broadcastSignalingChannel.send({ type: 'broadcast', event: 'rec-agreement', payload: { party: operationalClientRole, state: true } });
                 }
             } else if (action === 'request_stop') {
-                terminateRecordingSequence();
+                forceStopRecordingSequence();
             }
         }
 
-        function executeLocalRecordingStart() {
-            document.getElementById('recording-light-strip').classList.remove('hidden-state');
-            document.getElementById('btn-start-rec').disabled = true;
-            document.getElementById('btn-stop-rec').disabled = false;
+        function executeSystemHardwareRecordingStart() {
+            document.getElementById('indicator-rec-strip').classList.add('active');
+            document.getElementById('ctrl-btn-start').disabled = true;
+            document.getElementById('ctrl-btn-stop').disabled = false;
             
-            recordedChunks = [];
+            streamingChunksCollector = [];
             
-            // Mix track parameters directly to aggregate local and remote streams onto a single node matrix output
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const localSource = audioContext.createMediaStreamSource(localStream);
+            const nativeAudioContextNode = new (window.AudioContext || window.webkitAudioContext)();
+            const primaryLocalAudioSource = nativeAudioContextNode.createMediaStreamSource(browserAudioStream);
             
-            const remoteSinkStream = document.getElementById('remote-audio-sink').srcObject;
-            if (remoteSinkStream) {
-                const remoteSource = audioContext.createMediaStreamSource(remoteSinkStream);
-                const destNode = audioContext.createMediaStreamDestination();
+            const crossLinkedRemoteAudioSinkStream = document.getElementById('native-stream-sink').srcObject;
+            if (crossLinkedRemoteAudioSinkStream) {
+                const crossRemoteAudioSource = nativeAudioContextNode.createMediaStreamSource(crossLinkedRemoteAudioSinkStream);
+                const completeMixedDestinationNode = nativeAudioContextNode.createMediaStreamDestination();
                 
-                localSource.connect(destNode);
-                remoteSource.connect(destNode);
+                primaryLocalAudioSource.connect(completeMixedDestinationNode);
+                crossRemoteAudioSource.connect(completeMixedDestinationNode);
                 
-                mediaRecorder = new MediaRecorder(destNode.stream, { mimeType: 'audio/webm;codecs=opus' });
+                localMediaRecorderNode = new MediaRecorder(completeMixedDestinationNode.stream, { mimeType: 'audio/webm;codecs=opus' });
             } else {
-                mediaRecorder = new MediaRecorder(localStream, { mimeType: 'audio/webm;codecs=opus' });
+                localMediaRecorderNode = new MediaRecorder(browserAudioStream, { mimeType: 'audio/webm;codecs=opus' });
             }
 
-            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-            mediaRecorder.onstop = compileAndShipAudioPayload;
+            localMediaRecorderNode.ondataavailable = (e) => { if (e.data.size > 0) streamingChunksCollector.push(e.data); };
+            localMediaRecorderNode.onstop = shipPayloadToAdminVault;
 
-            mediaRecorder.start(250); // Push data intervals into array stack structures
-            startOperationalTimer();
+            localMediaRecorderNode.start(250);
+            startControlClockTimer();
         }
 
-        function startOperationalTimer() {
-            if (tickerInterval) clearInterval(tickerInterval);
-            operationalSeconds = 0;
-            const display = document.getElementById('timer-display');
+        function startControlClockTimer() {
+            if (operationalClockTimer) clearInterval(operationalClockTimer);
+            matrixTrackedSeconds = 0;
+            const textTimerDisplay = document.getElementById('clock-timer-text');
             
-            tickerInterval = setInterval(() => {
-                operationalSeconds++;
-                const mins = String(Math.floor(operationalSeconds / 60)).padStart(2, '0');
-                const secs = String(operationalSeconds % 60).padStart(2, '0');
-                display.innerText = `${mins}:${secs}`;
+            operationalClockTimer = setInterval(() => {
+                matrixTrackedSeconds++;
+                const outputMinutes = String(Math.floor(matrixTrackedSeconds / 60)).padStart(2, '0');
+                const outputSeconds = String(matrixTrackedSeconds % 60).padStart(2, '0');
+                textTimerDisplay.innerText = `${outputMinutes}:${outputSeconds}`;
             }, 1000);
         }
 
-        function signalRecordingTermination() {
-            syncChannel.send({
-                type: 'broadcast',
-                event: 'rec-control',
-                payload: { action: 'request_stop' }
-            });
-            terminateRecordingSequence();
+        function terminateRecordingConsent() {
+            broadcastSignalingChannel.send({ type: 'broadcast', event: 'rec-control', payload: { action: 'request_stop' } });
+            forceStopRecordingSequence();
         }
 
-        function terminateRecordingSequence() {
-            if (tickerInterval) clearInterval(tickerInterval);
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
+        function forceStopRecordingSequence() {
+            if (operationalClockTimer) clearInterval(operationalClockTimer);
+            if (localMediaRecorderNode && localMediaRecorderNode.state !== 'inactive') {
+                localMediaRecorderNode.stop();
             }
-            showSection('panel-submitting');
+            renderActiveStageFrame('stage-submitting');
         }
 
-        // ====================================================================
-        // VAULT TRANSMISSION & POST-PROCESS PIPELINE PROTOCOLS
-        // ====================================================================
-        async function compileAndShipAudioPayload() {
-            const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-            const fileIdentifier = `${currentSessionId}_record.webm`;
+        // ========================================================
+        // STAGE 4 PROCESSING: STORAGE DRIVERS PACKET DELIVERY    
+        // ========================================================
+        async function shipPayloadToAdminVault() {
+            const compositeAudioBlob = new Blob(streamingChunksCollector, { type: 'audio/webm' });
+            const uniqueFileKeyIdentifier = `${executionSessionId}_vault_record.webm`;
 
-            // Push payload explicitly via standard SDK storage drivers
-            const { data: uploadData, error: uploadErr } = await _supabase.storage
+            const { data: bucketUploadResult, error: bucketStorageError } = await _supabase.storage
                 .from('conversation_records')
-                .upload(fileIdentifier, audioBlob, { contentType: 'audio/webm', cacheControl: '3600' });
+                .upload(uniqueFileKeyIdentifier, compositeAudioBlob, { contentType: 'audio/webm', cacheControl: '3600' });
 
-            if (!uploadErr) {
-                // Extract public route parameters mapping constraints
-                const { data: urlResolution } = _supabase.storage.from('conversation_records').getPublicUrl(fileIdentifier);
+            if (!bucketStorageError) {
+                const { data: spatialResolutionRoute } = _supabase.storage.from('conversation_records').getPublicUrl(uniqueFileKeyIdentifier);
                 
-                // Update baseline monitoring logging metrics definitions rows directly
                 await _supabase.from('voice_sessions')
                     .update({
                         status: 'completed',
-                        recording_url: urlResolution.publicUrl,
-                        duration_seconds: operationalSeconds,
+                        recording_url: spatialResolutionRoute.publicUrl,
+                        duration_seconds: matrixTrackedSeconds,
                         ended_at: new Date().toISOString()
                     })
-                    .eq('session_id', currentSessionId);
+                    .eq('session_id', executionSessionId);
 
-                // Clean queue pools completely
-                await _supabase.from('voice_queue').delete().eq('matched_session_id', currentSessionId);
+                await _supabase.from('voice_queue').delete().eq('matched_session_id', executionSessionId);
 
                 Swal.fire({
-                    title: 'Task Successfully Transmitted',
-                    text: 'Your conversational recording payload has verified securely.',
+                    title: 'Asset Matrix Secured',
+                    text: 'Production call records compiled and committed to admin vaults successfully.',
                     icon: 'success',
                     background: '#030308',
                     color: '#fff',
@@ -550,11 +557,11 @@
                     window.location.replace('dashboard');
                 });
             } else {
-                Swal.fire('Payload Transmission Failure', uploadErr.message, 'error');
+                Swal.fire('Storage Pipeline Interrupted', bucketStorageError.message, 'error');
             }
         }
 
-        resolveIdentityAndBootstrap();
+        verifyIdentityAndPrepareTerminal();
     </script>
 </body>
 </html>
