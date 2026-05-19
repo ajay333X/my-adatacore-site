@@ -70,8 +70,9 @@
         
         <section id="project-lab" class="content-section active">
             <h2 class="text-2xl font-black uppercase tracking-tight mb-6">Project Lab<span class="text-purple-500">.</span></h2>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div class="glass p-6 rounded-2xl space-y-4">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                
+                <div class="xl:col-span-2 glass p-6 rounded-2xl space-y-4">
                     <div>
                         <label class="label-text">Global Identifier</label>
                         <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. V19_Audio_Sync">
@@ -103,7 +104,7 @@
 
                 <div class="space-y-4">
                     <label class="label-text">Active Project Registry</label>
-                    <div id="registry-grid" class="grid grid-cols-1 gap-3"></div>
+                    <div id="registry-grid" class="grid grid-cols-1 gap-3 max-h-[420px] overflow-y-auto pr-1 custom-scroll"></div>
                 </div>
             </div>
         </section>
@@ -224,4 +225,170 @@
             if(!name) return Swal.fire('Error', 'Project name is required', 'error');
 
             Swal.showLoading();
-            const { error } = await _supabase.from('project_lab').insert(
+            const { error } = await _supabase.from('project_lab').insert([{
+                project_name: name,
+                config: { accent, logic, modules: { audio: true, text: true } },
+                l1_rate: parseFloat(l1_rate),
+                l2_rate: parseFloat(l2_rate),
+                is_published: true
+            }]);
+
+            if(!error) {
+                Swal.fire('Success', 'Project Infrastructure Initialized', 'success');
+                loadData();
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        async function loadData() {
+            const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
+            
+            document.getElementById('registry-grid').innerHTML = projects.map(p => `
+                <div class="glass p-4 rounded-xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-wide">${p.project_name}</h4>
+                        <div class="flex gap-3 mt-1">
+                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
+                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
+                        </div>
+                    </div>
+                    <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-400 hover:text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
+                </div>
+            `).join('');
+
+            const options = '<option value="">-- SELECT PROJECT --</option>' + projects.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
+            document.querySelectorAll('.sync-dropdown').forEach(d => d.innerHTML = options);
+        }
+
+        async function submitToSocialQueue() {
+            const url = document.getElementById('social-url').value.trim();
+            const caption = document.getElementById('social-caption').value.trim();
+            const platform = document.getElementById('social-platform').value;
+
+            if(!url) return Swal.fire('Error', 'Link is required', 'warning');
+
+            Swal.showLoading();
+            const { error } = await _supabase.from('social_sync').insert([{
+                url, caption, platform, status: 'queued'
+            }]);
+
+            if(!error) {
+                Swal.fire('Queued', 'Added to marketing download queue', 'success');
+                document.getElementById('social-url').value = "";
+                document.getElementById('social-caption').value = "";
+                loadSocialQueue();
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        async function loadSocialQueue() {
+            const { data } = await _supabase.from('social_sync').select('*').order('created_at', {ascending: false});
+            if(data && data.length > 0) {
+                document.getElementById('social-queue-list').innerHTML = data.map(item => `
+                    <div class="glass p-3 rounded-xl border-l-2 border-pink-500 flex justify-between items-center">
+                        <div class="max-w-[80%]">
+                            <p class="text-[9px] font-bold text-pink-400 uppercase tracking-widest">${item.platform} • ${item.status}</p>
+                            <p class="text-xs truncate opacity-60 mt-0.5">${item.url}</p>
+                        </div>
+                        <button onclick="deleteSocialTask(${item.id})" class="text-red-400 hover:text-red-500 text-[10px] font-black uppercase">Cancel</button>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('social-queue-list').innerHTML = `<div class="py-8 text-center glass rounded-xl opacity-30 italic text-xs">No videos in queue...</div>`;
+            }
+        }
+
+        async function assignTask() {
+            const target = document.getElementById('targetUID').value.trim();
+            const project = document.getElementById('project-select-assign').value;
+            const layer = document.getElementById('taskLayer').value;
+
+            if(!target || !project) return Swal.fire('Error', 'Target Email and Project are mandatory', 'warning');
+
+            Swal.showLoading();
+            const { data: pData } = await _supabase.from('project_lab').select('*').eq('project_name', project).single();
+            const finalRate = (layer === 'L1') ? pData.l1_rate : pData.l2_rate;
+
+            const { error } = await _supabase.from('tasks').insert([{ 
+                assignedTo: target, 
+                title: project, 
+                price: finalRate,
+                layer: layer,
+                status: 'pending' 
+            }]);
+
+            if(!error) {
+                Swal.fire('Deployed! 🚀', `Assigned to ${target} as ${layer}`, 'success');
+                document.getElementById('targetUID').value = "";
+            } else {
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        async function loadL3Tasks() {
+            const project = document.getElementById('l3-project-filter').value;
+            if(!project) return Swal.fire('Wait', 'Select a project first', 'info');
+
+            const { data: tasks } = await _supabase.from('tasks')
+                .select('*').eq('title', project).eq('status', 'submitted').eq('layer', 'L3');
+
+            if(tasks && tasks.length > 0) {
+                document.getElementById('l3-task-list').innerHTML = tasks.map(t => `
+                    <div class="glass p-4 rounded-xl flex justify-between items-center border-l-4 border-blue-500">
+                        <div>
+                            <span class="text-[8px] font-black bg-blue-500 text-black px-1.5 py-0.5 rounded uppercase mb-1 inline-block">Audit Ready</span>
+                            <h4 class="font-bold text-sm leading-tight">${t.assignedTo}</h4>
+                            <p class="text-[9px] text-gray-500 font-mono">Ref Task ID: ${t.id}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="approvePayout('${t.id}')" class="bg-green-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase">Approve ($${t.price})</button>
+                            <button onclick="rejectAudit('${t.id}')" class="bg-red-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('l3-task-list').innerHTML = `<div class="py-12 text-center glass rounded-xl opacity-30 italic text-xs">No tasks currently awaiting L3 Audit.</div>`;
+            }
+        }
+
+        async function approvePayout(id) {
+            const { isConfirmed } = await Swal.fire({ title: 'Approve Payment?', icon: 'question', showCancelButton: true });
+            if(isConfirmed) {
+                await _supabase.from('tasks').update({ status: 'paid' }).eq('id', id);
+                Swal.fire('Success', 'Payment Authorized', 'success');
+                loadL3Tasks();
+            }
+        }
+
+        async function revokeTask() {
+            const target = document.getElementById('revoke-email').value.trim();
+            const project = document.getElementById('project-select-revoke').value;
+            const { error } = await _supabase.from('tasks').delete().eq('assignedTo', target).eq('title', project);
+            if(!error) Swal.fire('Revoked', 'Access Terminated', 'success');
+        }
+
+        async function deleteSocialTask(id) {
+            await _supabase.from('social_sync').delete().eq('id', id);
+            loadSocialQueue();
+        }
+
+        async function globalDestroy(id, name) {
+            const { isConfirmed } = await Swal.fire({ 
+                title: `Wipe ${name}?`, 
+                text: "This will delete all tasks and configurations!",
+                icon: 'warning', 
+                showCancelButton: true 
+            });
+            if(isConfirmed) {
+                await _supabase.from('tasks').delete().eq('title', name);
+                await _supabase.from('project_lab').delete().eq('id', id);
+                loadData();
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
