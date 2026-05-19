@@ -31,16 +31,19 @@
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #94a3b8; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; font-size: 13px; font-weight: 600; border: 1px solid transparent; }
         .nav-link:hover { background: rgba(255,255,255,0.03); color: white; border-color: rgba(255,255,255,0.02); }
         .nav-link.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, transparent 100%); color: #A78BFA; border: 1px solid rgba(167, 139, 250, 0.15); box-shadow: 0 8px 25px -10px rgba(167, 139, 250, 0.15); }
-        .nav-icon-box { width: 26px; height: 26px; bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0 transition-all duration-300; }
+        .nav-icon-box { width: 26px; height: 26px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; flex items-center justify-center text-xs shrink-0 transition-all duration-300; display: flex; align-items: center; justify-content: center; }
         .nav-link.active .nav-icon-box { background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.25); }
 
         .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.04); }
-        .admin-input { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px 12px; color: white; width: 100%; outline: none; font-size: 13px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .admin-input:focus { border-color: #A78BFA; background: rgba(255,255,255,0.05); box-shadow: 0 0 12px rgba(167, 139, 250, 0.08); }
+        .admin-input { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 12px; color: white; width: 100%; outline: none; font-size: 13px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); appearance: none; -webkit-appearance: none; }
+        .admin-input:focus { border-color: #A78BFA; background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 12px rgba(167, 139, 250, 0.08); }
         .content-section { display: none; }
         .content-section.active { display: block; animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .label-text { font-size: 9px; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.1); border-radius: 10px; }
     </style>
 </head>
 <body class="flex">
@@ -56,23 +59,23 @@
         
         <nav class="flex flex-col gap-1 flex-1">
             <div onclick="showSection('project-lab')" class="nav-link active" id="btn-project-lab">
-                <div class="nav-icon-box w-6 h-6 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🧪</div> 
+                <div class="nav-icon-box">🧪</div> 
                 <span>Project Lab</span>
             </div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">
-                <div class="nav-icon-box w-6 h-6 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🚀</div> 
+                <div class="nav-icon-box">🚀</div> 
                 <span>Assign Task</span>
             </div>
             <div onclick="showSection('social-sync')" class="nav-link" id="btn-social-sync">
-                <div class="nav-icon-box w-6 h-6 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">📱</div> 
+                <div class="nav-icon-box">📱</div> 
                 <span>Social Sync</span>
             </div>
             <div onclick="showSection('l3-audit')" class="nav-link" id="btn-l3-audit">
-                <div class="nav-icon-box w-6 h-6 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🛡️</div> 
+                <div class="nav-icon-box">🛡️</div> 
                 <span>L3 Final Audit</span>
             </div>
             <div onclick="showSection('revoke')" class="nav-link" id="btn-revoke">
-                <div class="nav-icon-box w-6 h-6 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">🗑️</div> 
+                <div class="nav-icon-box">🗑️</div> 
                 <span>Revoke System</span>
             </div>
         </nav>
@@ -84,8 +87,31 @@
 
     <main class="flex-1 min-h-screen p-8 text-white overflow-y-auto">
         
+        <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-5">
+            <div>
+                <h1 class="text-xl font-black uppercase tracking-tight">Control Center</h1>
+                <p class="text-[9px] text-gray-500 font-mono tracking-wider mt-0.5">DATALAYER INFRASTRUCTURE LOGGED</p>
+            </div>
+            <div class="flex items-center gap-4 overflow-hidden">
+                <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                    <div>
+                        <p class="text-[8px] font-bold text-gray-500 uppercase tracking-wider leading-none">Queue Pending</p>
+                        <p id="ticker-pending-count" class="text-xs font-black mt-1 text-purple-400">0 Tasks</p>
+                    </div>
+                </div>
+                <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div>
+                        <p class="text-[8px] font-bold text-gray-500 uppercase tracking-wider leading-none">Paid Settlements</p>
+                        <p id="ticker-paid-count" class="text-xs font-black mt-1 text-green-400">0 Units</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
         <section id="project-lab" class="content-section active">
-            <h2 class="text-2xl font-black uppercase tracking-tight mb-6">Project Lab<span class="text-purple-500">.</span></h2>
+            <h2 class="text-lg font-black uppercase tracking-tight mb-4">Project Lab<span class="text-purple-500">.</span></h2>
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 
                 <div class="xl:col-span-2 glass p-6 rounded-2xl space-y-4">
@@ -120,13 +146,13 @@
 
                 <div class="space-y-4">
                     <label class="label-text">Active Project Registry</label>
-                    <div id="registry-grid" class="grid grid-cols-1 gap-3 max-h-[420px] overflow-y-auto pr-1 custom-scroll"></div>
+                    <div id="registry-grid" class="grid grid-cols-1 gap-3 max-h-[380px] overflow-y-auto pr-1 custom-scroll"></div>
                 </div>
             </div>
         </section>
 
         <section id="social-sync" class="content-section">
-            <h2 class="text-2xl font-black mb-6 uppercase tracking-tight text-pink-500">Social Automator</h2>
+            <h2 class="text-lg font-black mb-4 uppercase tracking-tight text-pink-500">Social Automator</h2>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <div class="glass p-6 rounded-2xl space-y-4 border-t-2 border-pink-600/20">
                     <div>
@@ -139,11 +165,14 @@
                     </div>
                     <div>
                         <label class="label-text">Target Platform</label>
-                        <select id="social-platform" class="admin-input bg-[#0a0a15] font-bold py-2.5">
-                            <option value="Instagram">Instagram Reels</option>
-                            <option value="YouTube">YouTube Shorts</option>
-                            <option value="Both">Both Platforms</option>
-                        </select>
+                        <div class="relative">
+                            <select id="social-platform" class="admin-input bg-[#0a0a15] font-bold py-2.5 pr-8">
+                                <option value="Instagram">Instagram Reels</option>
+                                <option value="YouTube">YouTube Shorts</option>
+                                <option value="Both">Both Platforms</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 text-xs">▼</div>
+                        </div>
                     </div>
                     <button onclick="submitToSocialQueue()" class="w-full bg-pink-600 py-3 rounded-lg font-black text-xs text-white uppercase tracking-widest shadow-md">Add to Download Queue ➔</button>
                 </div>
@@ -158,7 +187,7 @@
         </section>
 
         <section id="deploy" class="content-section">
-            <h2 class="text-2xl font-black mb-6 uppercase tracking-tight">Deploy Infrastructure</h2>
+            <h2 class="text-lg font-black mb-4 uppercase tracking-tight">Deploy Infrastructure</h2>
             <div class="glass p-8 rounded-2xl max-w-xl space-y-5 relative overflow-hidden border-t-2 border-yellow-500/20">
                 <div class="grid grid-cols-1 gap-4">
                     <div>
@@ -169,14 +198,20 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="label-text">Select Module</label>
-                            <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 font-bold sync-dropdown py-2.5"></select>
+                            <div class="relative">
+                                <select id="project-select-assign" class="admin-input bg-[#0a0a15] text-purple-400 font-bold sync-dropdown py-2.5 pr-8"></select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-purple-400 text-xs">▼</div>
+                            </div>
                         </div>
                         <div>
                             <label class="label-text">Operation Layer</label>
-                            <select id="taskLayer" class="admin-input bg-[#0a0a15] font-bold py-2.5">
-                                <option value="L1">L1: Production (Recording)</option>
-                                <option value="L2">L2: Review (QA/Rubric)</option>
-                            </select>
+                            <div class="relative">
+                                <select id="taskLayer" class="admin-input bg-[#0a0a15] font-bold py-2.5 pr-8">
+                                    <option value="L1">L1: Production (Recording)</option>
+                                    <option value="L2">L2: Review (QA/Rubric)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 text-xs">▼</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -185,13 +220,16 @@
         </section>
 
         <section id="l3-audit" class="content-section">
-            <h2 class="text-2xl font-black mb-1 uppercase tracking-tight text-blue-400">L3 Final Audit</h2>
-            <p class="text-gray-500 text-[9px] mb-5 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
+            <h2 class="text-lg font-black mb-1 uppercase tracking-tight text-blue-400">L3 Final Audit</h2>
+            <p class="text-gray-500 text-[9px] mb-4 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
             
-            <div class="mb-5 flex gap-3 items-end">
+            <div class="mb-4 flex gap-3 items-end">
                 <div class="flex-1 max-w-xs">
                     <label class="label-text">Filter by Project</label>
-                    <select id="l3-project-filter" class="admin-input sync-dropdown py-2.5"></select>
+                    <div class="relative">
+                        <select id="l3-project-filter" class="admin-input sync-dropdown py-2.5 pr-8"></select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 text-xs">▼</div>
+                    </div>
                 </div>
                 <button onclick="loadL3Tasks()" class="bg-blue-600 px-5 py-3 rounded-lg text-[10px] font-black uppercase tracking-wider">Refresh Queue</button>
             </div>
@@ -202,7 +240,7 @@
         </section>
 
         <section id="revoke" class="content-section">
-            <h2 class="text-2xl font-black mb-6 uppercase tracking-tight">System Access Revoke</h2>
+            <h2 class="text-lg font-black mb-4 uppercase tracking-tight">System Access Revoke</h2>
             <div class="glass p-6 rounded-2xl max-w-xl space-y-4 border-t-2 border-red-600/20">
                 <div>
                     <label class="label-text">User UID / Email</label>
@@ -210,7 +248,10 @@
                 </div>
                 <div>
                     <label class="label-text">Select Project</label>
-                    <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-500 font-bold sync-dropdown py-2.5"></select>
+                    <div class="relative">
+                        <select id="project-select-revoke" class="admin-input bg-[#0a0a15] text-red-500 font-bold sync-dropdown py-2.5 pr-8"></select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-red-500 text-xs">▼</div>
+                    </div>
                 </div>
                 <button onclick="revokeTask()" class="w-full bg-red-600 py-3 rounded-lg font-black text-xs text-white uppercase shadow-md">Terminate Access</button>
             </div>
@@ -230,6 +271,15 @@
             document.getElementById('btn-' + id).classList.add('active');
             if(id === 'social-sync') loadSocialQueue();
         };
+
+        // POINT 10: FETCH METRICS FOR ELITE TICKER BAR WITHOUT OVERHEADS
+        async function fetchSystemMetrics() {
+            const { count: pendingCount } = await _supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+            const { count: paidCount } = await _supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'paid');
+            
+            document.getElementById('ticker-pending-count').innerText = `${pendingCount || 0} Tasks`;
+            document.getElementById('ticker-paid-count').innerText = `${paidCount || 0} Settled`;
+        }
 
         async function publishProject() {
             const name = document.getElementById('lab-project-name').value.trim();
@@ -251,7 +301,9 @@
 
             if(!error) {
                 Swal.fire('Success', 'Project Infrastructure Initialized', 'success');
-                loadData();
+                document.getElementById('lab-project-name').value = "";
+                document.getElementById('lab-logic-code').value = "";
+                loadData(); // POINT 9: IN-PLACE RE-RENDERING WITHOUT REFRESHE
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -260,13 +312,17 @@
         async function loadData() {
             const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
             
+            // POINT 7: WRAPPED REGISTRY ICON WITHIN A FROSTED SQUARE BADGE
             document.getElementById('registry-grid').innerHTML = projects.map(p => `
                 <div class="glass p-4 rounded-xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
-                    <div>
-                        <h4 class="text-xs font-black uppercase tracking-wide">${p.project_name}</h4>
-                        <div class="flex gap-3 mt-1">
-                           <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
-                           <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0 font-bold">🗂️</div>
+                        <div>
+                            <h4 class="text-xs font-black uppercase tracking-wide">${p.project_name}</h4>
+                            <div class="flex gap-3 mt-1">
+                               <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest">L1: $${p.l1_rate}</span>
+                               <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">L2: $${p.l2_rate}</span>
+                            </div>
                         </div>
                     </div>
                     <button onclick="globalDestroy(${p.id}, '${p.project_name}')" class="text-[9px] font-black text-red-400 hover:text-red-500 hover:underline uppercase tracking-tighter">Wipe</button>
@@ -275,6 +331,7 @@
 
             const options = '<option value="">-- SELECT PROJECT --</option>' + projects.map(p => `<option value="${p.project_name}">${p.project_name}</option>`).join('');
             document.querySelectorAll('.sync-dropdown').forEach(d => d.innerHTML = options);
+            fetchSystemMetrics();
         }
 
         async function submitToSocialQueue() {
@@ -293,7 +350,7 @@
                 Swal.fire('Queued', 'Added to marketing download queue', 'success');
                 document.getElementById('social-url').value = "";
                 document.getElementById('social-caption').value = "";
-                loadSocialQueue();
+                loadSocialQueue(); // POINT 9: IN-PLACE ATOMIC RE-RENDER FOR SOCIAL QUEUE
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -302,15 +359,24 @@
         async function loadSocialQueue() {
             const { data } = await _supabase.from('social_sync').select('*').order('created_at', {ascending: false});
             if(data && data.length > 0) {
-                document.getElementById('social-queue-list').innerHTML = data.map(item => `
-                    <div class="glass p-3 rounded-xl border-l-2 border-pink-500 flex justify-between items-center">
-                        <div class="max-w-[80%]">
-                            <p class="text-[9px] font-bold text-pink-400 uppercase tracking-widest">${item.platform} • ${item.status}</p>
-                            <p class="text-xs truncate opacity-60 mt-0.5">${item.url}</p>
+                document.getElementById('social-queue-list').innerHTML = data.map(item => {
+                    // POINT 7/10: PLATFORM VISUAL BADGES WITH COLORED FRAME SEPARATION
+                    const badgeColor = item.platform === 'Instagram' ? 'border-pink-500/30 text-pink-400 bg-pink-500/5' : 'border-red-500/30 text-red-400 bg-red-500/5';
+                    const platformIcon = item.platform === 'Instagram' ? '📸' : '📺';
+                    
+                    return `
+                        <div class="glass p-3 rounded-xl border-l-2 border-pink-500 flex justify-between items-center">
+                            <div class="flex items-center gap-3 max-w-[80%]">
+                                <div class="w-7 h-7 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-xs shrink-0">${platformIcon}</div>
+                                <div class="min-w-0">
+                                    <p class="text-[8px] font-black border px-1.5 py-0.5 rounded-md inline-block uppercase tracking-widest ${badgeColor}">${item.platform} • ${item.status}</p>
+                                    <p class="text-xs truncate opacity-60 mt-1 font-mono">${item.url}</p>
+                                </div>
+                            </div>
+                            <button onclick="deleteSocialTask(${item.id})" class="text-red-400 hover:text-red-500 text-[10px] font-black uppercase shrink-0">Cancel</button>
                         </div>
-                        <button onclick="deleteSocialTask(${item.id})" class="text-red-400 hover:text-red-500 text-[10px] font-black uppercase">Cancel</button>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } else {
                 document.getElementById('social-queue-list').innerHTML = `<div class="py-8 text-center glass rounded-xl opacity-30 italic text-xs">No videos in queue...</div>`;
             }
@@ -338,6 +404,7 @@
             if(!error) {
                 Swal.fire('Deployed! 🚀', `Assigned to ${target} as ${layer}`, 'success');
                 document.getElementById('targetUID').value = "";
+                fetchSystemMetrics(); // POINT 9: REFRESH HEAD NUMBERS IN-PLACE SMOOTHLY
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -353,10 +420,13 @@
             if(tasks && tasks.length > 0) {
                 document.getElementById('l3-task-list').innerHTML = tasks.map(t => `
                     <div class="glass p-4 rounded-xl flex justify-between items-center border-l-4 border-blue-500">
-                        <div>
-                            <span class="text-[8px] font-black bg-blue-500 text-black px-1.5 py-0.5 rounded uppercase mb-1 inline-block">Audit Ready</span>
-                            <h4 class="font-bold text-sm leading-tight">${t.assignedTo}</h4>
-                            <p class="text-[9px] text-gray-500 font-mono">Ref Task ID: ${t.id}</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center justify-center text-xs text-blue-400">🛡️</div>
+                            <div>
+                                <span class="text-[8px] font-black bg-blue-500 text-black px-1.5 py-0.5 rounded uppercase mb-1 inline-block tracking-wider">Audit Ready</span>
+                                <h4 class="font-bold text-sm leading-tight">${t.assignedTo}</h4>
+                                <p class="text-[9px] text-gray-500 font-mono">Ref Task ID: ${t.id}</p>
+                            </div>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="approvePayout('${t.id}')" class="bg-green-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase">Approve ($${t.price})</button>
@@ -375,6 +445,7 @@
                 await _supabase.from('tasks').update({ status: 'paid' }).eq('id', id);
                 Swal.fire('Success', 'Payment Authorized', 'success');
                 loadL3Tasks();
+                fetchSystemMetrics();
             }
         }
 
@@ -382,7 +453,10 @@
             const target = document.getElementById('revoke-email').value.trim();
             const project = document.getElementById('project-select-revoke').value;
             const { error } = await _supabase.from('tasks').delete().eq('assignedTo', target).eq('title', project);
-            if(!error) Swal.fire('Revoked', 'Access Terminated', 'success');
+            if(!error) {
+                Swal.fire('Revoked', 'Access Terminated', 'success');
+                fetchSystemMetrics();
+            }
         }
 
         async function deleteSocialTask(id) {
