@@ -62,6 +62,10 @@
                 <div class="nav-icon-box">🧪</div> 
                 <span>Project Lab</span>
             </div>
+            <div onclick="showSection('voice-manage')" class="nav-link" id="btn-voice-manage">
+                <div class="nav-icon-box">🎙️</div> 
+                <span>Voice Settings</span>
+            </div>
             <div onclick="showSection('deploy')" class="nav-link" id="btn-deploy">
                 <div class="nav-icon-box">🚀</div> 
                 <span>Assign Task</span>
@@ -113,13 +117,11 @@
         <section id="project-lab" class="content-section active">
             <h2 class="text-lg font-black uppercase tracking-tight mb-4">Project Lab<span class="text-purple-500">.</span></h2>
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                
                 <div class="xl:col-span-2 glass p-6 rounded-2xl space-y-4">
                     <div>
                         <label class="label-text">Global Identifier</label>
                         <input type="text" id="lab-project-name" class="admin-input" placeholder="e.g. V19_Audio_Sync">
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="label-text text-yellow-500">L1 Production Rate ($)</label>
@@ -130,23 +132,65 @@
                             <input type="number" id="lab-l2-rate" class="admin-input" placeholder="Rate for Reviewers">
                         </div>
                     </div>
-
                     <div class="flex items-center gap-3">
                         <label class="label-text mb-0">UI Accent Color:</label>
                         <input type="color" id="lab-accent-color" class="w-8 h-8 bg-transparent border-none cursor-pointer" value="#A78BFA">
                     </div>
-
                     <div>
                         <label class="label-text">Engine Logic Injection (V19+ Master)</label>
                         <textarea id="lab-logic-code" class="admin-input h-32 font-mono text-[11px]" placeholder="// Paste V19 Logic Here..."></textarea>
                     </div>
-
                     <button onclick="publishProject()" class="w-full bg-white text-black py-3 rounded-lg font-black text-xs uppercase hover:bg-purple-500 hover:text-white transition-all shadow-md">Initialize Project Layer ➔</button>
                 </div>
-
                 <div class="space-y-4">
                     <label class="label-text">Active Project Registry</label>
                     <div id="registry-grid" class="grid grid-cols-1 gap-3 max-h-[380px] overflow-y-auto pr-1 custom-scroll"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="voice-manage" class="content-section">
+            <h2 class="text-lg font-black mb-1 uppercase tracking-tight text-purple-400">Voice Layer Management Console</h2>
+            <p class="text-gray-500 text-[10px] mb-6 font-bold uppercase tracking-widest">Monitor Live Pairings, Active Waiting Queues, and Audit Audio Node Records</p>
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-2 space-y-6">
+                    <div class="glass p-5 rounded-2xl border-t-2 border-purple-500/20 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-black uppercase tracking-wider text-white">Live Matched Pairs Monitoring Strip</h3>
+                            <button onclick="refreshLiveAdminMonitorPools()" class="text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded text-purple-400 hover:bg-purple-500/20">Sync Channels</button>
+                        </div>
+                        <div id="admin-live-pairs-grid" class="grid grid-cols-1 gap-3">
+                            <div class="py-6 text-center text-xs italic text-gray-500 uppercase font-bold tracking-wider opacity-30">No Active Voice Channels Logged...</div>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl overflow-hidden border border-white/5">
+                        <div class="p-4 bg-white/[0.005] border-b border-white/5 flex justify-between items-center">
+                            <h3 class="text-xs font-black uppercase tracking-wider text-white">Completed Recording Ledger & Audio Vault</h3>
+                            <span id="admin-vault-counter-badge" class="text-[9px] font-bold px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded">0 Master Records Verified</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-[9px] text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.002]">
+                                        <th class="p-4 font-bold">Session ID</th>
+                                        <th class="p-4 font-bold">Project Stream</th>
+                                        <th class="p-4 font-bold">Operational Participants</th>
+                                        <th class="p-4 font-bold">Duration</th>
+                                        <th class="p-4 font-bold text-center">Master Audio Node</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-vault-ledger-body" class="divide-y divide-white/5 text-xs">
+                                    <tr><td colspan="5" class="p-8 text-center text-gray-600 italic uppercase font-bold tracking-widest opacity-30">No Historical Audits Processed</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <label class="label-text">Active Match Queue Waiting Pool</label>
+                    <div id="admin-waiting-queue-list" class="grid grid-cols-1 gap-3 max-h-[550px] overflow-y-auto pr-1 custom-scroll">
+                        <div class="py-10 text-center glass rounded-xl opacity-30 italic text-xs">Waiting Pool Idle...</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -176,7 +220,6 @@
                     </div>
                     <button onclick="submitToSocialQueue()" class="w-full bg-pink-600 py-3 rounded-lg font-black text-xs text-white uppercase tracking-widest shadow-md">Add to Download Queue ➔</button>
                 </div>
-
                 <div class="space-y-4">
                     <label class="label-text">Download & Posting Queue</label>
                     <div id="social-queue-list" class="grid grid-cols-1 gap-3">
@@ -194,7 +237,6 @@
                         <label class="label-text">Target User ID / Email</label>
                         <input type="text" id="targetUID" class="admin-input" placeholder="ajay.sahani9713@gmail.com">
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="label-text">Select Module</label>
@@ -222,7 +264,6 @@
         <section id="l3-audit" class="content-section">
             <h2 class="text-lg font-black mb-1 uppercase tracking-tight text-blue-400">L3 Final Audit</h2>
             <p class="text-gray-500 text-[9px] mb-4 font-bold uppercase tracking-widest">Verify L2 Submissions & Authorize Payouts</p>
-            
             <div class="mb-4 flex gap-3 items-end">
                 <div class="flex-1 max-w-xs">
                     <label class="label-text">Filter by Project</label>
@@ -233,7 +274,6 @@
                 </div>
                 <button onclick="loadL3Tasks()" class="bg-blue-600 px-5 py-3 rounded-lg text-[10px] font-black uppercase tracking-wider">Refresh Queue</button>
             </div>
-
             <div id="l3-task-list" class="grid grid-cols-1 gap-3">
                 <div class="py-12 text-center glass rounded-xl opacity-30 italic text-xs">Select a project and refresh to audit...</div>
             </div>
@@ -270,15 +310,88 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
             if(id === 'social-sync') loadSocialQueue();
+            if(id === 'voice-manage') refreshLiveAdminMonitorPools();
         };
 
-        // POINT 10: FETCH METRICS FOR ELITE TICKER BAR WITHOUT OVERHEADS
         async function fetchSystemMetrics() {
             const { count: pendingCount } = await _supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending');
             const { count: paidCount } = await _supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'paid');
             
             document.getElementById('ticker-pending-count').innerText = `${pendingCount || 0} Tasks`;
             document.getElementById('ticker-paid-count').innerText = `${paidCount || 0} Settled`;
+        }
+
+        // DYNAMIC REAL-TIME PIPELINE MONITORING SYSTEM FOR MANAGEMENT CONSOLE
+        async function refreshLiveAdminMonitorPools() {
+            const { data: queuePool } = await _supabase.from('voice_queue').select('*').eq('status', 'waiting').order('created_at', { ascending: false });
+            const { data: activeSessions } = await _supabase.from('voice_sessions').select('*').eq('status', 'connected');
+            const { data: historicalVault } = await _supabase.from('voice_sessions').select('*').eq('status', 'completed').order('created_at', { ascending: false });
+
+            // 1. Render Waiting Queue Real-Time Nodes
+            const queueContainer = document.getElementById('admin-waiting-queue-list');
+            if (queuePool && queuePool.length > 0) {
+                queueContainer.innerHTML = queuePool.map(q => `
+                    <div class="glass p-3.5 rounded-xl border-l-2 border-amber-500/40 flex justify-between items-center">
+                        <div class="min-w-0">
+                            <p class="text-xs font-black uppercase tracking-wide text-white truncate">${q.user_email}</p>
+                            <p class="text-[9px] text-gray-500 font-mono mt-1">Matrix: ${q.project_title} • ${q.role_preference}</p>
+                        </div>
+                        <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse shrink-0 ml-3"></span>
+                    </div>
+                `).join('');
+            } else {
+                queueContainer.innerHTML = `<div class="py-8 text-center glass rounded-xl opacity-20 italic text-xs uppercase font-bold tracking-wider">Queue System Empty</div>`;
+            }
+
+            // 2. Render Live Streams Match Framework Pairs Tracker
+            const pairsGrid = document.getElementById('admin-live-pairs-grid');
+            if (activeSessions && activeSessions.length > 0) {
+                pairsGrid.innerHTML = activeSessions.map(s => `
+                    <div class="glass p-4 rounded-xl border border-purple-500/10 flex flex-col md:flex-row justify-between gap-4">
+                        <div class="space-y-1 min-w-0">
+                            <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest">${s.project_title}</p>
+                            <p class="text-xs text-white truncate"><b>Host:</b> ${s.host_email}</p>
+                            <p class="text-xs text-gray-400 truncate"><b>Guest:</b> ${s.guest_email}</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 md:self-center">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-[9px] font-bold text-green-400 uppercase tracking-wider font-mono">Live Call Stream</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                pairsGrid.innerHTML = `<div class="py-8 text-center glass rounded-xl opacity-20 italic text-xs uppercase font-bold tracking-wider">Zero Concurrent Voice Streams</div>`;
+            }
+
+            // 3. Render Historical Audit Audio Vault Database Layout Array Rows
+            const vaultBody = document.getElementById('admin-vault-ledger-body');
+            document.getElementById('admin-vault-counter-badge').innerText = `${historicalVault ? historicalVault.length : 0} Master Records Verified`;
+            
+            if (historicalVault && historicalVault.length > 0) {
+                vaultBody.innerHTML = historicalVault.map(v => {
+                    const mins = String(Math.floor(v.duration_seconds / 60)).padStart(2, '0');
+                    const secs = String(v.duration_seconds % 60).padStart(2, '0');
+                    
+                    return `
+                        <tr class="hover:bg-white/[0.005] transition-all">
+                            <td class="p-4 font-mono font-bold text-gray-500 text-[10px] uppercase">${v.session_id.substring(0,8)}...</td>
+                            <td class="p-4 font-black uppercase text-white">${v.project_title}</td>
+                            <td class="p-4 space-y-0.5">
+                                <p class="text-gray-300 font-medium">H: ${v.host_email}</p>
+                                <p class="text-gray-500">G: ${v.guest_email}</p>
+                            </td>
+                            <td class="p-4 font-mono font-bold text-purple-400">${mins}:${secs}</td>
+                            <td class="p-4 text-center">
+                                <a href="${v.recording_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600/10 border border-green-500/20 rounded-md text-green-400 font-bold font-mono text-[10px] uppercase hover:bg-green-600 hover:text-white transition-all">
+                                    📥 Play Node
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                vaultBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-600 italic uppercase font-bold tracking-widest opacity-20">No Audio Elements Processed Inside Vault</td></tr>`;
+            }
         }
 
         async function publishProject() {
@@ -303,7 +416,7 @@
                 Swal.fire('Success', 'Project Infrastructure Initialized', 'success');
                 document.getElementById('lab-project-name').value = "";
                 document.getElementById('lab-logic-code').value = "";
-                loadData(); // POINT 9: IN-PLACE RE-RENDERING WITHOUT REFRESHE
+                loadData();
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -312,7 +425,6 @@
         async function loadData() {
             const { data: projects } = await _supabase.from('project_lab').select('*').order('created_at', { ascending: false });
             
-            // POINT 7: WRAPPED REGISTRY ICON WITHIN A FROSTED SQUARE BADGE
             document.getElementById('registry-grid').innerHTML = projects.map(p => `
                 <div class="glass p-4 rounded-xl border-l-4 flex justify-between items-center" style="border-color:${p.config.accent}">
                     <div class="flex items-center gap-3">
@@ -350,7 +462,7 @@
                 Swal.fire('Queued', 'Added to marketing download queue', 'success');
                 document.getElementById('social-url').value = "";
                 document.getElementById('social-caption').value = "";
-                loadSocialQueue(); // POINT 9: IN-PLACE ATOMIC RE-RENDER FOR SOCIAL QUEUE
+                loadSocialQueue();
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -360,7 +472,6 @@
             const { data } = await _supabase.from('social_sync').select('*').order('created_at', {ascending: false});
             if(data && data.length > 0) {
                 document.getElementById('social-queue-list').innerHTML = data.map(item => {
-                    // POINT 7/10: PLATFORM VISUAL BADGES WITH COLORED FRAME SEPARATION
                     const badgeColor = item.platform === 'Instagram' ? 'border-pink-500/30 text-pink-400 bg-pink-500/5' : 'border-red-500/30 text-red-400 bg-red-500/5';
                     const platformIcon = item.platform === 'Instagram' ? '📸' : '📺';
                     
@@ -404,7 +515,7 @@
             if(!error) {
                 Swal.fire('Deployed! 🚀', `Assigned to ${target} as ${layer}`, 'success');
                 document.getElementById('targetUID').value = "";
-                fetchSystemMetrics(); // POINT 9: REFRESH HEAD NUMBERS IN-PLACE SMOOTHLY
+                fetchSystemMetrics();
             } else {
                 Swal.fire('Error', error.message, 'error');
             }
@@ -477,6 +588,9 @@
                 loadData();
             }
         }
+
+        // Auto polling metrics arrays safely every 15 seconds to sync telemetry
+        setInterval(refreshLiveAdminMonitorPools, 15000);
 
         loadData();
     </script>
