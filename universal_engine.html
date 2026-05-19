@@ -3,128 +3,558 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Adatacore — Universal Engine v3.1</title>
+    <title>Universal Voice Engine — Adatacore</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style id="dynamic-styles">
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050510; color: white; min-height: 100vh; transition: 0.5s; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .engine-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        :root { --accent: #A78BFA; --bg-dark: #030308; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-dark); color: #f8fafc; min-height: 100vh; overflow-x: hidden; }
+        .glass-card { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 24px; }
+        .status-pulse { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .animate-recording { animation: recPulse 1.5s infinite ease-in-out; }
+        @keyframes recPulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+        .custom-btn { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .custom-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px -10px rgba(167, 139, 250, 0.3); }
+        .hidden-state { display: none !important; }
     </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center p-4 md:p-8">
 
-    <!-- Main Engine UI -->
-    <div id="main-engine-ui" class="engine-container">
-        <header class="flex justify-between items-center mb-10">
-            <button onclick="location.href='dashboard.html'" class="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-all">← Abort Task</button>
-            <div class="text-right">
-                <h2 id="engine-project-name" class="text-2xl font-black uppercase tracking-tighter text-white">Project Engine</h2>
-                <p id="engine-status" class="text-[9px] font-bold uppercase tracking-[0.3em] flex items-center justify-end">
-                    <span class="status-dot bg-yellow-500 animate-pulse"></span> Syncing Instance...
-                </p>
+    <div class="w-full max-w-4xl mx-auto my-auto space-y-6">
+        
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-black rotate-3">A</div>
+                <div>
+                    <h1 id="engine-project-title" class="text-sm font-black uppercase tracking-wider text-white">Project Stream Matrix</h1>
+                    <p class="text-[9px] text-gray-500 font-mono tracking-widest mt-0.5">VOICE ENGINE LAYER v5.0</p>
+                </div>
             </div>
-        </header>
-
-        <div id="engine-workspace" class="glass p-10 rounded-[48px] border border-white/5 relative overflow-hidden">
-            <div id="boot-loader" class="py-20 text-center italic opacity-30 animate-pulse text-sm uppercase font-bold">Initializing Components...</div>
+            <div class="glass-card px-3 py-1.5 flex items-center gap-2">
+                <span id="global-status-dot" class="status-pulse bg-amber-500"></span>
+                <span id="global-status-text" class="text-[9px] font-black text-gray-400 uppercase tracking-wider">Uninitialized</span>
+            </div>
         </div>
 
-        <div id="custom-html-point" class="mt-6"></div>
-
-        <div id="engine-submit-control" class="hidden mt-12">
-            <button id="final-submit-btn" class="w-full py-6 rounded-3xl font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl">Push Final Submission</button>
+        <div id="panel-landing" class="glass-card p-6 md:p-8 space-y-6">
+            <div class="border-b border-white/5 pb-4">
+                <h2 class="text-xl font-black text-white uppercase tracking-tight">Instructions & Operational Standard</h2>
+                <p class="text-xs text-purple-400 font-medium mt-1">Please review the configuration protocols before joining the match queue.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-gray-400">
+                <div class="space-y-3 bg-white/[0.01] p-4 rounded-xl border border-white/5">
+                    <p class="font-bold text-white uppercase tracking-wide text-[10px] text-purple-300">Environment Verification</p>
+                    <p>• Ensure you are inside a completely quiet, isolated environment free from background audio interference.</p>
+                    <p>• Headsets equipped with dedicated close-proximity microphones are strictly recommended for this task.</p>
+                </div>
+                <div class="space-y-3 bg-white/[0.01] p-4 rounded-xl border border-white/5">
+                    <p class="font-bold text-white uppercase tracking-wide text-[10px] text-purple-300">System Permissions</p>
+                    <p>• Click the action button below to trigger and explicitly authorize browser microphone access permissions.</p>
+                    <p>• Do not close, navigate away, or refresh this page at any point once matched into a live logging sequence.</p>
+                </div>
+            </div>
+            <button onclick="requestPermissionsAndQueue()" class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs custom-btn shadow-lg">Authorize Microphones & Join Queue ➔</button>
         </div>
+
+        <div id="panel-matching" class="glass-card p-12 text-center space-y-6 hidden-state">
+            <div class="relative w-16 h-16 mx-auto">
+                <div class="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
+            </div>
+            <div>
+                <h3 class="text-base font-black uppercase text-white tracking-wide">Searching For Active Participant</h3>
+                <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Scanning database directory for an available cross-layer resource matching your current project matrix...</p>
+            </div>
+            <button onclick="abortMatchingQueue()" class="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-red-600/10 hover:border-red-500/20 text-red-400 rounded-lg text-[10px] custom-btn">Abort Connection Request</button>
+        </div>
+
+        <div id="panel-room" class="space-y-6 hidden-state">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card p-5 border-t-2 border-purple-500/30 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-bold tracking-widest text-purple-400 uppercase bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10">Local Terminal</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="status-pulse bg-green-500"></span>
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Authenticated</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 id="local-user-identity" class="font-black text-sm text-white truncate">User@adatacore.com</h4>
+                        <p id="local-user-role" class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Role: Unassigned</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 border-t-2 border-indigo-500/30 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-bold tracking-widest text-indigo-400 uppercase bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">Remote Participant</span>
+                        <div class="flex items-center gap-1.5">
+                            <span id="remote-pulse-dot" class="status-pulse bg-green-500"></span>
+                            <span id="remote-pulse-text" class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Connected</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 id="remote-user-identity" class="font-black text-sm text-white truncate">Connecting Stream...</h4>
+                        <p id="remote-user-role" class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Role: Unassigned</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 md:p-8 text-center space-y-6 relative overflow-hidden">
+                
+                <div id="recording-light-strip" class="hidden-state bg-red-600/5 border border-red-500/20 py-2 px-4 rounded-xl flex items-center justify-center gap-2 max-w-xs mx-auto animate-recording">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span class="text-[10px] font-black text-red-400 uppercase tracking-widest">LOCAL ENCODER ACTIVE</span>
+                </div>
+
+                <div class="space-y-1">
+                    <p class="text-gray-500 text-[9px] font-black uppercase tracking-widest">Elapsed Operational Time</p>
+                    <h2 id="timer-display" class="text-5xl font-black text-white tracking-tighter font-mono">00:00</h2>
+                </div>
+
+                <div class="flex justify-center gap-6 text-[10px] font-bold tracking-wider text-gray-500 uppercase py-2">
+                    <div id="badge-host-ready" class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span> Host Signed</div>
+                    <div id="badge-guest-ready" class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span> Guest Signed</div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto pt-2">
+                    <button id="btn-start-rec" onclick="signalRecordingInitialization()" class="flex-1 py-3.5 bg-white text-black text-xs custom-btn rounded-xl">Request Recording Start</button>
+                    <button id="btn-stop-rec" onclick="signalRecordingTermination()" class="flex-1 py-3.5 bg-red-600 hover:bg-red-500 text-white text-xs custom-btn rounded-xl" disabled>Terminate & Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-submitting" class="glass-card p-12 text-center space-y-6 hidden-state">
+            <div class="w-12 h-12 border-2 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin mx-auto"></div>
+            <div>
+                <h3 class="text-base font-black uppercase text-white tracking-wide">Compiling & Securing Asset Stream</h3>
+                <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Assembling audio track binaries. Encoding container packets and shifting securely into storage blocks. Do not close this terminal.</p>
+            </div>
+        </div>
+
     </div>
 
+    <audio id="remote-audio-sink" autoplay class="hidden"></audio>
+
     <script>
+        // Extract initialization variables directly from deployment environment configuration query values
+        const urlParams = new URLSearchParams(window.location.search);
+        const PROJECT_TITLE = urlParams.get('project') || "Default_Voice_Matrix";
+
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
-        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
+        const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml"; // Inject authentic key constraints
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        window._supabase = _supabase;
-        window.Swal = Swal;
+        // State machine lifecycle bindings
+        let localUser = null;
+        let queueRecordId = null;
+        let currentSessionId = null;
+        let assignedRole = null; // 'Host' or 'Guest'
+        let matchedPeerEmail = null;
+        
+        // WebRTC & Media stream references
+        let localStream = null;
+        let peerConnection = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        
+        // Signaling Pipeline Channel
+        let syncChannel = null;
+        let tickerInterval = null;
+        let operationalSeconds = 0;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectKey = urlParams.get('project');
-        window.currentUserData = null; 
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        async function bootEngine() {
+        async function resolveIdentityAndBootstrap() {
+            document.getElementById('engine-project-title').innerText = PROJECT_TITLE.replace(/_/g, ' ');
+            
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) {
+                Swal.fire('Identity Lost', 'Please login to refresh user token contexts.', 'error')
+                    .then(() => window.location.replace('auth'));
+                return;
+            }
+            localUser = user;
+            updateGlobalStatus('Initialized', 'bg-blue-500');
+        }
+
+        function updateGlobalStatus(txt, colorClass) {
+            const dot = document.getElementById('global-status-dot');
+            dot.className = `status-pulse ${colorClass}`;
+            document.getElementById('global-status-text').innerText = txt;
+        }
+
+        function showSection(targetId) {
+            ['panel-landing', 'panel-matching', 'panel-room', 'panel-submitting'].forEach(id => {
+                document.getElementById(id).classList.add('hidden-state');
+            });
+            document.getElementById(targetId).classList.remove('hidden-state');
+        }
+
+        // ====================================================================
+        // ENGINE LAYER STATE 1 & 2: PERMISSIONS & TRANSACTIONAL MATCHING LOGIC
+        // ====================================================================
+        async function requestPermissionsAndQueue() {
             try {
-                const { data: { user } } = await _supabase.auth.getUser();
-                if (!user) throw new Error("Auth failed");
-
-                const { data: profile } = await _supabase.from('users').select('*').eq('id', user.id).single();
-                window.currentUserData = profile;
-
-                if (!projectKey) {
-                    Swal.fire('Error', 'Invalid Engine Route', 'error').then(() => location.href='dashboard.html');
-                    return;
-                }
-
-                const { data: blueprint, error } = await _supabase
-                    .from('project_lab')
-                    .select('*')
-                    .eq('project_name', projectKey)
-                    .single();
-
-                if (error || !blueprint) {
-                    Swal.fire('Offline', 'Instance no longer available.', 'warning');
-                    return;
-                }
-
-                assembleProject(blueprint);
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                updateGlobalStatus('Microphone Access Verified', 'bg-purple-500');
+                showSection('panel-matching');
+                executeMatchingStrategy();
             } catch (err) {
-                console.error(err);
-                Swal.fire('Error', 'Could not initialize session.', 'error');
+                Swal.fire('Hardware Lockout', 'Microphone parameters must be authorized to start tasks.', 'error');
             }
         }
 
-        function assembleProject(p) {
-            const config = p.config;
-            const workspace = document.getElementById('engine-workspace');
-            const engineStatus = document.getElementById('engine-status');
-            
-            // UI Update
-            document.getElementById('engine-project-name').innerText = p.project_name;
-            
-            if (engineStatus) {
-                engineStatus.innerHTML = `<span class="status-dot bg-green-500"></span> ${p.project_name} Live`;
-            }
+        async function executeMatchingStrategy() {
+            // Check for available peers waiting for this project matrix entry
+            const { data: candidates, error } = await _supabase
+                .from('voice_queue')
+                .select('*')
+                .eq('project_title', PROJECT_TITLE)
+                .eq('status', 'waiting')
+                .not('user_email', 'eq', localUser.email)
+                .order('created_at', { ascending: true });
 
-            // अगर कस्टम लॉजिक मौजूद है, तो हम इंजन के डिफ़ॉल्ट UI को छुपा देंगे ताकि अल्ट्रा UI दिखे
-            if (config.logic) {
-                document.getElementById('main-engine-ui').style.display = 'none';
-                
-                try {
-                    // लॉजिक इंजेक्ट करना
-                    const executeLogic = new Function(config.logic);
-                    executeLogic.call(window); 
-                } catch (e) {
-                    console.error("Logic Engine Error:", e);
-                    // एरर होने पर इंजन UI वापस दिखाएँ ताकि यूजर को पता चले
-                    document.getElementById('main-engine-ui').style.display = 'block';
-                    Swal.fire('Code Error', 'Check Project Lab Logic Injection', 'error');
+            if (candidates && candidates.length > 0) {
+                // Available match found. Target older record as Host, local user binds as Guest
+                const peer = candidates[0];
+                assignedRole = 'Guest';
+                matchedPeerEmail = peer.user_email;
+                const targetSessionUUID = crypto.randomUUID();
+
+                // Atomically claim the matching lock constraint matrix row entry
+                const { data: matchClaim, error: claimErr } = await _supabase
+                    .from('voice_queue')
+                    .update({ status: 'matched', matched_session_id: targetSessionUUID })
+                    .eq('id', peer.id)
+                    .eq('status', 'waiting')
+                    .select();
+
+                if (matchClaim && matchClaim.length > 0) {
+                    // Create master transaction table row entry mapping
+                    await _supabase.from('voice_sessions').insert([{
+                        session_id: targetSessionUUID,
+                        project_title: PROJECT_TITLE,
+                        host_email: peer.user_email,
+                        guest_email: localUser.email,
+                        status: 'connected'
+                    }]);
+
+                    // Register local configuration token identity row mapping
+                    const { data: localReg } = await _supabase.from('voice_queue').insert([{
+                        project_title: PROJECT_TITLE,
+                        user_email: localUser.email,
+                        user_uid: localUser.id,
+                        role_preference: 'Guest',
+                        status: 'matched',
+                        matched_session_id: targetSessionUUID
+                    }]).select();
+
+                    queueRecordId = localReg[0].id;
+                    currentSessionId = targetSessionUUID;
+                    
+                    initializeControlRoom();
+                    return;
                 }
-            } else {
-                // डिफ़ॉल्ट मॉड्यूल्स अगर लॉजिक नहीं है
-                workspace.innerHTML = ""; 
-                const mods = config.modules || {};
-                if (mods.audio) workspace.innerHTML += `<div id="audio-module" class="mb-10 text-center py-10 glass rounded-3xl border-white/5"><span class="text-3xl">🎙️</span><p class="text-[10px] mt-4 font-bold opacity-40 uppercase tracking-widest">Audio Stream Active</p></div>`;
-                if (mods.text) workspace.innerHTML += `<div id="text-module" class="mb-6"><textarea id="output-text" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-medium focus:border-purple-500 outline-none h-40" placeholder="Logging data..."></textarea></div>`;
-                document.getElementById('engine-submit-control').classList.remove('hidden');
             }
 
-            if (config.html_overwrite) {
-                document.getElementById('custom-html-point').innerHTML = config.html_overwrite;
+            // No active matching peer found. Enter queue pool context as Master Host node
+            assignedRole = 'Host';
+            const { data: entry, error: entryErr } = await _supabase.from('voice_queue').insert([{
+                project_title: PROJECT_TITLE,
+                user_email: localUser.email,
+                user_uid: localUser.id,
+                role_preference: 'Host',
+                status: 'waiting'
+            }]).select();
+
+            if (entryErr) {
+                // Clear stale rows if lingering duplicates break unique key constraints
+                await _supabase.from('voice_queue').delete().eq('user_email', localUser.email);
+                executeMatchingStrategy();
+                return;
+            }
+
+            queueRecordId = entry[0].id;
+            listenForIncomingConnections();
+        }
+
+        function listenForIncomingConnections() {
+            // Subscribe to targeted real-time table modifications via transactional logging updates
+            _supabase.channel(`match_tracking_${queueRecordId}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'voice_queue', filter: `id=eq.${queueRecordId}` }, async (payload) => {
+                if (payload.new.status === 'matched') {
+                    currentSessionId = payload.new.matched_session_id;
+                    
+                    // Pull matched records directly to extract metadata parameters
+                    const { data: sess } = await _supabase.from('voice_sessions').select('*').eq('session_id', currentSessionId).single();
+                    if (sess) {
+                        matchedPeerEmail = sess.guest_email;
+                        initializeControlRoom();
+                    }
+                }
+            }).subscribe();
+        }
+
+        async function abortMatchingQueue() {
+            if (queueRecordId) {
+                await _supabase.from('voice_queue').delete().eq('id', queueRecordId);
+            }
+            showSection('panel-landing');
+            updateGlobalStatus('Initialized', 'bg-blue-500');
+        }
+
+        // ====================================================================
+        // ENGINE LAYER STATE 3: PEER COMMUNICATION ENGINE & SIGNALLING PROTOCOLS
+        // ====================================================================
+        async function initializeControlRoom() {
+            showSection('panel-room');
+            updateGlobalStatus('Live Connection Room Active', 'bg-green-500');
+
+            document.getElementById('local-user-identity').innerText = localUser.email;
+            document.getElementById('local-user-role').innerText = `Role: ${assignedRole}`;
+            document.getElementById('remote-user-identity').innerText = matchedPeerEmail;
+            document.getElementById('remote-user-role').innerText = `Role: ${assignedRole === 'Host' ? 'Guest' : 'Host'}`;
+
+            Swal.fire({ title: 'Connection Confirmed!', text: 'Secure channels generated with matching target.', icon: 'success', timer: 2000, showConfirmButton: false });
+
+            // Initialize broadcast real-time messaging pipeline channel mapping for low-latency signaling parameters
+            syncChannel = _supabase.channel(`session_broadcast_${currentSessionId}`);
+
+            syncChannel.on('broadcast', { event: 'rtc-signaling' }, async ({ payload }) => {
+                if (payload.target === assignedRole) {
+                    if (payload.sdp) {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                        if (payload.sdp.type === 'offer') {
+                            const answer = await peerConnection.createAnswer();
+                            await peerConnection.setLocalDescription(answer);
+                            syncChannel.send({ type: 'broadcast', event: 'rtc-signaling', payload: { target: 'Host', sdp: answer } });
+                        }
+                    } else if (payload.candidate) {
+                        try { await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e){}
+                    }
+                }
+            })
+            .on('broadcast', { event: 'rec-control' }, ({ payload }) => {
+                handleIncomingRecordingSignal(payload.action);
+            })
+            .on('broadcast', { event: 'rec-agreement' }, ({ payload }) => {
+                updateAgreementBadges(payload.party, payload.state);
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    bootstrapRTCPeerPipeline();
+                }
+            });
+        }
+
+        async function bootstrapRTCPeerPipeline() {
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            
+            // Map tracks into hardware routing layer parameters
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.ontrack = (event) => {
+                const sink = document.getElementById('remote-audio-sink');
+                if (sink) sink.srcObject = event.streams[0];
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    syncChannel.send({
+                        type: 'broadcast',
+                        event: 'rtc-signaling',
+                        payload: { target: assignedRole === 'Host' ? 'Guest' : 'Host', candidate: event.candidate }
+                    });
+                }
+            };
+
+            if (assignedRole === 'Host') {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                syncChannel.send({
+                    type: 'broadcast',
+                    event: 'rtc-signaling',
+                    payload: { target: 'Guest', sdp: offer }
+                });
             }
         }
 
-        bootEngine();
+        // ====================================================================
+        // CONVERSATION RECORDING FRAMEWORK & CONSENT MATRIX PROTOCOLS
+        // ====================================================================
+        let hostAccepted = false;
+        let guestAccepted = false;
+
+        function updateAgreementBadges(party, state) {
+            if (party === 'Host') hostAccepted = state;
+            if (party === 'Guest') guestAccepted = state;
+
+            const hostBadge = document.getElementById('badge-host-ready');
+            const guestBadge = document.getElementById('badge-guest-ready');
+
+            if (hostAccepted) { hostBadge.className = "flex items-center gap-1.5 text-green-400"; hostBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Host Ready`; }
+            if (guestAccepted) { guestBadge.className = "flex items-center gap-1.5 text-green-400"; guestBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Guest Ready`; }
+
+            if (hostAccepted && guestAccepted) {
+                executeLocalRecordingStart();
+            }
+        }
+
+        function signalRecordingInitialization() {
+            if (assignedRole === 'Host') hostAccepted = true;
+            if (assignedRole === 'Guest') guestAccepted = true;
+
+            updateAgreementBadges(assignedRole, true);
+            
+            syncChannel.send({
+                type: 'broadcast',
+                event: 'rec-control',
+                payload: { action: 'request_start' }
+            });
+            
+            syncChannel.send({
+                type: 'broadcast',
+                event: 'rec-agreement',
+                payload: { party: assignedRole, state: true }
+            });
+        }
+
+        async function handleIncomingRecordingSignal(action) {
+            if (action === 'request_start' && !((assignedRole === 'Host' && hostAccepted) || (assignedRole === 'Guest' && guestAccepted))) {
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Start Recording Request',
+                    text: 'The remote participant wants to start recording the call. Confirm when ready.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#A78BFA',
+                    confirmButtonText: 'Accept Recording'
+                });
+
+                if (isConfirmed) {
+                    if (assignedRole === 'Host') hostAccepted = true;
+                    if (assignedRole === 'Guest') guestAccepted = true;
+                    updateAgreementBadges(assignedRole, true);
+
+                    syncChannel.send({
+                        type: 'broadcast',
+                        event: 'rec-agreement',
+                        payload: { party: assignedRole, state: true }
+                    });
+                }
+            } else if (action === 'request_stop') {
+                terminateRecordingSequence();
+            }
+        }
+
+        function executeLocalRecordingStart() {
+            document.getElementById('recording-light-strip').classList.remove('hidden-state');
+            document.getElementById('btn-start-rec').disabled = true;
+            document.getElementById('btn-stop-rec').disabled = false;
+            
+            recordedChunks = [];
+            
+            // Mix track parameters directly to aggregate local and remote streams onto a single node matrix output
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const localSource = audioContext.createMediaStreamSource(localStream);
+            
+            const remoteSinkStream = document.getElementById('remote-audio-sink').srcObject;
+            if (remoteSinkStream) {
+                const remoteSource = audioContext.createMediaStreamSource(remoteSinkStream);
+                const destNode = audioContext.createMediaStreamDestination();
+                
+                localSource.connect(destNode);
+                remoteSource.connect(destNode);
+                
+                mediaRecorder = new MediaRecorder(destNode.stream, { mimeType: 'audio/webm;codecs=opus' });
+            } else {
+                mediaRecorder = new MediaRecorder(localStream, { mimeType: 'audio/webm;codecs=opus' });
+            }
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = compileAndShipAudioPayload;
+
+            mediaRecorder.start(250); // Push data intervals into array stack structures
+            startOperationalTimer();
+        }
+
+        function startOperationalTimer() {
+            if (tickerInterval) clearInterval(tickerInterval);
+            operationalSeconds = 0;
+            const display = document.getElementById('timer-display');
+            
+            tickerInterval = setInterval(() => {
+                operationalSeconds++;
+                const mins = String(Math.floor(operationalSeconds / 60)).padStart(2, '0');
+                const secs = String(operationalSeconds % 60).padStart(2, '0');
+                display.innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function signalRecordingTermination() {
+            syncChannel.send({
+                type: 'broadcast',
+                event: 'rec-control',
+                payload: { action: 'request_stop' }
+            });
+            terminateRecordingSequence();
+        }
+
+        function terminateRecordingSequence() {
+            if (tickerInterval) clearInterval(tickerInterval);
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            showSection('panel-submitting');
+        }
+
+        // ====================================================================
+        // VAULT TRANSMISSION & POST-PROCESS PIPELINE PROTOCOLS
+        // ====================================================================
+        async function compileAndShipAudioPayload() {
+            const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const fileIdentifier = `${currentSessionId}_record.webm`;
+
+            // Push payload explicitly via standard SDK storage drivers
+            const { data: uploadData, error: uploadErr } = await _supabase.storage
+                .from('conversation_records')
+                .upload(fileIdentifier, audioBlob, { contentType: 'audio/webm', cacheControl: '3600' });
+
+            if (!uploadErr) {
+                // Extract public route parameters mapping constraints
+                const { data: urlResolution } = _supabase.storage.from('conversation_records').getPublicUrl(fileIdentifier);
+                
+                // Update baseline monitoring logging metrics definitions rows directly
+                await _supabase.from('voice_sessions')
+                    .update({
+                        status: 'completed',
+                        recording_url: urlResolution.publicUrl,
+                        duration_seconds: operationalSeconds,
+                        ended_at: new Date().toISOString()
+                    })
+                    .eq('session_id', currentSessionId);
+
+                // Clean queue pools completely
+                await _supabase.from('voice_queue').delete().eq('matched_session_id', currentSessionId);
+
+                Swal.fire({
+                    title: 'Task Successfully Transmitted',
+                    text: 'Your conversational recording payload has verified securely.',
+                    icon: 'success',
+                    background: '#030308',
+                    color: '#fff',
+                    confirmButtonColor: '#4F46E5'
+                }).then(() => {
+                    window.location.replace('dashboard');
+                });
+            } else {
+                Swal.fire('Payload Transmission Failure', uploadErr.message, 'error');
+            }
+        }
+
+        resolveIdentityAndBootstrap();
     </script>
 </body>
 </html>
