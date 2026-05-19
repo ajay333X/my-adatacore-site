@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        :root { --accent: #A78BFA; --bg-dark: #050510; --card-bg: rgba(13, 13, 31, 0.6); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        :root { --accent: #A78BFA; --bg-dark: #030308; --card-bg: rgba(255, 255, 255, 0.01); }
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -18,138 +18,153 @@
             color: #f8fafc; 
             min-height: 100vh; 
             overflow-x: hidden;
-            background-image: radial-gradient(circle at 10% 10%, rgba(167, 139, 250, 0.05) 0%, transparent 40%);
+            background-image: radial-gradient(circle at 50% -20%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+                              radial-gradient(circle at 0% 100%, rgba(79, 70, 229, 0.03) 0%, transparent 40%);
         }
 
-        .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.04); }
         
         .glass-card { 
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.05); 
-            border-radius: 32px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.03); 
+            border-radius: 24px;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
-        .glass-card:hover { border-color: rgba(167, 139, 250, 0.3); transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5); }
+        .glass-card:hover { 
+            border-color: rgba(167, 139, 250, 0.25); 
+            transform: translateY(-2px); 
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: 0 15px 35px -15px rgba(167, 139, 250, 0.1); 
+        }
 
-        #sidebar { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 260px; z-index: 100;}
+        #sidebar { transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); width: 260px; z-index: 100; }
         #sidebar.collapsed { width: 80px; }
+        #sidebar.collapsed .nav-text, #sidebar.collapsed .logo-text { display: none; }
         
-        .nav-item { transition: all 0.2s ease; border-radius: 16px; margin-bottom: 6px; color: #64748b; }
-        .nav-item.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, transparent 100%); color: var(--accent); border: 1px solid rgba(167, 139, 250, 0.2); }
+        .nav-item { transition: all 0.2s ease; border-radius: 12px; margin-bottom: 4px; color: #64748b; }
+        .nav-item:hover { color: #f8fafc; background: rgba(255,255,255,0.02); }
+        .nav-item.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, transparent 100%); color: var(--accent); border: 1px solid rgba(167, 139, 250, 0.15); }
         
-        .progress-bar { background: rgba(255,255,255,0.05); border-radius: 99px; height: 6px; overflow: hidden; }
-        .progress-fill { background: linear-gradient(90deg, #A78BFA, #4F46E5); width: 45%; height: 100%; transition: 1s ease-in-out; }
+        .progress-bar { background: rgba(255,255,255,0.03); border-radius: 99px; height: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); }
+        .progress-fill { background: linear-gradient(90deg, #A78BFA, #6366f1); width: 0%; height: 100%; transition: 1.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
         .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.2); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.1); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.2); }
     </style>
 </head>
 <body class="flex">
 
-    <!-- SIDEBAR -->
-    <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5">
-        <div class="p-8 mb-8 flex items-center justify-between">
+    <aside id="sidebar" class="h-screen glass fixed left-0 top-0 flex flex-col border-r border-white/5 bg-[#030308]/60">
+        <div class="p-6 mb-4 flex items-center justify-between">
             <div class="flex items-center gap-3 font-bold text-white">
-                <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center font-black shadow-lg shadow-purple-500/20">A</div>
-                <span class="nav-text tracking-tighter uppercase text-sm font-black">ADATACORE</span>
+                <div class="w-9 h-9 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center font-black shadow-lg shadow-purple-500/10 shrink-0">A</div>
+                <span class="logo-text tracking-wider uppercase text-xs font-black bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ADATACORE</span>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg text-white transition-all">✨</button>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-all text-xs">✨</button>
         </div>
         
-        <nav class="flex-1 px-4">
-            <div class="nav-item active flex items-center gap-4 px-5 py-4 cursor-pointer">
-                <span>📊</span> <span class="nav-text text-sm font-semibold">Workspace</span>
+        <nav class="flex-1 px-3">
+            <div class="nav-item active flex items-center gap-4 px-4 py-3.5 cursor-pointer">
+                <span class="text-sm">📊</span> <span class="nav-text text-xs uppercase tracking-wider font-bold">Workspace</span>
             </div>
-            <div onclick="location.href='profile.html'" class="nav-item flex items-center gap-4 px-5 py-4 cursor-pointer hover:text-white transition-all">
-                <span>👤</span> <span class="nav-text text-sm font-semibold">Settings</span>
+            <div onclick="location.href='profile'" class="nav-item flex items-center gap-4 px-4 py-3.5 cursor-pointer hover:text-white transition-all">
+                <span class="text-sm">👤</span> <span class="nav-text text-xs uppercase tracking-wider font-bold">Settings</span>
             </div>
             <div id="admin-nav-container"></div>
         </nav>
 
-        <div class="p-6 border-t border-white/5">
-            <div id="btn-logout" class="flex items-center gap-4 px-5 py-4 text-red-400 hover:bg-red-500/10 rounded-2xl cursor-pointer transition-all">
-                <span>🚪</span> <span class="nav-text text-sm font-bold text-white uppercase tracking-widest">Logout</span>
+        <div class="p-4 border-t border-white/5 bg-[#030308]/40">
+            <div id="btn-logout" class="flex items-center gap-4 px-4 py-3.5 text-red-400/80 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/10 rounded-xl cursor-pointer transition-all">
+                <span class="text-sm">🚪</span> <span class="nav-text text-xs font-black uppercase tracking-widest">Logout</span>
             </div>
         </div>
     </aside>
 
-    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-500">
-        <header class="flex justify-between items-center mb-12">
+    <main id="main-content" class="ml-[260px] p-10 w-full transition-all duration-300">
+        <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 id="greeting" class="text-4xl font-bold text-white tracking-tight">System Active</h1>
-                <p id="display-uid" class="text-[10px] font-mono text-gray-500 mt-2 tracking-[0.2em] uppercase">User Authentication: Success</p>
+                <h1 id="greeting" class="text-3xl font-black text-white tracking-tight uppercase">System Active</h1>
+                <p id="display-uid" class="text-[9px] font-mono text-gray-500 mt-1.5 tracking-[0.25em] uppercase">User Authentication: Success</p>
             </div>
-            <div class="flex items-center gap-4 glass px-6 py-3 rounded-[24px] border-white/5 shadow-xl">
-                <div id="user-initials" class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-sm font-bold border-2 border-white/10">U</div>
+            <div class="flex items-center gap-3 glass px-4 py-2.5 rounded-2xl border-white/5 shadow-xl bg-[#030308]/40">
+                <div id="user-initials" class="w-8 h-8 bg-indigo-600/30 text-indigo-400 rounded-full flex items-center justify-center text-xs font-bold border border-indigo-500/20">U</div>
                 <div class="text-left">
-                    <p id="user-display-name" class="text-sm font-bold leading-none text-white">User</p>
-                    <p class="text-[9px] text-green-400 font-bold uppercase mt-2 tracking-widest flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> Network Online
+                    <p id="user-display-name" class="text-xs font-black leading-none text-white tracking-wide">User</p>
+                    <p class="text-[8px] text-green-400 font-bold uppercase mt-1 tracking-widest flex items-center gap-1">
+                        <span class="w-1 h-11 bg-green-400 rounded-full animate-pulse"></span> Online
                     </p>
                 </div>
             </div>
         </header>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
-            <div class="glass-card p-8 group">
-                <div class="flex justify-between items-start mb-6">
-                    <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💰</div>
-                    <span class="text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">+12.5%</span>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass-card p-6 group flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 bg-green-500/5 border border-green-500/10 rounded-xl flex items-center justify-center text-lg group-hover:scale-105 transition-transform">💰</div>
+                    <span class="text-[9px] font-bold text-green-400 bg-green-400/5 border border-green-400/10 px-2 py-0.5 rounded-md">Live Bal</span>
                 </div>
-                <p class="text-gray-500 text-[11px] uppercase font-bold tracking-widest">Wallet Balance</p>
-                <h3 class="text-4xl font-bold text-white mt-2">$<span id="stat-balance">0.00</span></h3>
+                <div>
+                    <p class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">Wallet Balance</p>
+                    <h3 class="text-3xl font-black text-white mt-1">$<span id="stat-balance">0.00</span></h3>
+                </div>
             </div>
 
-            <div class="glass-card p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-2xl">🎯</div>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Daily Goal</p>
+            <div class="glass-card p-6 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-500/5 border border-purple-500/10 rounded-xl flex items-center justify-center text-lg">🎯</div>
+                    <p class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">Daily Target</p>
                 </div>
-                <div class="flex justify-between items-end mb-3">
-                    <span class="text-2xl font-bold text-white">$4.20</span>
-                    <span class="text-[10px] text-gray-500 font-bold">42% Completed</span>
-                </div>
-                <div class="progress-bar"><div class="progress-fill"></div></div>
-            </div>
-
-            <div class="lg:col-span-2 glass-card p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <p class="text-gray-500 text-[11px] uppercase font-bold tracking-widest">Performance Matrix</p>
-                    <div class="flex gap-2">
-                        <span class="text-[10px] font-bold text-indigo-400 uppercase">Live Statistics</span>
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <span id="target-earned" class="text-xl font-black text-white">$0.00</span>
+                        <span id="target-percentage" class="text-[9px] text-purple-400 font-bold">0% Done</span>
                     </div>
+                    <div class="progress-bar"><div id="target-progress-fill" class="progress-fill"></div></div>
                 </div>
-                <div class="h-[120px]"><canvas id="earningChart"></canvas></div>
+            </div>
+
+            <div class="lg:col-span-2 glass-card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">Performance Matrix</p>
+                    <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">7-Day Earning Chart</span>
+                </div>
+                <div class="h-[100px]"><canvas id="earningChart"></canvas></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-10">
-            <!-- Projects Section -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <div class="xl:col-span-2">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Current Projects</h2>
-                    <div class="h-px flex-1 bg-white/5 mx-6"></div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-black text-white tracking-wider uppercase">Current Assignments</h2>
+                    <div class="h-px flex-1 bg-white/5 mx-4"></div>
                 </div>
-                <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+                <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                 
-                <div class="flex justify-between items-center mt-16 mb-8">
-                    <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Ledger History</h2>
-                    <div class="h-px flex-1 bg-white/5 mx-6"></div>
+                <div class="flex justify-between items-center mt-12 mb-6">
+                    <h2 class="text-lg font-black text-white tracking-wider uppercase">Ledger History</h2>
+                    <div class="h-px flex-1 bg-white/5 mx-4"></div>
                 </div>
                 <div class="glass-card overflow-hidden">
                     <table class="w-full text-left">
-                        <thead><tr class="text-[11px] text-gray-500 uppercase tracking-widest border-b border-white/5"><th class="p-6">Project Name</th><th class="p-6">Net Payout</th><th class="p-6 text-center">Status</th></tr></thead>
+                        <thead>
+                            <tr class="text-[9px] text-gray-500 uppercase tracking-widest border-b border-white/5 bg-white/[0.005]">
+                                <th class="p-5 font-bold">Project Name</th>
+                                <th class="p-5 font-bold">Net Payout</th>
+                                <th class="p-5 font-bold text-center">Status</th>
+                            </tr>
+                        </thead>
                         <tbody id="history-body" class="divide-y divide-white/5"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="space-y-8">
-                <h2 class="text-xl font-bold text-white uppercase tracking-tighter">Live Activity</h2>
-                <div id="activity-feed" class="glass-card p-8 space-y-8 max-h-[700px] overflow-y-auto custom-scroll">
-                    <!-- Activity data will be injected here -->
+            <div>
+                <h2 class="text-lg font-black text-white uppercase tracking-wider mb-6">Live Activity</h2>
+                <div id="activity-feed" class="glass-card p-6 space-y-6 max-h-[600px] overflow-y-auto custom-scroll">
+                    <div class="py-10 text-center text-gray-500 text-xs italic uppercase tracking-wider">Syncing activity...</div>
                 </div>
             </div>
         </div>
@@ -159,6 +174,7 @@
         const SB_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
         const SB_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
+        let performanceChart = null;
 
         window.toggleSidebar = () => {
             const sb = document.getElementById('sidebar');
@@ -169,14 +185,13 @@
 
         async function init() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) { window.location.replace("auth.html"); return; }
+            if (!user) { window.location.replace("auth"); return; }
 
             const { data: d } = await _supabase.from('users').select('*').eq('id', user.id).single();
             if(d) {
                 updateUI(d);
-                loadMyTasks(d); // Passing the full profile
-                loadHistory(d.uniqueID);
-                updateActivityFeed(d.uniqueID);
+                loadMyTasks(d);
+                loadHistoryAndMetrics(d.uniqueID);
             }
 
             _supabase.channel('user_updates').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${user.id}` }, (payload) => {
@@ -184,7 +199,6 @@
             }).subscribe();
 
             loadAnnouncement(); 
-            renderChart();
         }
 
         function updateUI(d) {
@@ -199,77 +213,133 @@
 
             if (d.role === 'admin' || d.email === "as4556676@gmail.com") {
                 const adminContainer = document.getElementById('admin-nav-container');
-                adminContainer.innerHTML = `<div onclick="location.href='admin.html'" class="nav-item flex items-center gap-4 px-5 py-4 mt-6 text-yellow-500 font-bold cursor-pointer hover:bg-yellow-500/10 transition-all border border-yellow-500/20 rounded-2xl"><span>🛡️</span> <span class="nav-text text-sm uppercase">Admin Panel</span></div>`;
+                adminContainer.innerHTML = `
+                    <div onclick="location.href='admin'" class="nav-item flex items-center gap-4 px-4 py-3.5 mt-4 text-yellow-500 border border-yellow-500/10 bg-yellow-500/5 hover:bg-yellow-500/10 rounded-xl cursor-pointer transition-all">
+                        <span class="text-sm">🛡️</span> 
+                        <span class="nav-text text-xs font-bold uppercase tracking-wider">Admin Panel</span>
+                    </div>`;
             }
         }
 
-        async function updateActivityFeed(uid) {
-            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(3);
+        async function loadHistoryAndMetrics(uid) {
+            // Fetch raw submissions to populate history, daily goals, and performance metrics
+            const { data: subs, error } = await _supabase
+                .from('submissions')
+                .select('*')
+                .eq('workerUID', uid)
+                .order('created_at', { ascending: false });
+
+            if (error) return;
+
+            // 1. Live Activity Feed Rendering
             const feed = document.getElementById('activity-feed');
-            feed.innerHTML = "";
+            feed.innerHTML = (!subs || subs.length === 0) ? `<div class="py-10 text-center text-gray-600 text-xs uppercase font-bold tracking-wider">No Activity Logged</div>` : "";
             
-            subs?.forEach(s => {
+            subs?.slice(0, 4).forEach(s => {
                 const statusColor = s.status === 'Approved' ? 'bg-green-500' : s.status === 'Rejected' ? 'bg-red-500' : 'bg-yellow-500';
                 feed.innerHTML += `
-                    <div class="flex gap-4 group mb-6">
-                        <div class="w-1 h-12 ${statusColor} rounded-full group-hover:scale-y-110 transition-transform"></div>
-                        <div>
-                            <p class="text-xs font-bold text-white uppercase">${s.status || 'Processing'}</p>
-                            <p class="text-[10px] text-gray-500 mt-2 leading-relaxed">Project <b>${s.projectTitle}</b> submission logged at $${s.earnedAmount}.</p>
+                    <div class="flex gap-4 group">
+                        <div class="w-0.5 h-10 ${statusColor} rounded-full group-hover:scale-y-110 transition-transform"></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-black text-white uppercase tracking-wider">${s.status || 'Processing'}</p>
+                            <p class="text-[11px] text-gray-400 truncate mt-1">Project <b>${s.projectTitle}</b> submission logged at $${s.earnedAmount}.</p>
                         </div>
                     </div>`;
             });
+
+            // 2. Ledger History Table Rendering
+            const b = document.getElementById('history-body');
+            b.innerHTML = (!subs || subs.length === 0) ? `<tr><td colspan="3" class="p-10 text-center text-gray-600 text-xs uppercase font-bold tracking-widest opacity-40">Zero Transactions Found</td></tr>` : "";
+            
+            subs?.slice(0, 6).forEach(s => {
+                const status = s.status || 'Pending';
+                const statusStyle = status === 'Approved' ? 'bg-green-500/5 text-green-400 border-green-500/10' : status === 'Rejected' ? 'bg-red-500/5 text-red-400 border-red-500/10' : 'bg-yellow-500/5 text-yellow-400 border-yellow-500/10';
+                b.innerHTML += `
+                    <tr class="hover:bg-white/[0.01] transition-all">
+                        <td class="p-5 text-xs font-bold uppercase tracking-wide text-white">${s.projectTitle}</td>
+                        <td class="p-5 text-xs font-mono font-black text-gray-400">$${(s.earnedAmount || 0).toFixed(2)}</td>
+                        <td class="p-5 text-center">
+                            <span class="px-3 py-1 rounded-md text-[8px] font-black uppercase border ${statusStyle}">${status}</span>
+                        </td>
+                    </tr>`;
+            });
+
+            // 3. Dynamic Daily Goal Computation
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayEarnings = subs
+                ?.filter(s => s.created_at && s.created_at.startsWith(todayStr) && s.status === 'Approved')
+                .reduce((sum, current) => sum + (current.earnedAmount || 0), 0) || 0;
+
+            const targetGoal = 10.00; // Customizable static baseline target
+            const targetPct = Math.min(Math.round((todayEarnings / targetGoal) * 100), 100);
+
+            document.getElementById('target-earned').innerText = `$${todayEarnings.toFixed(2)}`;
+            document.getElementById('target-percentage').innerText = `${targetPct}% Completed`;
+            document.getElementById('target-progress-fill').style.width = `${targetPct}%`;
+
+            // 4. Real Performance Chart Calculation (Last 7 Days Breakdown)
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const chartData = [0, 0, 0, 0, 0, 0, 0];
+            const currentDayIndex = new Date().getDay();
+
+            // Structure data chronologically ending on today
+            const dynamicLabels = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dynamicLabels.push(daysOfWeek[d.getDay()]);
+                
+                const dateISO = d.toISOString().split('T')[0];
+                const dayTotal = subs
+                    ?.filter(s => s.created_at && s.created_at.startsWith(dateISO) && s.status === 'Approved')
+                    .reduce((sum, current) => sum + (current.earnedAmount || 0), 0) || 0;
+                
+                chartData[6 - i] = dayTotal;
+            }
+
+            // Fallback safety to dummy curve if user is brand new (keeps dashboard visual texture clean)
+            const absoluteSum = chartData.reduce((a, b) => a + b, 0);
+            const finalChartDataset = absoluteSum > 0 ? chartData : [5, 12, 8, 20, 15, 28, 22];
+
+            renderChart(dynamicLabels, finalChartDataset);
         }
 
-        // --- 100% FIXED PROJECT LOADER (DUAL MATCH) ---
         async function loadMyTasks(profile) {
             const container = document.getElementById('task-container');
-            container.innerHTML = `<div class="col-span-full py-10 text-center animate-pulse text-gray-500 uppercase font-black tracking-widest text-xs">Syncing Projects...</div>`;
+            container.innerHTML = `<div class="col-span-full py-10 text-center animate-pulse text-gray-600 uppercase font-bold tracking-widest text-xs">Syncing Active Stream...</div>`;
 
             const userEmail = profile.email ? profile.email.trim() : "null";
             const userUID = profile.uniqueID ? profile.uniqueID.trim() : "null";
 
-            // assignedTo या तो ईमेल हो सकता है या uniqueID
             const { data: tasks, error } = await _supabase
                 .from('tasks')
                 .select('*')
                 .or(`assignedTo.eq."${userEmail}",assignedTo.eq."${userUID}"`);
 
             if (error || !tasks || tasks.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-24 text-center glass-card opacity-30 uppercase font-black tracking-widest">Awaiting Assignments...</div>`;
+                container.innerHTML = `<div class="col-span-full py-16 text-center glass-card opacity-30 uppercase font-bold tracking-widest text-xs">Awaiting Global Assignments...</div>`;
                 return;
             }
 
             container.innerHTML = "";
             tasks.forEach(t => {
+                const isPending = t.status === 'pending';
+                const statusBadge = isPending ? 
+                    `<span class="text-[8px] font-black text-purple-400 border border-purple-500/20 bg-purple-500/5 px-2 py-0.5 rounded-md uppercase">Pending</span>` : 
+                    `<span class="text-[8px] font-black text-green-400 border border-green-500/20 bg-green-500/5 px-2 py-0.5 rounded-md uppercase">${t.status}</span>`;
+                
                 container.innerHTML += `
-                    <div class="glass-card p-8 border-t-2 border-purple-600/30">
-                        <div class="flex justify-between items-start mb-8">
-                            <span class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-xl">🧩</span>
-                            <span class="text-green-400 font-black text-xl">$${(t.price || 0).toFixed(2)}</span>
+                    <div class="glass-card p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-8 h-8 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center text-sm">🧩</div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-green-400 font-black text-lg">$${(t.price || 0).toFixed(2)}</span>
+                                ${statusBadge}
+                            </div>
                         </div>
-                        <h4 class="font-bold text-lg mb-6 uppercase tracking-tight line-clamp-1">${t.title}</h4>
-                        <button onclick="location.href='universal_engine.html?project=${encodeURIComponent(t.title)}'" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-indigo-600 transition-all shadow-xl">Initialize Task ➔</button>
+                        <h4 class="font-bold text-sm text-white uppercase tracking-wide line-clamp-1 mb-4">${t.title}</h4>
+                        <button onclick="location.href='universal_engine?project=${encodeURIComponent(t.title)}'" ${!isPending ? 'disabled' : ''} class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all shadow-lg">Initialize Engine ➔</button>
                     </div>`;
-            });
-        }
-
-        async function loadHistory(uid) {
-            const { data: subs } = await _supabase.from('submissions').select('*').eq('workerUID', uid).order('id', { ascending: false }).limit(6);
-            const b = document.getElementById('history-body');
-            b.innerHTML = (!subs || subs.length === 0) ? `<tr><td colspan="3" class="p-12 text-center text-gray-500 italic uppercase font-bold tracking-widest opacity-20">Zero Transactions Found</td></tr>` : "";
-            
-            subs?.forEach(s => {
-                const status = s.status || 'Pending';
-                const statusStyle = status === 'Approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : status === 'Rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-                b.innerHTML += `
-                    <tr class="hover:bg-white/5 transition-all">
-                        <td class="p-6 text-sm font-bold uppercase tracking-tight text-white">${s.projectTitle}</td>
-                        <td class="p-6 text-sm font-mono font-black text-gray-400 tracking-tighter">$${(s.earnedAmount || 0).toFixed(3)}</td>
-                        <td class="p-6 text-center">
-                            <span class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase border ${statusStyle}">${status}</span>
-                        </td>
-                    </tr>`;
             });
         }
 
@@ -281,28 +351,50 @@
                     Swal.fire({
                         title: 'SYSTEM BROADCAST',
                         text: currentMsg,
-                        background: '#050510',
+                        background: '#030308',
                         color: '#fff',
-                        confirmButtonText: 'ACKNOWLEDGE',
+                        confirmButtonText: 'ACKNOWLEDGE SYSTEM',
                         confirmButtonColor: '#4F46E5',
-                        customClass: { popup: 'rounded-[32px] border border-white/10' }
+                        customClass: { popup: 'rounded-[24px] border border-white/10 text-xs' }
                     }).then(() => sessionStorage.setItem('popupShown', 'true'));
                 }
             }
         }
 
-        function renderChart() {
+        function renderChart(labels, data) {
             const ctx = document.getElementById('earningChart').getContext('2d');
-            new Chart(ctx, { 
+            if (performanceChart) { performanceChart.destroy(); }
+            
+            performanceChart = new Chart(ctx, { 
                 type: 'line', 
-                data: { labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#6366f1', borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)' }] }, 
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } 
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: data, 
+                        borderColor: '#A78BFA', 
+                        borderWidth: 2, 
+                        pointRadius: 1,
+                        pointBackgroundColor: '#A78BFA',
+                        tension: 0.4, 
+                        fill: true, 
+                        backgroundColor: 'rgba(167, 139, 250, 0.02)' 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { display: true, grid: { display: false }, cookies: { display: false }, ticks: { color: '#334155', font: { size: 8, weight: 'bold' } } }, 
+                        y: { display: false, grid: { display: false } } 
+                    } 
+                } 
             });
         }
 
         document.getElementById('btn-logout').onclick = async () => {
             await _supabase.auth.signOut();
-            window.location.replace("auth.html");
+            window.location.replace("auth");
         };
 
         init();
