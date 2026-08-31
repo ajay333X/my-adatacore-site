@@ -1,4 +1,27 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/dashboard", "destination": "/dashboard-secure", "permanent": false },
+    { "source": "/dashboard.html", "destination": "/dashboard-secure", "permanent": false },
+    { "source": "/admin", "destination": "/admin-secure", "permanent": false },
+    { "source": "/admin.html", "destination": "/admin-secure", "permanent": false },
+    { "source": "/universal_engine", "destination": "/voice-engine-secure", "permanent": false },
+    { "source": "/universal_engine.html", "destination": "/voice-engine-secure", "permanent": false },
+    { "source": "/voice-engine", "destination": "/voice-engine-secure", "permanent": false },
+    { "source": "/review", "destination": "/review-secure", "permanent": false },
+    { "source": "/task_player", "destination": "/dashboard-secure", "permanent": false },
+    { "source": "/task_player.html", "destination": "/dashboard-secure", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), geolocation=(), payment=()" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
 }
