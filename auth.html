@@ -1,173 +1,252 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Authentication — Adatacore</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        :root { --accent: #A78BFA; --bg-dark: #0D0D1F; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .grid-pattern { background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px); background-size: 40px 40px; position: fixed; inset: 0; z-index: -1; }
-        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(167, 139, 250, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border-radius: 32px; }
-        .premium-input { background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(167, 139, 250, 0.1) !important; border-radius: 12px; padding: 12px 16px; color: white; width: 100%; outline: none; transition: all 0.3s ease; }
-        .premium-input:focus { border-color: #A78BFA !important; box-shadow: 0 0 20px rgba(167, 139, 250, 0.15); }
-        .btn-shine { position: relative; overflow: hidden; background: linear-gradient(135deg, #7C3AED, #A78BFA); font-weight: bold; color: white; padding: 16px; border-radius: 16px; width: 100%; transition: transform 0.2s; cursor: pointer; border: none; }
-        .btn-shine:active { transform: scale(0.96); }
-        .tab-btn { padding: 8px 16px; font-size: 14px; font-weight: 600; color: #94A3B8; background: none; border: none; cursor: pointer; position: relative; }
-        .tab-btn.active { color: white; }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 16px; right: 16px; height: 2px; background: #A78BFA; box-shadow: 0 0 10px #A78BFA; }
-        .hidden { display: none; }
-        .social-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; color: white; }
-        .social-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Sign in to your Adatacore workspace.">
+  <title>Sign in — Adatacore</title>
+  <link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+  <link rel="shortcut icon" href="/favicon.ico?v=20260831-3" type="image/x-icon">
+  <link rel="stylesheet" href="/design-system.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    :root{color-scheme:dark}
+    body{min-height:100vh;background:
+      radial-gradient(circle at 12% 12%,rgba(124,58,237,.18),transparent 30%),
+      radial-gradient(circle at 88% 78%,rgba(52,211,153,.07),transparent 26%),
+      #080810;overflow-x:hidden}
+    .auth-shell{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr)}
+    .auth-brand{position:relative;padding:42px clamp(34px,5vw,78px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)}
+    .auth-brand:before,.auth-brand:after{content:"";position:absolute;border-radius:999px;filter:blur(6px);pointer-events:none}
+    .auth-brand:before{width:520px;height:520px;left:-240px;top:40px;background:radial-gradient(circle,rgba(124,58,237,.2),transparent 68%);animation:ambient 10s ease-in-out infinite alternate}
+    .auth-brand:after{width:420px;height:420px;right:-180px;bottom:-120px;background:radial-gradient(circle,rgba(52,211,153,.09),transparent 70%);animation:ambient 13s ease-in-out infinite alternate-reverse}
+    .auth-home{position:relative;z-index:2;width:max-content}
+    .auth-copy{position:relative;z-index:2;max-width:670px;padding:52px 0}
+    .auth-copy h1{font-size:clamp(50px,6.5vw,88px);margin:18px 0 18px;max-width:760px}
+    .precision{font-size:clamp(23px,3vw,36px);font-weight:800;letter-spacing:-.04em;margin:0 0 20px;background:linear-gradient(90deg,#fff,#c9bbff 48%,#91e8ca);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .auth-copy p{font-size:17px;line-height:1.75;color:#aaaabd;max-width:620px;margin:0}
+    .trust-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+    .trust-row .pill{backdrop-filter:blur(8px)}
+    .data-visual{position:relative;z-index:2;margin-top:34px;width:min(620px,100%);padding:18px;background:linear-gradient(180deg,rgba(19,19,34,.9),rgba(10,10,19,.88));border:1px solid #2b2b40;border-radius:20px;box-shadow:0 22px 70px rgba(0,0,0,.28);animation:floatCard 7s ease-in-out infinite}
+    .visual-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:12px}
+    .wave{width:100%;height:82px;display:block}
+    .wave path{stroke-dasharray:930;stroke-dashoffset:930;animation:draw 1.5s ease .4s forwards,pulse 3.5s ease-in-out 2s infinite}
+    .brand-foot{position:relative;z-index:2;color:#6f6f83;font-size:11px;display:flex;justify-content:space-between;gap:20px}
+
+    .auth-panel-wrap{padding:34px;display:flex;align-items:center;justify-content:center;position:relative}
+    .auth-panel-wrap:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.018),transparent 38%);pointer-events:none}
+    .auth-panel{width:min(480px,100%);padding:30px;border-radius:26px;background:linear-gradient(180deg,rgba(20,20,34,.97),rgba(12,12,22,.97));border:1px solid #2a2a3d;box-shadow:0 30px 90px rgba(0,0,0,.36);position:relative;z-index:2}
+    .mobile-brand{display:none;margin-bottom:24px}
+    .auth-heading h2{font-size:30px;letter-spacing:-.04em;margin:0 0 7px}.auth-heading p{margin:0;color:#8f8fa3;font-size:13px;line-height:1.6}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;background:#0c0c15;border:1px solid #252538;border-radius:13px;margin:24px 0 22px;position:relative}
+    .tab{position:relative;z-index:2;min-height:42px;border:0;background:transparent;color:#77778c;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;transition:color .18s ease,background .18s ease,transform .18s ease}.tab:hover{color:#d8d8e3}.tab.active{color:#fff;background:#191928;box-shadow:0 7px 20px rgba(0,0,0,.16)}
+    .form-view{display:none;animation:formIn .28s cubic-bezier(.2,.8,.2,1)}.form-view.active{display:block}
+    .form-stack{display:grid;gap:15px}.field-label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#c7c7d4;font-weight:650;margin-bottom:7px}.field-label a,.link-button{border:0;background:none;padding:0;color:#b9a7ff;font:inherit;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none}.field-label a:hover,.link-button:hover{color:#d7ceff}
+    .input-wrap{position:relative}.input-wrap .input{padding-right:48px}.input-wrap .input.no-toggle{padding-right:13px}.password-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:#77778b;cursor:pointer;display:grid;place-items:center}.password-toggle:hover{background:#171725;color:#ddd}.password-toggle svg{width:18px;height:18px}
+    .password-hint{font-size:10px;line-height:1.55;color:#6f6f83;margin-top:7px}
+    .submit-btn{width:100%;margin-top:4px;position:relative;overflow:hidden}.submit-btn:after{content:"";position:absolute;inset:-35% auto -35% -35%;width:30%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.26),transparent);animation:sweep 6s ease-in-out infinite 1.6s}.submit-btn.is-loading:after{display:none}
+    .divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#606073;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}.divider:before,.divider:after{content:"";height:1px;background:#262638;flex:1}
+    .google-btn{width:100%;min-height:46px;background:#131320;border:1px solid #2a2a3d;color:#eee}.google-btn:hover{background:#181826;border-color:#40405a}.google-icon{width:18px;height:18px;flex:0 0 auto}
+    .auth-help{margin-top:20px;padding-top:18px;border-top:1px solid #242436;text-align:center;color:#757589;font-size:11px;line-height:1.6}.auth-help a{color:#b9a7ff;text-decoration:none;font-weight:700}
+    .back-link{display:inline-flex;align-items:center;gap:7px;color:#8d8da1;text-decoration:none;font-size:12px;font-weight:650;margin-top:18px}.back-link:hover{color:#fff}
+
+    .notice{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,2,7,.78);backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:.22s ease}.notice.show{opacity:1;visibility:visible}.notice-card{width:min(420px,100%);padding:28px;border-radius:22px;background:linear-gradient(180deg,#171728,#0e0e19);border:1px solid #313149;box-shadow:0 30px 90px rgba(0,0,0,.5);text-align:center;transform:translateY(12px) scale(.98);transition:.22s ease}.notice.show .notice-card{transform:none}.notice-icon{width:58px;height:58px;margin:0 auto 17px;border-radius:18px;display:grid;place-items:center;font-size:24px;font-weight:800}.notice.success .notice-icon{color:#8de8c4;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.22)}.notice.error .notice-icon{color:#ff9cab;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.22)}.notice.info .notice-icon{color:#c9bfff;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.22)}.notice h3{font-size:20px;margin:0 0 8px;letter-spacing:-.025em}.notice p{color:#a0a0b3;font-size:13px;line-height:1.65;margin:0}.notice .btn{width:100%;margin-top:22px}
+
+    @keyframes ambient{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(38px,20px,0) scale(1.08)}}
+    @keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    @keyframes draw{to{stroke-dashoffset:0}}@keyframes pulse{0%,100%{opacity:.7}50%{opacity:1;filter:drop-shadow(0 0 8px rgba(167,139,250,.28))}}
+    @keyframes formIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes sweep{0%,76%{left:-35%;opacity:0}82%{opacity:1}95%,100%{left:118%;opacity:0}}
+    @media(max-width:980px){.auth-shell{grid-template-columns:1fr}.auth-brand{display:none}.auth-panel-wrap{min-height:100vh;padding:24px}.mobile-brand{display:flex}.auth-panel{padding:27px}.back-link{margin-bottom:2px}}
+    @media(max-width:560px){.auth-panel-wrap{padding:14px;align-items:flex-start;padding-top:max(22px,env(safe-area-inset-top))}.auth-panel{padding:22px 18px;border-radius:21px}.auth-heading h2{font-size:26px}.tabs{margin-top:20px}.mobile-brand{margin-bottom:20px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}.wave path{stroke-dashoffset:0!important}}
+  </style>
 </head>
-<body class="grid-pattern">
-    <div class="glass w-full max-w-[440px] p-10 relative z-10">
-        <div class="flex flex-col items-center mb-8">
-            <div class="flex items-center gap-2.5 font-bold text-white text-xl mb-6">
-                <svg viewBox="0 0 64 64" class="w-8 h-8"><rect x="4" y="4" width="56" height="56" rx="14" fill="#1A1A2E"></rect><path d="M32 18L42 46H38L36 40H28L26 46H22L32 18Z" fill="#A78BFA"></path></svg>
-                Adatacore
+<body>
+  <main class="auth-shell">
+    <section class="auth-brand" aria-label="Adatacore workspace introduction">
+      <a class="brand auth-home" href="/" aria-label="Back to Adatacore home"><span class="brand-mark" aria-hidden="true"></span><span>Adatacore</span></a>
+
+      <div class="auth-copy">
+        <span class="pill pill-brand">Secure workspace access</span>
+        <h1 class="title">Human data operations, built for serious AI work.</h1>
+        <div class="precision">Precision in Every Byte.</div>
+        <p>Access projects, review workflows, earnings and secure voice tasks from one focused Adatacore workspace.</p>
+        <div class="trust-row">
+          <span class="pill">Secure access</span><span class="pill">Human review</span><span class="pill">Quality controlled</span>
+        </div>
+        <div class="data-visual" aria-hidden="true">
+          <div class="visual-head"><div><div class="eyebrow">Live workspace</div><strong style="display:block;margin-top:5px">Multimodal review signal</strong></div><span class="pill pill-green">Protected</span></div>
+          <svg class="wave" viewBox="0 0 640 90" preserveAspectRatio="none"><path d="M0 47 L18 44 L34 56 L50 28 L67 62 L84 20 L101 54 L118 34 L136 68 L152 42 L170 23 L188 60 L205 38 L222 70 L239 24 L255 50 L272 31 L290 62 L307 18 L324 52 L341 36 L358 66 L375 29 L392 55 L410 38 L427 64 L444 22 L461 48 L478 33 L496 58 L513 26 L530 53 L548 37 L565 67 L582 30 L600 50 L620 41 L640 47" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round"/></svg>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill">Audio</span><span class="pill">Vision</span><span class="pill">Text</span><span class="pill">Evaluation</span></div>
+        </div>
+      </div>
+
+      <div class="brand-foot"><span>© 2026 Adatacore</span><span>Secure workspace</span></div>
+    </section>
+
+    <section class="auth-panel-wrap">
+      <div class="auth-panel">
+        <a class="brand mobile-brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>Adatacore</span></a>
+
+        <div class="auth-heading">
+          <div class="eyebrow" id="eyebrowText">Workspace access</div>
+          <h2 id="panelTitle">Welcome back</h2>
+          <p id="panelSubtitle">Sign in to continue to your Adatacore workspace.</p>
+        </div>
+
+        <div class="tabs" id="authTabs" role="tablist" aria-label="Authentication mode">
+          <button class="tab active" id="tabSignin" type="button" role="tab" aria-selected="true">Sign in</button>
+          <button class="tab" id="tabSignup" type="button" role="tab" aria-selected="false">Create account</button>
+        </div>
+
+        <form class="form-view active" id="signinForm" novalidate>
+          <div class="form-stack">
+            <div>
+              <label class="field-label" for="loginEmail"><span>Email address</span></label>
+              <div class="input-wrap"><input class="input no-toggle" id="loginEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>
             </div>
-            <div class="flex gap-4 border-b border-white/5 w-full justify-center">
-                <button onclick="switchTab('signin')" id="tab-signin" class="tab-btn active">Sign In</button>
-                <button onclick="switchTab('signup')" id="tab-signup" class="tab-btn">Sign Up</button>
+            <div>
+              <label class="field-label" for="loginPassword"><span>Password</span><button class="link-button" id="forgotPassword" type="button">Forgot password?</button></label>
+              <div class="input-wrap"><input class="input" id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required><button class="password-toggle" type="button" data-toggle-password="loginPassword" aria-label="Show password"></button></div>
             </div>
+            <button class="btn btn-primary submit-btn" id="signinButton" type="submit">Sign in</button>
+          </div>
+        </form>
+
+        <form class="form-view" id="signupForm" novalidate>
+          <div class="form-stack">
+            <div>
+              <label class="field-label" for="signupName"><span>Full name</span></label>
+              <div class="input-wrap"><input class="input no-toggle" id="signupName" type="text" autocomplete="name" placeholder="Your full name" minlength="2" maxlength="120" required></div>
+            </div>
+            <div>
+              <label class="field-label" for="signupEmail"><span>Email address</span></label>
+              <div class="input-wrap"><input class="input no-toggle" id="signupEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>
+            </div>
+            <div>
+              <label class="field-label" for="signupPassword"><span>Password</span></label>
+              <div class="input-wrap"><input class="input" id="signupPassword" type="password" autocomplete="new-password" placeholder="Create a secure password" minlength="8" required><button class="password-toggle" type="button" data-toggle-password="signupPassword" aria-label="Show password"></button></div>
+              <div class="password-hint">Use at least 8 characters. A longer, unique password is recommended.</div>
+            </div>
+            <button class="btn btn-primary submit-btn" id="signupButton" type="submit">Create account</button>
+          </div>
+        </form>
+
+        <form class="form-view" id="resetForm" novalidate>
+          <div class="form-stack">
+            <div>
+              <label class="field-label" for="resetPassword"><span>New password</span></label>
+              <div class="input-wrap"><input class="input" id="resetPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Choose a new password" required><button class="password-toggle" type="button" data-toggle-password="resetPassword" aria-label="Show password"></button></div>
+              <div class="password-hint">Use at least 8 characters and avoid reusing a password from another service.</div>
+            </div>
+            <button class="btn btn-primary submit-btn" id="resetButton" type="submit">Update password</button>
+          </div>
+        </form>
+
+        <div id="socialArea">
+          <div class="divider">or continue with</div>
+          <button class="btn google-btn" id="googleButton" type="button" aria-label="Continue with Google">
+            <svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.39a4.61 4.61 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.97-4.33 2.97-7.36Z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.63-2.41l-3.24-2.51c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.05v2.59A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.39 13.91A6.01 6.01 0 0 1 6.08 12c0-.66.11-1.3.31-1.91V7.5H3.05A10 10 0 0 0 2 12c0 1.61.38 3.13 1.05 4.5l3.34-2.59Z"/><path fill="#EA4335" d="M12 5.96c1.47 0 2.79.51 3.83 1.49l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.95 5.5l3.34 2.59C7.18 7.72 9.39 5.96 12 5.96Z"/></svg>
+            <span>Continue with Google</span>
+          </button>
         </div>
 
-        <!-- Login Form -->
-        <div id="signin-form" class="space-y-4">
-            <input type="email" id="login-email" placeholder="Email Address" class="premium-input">
-            <input type="password" id="login-password" placeholder="Password" class="premium-input">
-            <button id="btn-signin" class="btn-shine">Sign In</button>
-        </div>
+        <div class="auth-help" id="authHelp">By continuing, you’re accessing a protected Adatacore workspace.</div>
+        <a class="back-link" href="/">← Back to Adatacore</a>
+      </div>
+    </section>
+  </main>
 
-        <!-- Signup Form -->
-        <div id="signup-form" class="space-y-4 hidden">
-            <input type="text" id="signup-name" placeholder="Full Name" class="premium-input">
-            <input type="email" id="signup-email" placeholder="Email Address" class="premium-input">
-            <input type="password" id="signup-password" placeholder="Password" class="premium-input">
-            <button id="btn-signup" class="btn-shine">Create Account</button>
-        </div>
+  <div class="notice" id="notice" role="dialog" aria-modal="true" aria-labelledby="noticeTitle" aria-describedby="noticeMessage">
+    <div class="notice-card"><div class="notice-icon" id="noticeIcon">i</div><h3 id="noticeTitle"></h3><p id="noticeMessage"></p><button class="btn btn-primary" id="noticeButton" type="button">Done</button></div>
+  </div>
 
-        <div class="relative py-6">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
-            <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-gray-600 px-2">Or continue with</div>
-        </div>
+<script>
+window.addEventListener('DOMContentLoaded',()=>{
+  const SUPABASE_URL='https://llmhyezgcnbognmmsnzq.supabase.co';
+  const SUPABASE_KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+  const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 
-        <button id="btn-google" class="social-btn">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4"> <span class="text-xs font-semibold">Sign in with Google</span>
-        </button>
-    </div>
+  const $=id=>document.getElementById(id);
+  const views={signin:$('signinForm'),signup:$('signupForm'),reset:$('resetForm')};
+  const tabs={signin:$('tabSignin'),signup:$('tabSignup')};
+  const social=$('socialArea'),authTabs=$('authTabs');
+  let recoveryMode=false;
 
-    <script>
-        // --- SUPABASE CONFIGURATION ---
-        const SUPABASE_URL = "https://llmhyezgcnbognmmsnzq.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml";
-        
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  function setMode(mode){
+    Object.entries(views).forEach(([key,el])=>el.classList.toggle('active',key===mode));
+    if(mode==='reset'){
+      recoveryMode=true;authTabs.style.display='none';social.style.display='none';
+      $('eyebrowText').textContent='Account recovery';$('panelTitle').textContent='Set a new password';$('panelSubtitle').textContent='Choose a new password to finish recovering your account.';$('authHelp').textContent='Your recovery session is protected by Supabase Auth.';
+      return;
+    }
+    recoveryMode=false;authTabs.style.display='grid';social.style.display='block';
+    tabs.signin.classList.toggle('active',mode==='signin');tabs.signup.classList.toggle('active',mode==='signup');
+    tabs.signin.setAttribute('aria-selected',String(mode==='signin'));tabs.signup.setAttribute('aria-selected',String(mode==='signup'));
+    if(mode==='signin'){$('eyebrowText').textContent='Workspace access';$('panelTitle').textContent='Welcome back';$('panelSubtitle').textContent='Sign in to continue to your Adatacore workspace.';$('authHelp').textContent='By continuing, you’re accessing a protected Adatacore workspace.'}
+    else{$('eyebrowText').textContent='Join the workspace';$('panelTitle').textContent='Create your account';$('panelSubtitle').textContent='Set up your Adatacore account to access assigned work.';$('authHelp').textContent='Your contributor profile is created securely after signup.'}
+  }
 
-        // 16 Digit Lowercase ID Generator
-        function generateUniqueID() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 16; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
+  tabs.signin.onclick=()=>setMode('signin');tabs.signup.onclick=()=>setMode('signup');
 
-        // Sync User to 'users' table in Supabase
-        async function syncUserToTable(user, fullName = null) {
-            // Check if user already exists in the 'users' table
-            const { data: existingUser, error: fetchError } = await _supabase
-                .from('users')
-                .select('id')
-                .eq('id', user.id)
-                .single();
+  const eyeOpen='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>';
+  const eyeClosed='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 3 18 18M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.4 3.1M6.2 7.2C3.8 9 2.5 12 2.5 12S6 18 12 18c1.5 0 2.8-.4 4-1"/><path d="M10.5 10.5a2.2 2.2 0 0 0 3 3"/></svg>';
+  document.querySelectorAll('[data-toggle-password]').forEach(btn=>{btn.innerHTML=eyeOpen;btn.onclick=()=>{const input=$(btn.dataset.togglePassword);const show=input.type==='password';input.type=show?'text':'password';btn.innerHTML=show?eyeClosed:eyeOpen;btn.setAttribute('aria-label',show?'Hide password':'Show password')}});
 
-            if (!existingUser) {
-                // If new user, insert into 'users' table
-                const { error: insertError } = await _supabase
-                    .from('users')
-                    .insert([{
-                        id: user.id,
-                        email: user.email,
-                        fullName: fullName || user.user_metadata.full_name || "New Worker",
-                        uniqueID: generateUniqueID(),
-                        balance: 0.00,
-                        lastOnline: new Date().toISOString()
-                    }]);
-                
-                if (insertError) console.error("Sync Error:", insertError.message);
-            } else {
-                // Update last online for returning user
-                await _supabase.from('users').update({ lastOnline: new Date().toISOString() }).eq('id', user.id);
-            }
-        }
+  const notice=$('notice');
+  function showNotice(type,title,message,buttonText='Done'){
+    return new Promise(resolve=>{
+      notice.className='notice '+type;
+      $('noticeIcon').textContent=type==='success'?'✓':type==='error'?'!':'i';$('noticeTitle').textContent=title;$('noticeMessage').textContent=message;$('noticeButton').textContent=buttonText;
+      const close=()=>{notice.classList.remove('show');document.removeEventListener('keydown',onKey);setTimeout(resolve,180)};
+      const onKey=e=>{if(e.key==='Escape'||e.key==='Enter')close()};$('noticeButton').onclick=close;notice.onclick=e=>{if(e.target===notice)close()};document.addEventListener('keydown',onKey);requestAnimationFrame(()=>{notice.classList.add('show');setTimeout(()=>$('noticeButton').focus(),70)});
+    });
+  }
 
-        // SIGN IN LOGIC
-        document.getElementById('btn-signin').onclick = async () => {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
+  function setLoading(button,loading,text){button.disabled=loading;button.classList.toggle('is-loading',loading);if(!button.dataset.label)button.dataset.label=button.textContent;button.textContent=loading?text:button.dataset.label}
+  function validEmail(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)}
 
-            if(!email || !password) return Swal.fire('Wait!', 'Please fill all fields', 'warning');
+  $('signinForm').addEventListener('submit',async e=>{
+    e.preventDefault();const email=$('loginEmail').value.trim().toLowerCase(),password=$('loginPassword').value,button=$('signinButton');
+    if(!validEmail(email))return showNotice('error','Check your email','Enter a valid email address to continue.','Fix it');
+    if(!password)return showNotice('error','Password required','Enter your password to sign in.','Fix it');
+    setLoading(button,true,'Signing in…');
+    try{const {error}=await client.auth.signInWithPassword({email,password});if(error)throw error;window.location.href='/dashboard'}catch(error){await showNotice('error','Unable to sign in',error.message||'Check your email and password, then try again.','Try again')}finally{setLoading(button,false,'')}
+  });
 
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+  $('signupForm').addEventListener('submit',async e=>{
+    e.preventDefault();const name=$('signupName').value.trim(),email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value,button=$('signupButton');
+    if(name.length<2)return showNotice('error','Check your name','Enter your full name to continue.','Fix it');
+    if(!validEmail(email))return showNotice('error','Check your email','Enter a valid email address.','Fix it');
+    if(password.length<8)return showNotice('error','Password is too short','Use at least 8 characters for your password.','Fix it');
+    setLoading(button,true,'Creating account…');
+    try{
+      const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+'/dashboard'}});if(error)throw error;
+      if(data.session){await showNotice('success','Account created','Your account is ready. Taking you to your workspace…');window.location.href='/dashboard'}
+      else{await showNotice('success','Check your email','We sent you a confirmation link. Open it to finish creating your Adatacore account.');setMode('signin');$('loginEmail').value=email}
+    }catch(error){await showNotice('error','Unable to create account',error.message||'We could not create your account right now.','Try again')}finally{setLoading(button,false,'')}
+  });
 
-            if (error) {
-                Swal.fire('Error', error.message, 'error');
-            } else {
-                await syncUserToTable(data.user);
-                window.location.href = "dashboard.html";
-            }
-        };
+  $('forgotPassword').onclick=async()=>{
+    const email=$('loginEmail').value.trim().toLowerCase();
+    if(!validEmail(email)){await showNotice('info','Enter your email first','Type the email address for your Adatacore account, then choose “Forgot password?” again.','Got it');$('loginEmail').focus();return}
+    try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/auth?recovery=1'});if(error)throw error;await showNotice('success','Recovery email sent','Check your inbox for a secure password reset link.','Done')}catch(error){await showNotice('error','Could not send recovery email',error.message||'Please try again in a moment.','Try again')}
+  };
 
-        // SIGN UP LOGIC
-        document.getElementById('btn-signup').onclick = async () => {
-            const name = document.getElementById('signup-name').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
+  $('resetForm').addEventListener('submit',async e=>{
+    e.preventDefault();const password=$('resetPassword').value,button=$('resetButton');if(password.length<8)return showNotice('error','Password is too short','Use at least 8 characters for your new password.','Fix it');
+    setLoading(button,true,'Updating password…');
+    try{const {error}=await client.auth.updateUser({password});if(error)throw error;await showNotice('success','Password updated','Your new password is active. You can continue to your workspace.');window.location.href='/dashboard'}catch(error){await showNotice('error','Could not update password',error.message||'Please request a new recovery link and try again.','Try again')}finally{setLoading(button,false,'')}
+  });
 
-            if(!name || !email || !password) return Swal.fire('Wait!', 'Fill everything first', 'warning');
+  $('googleButton').onclick=async()=>{
+    const button=$('googleButton');button.disabled=true;
+    try{const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/dashboard'}});if(error)throw error}catch(error){button.disabled=false;await showNotice('error','Google sign-in unavailable',error.message||'Please try again or use email and password.','Try again')}
+  };
 
-            const { data, error } = await _supabase.auth.signUp({
-                email,
-                password,
-                options: { data: { full_name: name } }
-            });
-
-            if (error) {
-                Swal.fire('Error', error.message, 'error');
-            } else {
-                if (data.user) {
-                    await syncUserToTable(data.user, name);
-                    Swal.fire('Success!', 'Account created! Loading dashboard...', 'success');
-                    setTimeout(() => window.location.href = "dashboard.html", 1500);
-                }
-            }
-        };
-
-        // GOOGLE AUTH LOGIC
-        document.getElementById('btn-google').onclick = async () => {
-            const { error } = await _supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.origin + "/dashboard.html" }
-            });
-            if (error) Swal.fire('Error', error.message, 'error');
-        };
-
-        // UI SWITCH TABS
-        window.switchTab = function(type) {
-            document.getElementById('signin-form').classList.toggle('hidden', type === 'signup');
-            document.getElementById('signup-form').classList.toggle('hidden', type === 'signin');
-            document.getElementById('tab-signin').classList.toggle('active', type === 'signin');
-            document.getElementById('tab-signup').classList.toggle('active', type === 'signup');
-        };
-    </script>
+  client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')setMode('reset')});
+  if(new URLSearchParams(location.search).get('recovery')==='1')setMode('reset');
+});
+</script>
 </body>
 </html>
