@@ -49,6 +49,54 @@ window.addEventListener('click',e=>Object.values(elements).forEach(modal=>{if(mo
 window.addEventListener('keydown',e=>{if(e.key==='Escape')Object.values(elements).forEach(closeLayer)});
 
 const FORM_API='https://llmhyezgcnbognmmsnzq.supabase.co/rest/v1',FORM_KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
-async function postPublic(table,payload){const res=await fetch(`${FORM_API}/${table}`,{method:'POST',headers:{apikey:FORM_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw new Error((await res.text())||'Unable to submit form')}
-const inquiryForm=document.getElementById('fullInquiryForm');if(inquiryForm)inquiryForm.addEventListener('submit',async e=>{e.preventDefault();const fields=inquiryForm.querySelectorAll('input,select,textarea'),btn=inquiryForm.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Sending…';try{await postPublic('company_inquiries',{full_name:fields[0].value.trim(),company_name:fields[1].value.trim(),email:fields[2].value.trim().toLowerCase(),budget_range:fields[3].value,project_details:fields[4].value.trim()});inquiryForm.reset();closeModal();alert('Thanks — your inquiry was submitted.')}catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Send inquiry'}});
-const annotatorForm=document.getElementById('annotatorAppForm');if(annotatorForm)annotatorForm.addEventListener('submit',async e=>{e.preventDefault();const fields=annotatorForm.querySelectorAll('input,select'),btn=annotatorForm.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Submitting…';try{await postPublic('annotator_applications',{full_name:fields[0].value.trim(),birth_place:fields[1].value.trim(),email:fields[2].value.trim().toLowerCase(),education_level:fields[3].value});annotatorForm.reset();closeAnnotatorFormModal();alert('Application submitted successfully.')}catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Submit application'}});
+async function postPublic(table,payload){
+  const res=await fetch(`${FORM_API}/${table}`,{method:'POST',headers:{apikey:FORM_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});
+  if(!res.ok){
+    let message='Unable to submit the form right now. Please check your details and try again.';
+    try{
+      const data=await res.json();
+      if(data?.code==='23514'&&String(data?.message||'').includes('company_inquiries_project_details_check')) message='Please enter at least 10 characters for the project details.';
+      else if(data?.code==='23514'&&String(data?.message||'').includes('company_inquiries_full_name_check')) message='Please enter a valid full name.';
+      else if(data?.code==='23514'&&String(data?.message||'').includes('company_inquiries_company_name_check')) message='Please enter a valid company name.';
+    }catch(_){ }
+    throw new Error(message);
+  }
+}
+
+const inquiryForm=document.getElementById('fullInquiryForm');
+if(inquiryForm){
+  const fields=inquiryForm.querySelectorAll('input,select,textarea');
+  if(fields[0]){fields[0].minLength=2;fields[0].maxLength=120}
+  if(fields[1]){fields[1].minLength=2;fields[1].maxLength=160}
+  if(fields[4]){fields[4].minLength=10;fields[4].maxLength=5000}
+
+  inquiryForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const btn=inquiryForm.querySelector('button[type="submit"]');
+    const fullName=fields[0].value.trim();
+    const companyName=fields[1].value.trim();
+    const email=fields[2].value.trim().toLowerCase();
+    const budgetRange=fields[3].value;
+    const projectDetails=fields[4].value.trim();
+
+    if(fullName.length<2){alert('Please enter your full name.');fields[0].focus();return}
+    if(companyName.length<2){alert('Please enter a company or team name.');fields[1].focus();return}
+    if(projectDetails.length<10){alert('Please enter at least 10 characters for the project details.');fields[4].focus();return}
+
+    btn.disabled=true;
+    btn.textContent='Sending…';
+    try{
+      await postPublic('company_inquiries',{full_name:fullName,company_name:companyName,email,budget_range:budgetRange,project_details:projectDetails});
+      inquiryForm.reset();
+      closeModal();
+      alert('Thanks — your inquiry was submitted successfully.');
+    }catch(err){
+      alert(err.message||'Unable to submit the form right now. Please try again.');
+    }finally{
+      btn.disabled=false;
+      btn.textContent='Send inquiry';
+    }
+  });
+}
+
+const annotatorForm=document.getElementById('annotatorAppForm');if(annotatorForm)annotatorForm.addEventListener('submit',async e=>{e.preventDefault();const fields=annotatorForm.querySelectorAll('input,select'),btn=annotatorForm.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Submitting…';try{await postPublic('annotator_applications',{full_name:fields[0].value.trim(),birth_place:fields[1].value.trim(),email:fields[2].value.trim().toLowerCase(),education_level:fields[3].value});annotatorForm.reset();closeAnnotatorFormModal();alert('Application submitted successfully.')}catch(err){alert(err.message||'Unable to submit your application right now.')}finally{btn.disabled=false;btn.textContent='Submit application'}});
