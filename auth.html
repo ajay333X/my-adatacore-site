@@ -171,7 +171,29 @@ window.addEventListener('DOMContentLoaded',()=>{
   const views={signin:$('signinForm'),signup:$('signupForm'),reset:$('resetForm')};
   const tabs={signin:$('tabSignin'),signup:$('tabSignup')};
   const social=$('socialArea'),authTabs=$('authTabs');
-  let recoveryMode=false;
+  const recoveryRequested=new URLSearchParams(location.search).get('recovery')==='1'||location.hash.includes('type=recovery');
+  let recoveryMode=false,redirecting=false;
+
+  async function routeSession(session){
+    if(!session?.user||recoveryMode||recoveryRequested||redirecting)return false;
+    redirecting=true;
+    try{
+      const {data:profile,error}=await client.from('users').select('role,accountStatus').eq('id',session.user.id).single();
+      if(error||!profile){redirecting=false;return false}
+      if(profile.accountStatus==='blocked'){
+        await client.auth.signOut();
+        window.location.replace('/access-revoked');
+        return true;
+      }
+      if(profile.accountStatus!=='active'){
+        await client.auth.signOut();
+        window.location.replace('/verification-required');
+        return true;
+      }
+      window.location.replace('/dashboard');
+      return true;
+    }catch(_){redirecting=false;return false}
+  }
 
   function setMode(mode){
     Object.entries(views).forEach(([key,el])=>el.classList.toggle('active',key===mode));
@@ -244,8 +266,15 @@ window.addEventListener('DOMContentLoaded',()=>{
     try{const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/dashboard'}});if(error)throw error}catch(error){button.disabled=false;await showNotice('error','Google sign-in unavailable',error.message||'Please try again or use email and password.','Try again')}
   };
 
-  client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')setMode('reset')});
-  if(new URLSearchParams(location.search).get('recovery')==='1')setMode('reset');
+  client.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){setMode('reset');return}
+    if(['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED'].includes(event)&&!recoveryRequested)queueMicrotask(()=>routeSession(session));
+  });
+  window.addEventListener('storage',event=>{
+    if(!recoveryRequested&&event.key?.startsWith('sb-')&&event.key.includes('-auth-token'))client.auth.getSession().then(({data:{session}})=>{if(session)routeSession(session)});
+  });
+  if(recoveryRequested)setMode('reset');
+  else client.auth.getSession().then(({data:{session}})=>{if(session)routeSession(session)});
 });
 </script>
 </body>
