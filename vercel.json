@@ -13,6 +13,7 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin-secure" },
     { "source": "/admin/recordings", "destination": "/recordings-audit" },
+    { "source": "/admin/reviews", "destination": "/admin-l2-reviews" },
     { "source": "/voice-engine", "destination": "/voice-engine-secure" },
     { "source": "/review", "destination": "/review-secure" }
   ],
