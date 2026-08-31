@@ -13,10 +13,6 @@
     { "source": "/task_player", "destination": "/workspace", "permanent": false },
     { "source": "/task_player.html", "destination": "/workspace", "permanent": false }
   ],
-  "rewrites": [
-    { "source": "/dashboard", "destination": "/workspace" },
-    { "source": "/dashboard.html", "destination": "/workspace" }
-  ],
   "headers": [
     {
       "source": "/(.*)",
