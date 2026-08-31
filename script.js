@@ -8,6 +8,9 @@ function openAnnotatorFormModal(){openLayer(elements.annotatorFormModal)}functio
 function switchToInquiry(){closeInfoModal();setTimeout(openModal,120)}function switchToAnnotatorForm(){closeAnnotatorInfoModal();setTimeout(openAnnotatorFormModal,120)}
 const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('active')}),{threshold:.08});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 function toggleFAQ(button){const content=button.nextElementSibling;const open=content.dataset.open==='1';content.dataset.open=open?'0':'1';content.style.maxHeight=open?'0px':content.scrollHeight+'px';button.setAttribute('aria-expanded',String(!open));const icon=button.querySelector('[data-chevron]');if(icon)icon.style.transform=open?'rotate(0deg)':'rotate(180deg)'}
+function renderBars(selector,tag,heights){document.querySelectorAll(selector).forEach(el=>{el.innerHTML=heights.map(h=>`<${tag} style="height:${h}px"></${tag}>`).join('')})}
+renderBars('.wave','span',[18,26,44,31,55,42,67,38,28,61,48,33,72,43,29,52,64,37,23,47,58,34,27,41,63,45,20,35,50,29,38,61]);
+renderBars('.mini-audio','i',[20,35,57,43,70,38,26,62,47,31,75,52,40,64,28,51,68,36,24,55,44,30,61,38]);
 window.addEventListener('click',e=>Object.values(elements).forEach(modal=>{if(modal&&e.target===modal)closeLayer(modal)}));
 window.addEventListener('keydown',e=>{if(e.key==='Escape')Object.values(elements).forEach(closeLayer)});
 const FORM_API='https://llmhyezgcnbognmmsnzq.supabase.co/rest/v1',FORM_KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
