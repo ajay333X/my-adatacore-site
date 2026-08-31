@@ -1,3 +1,17 @@
+(()=>{
+  const head=document.head;
+  if(!head)return;
+  const addIcon=(rel,href,type,sizes)=>{
+    let link=head.querySelector(`link[rel="${rel}"]`);
+    if(!link){link=document.createElement('link');link.rel=rel;head.appendChild(link)}
+    link.href=href;
+    if(type)link.type=type;
+    if(sizes)link.sizes=sizes;
+  };
+  addIcon('icon','/favicon.png?v=20260831-2','image/png','64x64');
+  addIcon('shortcut icon','/favicon.ico?v=20260831-2','image/x-icon');
+})();
+
 const elements={infoModal:document.getElementById('infoModal'),contactModal:document.getElementById('contactModal'),annotatorInfoModal:document.getElementById('annotatorInfoModal'),annotatorFormModal:document.getElementById('annotatorFormModal')};
 function openLayer(el){if(el){el.style.display='flex';document.body.style.overflow='hidden'}}
 function closeLayer(el){if(el){el.style.display='none';document.body.style.overflow='auto'}}
