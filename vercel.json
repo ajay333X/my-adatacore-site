@@ -11,7 +11,7 @@
     { "source": "/task_player.html", "destination": "/workspace", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/admin", "destination": "/admin-secure" },
+    { "source": "/admin", "destination": "/admin-entry" },
     { "source": "/admin/recordings", "destination": "/recordings-audit" },
     { "source": "/admin/reviews", "destination": "/admin-l2-reviews" },
     { "source": "/voice-engine", "destination": "/voice-engine-secure" },
@@ -26,6 +26,12 @@
     },
     {
       "source": "/dashboard",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
+      ]
+    },
+    {
+      "source": "/admin",
       "headers": [
         { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
       ]
