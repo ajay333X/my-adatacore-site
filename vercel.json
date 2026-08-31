@@ -2,8 +2,6 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/dashboard", "destination": "/workspace", "permanent": false },
-    { "source": "/dashboard.html", "destination": "/workspace", "permanent": false },
     { "source": "/profile", "destination": "/workspace#profile", "permanent": false },
     { "source": "/profile.html", "destination": "/workspace#profile", "permanent": false },
     { "source": "/admin", "destination": "/admin-secure", "permanent": false },
