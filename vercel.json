@@ -4,15 +4,17 @@
   "redirects": [
     { "source": "/profile", "destination": "/workspace#profile", "permanent": false },
     { "source": "/profile.html", "destination": "/workspace#profile", "permanent": false },
-    { "source": "/admin/recordings", "destination": "/recordings-audit", "permanent": false },
-    { "source": "/admin", "destination": "/admin-secure", "permanent": false },
-    { "source": "/admin.html", "destination": "/admin-secure", "permanent": false },
-    { "source": "/universal_engine", "destination": "/voice-engine-secure", "permanent": false },
-    { "source": "/universal_engine.html", "destination": "/voice-engine-secure", "permanent": false },
-    { "source": "/voice-engine", "destination": "/voice-engine-secure", "permanent": false },
-    { "source": "/review", "destination": "/review-secure", "permanent": false },
+    { "source": "/admin.html", "destination": "/admin", "permanent": false },
+    { "source": "/universal_engine", "destination": "/voice-engine", "permanent": false },
+    { "source": "/universal_engine.html", "destination": "/voice-engine", "permanent": false },
     { "source": "/task_player", "destination": "/workspace", "permanent": false },
     { "source": "/task_player.html", "destination": "/workspace", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin-secure.html" },
+    { "source": "/admin/recordings", "destination": "/recordings-audit.html" },
+    { "source": "/voice-engine", "destination": "/voice-engine-secure.html" },
+    { "source": "/review", "destination": "/review-secure.html" }
   ],
   "headers": [
     {
