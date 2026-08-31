@@ -6,13 +6,34 @@ function openModal(){openLayer(elements.contactModal)}function closeModal(){clos
 function openAnnotatorInfoModal(){openLayer(elements.annotatorInfoModal)}function closeAnnotatorInfoModal(){closeLayer(elements.annotatorInfoModal)}
 function openAnnotatorFormModal(){openLayer(elements.annotatorFormModal)}function closeAnnotatorFormModal(){closeLayer(elements.annotatorFormModal)}
 function switchToInquiry(){closeInfoModal();setTimeout(openModal,120)}function switchToAnnotatorForm(){closeAnnotatorInfoModal();setTimeout(openAnnotatorFormModal,120)}
-const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('active')}),{threshold:.08});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const precisionText=document.getElementById('precisionText');
+const precisionCaret=document.getElementById('precisionCaret');
+const precisionPhrase='Precision in Every Byte.';
+function typePrecision(){
+  if(!precisionText)return;
+  if(reduceMotion){precisionText.textContent=precisionPhrase;if(precisionCaret)precisionCaret.classList.add('done');return}
+  let i=0;
+  const tick=()=>{
+    precisionText.textContent=precisionPhrase.slice(0,i);
+    if(i<=precisionPhrase.length){i++;setTimeout(tick,i<10?58:72)}
+    else if(precisionCaret)precisionCaret.classList.add('done');
+  };
+  setTimeout(tick,420);
+}
+typePrecision();
+
+if(!reduceMotion&&'IntersectionObserver' in window){
+  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('active');observer.unobserve(entry.target)}}),{threshold:.1,rootMargin:'0px 0px -40px'});
+  document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+}else document.querySelectorAll('.reveal').forEach(el=>el.classList.add('active'));
+
 function toggleFAQ(button){const content=button.nextElementSibling;const open=content.dataset.open==='1';content.dataset.open=open?'0':'1';content.style.maxHeight=open?'0px':content.scrollHeight+'px';button.setAttribute('aria-expanded',String(!open));const icon=button.querySelector('[data-chevron]');if(icon)icon.style.transform=open?'rotate(0deg)':'rotate(180deg)'}
-function renderBars(selector,tag,heights){document.querySelectorAll(selector).forEach(el=>{el.innerHTML=heights.map(h=>`<${tag} style="height:${h}px"></${tag}>`).join('')})}
-renderBars('.wave','span',[18,26,44,31,55,42,67,38,28,61,48,33,72,43,29,52,64,37,23,47,58,34,27,41,63,45,20,35,50,29,38,61]);
-renderBars('.mini-audio','i',[20,35,57,43,70,38,26,62,47,31,75,52,40,64,28,51,68,36,24,55,44,30,61,38]);
+
 window.addEventListener('click',e=>Object.values(elements).forEach(modal=>{if(modal&&e.target===modal)closeLayer(modal)}));
 window.addEventListener('keydown',e=>{if(e.key==='Escape')Object.values(elements).forEach(closeLayer)});
+
 const FORM_API='https://llmhyezgcnbognmmsnzq.supabase.co/rest/v1',FORM_KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
 async function postPublic(table,payload){const res=await fetch(`${FORM_API}/${table}`,{method:'POST',headers:{apikey:FORM_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw new Error((await res.text())||'Unable to submit form')}
 const inquiryForm=document.getElementById('fullInquiryForm');if(inquiryForm)inquiryForm.addEventListener('submit',async e=>{e.preventDefault();const fields=inquiryForm.querySelectorAll('input,select,textarea'),btn=inquiryForm.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Sending…';try{await postPublic('company_inquiries',{full_name:fields[0].value.trim(),company_name:fields[1].value.trim(),email:fields[2].value.trim().toLowerCase(),budget_range:fields[3].value,project_details:fields[4].value.trim()});inquiryForm.reset();closeModal();alert('Thanks — your inquiry was submitted.')}catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Send inquiry'}});
