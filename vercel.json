@@ -4,6 +4,7 @@
   "redirects": [
     { "source": "/profile", "destination": "/workspace#profile", "permanent": false },
     { "source": "/profile.html", "destination": "/workspace#profile", "permanent": false },
+    { "source": "/admin/recordings", "destination": "/recordings-audit", "permanent": false },
     { "source": "/admin", "destination": "/admin-secure", "permanent": false },
     { "source": "/admin.html", "destination": "/admin-secure", "permanent": false },
     { "source": "/universal_engine", "destination": "/voice-engine-secure", "permanent": false },
