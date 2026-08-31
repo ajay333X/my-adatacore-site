@@ -11,10 +11,10 @@
     { "source": "/task_player.html", "destination": "/workspace", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/admin", "destination": "/admin-secure.html" },
-    { "source": "/admin/recordings", "destination": "/recordings-audit.html" },
-    { "source": "/voice-engine", "destination": "/voice-engine-secure.html" },
-    { "source": "/review", "destination": "/review-secure.html" }
+    { "source": "/admin", "destination": "/admin-secure" },
+    { "source": "/admin/recordings", "destination": "/recordings-audit" },
+    { "source": "/voice-engine", "destination": "/voice-engine-secure" },
+    { "source": "/review", "destination": "/review-secure" }
   ],
   "headers": [
     {
