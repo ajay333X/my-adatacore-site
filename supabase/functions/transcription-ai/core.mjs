@@ -1,4 +1,4 @@
-export const MODEL = 'whisper-large-v3-turbo';
+export const MODEL = 'whisper-large-v3';
 export const MAX_BYTES = 24000000;
 export const MAX_DURATION_MS = 900000;
 
