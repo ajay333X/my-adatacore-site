@@ -13,7 +13,7 @@
   "rewrites": [
     {"source":"/admin","destination":"/admin-entry"},
     {"source":"/admin/assignments","destination":"/assignment-center"},
-    {"source":"/admin/project-lab","destination":"/project-lab"},
+    {"source":"/admin/project-lab","destination":"/project-lab-entry"},
     {"source":"/admin/transcription","destination":"/transcription-lab"},
     {"source":"/admin/transcription-vault","destination":"/transcription-vault"},
     {"source":"/admin/recordings","destination":"/recordings-audit"},
