@@ -10,8 +10,8 @@ export function providerError(status, code = '', type = '', message = '') {
   const detail = `${code} ${type} ${message}`.toLowerCase();
   if (status === 401) return new DraftError('PROVIDER_AUTH', 'The Groq API key is invalid or expired. Update the GROQ_API_KEY secret.');
   if (status === 403) return new DraftError('PROVIDER_ACCESS', 'This Groq API key does not have access to Whisper transcription. Check the key permissions.');
-  if (status === 429 && (detail.includes('quota') || detail.includes('billing') || detail.includes('credits') || detail.includes('limit'))) {
-    return new DraftError('PROVIDER_QUOTA', 'The Groq free-tier or project usage limit has been reached. Retry after the limit resets or review the Groq project limits.');
+  if (status === 429 && (detail.includes('quota') || detail.includes('billing') || detail.includes('credits'))) {
+    return new DraftError('PROVIDER_QUOTA', 'The Groq free-tier or project usage quota has been reached. Retry after the quota resets or review the Groq project limits.');
   }
   if (status === 429) return new DraftError('PROVIDER_RATE_LIMIT', 'Groq is rate limiting transcription requests. Retry after the provider limit resets.');
   if (status === 400 || status === 413 || status === 422) return new DraftError('UNSUPPORTED_AUDIO', 'Groq could not process this audio. Try a shorter WAV, MP3, M4A, WebM, OGG or FLAC clip.');
