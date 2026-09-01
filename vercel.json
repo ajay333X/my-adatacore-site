@@ -13,57 +13,25 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin-entry" },
     { "source": "/admin/project-lab", "destination": "/project-lab" },
+    { "source": "/admin/transcription", "destination": "/transcription-workbench" },
     { "source": "/admin/recordings", "destination": "/recordings-audit" },
     { "source": "/admin/reviews", "destination": "/admin-l2-reviews" },
     { "source": "/voice-engine", "destination": "/voice-engine-entry" },
     { "source": "/review", "destination": "/review-entry" }
   ],
   "headers": [
-    {
-      "source": "/auth",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/dashboard",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/admin",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/admin/project-lab",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" },
-        { "key": "X-Robots-Tag", "value": "noindex" }
-      ]
-    },
-    {
-      "source": "/voice-engine",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/review",
-      "headers": [
-        { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), geolocation=(), payment=()" },
-        { "key": "X-Frame-Options", "value": "DENY" }
-      ]
-    }
+    { "source": "/auth", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] },
+    { "source": "/dashboard", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] },
+    { "source": "/admin", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] },
+    { "source": "/admin/project-lab", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" },{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/admin/transcription", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" },{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/voice-engine", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] },
+    { "source": "/review", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] },
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+      { "key": "Permissions-Policy", "value": "camera=(), geolocation=(), payment=()" },
+      { "key": "X-Frame-Options", "value": "DENY" }
+    ] }
   ]
 }
