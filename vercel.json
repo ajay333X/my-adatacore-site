@@ -15,8 +15,6 @@
     { "source": "/admin/project-lab", "destination": "/project-lab" },
     { "source": "/admin/recordings", "destination": "/recordings-audit" },
     { "source": "/admin/reviews", "destination": "/admin-l2-reviews" },
-    { "source": "/workspace", "destination": "/workspace-entry" },
-    { "source": "/workspace-core", "destination": "/workspace.html" },
     { "source": "/voice-engine", "destination": "/voice-engine-entry" },
     { "source": "/review", "destination": "/review-entry" }
   ],
