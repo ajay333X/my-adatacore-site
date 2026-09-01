@@ -21,7 +21,10 @@ async function processJob(job: any, token: string) {
     if (job.kind === 'check') {
       // A connectivity check never sends a participant recording or generates a transcript.
       const check = await fetch(`https://api.openai.com/v1/models/${MODEL}`, {headers:providerHeaders, signal:AbortSignal.timeout(15000)});
-      if (!check.ok) throw providerError(check.status, '');
+      if (!check.ok) {
+        const error = await check.json().catch(() => ({}));
+        throw providerError(check.status, error.error?.code, error.error?.type, error.error?.message);
+      }
       await check.body?.cancel();
       await rpc('tx_ai_finish', {...args, p_result:{connection:'model_access_verified'}});
       return;
@@ -39,11 +42,11 @@ async function processJob(job: any, token: string) {
     form.append('response_format', 'diarized_json');
     form.append('chunking_strategy', 'auto');
     if (job.language) form.append('language', job.language);
-    // No automatic retries: replaying a paid request can incur duplicate charges.
+    // Do not replay accepted/ambiguous paid requests automatically. A clean 429 is surfaced for explicit retry.
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {method:'POST', headers:providerHeaders, body:form, signal:AbortSignal.timeout(95000)});
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw providerError(response.status, error.error?.code);
+      throw providerError(response.status, error.error?.code, error.error?.type, error.error?.message);
     }
     const result = normalizeDraft(await response.json(), job.duration_ms);
     await rpc('tx_ai_finish', {...args, p_result:result});
