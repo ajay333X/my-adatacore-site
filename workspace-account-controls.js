@@ -1,44 +1,50 @@
-(()=>{
-  if(window.__adatacoreAccountControls)return;window.__adatacoreAccountControls=true;
-  let countries=[],accountControls=null;
-  const style=document.createElement('style');style.textContent=`
-    .phone-country-grid{display:grid;grid-template-columns:minmax(175px,1.4fr) 92px minmax(150px,1fr);gap:8px;align-items:end}.phone-help{font-size:10px;color:var(--muted);line-height:1.5;margin-top:7px}.daily-cap-banner{margin-bottom:14px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:14px}.daily-cap-title{font-size:11px;font-weight:800}.daily-cap-meta{font-size:10px;color:var(--muted);margin-top:4px}.daily-cap-number{font-size:18px;font-weight:850;white-space:nowrap}.phone-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;text-align:center}@media(max-width:700px){.phone-country-grid{grid-template-columns:1fr}.daily-cap-banner{align-items:flex-start;flex-direction:column}}
-  `;document.head.appendChild(style);
-
+(() => {
+  if (window.__adatacoreAccountControls) return;
+  window.__adatacoreAccountControls = true;
+  let accountControls = null, loading = false;
+  const style = document.createElement('style');
+  style.textContent = `.phone-country-grid{display:grid;grid-template-columns:minmax(180px,1fr) minmax(150px,1fr);gap:12px}.phone-help{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}.daily-cap-banner{margin-bottom:14px;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:14px}.daily-cap-title{font-size:13px;font-weight:750}.daily-cap-meta{font-size:12px;color:var(--muted);margin-top:5px}.daily-cap-number{font-size:20px;font-weight:800;white-space:nowrap}.daily-cap-error{color:var(--red)}@media(max-width:700px){.phone-country-grid{grid-template-columns:1fr}.daily-cap-banner{align-items:flex-start;flex-direction:column}}`;
+  document.head.appendChild(style);
   const legacyPhone=document.getElementById('phone'),form=document.getElementById('profileForm');
   if(!legacyPhone||!form)return;
-  const phoneBox=legacyPhone.parentElement,label=phoneBox.querySelector('label');if(label)label.textContent='Phone number';legacyPhone.type='hidden';legacyPhone.style.display='none';
-  const controls=document.createElement('div');controls.innerHTML=`<div class="phone-country-grid"><div><label class="field">Country / calling code</label><select id="phoneCountry" class="input"><option value="">Select country</option></select></div><div><label class="field">Code</label><input id="phoneCallingCode" class="input phone-code" readonly placeholder="+—"></div><div><label class="field">National number</label><input id="phoneNational" class="input" inputmode="numeric" autocomplete="tel-national" placeholder="Phone number"></div></div><div class="phone-help">Select the country first. Adatacore stores the phone in international E.164 format and will not save a number without a recognized country calling code.</div>`;phoneBox.appendChild(controls);
-  const countryEl=document.getElementById('phoneCountry'),callingEl=document.getElementById('phoneCallingCode'),nationalEl=document.getElementById('phoneNational');
-  nationalEl.addEventListener('input',()=>{nationalEl.value=nationalEl.value.replace(/\D/g,'').slice(0,14)});
-  countryEl.addEventListener('change',()=>{callingEl.value=countries.find(x=>x.iso2===countryEl.value)?.calling_code||''});
-
-  function syncPhone(){if(!accountControls)return;countryEl.value=accountControls.phone_country_iso2||'';callingEl.value=countries.find(x=>x.iso2===countryEl.value)?.calling_code||accountControls.phone_calling_code||'';nationalEl.value=accountControls.phone_national||'';renderDailyCap()}
-  function renderDailyCap(){const section=document.getElementById('view-assignments');if(!section||!accountControls)return;let box=document.getElementById('dailyCapBanner');if(!box){box=document.createElement('div');box.id='dailyCapBanner';box.className='daily-cap-banner';section.insertBefore(box,section.firstChild)}const limit=accountControls.daily_task_limit,used=Number(accountControls.daily_tasks_started_today||0),remaining=accountControls.daily_tasks_remaining;const unlimited=limit==null;box.innerHTML=`<div><div class="daily-cap-title">Daily task capacity</div><div class="daily-cap-meta">${unlimited?'No daily cap is set for your account.':`${used} of ${Number(limit)} task${Number(limit)===1?'':'s'} started today · resets at 00:00 UTC`}</div></div><div class="daily-cap-number">${unlimited?'Unlimited':`${Math.max(Number(remaining||0),0)} left`}</div>`;}
-  async function loadCountries(){const {data,error}=await db.from('phone_country_codes').select('iso2,country_name,calling_code').order('country_name');if(error)return;countries=data||[];countryEl.innerHTML='<option value="">Select country</option>'+countries.map(c=>`<option value="${String(c.iso2).replace(/"/g,'')}">${String(c.country_name).replace(/</g,'&lt;')} (${String(c.calling_code)})</option>`).join('');syncPhone()}
-  async function loadAccountControls(){const {data,error}=await db.rpc('get_my_account_controls');if(error)return;accountControls=data||{};syncPhone()}
-
-  if(typeof renderProfile==='function'){const baseRenderProfile=renderProfile;renderProfile=function(){baseRenderProfile();syncPhone()}}
-
+  const phoneBox=legacyPhone.parentElement;phoneBox.style.gridColumn='1 / -1';
+  // Keep the legacy hidden field for the existing profile renderer.
+  legacyPhone.type='hidden';const mount=document.createElement('div');phoneBox.querySelector('label')?.remove();phoneBox.appendChild(mount);
+  const phone=AdatacorePhone.mount(mount);
+  const section=document.getElementById('view-assignments'),box=document.createElement('div');box.id='dailyCapBanner';box.className='daily-cap-banner';box.setAttribute('role','status');section.prepend(box);
+  function renderDailyCap(error='') {
+    if(error){box.textContent=error;return}
+    if(!accountControls){box.textContent='Loading daily task allowance…';return}
+    const limit=accountControls.daily_task_limit,used=Number(accountControls.daily_tasks_started_today||0),remaining=Number(accountControls.daily_tasks_remaining||0);
+    box.innerHTML=`<div><div class="daily-cap-title">Daily task allowance</div><div class="daily-cap-meta">${used} started today · ${limit==null?'No daily limit':`Limit: ${Number(limit)}`} · resets at 00:00 UTC (05:30 IST)</div><div class="daily-cap-meta">Each new task or review uses one slot. Resuming the same work does not use another.</div></div><div class="daily-cap-number">${limit==null?'Unlimited':`${remaining} left`}</div>`;
+  }
+  async function loadAccountControls() {
+    if(loading)return;loading=true;
+    try {const {data,error}=await db.rpc('get_my_account_controls');if(error)throw error;accountControls=data;phone.set(data);renderDailyCap();}
+    catch(_){renderDailyCap('Unable to load the daily allowance. Refresh to try again.');}
+    finally{loading=false;}
+  }
   form.addEventListener('submit',async e=>{
     e.preventDefault();e.stopImmediatePropagation();
-    const saveBtn=document.getElementById('saveBtn'),notice=document.getElementById('saveNotice');saveBtn.disabled=true;notice.textContent='Saving…';notice.className='notice';
-    const iso=countryEl.value||null,national=nationalEl.value.trim();
-    if((iso&&!national)||(!iso&&national)){notice.textContent='Select a country and enter the phone number together.';notice.className='notice error';saveBtn.disabled=false;return}
-    const {data,error}=await db.rpc('update_my_profile',{p_full_name:document.getElementById('fullName').value.trim(),p_dob:document.getElementById('dob').value||null,p_education:document.getElementById('education').value.trim()||null,p_occupation:document.getElementById('occupation').value.trim()||null,p_country_iso2:iso,p_national_phone:national||null});
-    if(error){notice.textContent=String(error.message||'Unable to save profile').replace(/_/g,' ').replace(/^PHONE /,'Phone ');notice.className='notice error';saveBtn.disabled=false;return}
-    accountControls=data||accountControls;if(typeof profile!=='undefined'&&profile){profile.fullName=document.getElementById('fullName').value.trim();profile.dateOfBirth=document.getElementById('dob').value||null;profile.education=document.getElementById('education').value.trim()||null;profile.occupation=document.getElementById('occupation').value.trim()||null;profile.phone=accountControls?.phone_national||null}
-    if(typeof renderProfile==='function')renderProfile();notice.textContent=accountControls?.phone_e164?`Saved · ${accountControls.phone_e164}`:'Saved';notice.className='notice ok';saveBtn.disabled=false;
+    const button=document.getElementById('saveBtn'),notice=document.getElementById('saveNotice');if(button.disabled)return;
+    if(!accountControls){notice.textContent='Account details are still loading. Please refresh if this continues.';notice.className='notice error';return}
+    let value;try{value=phone.get()}catch(error){notice.textContent=error.message;notice.className='notice error';phone.focus();return}
+    button.disabled=true;notice.textContent='Saving…';notice.className='notice';
+    const fields={fullName:document.getElementById('fullName').value.trim(),dateOfBirth:document.getElementById('dob').value||null,education:document.getElementById('education').value.trim()||null,occupation:document.getElementById('occupation').value.trim()||null};
+    try {
+      const {data,error}=await db.rpc('update_my_profile',{p_full_name:fields.fullName,p_dob:fields.dateOfBirth,p_education:fields.education,p_occupation:fields.occupation,p_country_iso2:value.country,p_national_phone:value.national});if(error)throw error;
+      accountControls=data;Object.assign(profile,fields,{phone:data.phone_national});phone.set(data,true);renderProfile();renderDailyCap();notice.textContent=data.phone_e164?`Saved · ${data.phone_e164}`:'Saved';notice.className='notice ok';
+    } catch(error){notice.textContent=String(error.message||'Unable to save. Please try again.').replace(/_/g,' ');notice.className='notice error';}
+    finally{button.disabled=false;}
   },true);
-
   document.addEventListener('click',async e=>{
     const b=e.target.closest('.task-open');if(!b||b.dataset.layer!=='L1')return;
-    e.preventDefault();e.stopImmediatePropagation();if(b.disabled)return;b.disabled=true;const old=b.textContent;b.textContent='Opening…';
-    const {error}=await db.rpc('begin_assigned_task',{p_task_id:Number(b.dataset.id)});
-    if(error){const msg=String(error.message||'');b.disabled=false;b.textContent=old;if(msg.includes('DAILY_TASK_LIMIT_REACHED')){const lim=msg.split(':').pop();alert(`Daily task limit reached (${lim}). You can start more tasks after the daily reset.`)}else alert(msg.replace(/_/g,' '));return}
-    const title=b.dataset.title;location.href=`/voice-engine?project=${title}&task=${Number(b.dataset.id)}`;
+    e.preventDefault();e.stopImmediatePropagation();if(b.disabled)return;
+    b.disabled=true;const old=b.textContent;b.textContent='Opening…';
+    try{const {error}=await db.rpc('begin_assigned_task',{p_task_id:Number(b.dataset.id)});if(error)throw error;location.href=`/voice-engine?project=${b.dataset.title}&task=${Number(b.dataset.id)}`;}
+    catch(error){b.disabled=false;b.textContent=old;await loadAccountControls();const message=String(error.message||'');box.textContent=message.includes('DAILY_TASK_LIMIT_REACHED')?'You have reached your daily task limit. New tasks unlock at 00:00 UTC (05:30 IST).':message.replace(/_/g,' ');section.prepend(box);location.hash='assignments';}
   },true);
-
-  Promise.all([loadCountries(),loadAccountControls()]).then(()=>{syncPhone();renderDailyCap()});
+  renderDailyCap();loadAccountControls();
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAccountControls()});
+  window.addEventListener('hashchange',()=>{if(location.hash==='#assignments'||location.hash==='#profile')loadAccountControls()});
 })();
