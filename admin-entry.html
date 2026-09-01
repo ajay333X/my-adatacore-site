@@ -14,7 +14,7 @@
     const response=await fetch('/admin-secure?finder=public-task-v3',{cache:'no-store'});
     if(!response.ok)throw new Error('Admin console returned '+response.status);
     let html=await response.text();
-    const addons='<scr'+'ipt src="/admin-task-finder.js?v=20260831-2"></scr'+'ipt><scr'+'ipt src="/admin-project-inventory.js?v=20260901-1"></scr'+'ipt><scr'+'ipt src="/admin-project-lab-link.js?v=20260901-1"></scr'+'ipt>';
+    const addons='<scr'+'ipt src="/admin-task-finder.js?v=20260831-2"></scr'+'ipt><scr'+'ipt src="/admin-project-inventory.js?v=20260901-1"></scr'+'ipt><scr'+'ipt src="/admin-project-lab-link.js?v=20260901-2"></scr'+'ipt>';
     html=html.replace('</body>',addons+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){
