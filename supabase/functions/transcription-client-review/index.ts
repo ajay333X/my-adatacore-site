@@ -46,6 +46,7 @@ Deno.serve(async(req:Request)=>{
       supabase.from('transcription_client_shares').select('id').eq('item_id',item.id)
     ] as any);
     const shareIds=(allShares||[]).map((s:any)=>s.id);
+
     if(req.method==='POST'){
       let body:any={};try{body=await req.json()}catch{return json({error:'Invalid request.'},400)}
       const action=String(body.action||'');
@@ -58,15 +59,24 @@ Deno.serve(async(req:Request)=>{
         const rating=Math.round(Number(body.clarity_rating)),name=String(body.reviewer_name||'').trim().slice(0,100)||null;if(rating<1||rating>5)return json({error:'Choose an audio clarity rating from 1 to 5.'},400);
         const {count}=await supabase.from('transcription_client_ratings').select('id',{count:'exact',head:true}).eq('share_id',share.id);if(Number(count||0)>=100)return json({error:'This review link has reached its rating limit.'},429);
         const {error}=await supabase.from('transcription_client_ratings').insert({share_id:share.id,reviewer_name:name,clarity_rating:rating});if(error)throw error;
+      }else if(action==='decision'){
+        const name=String(body.reviewer_name||'').trim().slice(0,100),decision=String(body.decision||''),note=String(body.note||'').trim().slice(0,2000)||null;
+        if(!name)return json({error:'Add your name before submitting a decision.'},400);
+        if(!['approved','changes_requested'].includes(decision))return json({error:'Choose Approve or Request changes.'},400);
+        if(decision==='changes_requested'&&!note)return json({error:'Add a note describing the requested changes.'},400);
+        const {count}=await supabase.from('transcription_client_decisions').select('id',{count:'exact',head:true}).eq('share_id',share.id);if(Number(count||0)>=100)return json({error:'This review link has reached its decision history limit.'},429);
+        const {error}=await supabase.from('transcription_client_decisions').insert({share_id:share.id,reviewer_name:name,decision,note});if(error)throw error;
       }else return json({error:'Unknown review action.'},400);
     }
-    const [{data:comments,error:commentsErr},{data:ratings,error:ratingsErr},{data:signed,error:signedErr}]=await Promise.all([
+
+    const [{data:comments,error:commentsErr},{data:ratings,error:ratingsErr},{data:decisions,error:decisionsErr},{data:signed,error:signedErr}]=await Promise.all([
       shareIds.length?supabase.from('transcription_client_comments').select('id,timestamp_ms,author_name,note,created_at').in('share_id',shareIds).order('timestamp_ms',{ascending:true}).order('created_at',{ascending:true}):Promise.resolve({data:[]}),
       shareIds.length?supabase.from('transcription_client_ratings').select('id,reviewer_name,clarity_rating,created_at').in('share_id',shareIds).order('created_at',{ascending:true}):Promise.resolve({data:[]}),
+      shareIds.length?supabase.from('transcription_client_decisions').select('id,reviewer_name,decision,note,created_at').in('share_id',shareIds).order('created_at',{ascending:true}):Promise.resolve({data:[]}),
       supabase.storage.from(item.storage_bucket).createSignedUrl(item.recording_path,7200)
     ] as any);
-    if(commentsErr)throw commentsErr;if(ratingsErr)throw ratingsErr;if(signedErr)throw signedErr;
-    const segments=Array.isArray(item.submitted_segments)?item.submitted_segments:[],ratingValues=(ratings||[]).map((r:any)=>Number(r.clarity_rating)).filter((v:number)=>Number.isFinite(v)),avg=ratingValues.length?Math.round((ratingValues.reduce((a:number,b:number)=>a+b,0)/ratingValues.length)*100)/100:null,durationMs=Number(item.duration_ms||0)||Number(item.duration_seconds||0)*1000;
-    return json({project:{name:project?.project_name||'Transcription review'},task:{id:task?.public_task_id||null},item:{id:item.id,display_name:item.display_name||'Audio',duration_ms:durationMs,status:item.status,submitted_at:item.submitted_at,speakers:Array.isArray(item.speakers)?item.speakers:[],segments},audio_url:signed?.signedUrl||null,feedback:{comments:comments||[],ratings:ratings||[],average_clarity:avg,comment_count:(comments||[]).length,rating_count:ratingValues.length},stats:{word_count:wordCount(segments),segment_count:segments.length,duration_ms:durationMs}});
+    if(commentsErr)throw commentsErr;if(ratingsErr)throw ratingsErr;if(decisionsErr)throw decisionsErr;if(signedErr)throw signedErr;
+    const segments=Array.isArray(item.submitted_segments)?item.submitted_segments:[],ratingValues=(ratings||[]).map((r:any)=>Number(r.clarity_rating)).filter((v:number)=>Number.isFinite(v)),avg=ratingValues.length?Math.round((ratingValues.reduce((a:number,b:number)=>a+b,0)/ratingValues.length)*100)/100:null,durationMs=Number(item.duration_ms||0)||Number(item.duration_seconds||0)*1000,decisionRows=decisions||[],latestDecision=decisionRows.length?decisionRows[decisionRows.length-1]:null;
+    return json({project:{name:project?.project_name||'Transcription review'},task:{id:task?.public_task_id||null},item:{id:item.id,display_name:item.display_name||'Audio',duration_ms:durationMs,status:item.status,submitted_at:item.submitted_at,speakers:Array.isArray(item.speakers)?item.speakers:[],segments},audio_url:signed?.signedUrl||null,feedback:{comments:comments||[],ratings:ratings||[],decisions:decisionRows,latest_decision:latestDecision,average_clarity:avg,comment_count:(comments||[]).length,rating_count:ratingValues.length,decision_count:decisionRows.length},stats:{word_count:wordCount(segments),segment_count:segments.length,duration_ms:durationMs}});
   }catch(e){console.error(e);return json({error:'The client review could not be loaded.'},500)}
 });
