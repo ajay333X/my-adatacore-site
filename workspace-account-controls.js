@@ -38,7 +38,7 @@
     finally{button.disabled=false;}
   },true);
   document.addEventListener('click',async e=>{
-    const b=e.target.closest('.task-open');if(!b||b.dataset.layer!=='L1')return;
+    const b=e.target.closest('.task-open');if(!b||b.dataset.layer!=='L1'||b.dataset.transcription)return;
     e.preventDefault();e.stopImmediatePropagation();if(b.disabled)return;
     b.disabled=true;const old=b.textContent;b.textContent='Opening…';
     try{const {error}=await db.rpc('begin_assigned_task',{p_task_id:Number(b.dataset.id)});if(error)throw error;location.href=`/voice-engine?project=${b.dataset.title}&task=${Number(b.dataset.id)}`;}

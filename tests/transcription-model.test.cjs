@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const M=require('../transcription-model.js');
+const sp=[{id:'speaker-1',label:'Speaker 1'},{id:'speaker-2',label:'Speaker 2'}];
+const segs=[{id:'a',speaker_id:'speaker-1',start_ms:0,end_ms:3000,transcript:'नमस्ते दोस्तों।'},{id:'b',speaker_id:'speaker-2',start_ms:1000,end_ms:4000,transcript:'जी, नमस्ते।'}];
+assert.equal(M.parseTime('01:23.456'),83456);assert.equal(M.parseTime('2.5'),2500);assert.ok(Number.isNaN(M.parseTime('bad')));assert.ok(Number.isNaN(M.parseTime('00:99')));assert.equal(M.time(83456),'01:23.456');
+assert.equal(M.lint(segs,10000,sp).flatMap(x=>x.errors).length,0,'Cross-speaker overlap is allowed');
+assert.equal(M.lint(segs.map(x=>({...x,speaker_id:'speaker-1'})),10000,sp).filter(x=>x.errors.length).length,2);
+assert.ok(M.lint([{...segs[0],end_ms:11000,transcript:''}],10000,sp)[0].errors.length===2);
+const split=M.split(segs,'a',1500,'c');assert.equal(split.length,3);assert.equal(split[0].end_ms,1500);assert.equal(split[1].start_ms,1500);assert.equal(segs[0].end_ms,3000,'Split does not mutate history');assert.throws(()=>M.split(segs,'a',0,'c'));
+const merged=M.merge(split,'a');assert.equal(merged.length,2);assert.equal(merged[0].end_ms,3000);assert.equal(merged[0].transcript,segs[0].transcript);assert.throws(()=>M.merge(segs,'b'));
+assert.match(M.subtitles(segs,sp),/00:00:00,000 --> 00:00:03,000/);assert.match(M.subtitles(segs,sp,true),/^WEBVTT/);assert.match(M.subtitles(segs,sp,true),/Speaker 2: जी, नमस्ते।/);
+console.log('Transcription model: timing, speaker overlap, split/merge history and subtitle exports passed.');
