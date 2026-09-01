@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Assignment Center — Adatacore</title>
+<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+<link rel="stylesheet" href="/design-system.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.ac-shell{min-height:100vh}.ac-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;min-height:66px;padding:10px 20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(16px)}.ac-back{color:var(--muted);font-size:12px;font-weight:750;text-decoration:none}.ac-title{font-size:15px;font-weight:850}.ac-sub{font-size:10px;color:var(--muted);margin-top:2px}.ac-actions{margin-left:auto;display:flex;gap:8px;align-items:center}.ac-main{width:min(1320px,100%);margin:auto;padding:22px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}.hero h1{font-size:29px;letter-spacing:-.04em;margin:4px 0 7px}.hero p{margin:0;max-width:760px;color:var(--muted);font-size:12px;line-height:1.65}.flow{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(330px,.85fr);gap:14px;align-items:start}.card-pad{padding:18px}.step{display:flex;align-items:center;gap:9px;margin-bottom:13px}.step-num{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:900}.step h2{font-size:15px;margin:0}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field-wide{grid-column:1/-1}.field label,.field-title{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);font-weight:850;margin-bottom:6px}.input{width:100%}.project-summary{margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.sum span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);font-weight:800}.sum strong{display:block;margin-top:5px;font-size:13px}.people-tools{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:9px}.people-list{max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}.person{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 11px;border-bottom:1px solid var(--line);cursor:pointer}.person:last-child{border-bottom:0}.person:hover{background:var(--panel2)}.person strong{font-size:11px}.person small{display:block;color:var(--muted);font-size:9px;margin-top:3px}.person .pill{font-size:8px}.bulk-box{margin-top:10px}.bulk-box textarea{min-height:92px;resize:vertical}.selection-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.preset-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.preset{padding:7px 10px}.options{display:grid;gap:9px;margin-top:12px}.option{display:flex;gap:9px;align-items:flex-start;font-size:10px;color:var(--muted)}.option input{margin-top:2px}.preview{position:sticky;top:84px}.preview-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.preview h2{font-size:16px;margin:0}.preview-list{display:grid;gap:8px;margin-top:13px;max-height:410px;overflow:auto}.preview-row{padding:11px;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}.preview-row-head{display:flex;justify-content:space-between;gap:10px}.preview-row strong{font-size:10px}.preview-row small{display:block;font-size:9px;color:var(--muted);margin-top:4px}.preview-metrics{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.result{margin-top:12px;padding:12px;border-radius:11px;border:1px solid var(--line);font-size:10px;line-height:1.55}.result.ok{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2)}.result.err{background:rgba(244,63,94,.06);border-color:rgba(244,63,94,.2)}.apply-bar{display:grid;gap:8px;margin-top:14px}.apply-bar .btn{width:100%;justify-content:center}.danger-line{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.empty{padding:28px;text-align:center;color:var(--muted);font-size:10px}.hidden{display:none!important}.loading{opacity:.58;pointer-events:none}.notice{margin-bottom:14px}.tiny{font-size:9px;color:var(--muted)}.pill-warn{color:#9b671b;background:#fff7e5;border-color:#efdaac}.pill-gray{color:var(--muted);background:var(--panel2);border-color:var(--line)}
+@media(max-width:980px){.flow{grid-template-columns:1fr}.preview{position:static}.project-summary{grid-template-columns:1fr 1fr}}@media(max-width:650px){.ac-main{padding:14px}.ac-top{padding:10px 12px}.ac-actions .pill{display:none}.hero{flex-direction:column}.field-grid{grid-template-columns:1fr}.field-wide{grid-column:auto}.project-summary{grid-template-columns:1fr 1fr}.people-tools{grid-template-columns:1fr}.person{grid-template-columns:auto 1fr}.person .pill{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="ac-shell">
+<header class="ac-top"><a class="ac-back" href="/admin">← Admin</a><span style="width:1px;height:24px;background:var(--line)"></span><span class="brand-mark"></span><div><div class="ac-title">Assignment Center</div><div class="ac-sub">Projects · people · access · task limits</div></div><div class="ac-actions"><span class="pill pill-brand">Admin protected</span><button id="refresh" class="btn btn-secondary">Refresh</button></div></header>
+<main class="ac-main">
+<div class="hero"><div><div class="eyebrow">Unified work distribution</div><h1>Assign a project in one place.</h1><p>Choose the project, choose one person or hundreds, set the target task limit, and apply. Adatacore restores project access automatically and tops people up only to the requested limit instead of creating duplicate batches.</p></div></div>
+<div id="notice" class="notice hidden"></div>
+<div id="flow" class="flow">
+<div>
+<section class="card card-pad">
+<div class="step"><div class="step-num">1</div><h2>Choose project & work stage</h2></div>
+<div class="field-grid"><div class="field field-wide"><label>Project</label><select id="project" class="input"></select></div><div class="field"><label>Work stage</label><select id="layer" class="input"><option value="L1">L1 · Production</option><option value="L2">L2 · Review / audit</option></select></div><div class="field"><label>Assignment template</label><select id="template" class="input"><option value="">Standard project task</option></select></div></div>
+<div id="projectSummary" class="project-summary"></div>
+</section>
+<section class="card card-pad" style="margin-top:14px">
+<div class="step"><div class="step-num">2</div><h2>Choose people</h2></div>
+<div class="people-tools"><input id="peopleSearch" class="input" placeholder="Search name, email or UID"><button id="selectFiltered" class="btn btn-secondary">Select filtered</button></div>
+<div id="peopleList" class="people-list"><div class="empty">Loading people…</div></div>
+<div class="bulk-box field"><label>Or paste emails / UIDs in bulk</label><textarea id="bulkPeople" class="input" placeholder="worker@example.com&#10;AD-1234&#10;another@example.com"></textarea></div>
+<div class="selection-bar"><span id="selectedCount" class="pill pill-brand">0 selected</span><button id="clearPeople" class="btn btn-secondary">Clear</button><button id="activeOnly" class="btn btn-secondary">Active accounts only</button></div>
+</section>
+<section class="card card-pad" style="margin-top:14px">
+<div class="step"><div class="step-num">3</div><h2>Set task limit & behavior</h2></div>
+<div class="field-grid"><div class="field"><label>Target open task limit per person</label><input id="limit" class="input" type="number" min="0" max="100" value="10"></div><div class="field"><label>Assignment mode</label><select id="mode" class="input"><option value="assign">Assign / restore access</option><option value="access_only">Project access only · no new work</option></select></div></div>
+<div class="preset-row"><button class="btn btn-secondary preset" data-limit="1">1</button><button class="btn btn-secondary preset" data-limit="3">3</button><button class="btn btn-secondary preset" data-limit="5">5</button><button class="btn btn-secondary preset" data-limit="10">10</button><button class="btn btn-secondary preset" data-limit="20">20</button><button class="btn btn-secondary preset" data-limit="50">50</button></div>
+<div class="options"><label class="option"><input id="grantAccess" type="checkbox" checked><span><strong>Grant or restore project access automatically</strong><br>Recommended. A previously revoked participant becomes active for this project as part of the same assignment.</span></label><label id="capacityOption" class="option"><input id="autoCapacity" type="checkbox" checked><span><strong>Create task capacity automatically when needed</strong><br>For standard/voice projects, Adatacore creates enough capacity to reach the requested limit. Transcription uses real live-queue audio instead.</span></label></div>
+<div class="tiny" style="margin-top:12px">Target behavior: if someone already has 3 open tasks and you set 10, only 7 new tasks are added. Existing active work is never silently cancelled.</div>
+</section>
+</div>
+<aside class="card card-pad preview">
+<div class="preview-head"><div><div class="eyebrow">Before you apply</div><h2>Assignment preview</h2></div><button id="previewBtn" class="btn btn-secondary">Refresh preview</button></div>
+<div id="previewSummary" class="tiny" style="margin-top:7px">Choose people to preview their current status.</div>
+<div id="previewList" class="preview-list"><div class="empty">No people selected.</div></div>
+<div class="apply-bar"><button id="apply" class="btn btn-primary">Apply assignment</button><button id="copySkipped" class="btn btn-secondary hidden">Copy skipped people</button></div>
+<div id="result"></div>
+<div class="danger-line"><div class="field-title">Project removal</div><label class="option"><input id="cancelPending" type="checkbox"><span>Cancel untouched pending tasks when revoking project access.</span></label><button id="revoke" class="btn btn-danger" style="width:100%;justify-content:center;margin-top:9px">Revoke project access for selected</button></div>
+</aside>
+</div>
+</main>
+</div>
+<script src="/assignment-center.js?v=1"></script>
+</body>
+</html>
