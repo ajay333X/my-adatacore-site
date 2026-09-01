@@ -6,11 +6,14 @@ export class DraftError extends Error {
   constructor(code, message) { super(message); this.code = code; }
 }
 
-export function providerError(status, code) {
+export function providerError(status, code = '', type = '', message = '') {
+  const detail = `${code} ${type} ${message}`.toLowerCase();
   if (status === 401) return new DraftError('PROVIDER_AUTH', 'The OpenAI API key is invalid or expired. Update the server secret.');
   if (status === 403) return new DraftError('PROVIDER_ACCESS', 'This API key does not have access to the transcription model. Check its permissions.');
-  if (status === 429 && code === 'insufficient_quota') return new DraftError('PROVIDER_QUOTA', 'OpenAI API credit or billing quota is exhausted. Add credit or review the API billing limit, then retry.');
-  if (status === 429) return new DraftError('PROVIDER_RATE_LIMIT', 'OpenAI is rate limiting requests. Wait a little, then retry.');
+  if (status === 429 && (detail.includes('insufficient_quota') || /\b(quota|billing|credits?)\b/.test(detail))) {
+    return new DraftError('PROVIDER_QUOTA', 'OpenAI API billing or project quota is blocking transcription. Add API credit or raise the project billing/usage limit, then retry.');
+  }
+  if (status === 429) return new DraftError('PROVIDER_RATE_LIMIT', 'OpenAI is rate limiting transcription requests. Retry after the provider limit resets.');
   if (status === 400 || status === 413 || status === 422) return new DraftError('UNSUPPORTED_AUDIO', 'The provider could not process this audio. Try a shorter WAV or MP3 clip.');
   return new DraftError('PROVIDER_ERROR', 'The transcription provider is unavailable. Retry later; the previous request may have been charged.');
 }
