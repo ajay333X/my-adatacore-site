@@ -15,11 +15,28 @@ Deno.serve(async(req:Request)=>{
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
   if(!['GET','POST'].includes(req.method))return json({error:'Method not allowed'},405);
   try{
-    const url=new URL(req.url),token=(url.searchParams.get('token')||'').trim();
-    if(token.length<32||token.length>256)return json({error:'This review link is invalid.'},401);
-    const supabase=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}}),tokenHash=await hex(token);
-    const {data:share,error:shareErr}=await supabase.from('transcription_client_shares').select('id,item_id,active,expires_at').eq('token_hash',tokenHash).maybeSingle();
-    if(shareErr)throw shareErr;
+    const url=new URL(req.url),singleToken=(url.searchParams.get('token')||'').trim(),bundleToken=(url.searchParams.get('bundle')||'').trim(),bundleItem=(url.searchParams.get('item')||'').trim();
+    const supabase=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
+    let share:any=null;
+
+    if(bundleToken){
+      if(bundleToken.length<32||bundleToken.length>256||!/^[0-9a-f-]{36}$/i.test(bundleItem))return json({error:'This review link is invalid.'},401);
+      const bundleHash=await hex(bundleToken);
+      const {data:bundle,error:bundleErr}=await supabase.from('transcription_client_bundles').select('id,active,expires_at').eq('token_hash',bundleHash).maybeSingle();
+      if(bundleErr)throw bundleErr;
+      if(!bundle||!bundle.active||new Date(bundle.expires_at).getTime()<=Date.now())return json({error:'This review collection has expired or is no longer active.'},401);
+      const {data:bi,error:biErr}=await supabase.from('transcription_client_bundle_items').select('share_id,item_id').eq('bundle_id',bundle.id).eq('item_id',bundleItem).maybeSingle();
+      if(biErr)throw biErr;
+      if(!bi)return json({error:'This task is not part of the shared review collection.'},404);
+      const {data:s,error:sErr}=await supabase.from('transcription_client_shares').select('id,item_id,active,expires_at').eq('id',bi.share_id).maybeSingle();
+      if(sErr)throw sErr;share=s;
+    }else{
+      if(singleToken.length<32||singleToken.length>256)return json({error:'This review link is invalid.'},401);
+      const tokenHash=await hex(singleToken);
+      const {data:s,error:shareErr}=await supabase.from('transcription_client_shares').select('id,item_id,active,expires_at').eq('token_hash',tokenHash).maybeSingle();
+      if(shareErr)throw shareErr;share=s;
+    }
+
     if(!share||!share.active||new Date(share.expires_at).getTime()<=Date.now())return json({error:'This review link has expired or is no longer active.'},401);
     const {data:item,error:itemErr}=await supabase.from('transcription_audio_items').select('id,transcription_project_id,display_name,duration_ms,duration_seconds,status,submitted_at,storage_bucket,recording_path,speakers,submitted_segments,task_id').eq('id',share.item_id).single();
     if(itemErr||!item||!item.submitted_at)return json({error:'Submitted transcription not found.'},404);
