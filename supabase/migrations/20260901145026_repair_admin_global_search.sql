@@ -1,0 +1,3 @@
+-- Introduced the admin-only server-backed global finder.
+-- The final bounded function definition is recorded in the immediately following migration
+-- 20260901145243_bound_admin_global_search_results_v2.sql.
