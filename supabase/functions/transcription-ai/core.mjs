@@ -1,4 +1,4 @@
-export const MODEL = 'gpt-4o-transcribe-diarize';
+export const MODEL = 'whisper-large-v3-turbo';
 export const MAX_BYTES = 24000000;
 export const MAX_DURATION_MS = 900000;
 
@@ -8,14 +8,14 @@ export class DraftError extends Error {
 
 export function providerError(status, code = '', type = '', message = '') {
   const detail = `${code} ${type} ${message}`.toLowerCase();
-  if (status === 401) return new DraftError('PROVIDER_AUTH', 'The OpenAI API key is invalid or expired. Update the server secret.');
-  if (status === 403) return new DraftError('PROVIDER_ACCESS', 'This API key does not have access to the transcription model. Check its permissions.');
-  if (status === 429 && (detail.includes('insufficient_quota') || /\b(quota|billing|credits?)\b/.test(detail))) {
-    return new DraftError('PROVIDER_QUOTA', 'OpenAI API billing or project quota is blocking transcription. Add API credit or raise the project billing/usage limit, then retry.');
+  if (status === 401) return new DraftError('PROVIDER_AUTH', 'The Groq API key is invalid or expired. Update the GROQ_API_KEY secret.');
+  if (status === 403) return new DraftError('PROVIDER_ACCESS', 'This Groq API key does not have access to Whisper transcription. Check the key permissions.');
+  if (status === 429 && (detail.includes('quota') || detail.includes('billing') || detail.includes('credits') || detail.includes('limit'))) {
+    return new DraftError('PROVIDER_QUOTA', 'The Groq free-tier or project usage limit has been reached. Retry after the limit resets or review the Groq project limits.');
   }
-  if (status === 429) return new DraftError('PROVIDER_RATE_LIMIT', 'OpenAI is rate limiting transcription requests. Retry after the provider limit resets.');
-  if (status === 400 || status === 413 || status === 422) return new DraftError('UNSUPPORTED_AUDIO', 'The provider could not process this audio. Try a shorter WAV or MP3 clip.');
-  return new DraftError('PROVIDER_ERROR', 'The transcription provider is unavailable. Retry later; the previous request may have been charged.');
+  if (status === 429) return new DraftError('PROVIDER_RATE_LIMIT', 'Groq is rate limiting transcription requests. Retry after the provider limit resets.');
+  if (status === 400 || status === 413 || status === 422) return new DraftError('UNSUPPORTED_AUDIO', 'Groq could not process this audio. Try a shorter WAV, MP3, M4A, WebM, OGG or FLAC clip.');
+  return new DraftError('PROVIDER_ERROR', 'The Groq transcription service is unavailable. Retry later.');
 }
 
 export async function boundedBytes(response, limit = MAX_BYTES) {
@@ -56,8 +56,7 @@ export function normalizeDraft(response, knownDuration = 0, uuid = () => crypto.
       if (speakers.length >= 12) throw new DraftError('TOO_MANY_SPEAKERS', 'The AI detected more than 12 speakers. Split this recording into smaller clips.');
       const id = 'speaker-' + (speakers.length + 1);
       speakerMap.set(label, id);
-      // Speaker diarization does not establish physical channel identity.
-      speakers.push({id, label: 'Speaker ' + (speakers.length + 1), channel: 0});
+      speakers.push({id, label: speakers.length ? 'Speaker ' + (speakers.length + 1) : 'Speaker 1', channel: 0});
     }
     const start_ms = Math.round(row.start * 1000), end_ms = Math.round(row.end * 1000);
     if (end_ms <= start_ms) throw new DraftError('INVALID_DRAFT', 'The AI returned a zero-length segment.');
