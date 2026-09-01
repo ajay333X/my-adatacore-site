@@ -2,186 +2,35 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    {
-      "source": "/profile",
-      "destination": "/workspace#profile",
-      "permanent": false
-    },
-    {
-      "source": "/profile.html",
-      "destination": "/workspace#profile",
-      "permanent": false
-    },
-    {
-      "source": "/admin.html",
-      "destination": "/admin",
-      "permanent": false
-    },
-    {
-      "source": "/universal_engine",
-      "destination": "/voice-engine",
-      "permanent": false
-    },
-    {
-      "source": "/universal_engine.html",
-      "destination": "/voice-engine",
-      "permanent": false
-    },
-    {
-      "source": "/task_player",
-      "destination": "/workspace",
-      "permanent": false
-    },
-    {
-      "source": "/task_player.html",
-      "destination": "/workspace",
-      "permanent": false
-    }
+    {"source":"/profile","destination":"/workspace#profile","permanent":false},
+    {"source":"/profile.html","destination":"/workspace#profile","permanent":false},
+    {"source":"/admin.html","destination":"/admin","permanent":false},
+    {"source":"/universal_engine","destination":"/voice-engine","permanent":false},
+    {"source":"/universal_engine.html","destination":"/voice-engine","permanent":false},
+    {"source":"/task_player","destination":"/workspace","permanent":false},
+    {"source":"/task_player.html","destination":"/workspace","permanent":false}
   ],
   "rewrites": [
-    {
-      "source": "/admin",
-      "destination": "/admin-entry"
-    },
-    {
-      "source": "/admin/project-lab",
-      "destination": "/project-lab"
-    },
-    {
-      "source": "/admin/transcription",
-      "destination": "/transcription-lab"
-    },
-    {
-      "source": "/admin/recordings",
-      "destination": "/recordings-audit"
-    },
-    {
-      "source": "/admin/reviews",
-      "destination": "/admin-l2-reviews"
-    },
-    {
-      "source": "/voice-engine",
-      "destination": "/voice-engine-entry"
-    },
-    {
-      "source": "/review",
-      "destination": "/review-entry"
-    }
+    {"source":"/admin","destination":"/admin-entry"},
+    {"source":"/admin/project-lab","destination":"/project-lab"},
+    {"source":"/admin/transcription","destination":"/transcription-lab"},
+    {"source":"/admin/transcription-vault","destination":"/transcription-vault"},
+    {"source":"/admin/recordings","destination":"/recordings-audit"},
+    {"source":"/admin/reviews","destination":"/admin-l2-reviews"},
+    {"source":"/voice-engine","destination":"/voice-engine-entry"},
+    {"source":"/review","destination":"/review-entry"}
   ],
   "headers": [
-    {
-      "source": "/transcription",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
-    },
-    {
-      "source": "/auth",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/dashboard",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/admin",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/admin/project-lab",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
-    },
-    {
-      "source": "/admin/transcription",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
-    },
-    {
-      "source": "/voice-engine",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/review",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/workspace",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), geolocation=(), payment=()"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        }
-      ]
-    }
+    {"source":"/transcription","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/auth","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/admin/project-lab","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/admin/transcription","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/admin/transcription-vault","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/voice-engine","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/review","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/workspace","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"Permissions-Policy","value":"camera=(), geolocation=(), payment=()"},{"key":"X-Frame-Options","value":"DENY"}]}
   ]
 }
