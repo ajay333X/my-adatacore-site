@@ -15,7 +15,7 @@
   const relabel=()=>{
     setText(document.querySelector('[data-tab="projects"]'),'Project Lab');
     const nav=document.querySelector('[data-tab="projects"]');
-    if(nav&&!document.getElementById('transcriptionLabNav')){const link=document.createElement('a');link.id='transcriptionLabNav';link.className=nav.className;link.href='/admin/transcription';link.textContent='Transcription Lab';nav.insertAdjacentElement('afterend',link)}
+    if(nav&&!document.getElementById('transcriptionLabNav')){const link=document.createElement('a');link.id='transcriptionLabNav';link.className=nav.className;link.classList.remove('active');link.href='/admin/transcription';link.textContent='Transcription Lab';nav.insertAdjacentElement('afterend',link)}
     const panel=document.getElementById('projects');
     if(!panel)return;
     setText(panel.querySelector('.section-title h2'),'Project Lab');
