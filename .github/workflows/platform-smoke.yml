@@ -1,0 +1,79 @@
+name: Platform smoke checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check frontend JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -type f -name '*.js' -not -path './vendor/*' -not -path './node_modules/*' -print0)
+      - name: Verify critical platform files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f admin-entry.html
+          test -f workspace-entry.html
+          test -f admin-nav-fix.js
+          test -f admin-operations-health.js
+          test -f client-error-monitor.js
+          test -f client-batch-review.js
+          test -f transcription-editor.js
+          grep -q 'admin-operations-health.js?v=1' admin-entry.html
+          grep -q 'client-error-monitor.js?v=1' admin-entry.html
+          grep -q 'client-error-monitor.js?v=1' workspace-entry.html
+          grep -q 'client-batch-review.js?v=3' client-batch-review.html
+
+  production-routes:
+    if: github.event_name == 'push'
+    needs: static-safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for production alias
+        run: sleep 25
+      - name: Check critical production routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://www.adatacore.com'
+          paths=(
+            '/'
+            '/auth'
+            '/workspace'
+            '/admin'
+            '/admin/assignments'
+            '/admin/transcription'
+            '/admin/done-tasks'
+            '/client-batch-review.html'
+            '/client-transcript-review.html'
+          )
+          for path in "${paths[@]}"; do
+            echo "Checking ${base}${path}"
+            curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${path}" >/dev/null
+          done
+      - name: Check critical deployed assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://www.adatacore.com'
+          for asset in '/admin-nav-fix.js?v=2' '/admin-operations-health.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=3'; do
+            echo "Checking ${base}${asset}"
+            curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
+          done
