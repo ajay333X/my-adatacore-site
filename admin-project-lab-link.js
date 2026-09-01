@@ -14,6 +14,8 @@
 
   const relabel=()=>{
     setText(document.querySelector('[data-tab="projects"]'),'Project Lab');
+    const nav=document.querySelector('[data-tab="projects"]');
+    if(nav&&!document.getElementById('transcriptionLabNav')){const link=document.createElement('a');link.id='transcriptionLabNav';link.className=nav.className;link.classList.remove('active');link.href='/admin/transcription';link.textContent='Transcription Lab';nav.insertAdjacentElement('afterend',link)}
     const panel=document.getElementById('projects');
     if(!panel)return;
     setText(panel.querySelector('.section-title h2'),'Project Lab');
@@ -33,7 +35,8 @@
       if(!wrap.querySelector('.project-lab-open')){
         const a=document.createElement('a');a.className='btn btn-primary project-lab-open';a.href=`/admin/project-lab?project=${id}`;a.textContent='Open Project Lab';wrap.appendChild(a);
       }
-      if(!wrap.querySelector('.transcription-open')){
+      const project=(typeof projects!=='undefined'?projects:[]).find(p=>Number(p.id)===id);
+      if(project?.project_type==='transcription'&&!wrap.querySelector('.transcription-open')){
         const t=document.createElement('a');t.className='btn btn-secondary transcription-open';t.href=`/admin/transcription?project=${id}`;t.textContent='Transcription';wrap.appendChild(t);
       }
     });
