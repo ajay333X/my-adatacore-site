@@ -12,6 +12,7 @@
   ],
   "rewrites": [
     { "source": "/admin", "destination": "/admin-entry" },
+    { "source": "/admin/project-lab", "destination": "/project-lab" },
     { "source": "/admin/recordings", "destination": "/recordings-audit" },
     { "source": "/admin/reviews", "destination": "/admin-l2-reviews" },
     { "source": "/voice-engine", "destination": "/voice-engine-entry" },
@@ -34,6 +35,13 @@
       "source": "/admin",
       "headers": [
         { "key": "Cache-Control", "value": "private, no-store, max-age=0" }
+      ]
+    },
+    {
+      "source": "/admin/project-lab",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store, max-age=0" },
+        { "key": "X-Robots-Tag", "value": "noindex" }
       ]
     },
     {
