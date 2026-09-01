@@ -1,4 +1,5 @@
 (()=>{'use strict';
+if(!document.querySelector('script[data-tx-billing-ui]')){const s=document.createElement('script');s.src='/transcription-billing-ui.js?v=1';s.dataset.txBillingUi='1';document.head.appendChild(s)}
 const assignButton=document.getElementById('assign'),table=document.getElementById('audioRows');
 if(!table)return;
 let archivePending=[],archived=[],archiveBusy=false;
