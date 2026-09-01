@@ -1,36 +1,102 @@
 (()=>{
   'use strict';
-  if(window.__adatacoreAdminNavFix)return;
-  window.__adatacoreAdminNavFix=true;
+  if(window.__adatacoreAdminNavFixV2)return;
+  window.__adatacoreAdminNavFixV2=true;
 
-  const switchPanel=id=>{
+  const meta={
+    overview:['Operations overview','Projects, permissions, review, payouts, voice sessions and inbound applications in one place.'],
+    access:['Access management','Manage platform access, roles, project permissions, and contributor limits.'],
+    projects:['Projects','Create and manage projects and available task capacity.'],
+    submissions:['Final audit','Review submissions awaiting a final decision.'],
+    payments:['Payments','Manage approved contributor payouts and payment states.'],
+    voice:['Voice vault','Review voice queues and completed sessions.'],
+    leads:['Leads','Review company inquiries and annotator applications.'],
+    social:['Social queue','Manage queued social publishing items.']
+  };
+  let refreshSeq=0;
+
+  function forceVisible(id){
+    const panel=document.getElementById(id);
+    if(!panel)return false;
+    document.querySelectorAll('[data-tab]').forEach(tab=>{
+      const active=tab.dataset.tab===id;
+      tab.classList.toggle('active',active);
+      tab.setAttribute('aria-current',active?'page':'false');
+    });
+    document.querySelectorAll('.panel').forEach(p=>{
+      const active=p.id===id;
+      p.classList.toggle('active',active);
+      p.style.setProperty('display',active?'block':'none','important');
+      p.setAttribute('aria-hidden',active?'false':'true');
+    });
+    const heading=document.querySelector('.page-header h1');
+    const sub=document.querySelector('.page-header .page-sub');
+    if(meta[id]){
+      if(heading)heading.textContent=meta[id][0];
+      if(sub)sub.textContent=meta[id][1];
+    }
+    const main=document.querySelector('.app-main');
+    try{window.scrollTo({top:0,left:0,behavior:'instant'})}catch(_){window.scrollTo(0,0)}
+    if(main&&typeof main.scrollTo==='function'){
+      try{main.scrollTo({top:0,left:0,behavior:'instant'})}catch(_){main.scrollTop=0}
+    }
+    return true;
+  }
+
+  async function refreshPanel(id){
+    const seq=++refreshSeq;
+    try{
+      if(id==='access'&&typeof loadAccess==='function'){
+        await loadAccess();
+        if(seq!==refreshSeq)return;
+        if(typeof renderAccessUsers==='function')renderAccessUsers();
+        return;
+      }
+      if(typeof refresh==='function')await refresh();
+      if(seq!==refreshSeq)return;
+      if(id==='overview'&&typeof renderOverview==='function')renderOverview();
+    }catch(error){
+      if(seq!==refreshSeq)return;
+      const panel=document.getElementById(id);
+      let notice=panel?.querySelector('[data-admin-panel-error]');
+      if(panel&&!notice){
+        notice=document.createElement('div');
+        notice.dataset.adminPanelError='1';
+        notice.className='card';
+        notice.style.cssText='margin-bottom:14px;color:var(--red);font-size:12px';
+        panel.prepend(notice);
+      }
+      if(notice)notice.textContent=`Unable to refresh this section: ${String(error?.message||error||'Unknown error')}`;
+    }
+  }
+
+  function switchPanel(id){
     if(!id)return;
     if(id==='tasks'){
-      location.href='/admin/assignments';
+      location.assign('/admin/assignments');
       return;
     }
-    const panel=document.getElementById(id);
-    if(!panel)return;
-    document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));
+    if(!forceVisible(id))return;
     try{
       history.replaceState(null,'',id==='overview'?'/admin':`/admin#${encodeURIComponent(id)}`);
     }catch(_){ }
-    if(typeof refresh==='function'){
-      Promise.resolve(refresh()).catch(()=>{});
-    }
-  };
+    refreshPanel(id);
+  }
 
   document.addEventListener('click',e=>{
-    const tab=e.target.closest('[data-tab]');
+    const target=e.target instanceof Element?e.target:null;
+    const tab=target?.closest('[data-tab]');
     if(!tab)return;
     e.preventDefault();
     e.stopImmediatePropagation();
     switchPanel(tab.dataset.tab);
   },true);
 
-  const initial=location.hash.replace(/^#/,'');
-  if(initial&&document.getElementById(initial)&&initial!=='tasks')switchPanel(initial);
-
+  // Make inline controls such as "Open audit" use the same reliable switcher.
+  try{window.showTab=switchPanel}catch(_){ }
   window.adatacoreAdminShowTab=switchPanel;
+
+  const initial=location.hash.replace(/^#/,'');
+  if(initial&&document.getElementById(initial)&&initial!=='tasks')forceVisible(initial);
+  else forceVisible('overview');
 })();
