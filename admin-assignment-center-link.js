@@ -1,0 +1,4 @@
+(()=>{'use strict';
+function wire(){const b=document.querySelector('[data-tab="tasks"]');if(!b)return;b.textContent='Assignment Center';b.title='Open unified project and task assignment';b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();location.href='/admin/assignments'},true);const panel=document.getElementById('tasks');if(panel&&!panel.dataset.assignmentCenter){panel.dataset.assignmentCenter='1';const card=panel.querySelector('.card');if(card)card.innerHTML='<div class="section-title" style="margin:0 0 10px"><div><div class="eyebrow">Unified work distribution</div><h2>Assignment Center</h2><div class="page-sub">Choose a project, select one or many people, restore access automatically, and set the target task limit from one page.</div></div></div><a class="btn btn-primary" href="/admin/assignments">Open Assignment Center →</a>'}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
+})();
