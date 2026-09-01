@@ -12,6 +12,7 @@
   ],
   "rewrites": [
     {"source":"/admin","destination":"/admin-entry"},
+    {"source":"/admin/assignments","destination":"/assignment-center"},
     {"source":"/admin/project-lab","destination":"/project-lab"},
     {"source":"/admin/transcription","destination":"/transcription-lab"},
     {"source":"/admin/transcription-vault","destination":"/transcription-vault"},
@@ -25,6 +26,7 @@
     {"source":"/auth","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
     {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
     {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/admin/assignments","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/project-lab","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/transcription","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/transcription-vault","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
