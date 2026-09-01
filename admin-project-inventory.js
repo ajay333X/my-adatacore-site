@@ -1,5 +1,9 @@
 (()=>{
   let inventoryRows=[],taskRows=[];
+  const projectListEl=document.getElementById('projectList');
+  const projectSelectEl=document.getElementById('projectSelect');
+  const targetEl=document.getElementById('target');
+  const layerSelectEl=document.getElementById('layer');
   const style=document.createElement('style');
   style.textContent=`
     .project-stock-list{display:grid;gap:12px}.project-stock-card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
@@ -17,13 +21,13 @@
   const availableFor=(projectId,layerName)=>{const inv=inventoryFor(projectId);return Number(layerName==='L2'?inv.l2_available:inv.l1_available)||0};
 
   function renderInventoryProjects(){
-    if(!projectList)return;
-    projectList.classList.add('project-stock-list');
-    projectList.innerHTML=projects.length?projects.map(p=>{
-      const inv=inventoryFor(p.id),rows=projectTasks(p.project_name),l1=rows.filter(t=>t.layer==='L1'),l2=rows.filter(t=>t.layer==='L2'),pending=rows.filter(t=>t.status==='pending').length,finished=rows.filter(t=>t.status!=='pending').length,total=Number(inv.l1_available||0)+Number(inv.l2_available||0);
+    if(!projectListEl)return;
+    projectListEl.classList.add('project-stock-list');
+    projectListEl.innerHTML=projects.length?projects.map(p=>{
+      const inv=inventoryFor(p.id),rows=projectTasks(p.project_name),pending=rows.filter(t=>t.status==='pending').length,finished=rows.filter(t=>t.status!=='pending').length,total=Number(inv.l1_available||0)+Number(inv.l2_available||0);
       return `<article class="project-stock-card" id="stock-card-${p.id}"><div class="project-stock-head"><div><div class="project-stock-name">${esc(p.project_name)}</div><div class="project-stock-meta">L1 rate $${Number(p.l1_rate||0).toFixed(2)} · L2 rate $${Number(p.l2_rate||0).toFixed(2)} · ${p.is_published===false?'Unpublished':'Published'}</div></div><span class="pill ${total>0?'pill-green':'pill-gray'}">${total} available</span></div><div class="project-stock-grid"><div class="project-stock-stat"><span>Total available</span><strong>${total}</strong></div><div class="project-stock-stat"><span>L1 available</span><strong>${Number(inv.l1_available||0)}</strong></div><div class="project-stock-stat"><span>L2 available</span><strong>${Number(inv.l2_available||0)}</strong></div><div class="project-stock-stat"><span>Assigned / open</span><strong>${pending}</strong></div><div class="project-stock-stat"><span>Past tasks</span><strong>${finished}</strong></div></div><div class="project-stock-controls"><label class="field">Layer<select class="input" id="inv-layer-${p.id}"><option value="L1">L1 production</option><option value="L2">L2 review</option></select></label><label class="field">Quantity<input class="input" id="inv-qty-${p.id}" type="number" min="1" max="100000" step="1" value="1"></label><button class="btn btn-primary" onclick="adjustProjectTasks(${p.id},1)">＋ Upload / add tasks</button><button class="btn btn-secondary" onclick="adjustProjectTasks(${p.id},-1)">− Remove available</button></div><div class="project-stock-danger"><button class="btn btn-danger" onclick='deleteProject(${p.id},${JSON.stringify(p.project_name)})'>Delete project</button></div></article>`
     }).join(''):'<div class="empty">No projects yet.</div>';
-    projectSelect.innerHTML=projects.map(p=>{const inv=inventoryFor(p.id);return `<option value="${p.id}">${esc(p.project_name)} — L1 ${Number(inv.l1_available||0)} · L2 ${Number(inv.l2_available||0)}</option>`}).join('');
+    if(projectSelectEl)projectSelectEl.innerHTML=projects.map(p=>{const inv=inventoryFor(p.id);return `<option value="${p.id}">${esc(p.project_name)} — L1 ${Number(inv.l1_available||0)} · L2 ${Number(inv.l2_available||0)}</option>`}).join('');
     updateAssignmentInventoryHint();
   }
 
@@ -33,7 +37,7 @@
       db.from('project_task_inventory').select('project_id,l1_available,l2_available,updated_at'),
       db.from('tasks').select('id,title,layer,status,createdAt,public_task_id')
     ]);
-    if(pe){projectList.innerHTML=`<div class="empty">${esc(pe.message)}</div>`;return}
+    if(pe){if(projectListEl)projectListEl.innerHTML=`<div class="empty">${esc(pe.message)}</div>`;throw pe}
     projects=p||[];inventoryRows=ie?[]:(i||[]);taskRows=te?[]:(t||[]);renderInventoryProjects();
   };
 
@@ -53,23 +57,23 @@
   deleteProject=async function(id,name){await baseDeleteProject(id,name);await loadProjects()};
 
   assignTask=async function(){
-    if(!projectSelect.value||!target.value.trim())return;
-    const projectId=Number(projectSelect.value),layerName=layer.value,available=availableFor(projectId,layerName);
+    if(!projectSelectEl?.value||!targetEl?.value.trim()||!layerSelectEl)return;
+    const projectId=Number(projectSelectEl.value),layerName=layerSelectEl.value,available=availableFor(projectId,layerName);
     if(available<=0)return alert(`No ${layerName} task inventory is available for this project. Open Projects and upload task quantity first.`);
-    const {data,error}=await db.rpc('admin_assign_task',{p_user_key:target.value.trim(),p_project_id:projectId,p_layer:layerName});
+    const {data,error}=await db.rpc('admin_assign_task',{p_user_key:targetEl.value.trim(),p_project_id:projectId,p_layer:layerName});
     if(error)return alert(error.message);
     let publicId='';if(data){const {data:t}=await db.from('tasks').select('public_task_id').eq('id',Number(data)).maybeSingle();publicId=t?.public_task_id||''}
-    target.value='';await Promise.all([loadProjects(),loadTaskMetric()]);updateAssignmentInventoryHint();alert(publicId?`Task ${publicId} assigned successfully.`:'Task assigned successfully.');
+    targetEl.value='';await Promise.all([loadProjects(),loadTaskMetric()]);updateAssignmentInventoryHint();alert(publicId?`Task ${publicId} assigned successfully.`:'Task assigned successfully.');
   };
 
   function updateAssignmentInventoryHint(){
     const panel=document.getElementById('tasks');if(!panel)return;let hint=document.getElementById('assignmentInventoryHint');
     if(!hint){hint=document.createElement('div');hint.id='assignmentInventoryHint';hint.className='inventory-hint';const card=panel.querySelector('.card');card?.appendChild(hint)}
-    if(!projectSelect?.value){hint.textContent='Create a project and upload task quantity before assigning work.';return}
-    const project=projects.find(p=>Number(p.id)===Number(projectSelect.value)),layerName=layer?.value||'L1',available=availableFor(projectSelect.value,layerName);
+    if(!projectSelectEl?.value){hint.textContent='Create a project and upload task quantity before assigning work.';return}
+    const project=projects.find(p=>Number(p.id)===Number(projectSelectEl.value)),layerName=layerSelectEl?.value||'L1',available=availableFor(projectSelectEl.value,layerName);
     hint.innerHTML=`<strong>${available} ${layerName} task${available===1?'':'s'} available</strong> in ${esc(project?.project_name||'selected project')}. Assigning this task will consume one available slot.`;
   }
-  projectSelect?.addEventListener('change',updateAssignmentInventoryHint);layer?.addEventListener('change',updateAssignmentInventoryHint);
+  projectSelectEl?.addEventListener('change',updateAssignmentInventoryHint);layerSelectEl?.addEventListener('change',updateAssignmentInventoryHint);
 
   const projectsPanel=document.getElementById('projects');if(projectsPanel){const heading=projectsPanel.querySelector('.section-title .page-sub');if(!heading){const title=projectsPanel.querySelector('.section-title>div');if(title){const sub=document.createElement('div');sub.className='page-sub';sub.textContent='Upload unassigned L1/L2 task quantity, monitor availability, and remove unused capacity without touching completed work.';title.appendChild(sub)}}}
 })();
