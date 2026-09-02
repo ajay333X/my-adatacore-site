@@ -14,6 +14,7 @@
   const originalUploadHandler=confirm.onclick;
   const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
   const MAX_SOURCE_BYTES=262144000;
+  const MAX_KEEP_BYTES=262144000;
   const MAX_CHUNK_BYTES=52428800;
   const MAX_SOURCE_MS=14400000;
   const OUTPUT_RATE=16000;
@@ -45,22 +46,22 @@
     <h4>Long audio handling</h4>
     <p class="small muted">Choose whether each selected file stays whole or becomes smaller transcription modules.</p>
     <div class="tx-long-mode-grid">
-      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="keep" checked><span><strong>Keep as one audio</strong><span>One file becomes one transcription module. Your current Supabase plan limits a single uploaded file to 50 MB.</span></span></label>
-      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="split"><span><strong>Smart split into chunks</strong><span>Accepts a source file up to 250 MB locally, then uploads only the smaller speech-optimized chunks to Supabase.</span></span></label>
+      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="keep" checked><span><strong>Keep as one audio</strong><span>One source file becomes one transcription module. Source uploads can be up to 250 MB.</span></span></label>
+      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="split"><span><strong>Smart split into chunks</strong><span>Accepts a source file up to 250 MB locally, then uploads smaller speech-optimized chunks for easier transcription and AI drafting.</span></span></label>
     </div>
     <div id="txSplitOptions" class="tx-split-options" hidden>
       <div class="tx-split-row">
         <label>Target chunk length (minutes)<input id="txChunkMinutes" type="number" min="1" max="12" step="0.5" value="3"><div class="tx-split-quick"><button type="button" data-tx-min="1">1 min</button><button type="button" data-tx-min="2">2 min</button><button type="button" data-tx-min="3">3 min</button><button type="button" data-tx-min="5">5 min</button><button type="button" data-tx-min="10">10 min</button><button type="button" data-tx-min="12">12 min</button></div></label>
         <label class="tx-smart-boundary"><input id="txSmartBoundary" type="checkbox" checked><span><strong>Pause-aware boundary</strong><br>3 minutes is a target, not a hard cut. Adatacore searches around the boundary for a quiet pause so a sentence is less likely to be cut in the middle. If no useful pause exists, it falls back to the target boundary.</span></label>
       </div>
-      <div class="small muted" style="margin-top:9px">The original long file is not uploaded in Smart Split mode. It is decoded locally in your browser and converted into 16 kHz mono WAV chunks. Each uploaded chunk remains under the current 50 MB Supabase file limit. Very large/high-resolution source files use more browser memory while splitting.</div>
+      <div class="small muted" style="margin-top:9px">The original long file is not uploaded in Smart Split mode. It is decoded locally in your browser and converted into 16 kHz mono WAV chunks. Each generated chunk stays below 50 MB for safer browser uploads and remains within the speech-processing design limits. Very large/high-resolution source files use more browser memory while splitting.</div>
     </div>
     <div id="txLongPreview" class="tx-long-preview">No audio selected yet.</div>`;
 
   const dropzone=filesInput.closest('.dropzone');
   dropzone?.insertAdjacentElement('beforebegin',block);
   document.querySelectorAll('.import-card p,.dropzone p').forEach(node=>{
-    if(node.textContent.includes('Up to 50 MB per file'))node.textContent='Keep-as-one uploads are limited to 50 MB on the current Supabase plan. Smart Split can accept source files up to 250 MB because splitting happens locally before upload.';
+    if(node.textContent.includes('Up to 50 MB per file'))node.textContent='Source audio can be up to 250 MB per file. For Groq first drafts, Smart Split is recommended because AI clips still have separate size and duration limits.';
   });
 
   const splitOptions=document.getElementById('txSplitOptions');
@@ -104,8 +105,8 @@
     const token=++previewToken,files=[...filesInput.files];
     if(!files.length){preview.textContent='No audio selected yet.';return}
     if(mode()==='keep'){
-      const oversized=files.filter(file=>file.size>MAX_CHUNK_BYTES).length;
-      preview.textContent=oversized?`${oversized} selected file${oversized===1?' is':'s are'} over the 50 MB keep-as-one limit. Choose Smart Split for those files.`:`${files.length} file${files.length===1?'':'s'} selected · each file will stay as one transcription module.`;
+      const oversized=files.filter(file=>file.size>MAX_KEEP_BYTES).length;
+      preview.textContent=oversized?`${oversized} selected file${oversized===1?' is':'s are'} over the 250 MB keep-as-one limit.`:`${files.length} file${files.length===1?'':'s'} selected · each file will stay as one transcription module. Smart Split is recommended when you want smaller AI-friendly clips.`;
       return;
     }
     const tooLarge=files.filter(file=>file.size>MAX_SOURCE_BYTES).length;
@@ -208,7 +209,7 @@
     const outRate=Math.min(OUTPUT_RATE,buffer.sampleRate);
     const frames=Math.max(1,Math.floor((endSeconds-startSeconds)*outRate));
     const bytes=new ArrayBuffer(44+frames*2),view=new DataView(bytes);
-    writeAscii(view,0,'RIFF');view.setUint32(4,36+frames*2,true);writeAscii(view,8,'WAVE');writeAscii(view,12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,outRate,true);view.setUint32(28,outRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);writeAscii(view,36,'data');view.setUint32(40,frames*2,true);
+    writeAscii(view,0,'RIFF');view.setUint32(4,36+frames*2,true);writeAscii(view,8,'WAVE');view.setUint32(12?16:16,16,true);writeAscii(view,12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,outRate,true);view.setUint32(28,outRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);writeAscii(view,36,'data');view.setUint32(40,frames*2,true);
     const pcm=new Int16Array(bytes,44,frames),srcRate=buffer.sampleRate,channels=Math.max(1,buffer.numberOfChannels),data=[];
     for(let c=0;c<channels;c++)data.push(buffer.getChannelData(c));
     const startFrame=Math.floor(startSeconds*srcRate),ratio=srcRate/outRate;
