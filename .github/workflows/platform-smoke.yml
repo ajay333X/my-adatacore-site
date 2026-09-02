@@ -32,6 +32,11 @@ jobs:
           test -f admin-entry.html
           test -f workspace.html
           test -f workspace-entry.html
+          test -f project-lab-entry.html
+          test -f project-lab-advanced-controls.js
+          test -f client-portal.html
+          test -f client-portal.js
+          test -f workspace-qualifications-guidelines.js
           test -f admin-nav-fix.js
           test -f admin-operations-health.js
           test -f admin-staff-roles.js
@@ -46,6 +51,8 @@ jobs:
           test -f workspace-balance-ledger.js
           test -f workspace-platform-highlights.js
           test -f transcription-editor.js
+          grep -q 'project-lab-advanced-controls.js?v=1' project-lab-entry.html
+          grep -q 'client-portal.js?v=1' client-portal.html
           grep -q 'admin-operations-health.js?v=1' admin-entry.html
           grep -q 'admin-nav-fix.js?v=3' admin-entry.html
           grep -q 'admin-staff-roles.js?v=3' admin-entry.html
@@ -57,6 +64,7 @@ jobs:
             grep -q 'workspace-support-skills.js?v=2' "$shell"
             grep -q 'workspace-balance-ledger.js?v=2' "$shell"
             grep -q 'workspace-platform-highlights.js?v=1' "$shell"
+            grep -q 'workspace-qualifications-guidelines.js?v=1' "$shell"
             grep -q 'client-error-monitor.js?v=1' "$shell"
           done
           grep -q 'client-batch-review.js?v=5' client-batch-review.html
@@ -78,8 +86,10 @@ jobs:
             '/'
             '/auth'
             '/workspace'
+            '/client-portal'
             '/admin'
             '/admin/assignments'
+            '/admin/project-lab?project=81'
             '/admin/transcription'
             '/admin/done-tasks'
             '/client-batch-review.html'
@@ -96,14 +106,17 @@ jobs:
           base='https://www.adatacore.com'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-platform-highlights.js?v=1'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-support-skills.js?v=2'
+          curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-qualifications-guidelines.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-platform-navigation.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-nav-fix.js?v=3'
+          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-advanced-controls.js?v=1'
+          curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-portal.js?v=1'
       - name: Check critical deployed assets
         shell: bash
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-nav-fix.js?v=3' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/workspace-platform-highlights.js?v=1' '/workspace-support-skills.js?v=2' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
+          for asset in '/admin-nav-fix.js?v=3' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/project-lab-advanced-controls.js?v=1' '/workspace-platform-highlights.js?v=1' '/workspace-support-skills.js?v=2' '/workspace-qualifications-guidelines.js?v=1' '/client-portal.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
