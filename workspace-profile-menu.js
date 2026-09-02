@@ -23,6 +23,8 @@
     .account-menu-item:hover,.account-menu-item:focus-visible{background:var(--panel2);outline:none}
     .account-menu-item.staff-console{display:none;color:var(--brand)}
     .account-menu-item.staff-console.visible{display:flex}
+    .staff-console-header{display:none;align-items:center;gap:7px;text-decoration:none;white-space:nowrap}
+    .staff-console-header.visible{display:inline-flex}
     .account-menu-icon{width:18px;text-align:center;color:var(--muted)}
     .account-menu-item.staff-console .account-menu-icon{color:var(--brand)}
     .account-menu-divider{height:1px;background:var(--line);margin:5px 4px}
@@ -33,6 +35,7 @@
       .profile-chip.account-trigger .account-copy,.profile-chip.account-trigger .account-chevron{display:none}
       .profile-chip.account-trigger .avatar{width:36px;height:36px}
       .account-menu{position:fixed;right:12px;top:68px;width:min(280px,calc(100vw - 24px))}
+      .staff-console-header{font-size:10px;padding:8px 10px}
     }
   `;
   document.head.appendChild(style);
@@ -55,6 +58,12 @@
   wrap.className='account-menu-wrap';
   chip.parentNode.insertBefore(wrap,chip);
   wrap.appendChild(chip);
+
+  const headerButton=document.createElement('a');
+  headerButton.className='btn btn-secondary staff-console-header';
+  headerButton.href='/admin';
+  headerButton.innerHTML='<span aria-hidden="true">◆</span><span>Staff Console</span>';
+  wrap.parentNode.insertBefore(headerButton,wrap);
 
   const menu=document.createElement('div');
   menu.className='account-menu';
@@ -102,14 +111,28 @@
   document.addEventListener('click',e=>{if(!wrap.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){setOpen(false);chip.focus();}});
 
-  (async()=>{
+  let staffChecking=false,lastStaffCheck=0;
+  async function refreshStaffAccess(force=false){
+    if(staffChecking)return;
+    const now=Date.now();if(!force&&now-lastStaffCheck<10000)return;
+    staffChecking=true;lastStaffCheck=now;
     try{
       const {data:access,error}=await db.rpc('get_my_admin_access');
-      if(error||!access?.allowed)return;
-      menu.querySelector('.staff-console')?.classList.add('visible');
-      const roles=Array.isArray(access.roles)?[...new Set(access.roles.map(r=>String(r.role||'').replaceAll('_',' ')).filter(Boolean))]:[];
+      const allowed=!error&&!!access?.allowed;
+      menu.querySelector('.staff-console')?.classList.toggle('visible',allowed);
+      headerButton.classList.toggle('visible',allowed);
       const roleLabel=menu.querySelector('#accountMenuRole');
+      if(!allowed){if(roleLabel)roleLabel.textContent='Contributor account';return}
+      const roles=Array.isArray(access.roles)?[...new Set(access.roles.map(r=>String(r.role||'').replaceAll('_',' ')).filter(Boolean))]:[];
       if(roleLabel)roleLabel.textContent=access.is_super_admin?'Super Admin + contributor':roles.length?roles.join(' · ')+' + contributor':'Staff + contributor';
+      const label=headerButton.querySelector('span:last-child');
+      if(label)label.textContent=access.is_super_admin?'Admin Console':'Staff Console';
     }catch(_){ }
-  })();
+    finally{staffChecking=false}
+  }
+
+  refreshStaffAccess(true);
+  window.addEventListener('focus',()=>refreshStaffAccess(true));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshStaffAccess(true)});
+  setInterval(()=>refreshStaffAccess(false),30000);
 })();
