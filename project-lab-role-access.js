@@ -14,6 +14,7 @@ function apply(){
   document.querySelectorAll('.lab-view').forEach(v=>{const name=v.id.replace(/^view-/,'');if(!allowed.has(name))v.remove()});
   document.getElementById('duplicateBtn')?.remove();
   document.getElementById('txLabLink')?.remove();
+  if(!isPM){document.getElementById('projectLabAssignmentCenter')?.remove();document.querySelectorAll('.quick[data-jump="assignments"]').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();document.querySelector('.lab-nav [data-view="assignments"]')?.click()}})}
   document.querySelectorAll('.people-bulk,.assign-bulk,.danger-zone,[data-stock],#bulkAssignBtn,#runTaskActionBtn,#saveTemplateBtn,#deleteProjectBtn,#pauseProjectBtn,#archiveProjectBtn').forEach(el=>el.remove());
   document.querySelectorAll('#view-assignments input[type="checkbox"],#view-assignments .task-check,#view-assignments #selectAllTasks').forEach(el=>{el.disabled=true});
   const main=document.querySelector('.lab-main');
