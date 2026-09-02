@@ -18,6 +18,7 @@
   const isActive=item=>item&&['assigned','in_progress'].includes(item.status);
   const isReview=item=>item&&['submitted','in_review','changes_requested'].includes(item.status);
   const isDone=item=>item&&['approved','reviewed'].includes(item.status);
+  const isTranscribed=item=>isReview(item)||isDone(item);
   const seconds=item=>Number.isFinite(Number(item?.duration_seconds))?Math.max(0,Number(item.duration_seconds)):0;
 
   function durationLabel(totalSeconds){
@@ -88,10 +89,10 @@
     if(failed)out.push({tone:'bad',title:`${failed} AI draft${failed===1?'':'s'} failed`,copy:'Open Intake & AI or select the affected audio to retry generation.'});
     if(!ready)out.push({tone:'warn',title:'No audio is ready to assign',copy:'Import or restore audio before contributors can claim new L1 work.'});
     else if(ready<3)out.push({tone:'warn',title:`Only ${ready} audio module${ready===1?' is':'s are'} ready`,copy:'The live queue is getting low. Consider importing more audio soon.'});
-    if(review>=5)out.push({tone:'warn',title:`${review} modules are waiting on review`,copy:'Review throughput is behind transcription throughput for this project.'});
+    if(review>=5)out.push({tone:'warn',title:`${review} modules are waiting on QA`,copy:'Review throughput is behind transcription throughput for this project.'});
     if(!active&&ready)out.push({tone:'good',title:'Queue is ready for contributors',copy:`${ready} module${ready===1?' is':'s are'} available for L1 assignment.`});
     if(archived.length)out.push({tone:'neutral',title:`${archived.length} archived module${archived.length===1?'':'s'}`,copy:'Archived audio is safely outside the live assignment queue and can be restored anytime.'});
-    if(!out.length)out.push({tone:'good',title:'Pipeline looks healthy',copy:'No immediate queue, review, or AI drafting issue needs attention.'});
+    if(!out.length)out.push({tone:'good',title:'Pipeline looks healthy',copy:'No immediate queue, QA, or AI drafting issue needs attention.'});
     return out.slice(0,4);
   }
 
@@ -114,11 +115,12 @@
     const active=items.filter(isActive).length;
     const review=items.filter(isReview).length;
     const done=items.filter(isDone).length;
-    const completion=total?Math.round(done/total*100):0;
+    const transcribed=items.filter(isTranscribed).length;
+    const completion=total?Math.round(transcribed/total*100):0;
     const fill=$('dashboardProgressFill');
     if(fill)fill.style.width=`${Math.max(0,Math.min(100,completion))}%`;
     if($('dashboardProgressValue'))$('dashboardProgressValue').textContent=`${completion}%`;
-    if($('dashboardProgressCopy'))$('dashboardProgressCopy').textContent=total?`${done} of ${total} live modules completed`:'No live audio yet';
+    if($('dashboardProgressCopy'))$('dashboardProgressCopy').textContent=total?`${transcribed} of ${total} live modules transcribed · ${done} final approved`:'No live audio yet';
     if($('pipelineReady'))$('pipelineReady').textContent=ready;
     if($('pipelineActive'))$('pipelineActive').textContent=active;
     if($('pipelineReview'))$('pipelineReview').textContent=review;
@@ -148,18 +150,19 @@
       const ready=items.filter(isReady);
       const active=items.filter(isActive);
       const review=items.filter(isReview);
+      const transcribed=items.filter(isTranscribed);
       const done=items.filter(isDone);
       const totalDuration=items.reduce((sum,item)=>sum+seconds(item),0);
       const readyDuration=ready.reduce((sum,item)=>sum+seconds(item),0);
-      const doneDuration=done.reduce((sum,item)=>sum+seconds(item),0);
+      const transcribedDuration=transcribed.reduce((sum,item)=>sum+seconds(item),0);
       const aiReady=jobs.filter(job=>job.status==='ready').length;
       const aiFailed=jobs.filter(job=>job.status==='failed').length;
 
       metric('totalCount',items.length,totalDuration?`${durationLabel(totalDuration)} known audio`:'Live queue modules');
       metric('readyCount',ready.length,readyDuration?`${durationLabel(readyDuration)} ready`:'Ready for L1');
       metric('workingCount',active.length,'Assigned or transcribing');
-      metric('dashboardReviewCount',review.length,'Waiting / in QA');
-      metric('reviewedCount',done.length,doneDuration?`${durationLabel(doneDuration)} completed`:'Approved / reviewed');
+      metric('dashboardTranscribedCount',transcribed.length,review.length?`${review.length} waiting / in QA`:'Submitted or further');
+      metric('reviewedCount',done.length,transcribedDuration?`${durationLabel(transcribedDuration)} transcribed`:'Final approved');
       metric('dashboardAiCount',aiReady,aiFailed?`${aiFailed} failed draft${aiFailed===1?'':'s'}`:'Groq drafts ready');
       if($('dashboardArchivedCount'))$('dashboardArchivedCount').textContent=archived.length;
       if($('queueTabCount'))$('queueTabCount').textContent=ready.length;
