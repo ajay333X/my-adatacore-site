@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Apply — Adatacore</title>
+<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="/application-onboarding.css?v=20260902-1">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script defer src="/application-onboarding.js?v=20260902-1"></script>
+</head>
+<body>
+<main class="app-shell">
+  <div class="app-top">
+    <a class="app-brand" href="/"><span class="app-mark" aria-hidden="true"></span><span>Adatacore</span></a>
+    <a class="app-exit" id="workspaceLink" href="/workspace">Workspace</a>
+  </div>
+
+  <section class="app-hero">
+    <div class="glass hero-copy">
+      <div class="eyebrow">Contributor onboarding</div>
+      <h1>Show us how you work.</h1>
+      <p>Complete your profile, choose the work you are interested in, and submit a short language-specific assessment. You can review your recording or transcription before anything is submitted.</p>
+    </div>
+    <aside class="glass progress-card" aria-label="Application progress">
+      <div class="progress-head"><div><div class="eyebrow">Progress</div><div class="progress-value" id="progressValue">0%</div></div><span class="pill under_review" id="overallState">Getting ready</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="step-list">
+        <div class="mini-step" id="miniProfile"><span class="dot">1</span><span>Profile information</span></div>
+        <div class="mini-step" id="miniInterests"><span class="dot">2</span><span>Language & skills</span></div>
+        <div class="mini-step" id="miniAssessment"><span class="dot">3</span><span>Assessment submission</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="glass workspace">
+    <div class="step-panel active" id="loadingPanel">
+      <div class="section-head"><div><div class="eyebrow">Secure setup</div><h2>Loading your application…</h2><p>We are checking your profile and application state.</p></div></div>
+    </div>
+
+    <section class="step-panel" id="profilePanel">
+      <div class="section-head"><div><div class="eyebrow">Step 1</div><h2>Complete your profile</h2><p>This information is saved to the same profile you see in your Adatacore Workspace.</p></div></div>
+      <form id="profileForm">
+        <div class="form-grid">
+          <div class="field full"><label for="fullName">Full name</label><input id="fullName" autocomplete="name" required></div>
+          <div class="field"><label for="dob">Date of birth</label><input id="dob" type="date" required></div>
+          <div class="field"><label for="country">Country</label><select id="country" required><option value="">Select country</option></select></div>
+          <div class="field"><label for="phone">Phone number</label><input id="phone" inputmode="numeric" autocomplete="tel-national" placeholder="National number only" required></div>
+          <div class="field"><label for="education">Education <span style="color:#6f6f82;font-weight:600">(optional)</span></label><input id="education" autocomplete="organization-title" placeholder="e.g. B.Tech, BA, Diploma"></div>
+          <div class="field"><label for="occupation">Occupation <span style="color:#6f6f82;font-weight:600">(optional)</span></label><input id="occupation" placeholder="e.g. Student, Voice Artist, Freelancer"></div>
+        </div>
+        <div class="actions"><button class="btn btn-primary" id="saveProfile" type="submit">Save & continue</button></div>
+      </form>
+    </section>
+
+    <section class="step-panel" id="interestsPanel">
+      <div class="section-head"><div><div class="eyebrow">Step 2</div><h2>Choose your language and skills</h2><p>Select the language you want to apply for, then choose one or both available work tracks.</p></div></div>
+      <div class="eyebrow" style="margin-bottom:10px">Language</div>
+      <div class="language-grid" id="languageGrid"></div>
+      <div class="eyebrow" style="margin:24px 0 10px">I am interested in</div>
+      <div class="track-grid" id="trackGrid"></div>
+      <div class="actions"><button class="btn btn-secondary" id="backProfile" type="button">Back</button><button class="btn btn-primary" id="saveInterests" type="button">Continue to assessment</button></div>
+    </section>
+
+    <section class="step-panel" id="assessmentPanel">
+      <div class="section-head"><div><div class="eyebrow">Step 3</div><h2>Your assessment</h2><p>Finish each selected assessment. Nothing is submitted until you press the final submit button for that assessment.</p></div></div>
+      <div class="assessment-stack" id="assessmentStack"></div>
+      <div class="actions"><button class="btn btn-secondary" id="backInterests" type="button">Back to skills</button></div>
+    </section>
+
+    <section class="step-panel" id="statusPanel">
+      <div class="section-head"><div><div class="eyebrow">Application center</div><h2>Your applications</h2><p>You can continue using Adatacore while our team reviews submitted assessments.</p></div><a class="btn btn-secondary" href="/workspace" style="text-decoration:none">Open Workspace</a></div>
+      <div class="status-stack" id="statusStack"></div>
+      <div class="actions"><button class="btn btn-secondary" id="newApplication" type="button">Apply for another language or skill</button></div>
+    </section>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
