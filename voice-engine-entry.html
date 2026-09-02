@@ -11,10 +11,21 @@
 <script>
 (async()=>{
   try{
+    const params=new URLSearchParams(location.search),impersonation=params.get('impersonation')||'';
+    const validImpersonation=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(impersonation);
+    if(impersonation&&!validImpersonation)throw new Error('Invalid contributor-view session');
     const response=await fetch('/voice-engine-secure?ui=task-id-v1',{cache:'no-store'});
     if(!response.ok)throw new Error('Voice workspace returned '+response.status);
     let html=await response.text();
-    html=html.replace('</body>','<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt></body>');
+    if(validImpersonation){
+      const startOriginal="db.rpc('start_solo_voice_session',{p_project:project,p_task_id:taskId})";
+      const completeOriginal="db.rpc('complete_voice_session',{p_session:sessionId,p_recording_path:path,p_duration:seconds})";
+      if(!html.includes(startOriginal)||!html.includes(completeOriginal))throw new Error('Voice support-mode compatibility check failed');
+      html=html.replace(startOriginal,`db.rpc('admin_impersonation_start_solo_voice_session',{p_session_id:'${impersonation}',p_project:project,p_task_id:taskId})`);
+      html=html.replace(completeOriginal,`db.rpc('admin_impersonation_complete_solo_voice_session',{p_session_id:'${impersonation}',p_voice_session:sessionId,p_recording_path:path,p_duration:seconds})`);
+    }
+    const addon='<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt>'+(validImpersonation?'<scr'+'ipt src="/task-impersonation.js?v=20260902-1"></scr'+'ipt>':'');
+    html=html.replace('</body>',addon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load voice workspace. '+String(error.message||error)+'</div>'}
 })();
