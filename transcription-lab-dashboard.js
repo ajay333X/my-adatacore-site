@@ -231,4 +231,9 @@
   setInterval(()=>{if(!document.hidden&&document.querySelector('[data-tx-view="overview"]')?.classList.contains('active'))refreshDashboard()},20000);
 
   scheduleRefresh(250);
+
+  const longAudioScript=document.createElement('script');
+  longAudioScript.src='/transcription-long-audio.js?v=20260902-1';
+  longAudioScript.async=true;
+  document.head.appendChild(longAudioScript);
 })();
