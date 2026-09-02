@@ -21,7 +21,10 @@
     .account-menu-role{font-size:10px;color:var(--muted);margin-top:3px}
     .account-menu-item{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--text);border-radius:9px;padding:10px 11px;font:650 12px/1.2 inherit;text-align:left;cursor:pointer}
     .account-menu-item:hover,.account-menu-item:focus-visible{background:var(--panel2);outline:none}
+    .account-menu-item.staff-console{display:none;color:var(--brand)}
+    .account-menu-item.staff-console.visible{display:flex}
     .account-menu-icon{width:18px;text-align:center;color:var(--muted)}
+    .account-menu-item.staff-console .account-menu-icon{color:var(--brand)}
     .account-menu-divider{height:1px;background:var(--line);margin:5px 4px}
     .account-menu-item.danger{color:var(--red)}
     .account-menu-item.danger .account-menu-icon{color:var(--red)}
@@ -59,8 +62,9 @@
   menu.innerHTML=`
     <div class="account-menu-head">
       <div id="accountMenuName" class="account-menu-name">Contributor</div>
-      <div class="account-menu-role">Contributor account</div>
+      <div id="accountMenuRole" class="account-menu-role">Contributor account</div>
     </div>
+    <button class="account-menu-item staff-console" type="button" role="menuitem" data-account-action="staff"><span class="account-menu-icon">◆</span><span>Open Staff Console</span></button>
     <button class="account-menu-item" type="button" role="menuitem" data-account-view="profile"><span class="account-menu-icon">◉</span><span>Profile</span></button>
     <button class="account-menu-item" type="button" role="menuitem" data-account-view="earnings"><span class="account-menu-icon">$</span><span>Earnings & payments</span></button>
     <div class="account-menu-divider"></div>
@@ -82,12 +86,13 @@
   chip.addEventListener('click',e=>{e.stopPropagation();toggle()});
   chip.addEventListener('keydown',e=>{
     if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}
-    if(e.key==='ArrowDown'){e.preventDefault();setOpen(true);menu.querySelector('.account-menu-item')?.focus();}
+    if(e.key==='ArrowDown'){e.preventDefault();setOpen(true);menu.querySelector('.account-menu-item.visible,.account-menu-item:not(.staff-console)')?.focus();}
   });
   menu.addEventListener('click',async e=>{
     const view=e.target.closest('[data-account-view]')?.dataset.accountView;
     if(view){setOpen(false);location.hash=view;return;}
     const action=e.target.closest('[data-account-action]')?.dataset.accountAction;
+    if(action==='staff'){setOpen(false);location.href='/admin';return;}
     if(action==='signout'){
       const button=e.target.closest('button');
       if(button){button.disabled=true;button.querySelector('span:last-child').textContent='Signing out…';}
@@ -96,4 +101,15 @@
   });
   document.addEventListener('click',e=>{if(!wrap.contains(e.target))setOpen(false)});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){setOpen(false);chip.focus();}});
+
+  (async()=>{
+    try{
+      const {data:access,error}=await db.rpc('get_my_admin_access');
+      if(error||!access?.allowed)return;
+      menu.querySelector('.staff-console')?.classList.add('visible');
+      const roles=Array.isArray(access.roles)?[...new Set(access.roles.map(r=>String(r.role||'').replaceAll('_',' ')).filter(Boolean))]:[];
+      const roleLabel=menu.querySelector('#accountMenuRole');
+      if(roleLabel)roleLabel.textContent=access.is_super_admin?'Super Admin + contributor':roles.length?roles.join(' · ')+' + contributor':'Staff + contributor';
+    }catch(_){ }
+  })();
 })();
