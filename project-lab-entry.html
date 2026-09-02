@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Project Lab — Adatacore</title>
-<style>html,body{margin:0;min-height:100%;background:#f6f7fa;color:#666;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.boot{min-height:100vh;display:grid;place-items:center;font-size:12px}</style>
+<script>try{const t=localStorage.getItem('adatacore-admin-theme');document.documentElement.dataset.adminTheme=t==='dark'?'dark':'light'}catch(_){document.documentElement.dataset.adminTheme='light'}</script>
+<style>html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}html[data-admin-theme="light"],html[data-admin-theme="light"] body{background:#f6f7fa;color:#666}html[data-admin-theme="dark"],html[data-admin-theme="dark"] body{background:#0c0b12;color:#c9c7d2}.boot{min-height:100vh;display:grid;place-items:center;font-size:12px}</style>
 </head>
 <body><div class="boot">Loading Project Lab…</div>
 <script>
@@ -14,7 +15,15 @@
     const response=await fetch('/project-lab',{cache:'no-store'});
     if(!response.ok)throw new Error('Project Lab returned '+response.status);
     let html=await response.text();
-    const addon='<scr'+'ipt src="/project-lab-assignment-center.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-advanced-controls.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-operations-suite.js?v=1"></scr'+'ipt>';
+    let theme='light';try{theme=localStorage.getItem('adatacore-admin-theme')==='dark'?'dark':'light'}catch(_){ }
+    html=html.replace('<html lang="en">',`<html lang="en" data-admin-theme="${theme}">`).replace('</head>','<link rel="stylesheet" href="/admin-theme.css?v=2"></head>');
+    const oldGuard=`async function guard(){if(!projectId){document.body.innerHTML='<div class="empty">Project ID is missing.</div>';return}const {data:{user}}=await db.auth.getUser();if(!user)return location.replace('/auth');const {data:u}=await db.from('users').select('role,accountStatus').eq('id',user.id).maybeSingle();if(!u||u.role!=='admin'||u.accountStatus!=='active')return location.replace('/dashboard');const h=location.hash.slice(1);if(h&&document.getElementById(\`view-${h}\`))setView(h);await load()}`;
+    const newGuard=`async function guard(){if(!projectId){document.body.innerHTML='<div class="empty">Project ID is missing.</div>';return}const {data:{user}}=await db.auth.getUser();if(!user)return location.replace('/auth');const {data:a,error}=await db.rpc('get_my_admin_access');const scoped=a?.is_super_admin||(a?.projects||[]).some(p=>Number(p.id)===projectId);if(error||!a?.allowed||!scoped)return location.replace('/dashboard');window.__adatacoreProjectAdminAccess=a;const h=location.hash.slice(1);if(h&&document.getElementById(\`view-${h}\`))setView(h);await load()}`;
+    const oldLoad=`async function load(){if(loading)return;setLoading(true);const {data:d,error}=await db.rpc('admin_get_project_lab',{p_project_id:projectId});setLoading(false);if(error){document.querySelector('.lab-main').innerHTML=\`<div class="card empty">${esc(error.message)}</div>\`;return}data=d;project=d.project;renderAll()}`;
+    const newLoad=`async function load(){if(loading)return;setLoading(true);const fn=window.__adatacoreProjectAdminAccess?.is_super_admin?'admin_get_project_lab':'staff_get_project_lab';const {data:d,error}=await db.rpc(fn,{p_project_id:projectId});setLoading(false);if(error){document.querySelector('.lab-main').innerHTML=\`<div class="card empty">${esc(error.message)}</div>\`;return}data=d;project=d.project;renderAll()}`;
+    if(!html.includes(oldGuard)||!html.includes(oldLoad))throw new Error('Project Lab compatibility check failed');
+    html=html.replace(oldGuard,newGuard).replace(oldLoad,newLoad);
+    const addon='<scr'+'ipt src="/admin-theme.js?v=2"></scr'+'ipt><scr'+'ipt src="/project-lab-assignment-center.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-role-access.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-super-addons.js?v=1"></scr'+'ipt>';
     html=html.replace('</body>',addon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load Project Lab. '+String(error.message||error)+'</div>'}
