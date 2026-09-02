@@ -30,6 +30,8 @@ jobs:
         run: |
           set -euo pipefail
           test -f admin-entry.html
+          test -f admin-theme.css
+          test -f admin-theme.js
           test -f workspace.html
           test -f workspace-entry.html
           test -f project-lab-entry.html
@@ -61,6 +63,11 @@ jobs:
           grep -q 'project-lab-operations-suite.js?v=1' project-lab-entry.html
           grep -q 'client-portal.js?v=1' client-portal.html
           grep -q 'client-delivery-center.js?v=1' client-portal.html
+          grep -q 'admin-theme.css?v=1' admin-entry.html
+          grep -q 'admin-theme.js?v=1' admin-entry.html
+          grep -q 'adatacore-admin-theme' admin-theme.js
+          grep -q 'data-admin-theme="light"' admin-theme.css
+          grep -q 'admin-theme-transition' admin-theme.css
           grep -q 'admin-operations-health.js?v=1' admin-entry.html
           grep -q 'admin-operations-suite.js?v=1' admin-entry.html
           grep -q 'admin-nav-fix.js?v=4' admin-entry.html
@@ -126,6 +133,8 @@ jobs:
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-support-skills.js?v=3'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-qualifications-guidelines.js?v=2'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-operations-context.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.css?v=1'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-operations-suite.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-platform-navigation.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-nav-fix.js?v=4'
@@ -139,7 +148,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
+          for asset in '/admin-theme.css?v=1' '/admin-theme.js?v=1' '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
