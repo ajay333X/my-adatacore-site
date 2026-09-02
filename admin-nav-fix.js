@@ -1,17 +1,19 @@
 (()=>{
   'use strict';
-  if(window.__adatacoreAdminNavFixV2)return;
-  window.__adatacoreAdminNavFixV2=true;
+  if(window.__adatacoreAdminNavFixV3)return;
+  window.__adatacoreAdminNavFixV3=true;
 
   const meta={
-    overview:['Operations overview','Projects, permissions, review, payouts, voice sessions and inbound applications in one place.'],
-    access:['Access management','Manage platform access, roles, project permissions, and contributor limits.'],
+    overview:['Operations overview','Projects, permissions, review, payouts, support and platform health in one place.'],
+    access:['Access management','Manage platform access, project permissions, and contributor limits.'],
+    staff:['Staff & roles','Manage operational staff responsibilities and project-scoped roles.'],
+    'support-center':['Support Center','Review and resolve contributor support tickets.'],
     projects:['Projects','Create and manage projects and available task capacity.'],
     submissions:['Final audit','Review submissions awaiting a final decision.'],
     payments:['Payments','Manage approved contributor payouts and payment states.'],
+    'finance-ledger':['Finance ledger','Audit contributor balance movements and payment-related adjustments.'],
     voice:['Voice vault','Review voice queues and completed sessions.'],
-    leads:['Leads','Review company inquiries and annotator applications.'],
-    social:['Social queue','Manage queued social publishing items.']
+    leads:['Leads','Review company inquiries and annotator applications.']
   };
   let refreshSeq=0;
 
@@ -50,6 +52,18 @@
         await loadAccess();
         if(seq!==refreshSeq)return;
         if(typeof renderAccessUsers==='function')renderAccessUsers();
+        return;
+      }
+      if(id==='staff'){
+        document.getElementById('staffRoleRefresh')?.click();
+        return;
+      }
+      if(id==='support-center'){
+        document.getElementById('supportRefresh')?.click();
+        return;
+      }
+      if(id==='finance-ledger'){
+        document.getElementById('ledgerRefresh')?.click();
         return;
       }
       if(typeof refresh==='function')await refresh();
@@ -92,7 +106,6 @@
     switchPanel(tab.dataset.tab);
   },true);
 
-  // Make inline controls such as "Open audit" use the same reliable switcher.
   try{window.showTab=switchPanel}catch(_){ }
   window.adatacoreAdminShowTab=switchPanel;
 
