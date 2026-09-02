@@ -8,6 +8,9 @@
   let lastDigest='';
   let checking=false;
   let lastCheckAt=0;
+  let initialReady=false;
+
+  const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
   function settingsSnapshot(){
     const ids=['setName','setType','setL1Rate','setL2Rate','setLifecycle','setPublished','setDescription','setConfig','setStyle'];
@@ -15,7 +18,7 @@
   }
 
   function settingsDirty(){
-    return !!baselineSettings && settingsSnapshot()!==baselineSettings;
+    return initialReady&&!!baselineSettings&&settingsSnapshot()!==baselineSettings;
   }
 
   function digest(d){
@@ -35,8 +38,20 @@
     return digest(data);
   }
 
+  async function initializeBaseline(){
+    for(let attempt=0;attempt<80;attempt++){
+      const title=document.getElementById('topTitle')?.textContent||'';
+      const name=document.getElementById('setName')?.value||'';
+      if(name&&title&&title!=='Project Lab')break;
+      await sleep(100);
+    }
+    baselineSettings=settingsSnapshot();
+    lastDigest=await readDigest();
+    initialReady=true;
+  }
+
   async function checkForExternalChanges(force=false){
-    if(checking||document.hidden||settingsDirty())return;
+    if(!initialReady||checking||document.hidden||settingsDirty())return;
     const now=Date.now();
     if(!force&&now-lastCheckAt<5000)return;
     checking=true;lastCheckAt=now;
@@ -53,19 +68,21 @@
   const core=document.createElement('script');
   core.src=CORE_SRC;
   core.onload=()=>{
-    setTimeout(async()=>{
-      baselineSettings=settingsSnapshot();
-      lastDigest=await readDigest();
-    },0);
+    initializeBaseline();
 
     document.getElementById('saveSettingsBtn')?.addEventListener('click',()=>{
-      setTimeout(()=>{
+      let tries=0;
+      const watch=setInterval(()=>{
+        tries++;
         const toast=document.getElementById('labToast');
         if(toast?.textContent?.includes('Project settings saved')){
+          clearInterval(watch);
           baselineSettings=settingsSnapshot();
           readDigest().then(v=>{if(v)lastDigest=v;});
+        }else if(tries>=20){
+          clearInterval(watch);
         }
-      },900);
+      },150);
     });
   };
   core.onerror=()=>{
