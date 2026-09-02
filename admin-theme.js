@@ -38,16 +38,24 @@ function transitionTheme(next,button){
   setTimeout(()=>setTheme(next,true),285);
   animation.finished.catch(()=>{}).finally(()=>{wipe.remove();button.classList.remove('is-switching');button.setAttribute('aria-busy','false')});
 }
+function createButton(){
+  const button=document.createElement('button');button.id='adminThemeToggle';button.className='admin-theme-toggle';button.type='button';button.innerHTML='<span class="admin-theme-sky" aria-hidden="true"><span class="admin-theme-star s1"></span><span class="admin-theme-star s2"></span><span class="admin-theme-star s3"></span><span class="admin-theme-orb"></span></span><span class="admin-theme-label">Dark</span>';
+  button.addEventListener('click',()=>transitionTheme(document.documentElement.dataset.adminTheme==='dark'?'light':'dark',button));
+  return button;
+}
 function mount(){
   setTheme(document.documentElement.dataset.adminTheme||savedTheme());
-  const actions=document.querySelector('.admin-header-actions');if(!actions||document.getElementById('adminThemeToggle'))return !!actions;
-  const button=document.createElement('button');button.id='adminThemeToggle';button.className='admin-theme-toggle';button.type='button';button.innerHTML='<span class="admin-theme-sky" aria-hidden="true"><span class="admin-theme-star s1"></span><span class="admin-theme-star s2"></span><span class="admin-theme-star s3"></span><span class="admin-theme-orb"></span></span><span class="admin-theme-label">Dark</span>';
-  actions.prepend(button);setTheme(document.documentElement.dataset.adminTheme||savedTheme());
-  button.addEventListener('click',()=>transitionTheme(document.documentElement.dataset.adminTheme==='dark'?'light':'dark',button));
+  if(document.getElementById('adminThemeToggle'))return true;
+  const actions=document.querySelector('.admin-header-actions,.ac-actions,.head-actions,.done-actions,.page-actions,.lab-actions,.vault-actions,.audit-actions');
+  const button=createButton();
+  if(actions){actions.prepend(button)}else{
+    button.classList.add('admin-theme-floating');
+    document.body.appendChild(button);
+  }
+  setTheme(document.documentElement.dataset.adminTheme||savedTheme());
   return true;
 }
 setTheme(document.documentElement.dataset.adminTheme||savedTheme());
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
-let tries=0;const timer=setInterval(()=>{tries++;if(mount()||tries>40)clearInterval(timer)},125);
 window.addEventListener('storage',e=>{if(e.key===KEY&&VALID.has(e.newValue))setTheme(e.newValue)});
 })();
