@@ -36,20 +36,27 @@ jobs:
           test -f admin-staff-roles.js
           test -f admin-finance-ledger.js
           test -f admin-support-center.js
+          test -f admin-platform-navigation.js
           test -f admin-client-decision-review.js
           test -f client-error-monitor.js
           test -f client-batch-review.js
           test -f workspace-experience.js
           test -f workspace-support-skills.js
           test -f workspace-balance-ledger.js
+          test -f workspace-platform-highlights.js
           test -f transcription-editor.js
           grep -q 'admin-operations-health.js?v=1' admin-entry.html
-          grep -q 'admin-staff-roles.js?v=2' admin-entry.html
-          grep -q 'admin-support-center.js?v=1' admin-entry.html
-          grep -q 'workspace-support-skills.js?v=1' workspace-entry.html
-          grep -q 'workspace-balance-ledger.js?v=1' workspace-entry.html
+          grep -q 'admin-nav-fix.js?v=3' admin-entry.html
+          grep -q 'admin-staff-roles.js?v=3' admin-entry.html
+          grep -q 'admin-support-center.js?v=2' admin-entry.html
+          grep -q 'admin-finance-ledger.js?v=2' admin-entry.html
+          grep -q 'admin-platform-navigation.js?v=1' admin-entry.html
+          grep -q 'workspace-experience.js?v=2' workspace-entry.html
+          grep -q 'workspace-support-skills.js?v=2' workspace-entry.html
+          grep -q 'workspace-balance-ledger.js?v=2' workspace-entry.html
+          grep -q 'workspace-platform-highlights.js?v=1' workspace-entry.html
           grep -q 'client-error-monitor.js?v=1' workspace-entry.html
-          grep -q 'client-batch-review.js?v=4' client-batch-review.html
+          grep -q 'client-batch-review.js?v=5' client-batch-review.html
           grep -q 'admin-client-decision-review.js?v=1' admin-done-task-review.html
 
   production-routes:
@@ -84,7 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-nav-fix.js?v=2' '/admin-operations-health.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=4'; do
+          for asset in '/admin-nav-fix.js?v=3' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/workspace-platform-highlights.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
