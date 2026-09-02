@@ -19,6 +19,8 @@
     if(!session){location.replace('/auth');return}
     const {data:access,error}=await db.rpc('get_my_admin_access');
     if(!error&&access?.allowed){location.replace('/admin');return}
+    const {data:onboarding,error:onboardingError}=await db.rpc('get_my_application_onboarding');
+    if(!onboardingError&&onboarding?.must_onboard&&!onboarding?.onboarding_complete){location.replace('/apply');return}
   }catch(_){ }
   location.replace('/workspace');
 })();
