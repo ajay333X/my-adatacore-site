@@ -13,7 +13,8 @@
 
   const originalUploadHandler=confirm.onclick;
   const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
-  const MAX_FILE_BYTES=52428800;
+  const MAX_SOURCE_BYTES=262144000;
+  const MAX_CHUNK_BYTES=52428800;
   const MAX_SOURCE_MS=14400000;
   const OUTPUT_RATE=16000;
   const MAX_CHUNK_SECONDS=740;
@@ -44,20 +45,23 @@
     <h4>Long audio handling</h4>
     <p class="small muted">Choose whether each selected file stays whole or becomes smaller transcription modules.</p>
     <div class="tx-long-mode-grid">
-      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="keep" checked><span><strong>Keep as one audio</strong><span>Uses the existing upload flow exactly as before. One file becomes one transcription module.</span></span></label>
-      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="split"><span><strong>Smart split into chunks</strong><span>Creates speech-optimized WAV modules and tries to move each boundary to a nearby natural pause.</span></span></label>
+      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="keep" checked><span><strong>Keep as one audio</strong><span>One file becomes one transcription module. Your current Supabase plan limits a single uploaded file to 50 MB.</span></span></label>
+      <label class="tx-long-mode"><input type="radio" name="txLongAudioMode" value="split"><span><strong>Smart split into chunks</strong><span>Accepts a source file up to 250 MB locally, then uploads only the smaller speech-optimized chunks to Supabase.</span></span></label>
     </div>
     <div id="txSplitOptions" class="tx-split-options" hidden>
       <div class="tx-split-row">
         <label>Target chunk length (minutes)<input id="txChunkMinutes" type="number" min="1" max="12" step="0.5" value="3"><div class="tx-split-quick"><button type="button" data-tx-min="1">1 min</button><button type="button" data-tx-min="2">2 min</button><button type="button" data-tx-min="3">3 min</button><button type="button" data-tx-min="5">5 min</button><button type="button" data-tx-min="10">10 min</button><button type="button" data-tx-min="12">12 min</button></div></label>
         <label class="tx-smart-boundary"><input id="txSmartBoundary" type="checkbox" checked><span><strong>Pause-aware boundary</strong><br>3 minutes is a target, not a hard cut. Adatacore searches around the boundary for a quiet pause so a sentence is less likely to be cut in the middle. If no useful pause exists, it falls back to the target boundary.</span></label>
       </div>
-      <div class="small muted" style="margin-top:9px">Smart chunks are converted locally in your browser to 16 kHz mono WAV. This keeps speech clear and keeps chunks small enough for the current AI-draft pipeline. Very long/high-resolution files use more browser memory while splitting.</div>
+      <div class="small muted" style="margin-top:9px">The original long file is not uploaded in Smart Split mode. It is decoded locally in your browser and converted into 16 kHz mono WAV chunks. Each uploaded chunk remains under the current 50 MB Supabase file limit. Very large/high-resolution source files use more browser memory while splitting.</div>
     </div>
     <div id="txLongPreview" class="tx-long-preview">No audio selected yet.</div>`;
 
   const dropzone=filesInput.closest('.dropzone');
   dropzone?.insertAdjacentElement('beforebegin',block);
+  document.querySelectorAll('.import-card p,.dropzone p').forEach(node=>{
+    if(node.textContent.includes('Up to 50 MB per file'))node.textContent='Keep-as-one uploads are limited to 50 MB on the current Supabase plan. Smart Split can accept source files up to 250 MB because splitting happens locally before upload.';
+  });
 
   const splitOptions=document.getElementById('txSplitOptions');
   const minutesInput=document.getElementById('txChunkMinutes');
@@ -99,18 +103,24 @@
   async function renderPreview(){
     const token=++previewToken,files=[...filesInput.files];
     if(!files.length){preview.textContent='No audio selected yet.';return}
-    if(mode()==='keep'){preview.textContent=`${files.length} file${files.length===1?'':'s'} selected · each file will stay as one transcription module.`;return}
+    if(mode()==='keep'){
+      const oversized=files.filter(file=>file.size>MAX_CHUNK_BYTES).length;
+      preview.textContent=oversized?`${oversized} selected file${oversized===1?' is':'s are'} over the 50 MB keep-as-one limit. Choose Smart Split for those files.`:`${files.length} file${files.length===1?'':'s'} selected · each file will stay as one transcription module.`;
+      return;
+    }
+    const tooLarge=files.filter(file=>file.size>MAX_SOURCE_BYTES).length;
+    if(tooLarge){preview.textContent=`${tooLarge} file${tooLarge===1?' is':'s are'} over the 250 MB Smart Split source limit.`;return}
     preview.textContent='Checking durations and estimating chunks…';
     let total=0,known=0;
     for(const file of files.slice(0,20)){
       try{const seconds=await readDuration(file);if(token!==previewToken)return;known++;total+=Math.max(1,Math.ceil(seconds/(targetMinutes()*60)))}catch(_){}
     }
     if(token!==previewToken)return;
-    preview.textContent=known?`${files.length} file${files.length===1?'':'s'} selected · approximately ${total}${files.length>known?'+':''} transcription modules at ${targetMinutes()} minute target${smartInput.checked?' · pause-aware boundaries on':''}.`:`${files.length} file${files.length===1?'':'s'} selected · chunk count will be calculated during processing.`;
+    preview.textContent=known?`${files.length} file${files.length===1?'':'s'} selected · approximately ${total}${files.length>known?'+':''} transcription modules at ${targetMinutes()} minute target${smartInput.checked?' · pause-aware boundaries on':''}. The original source stays in your browser.`:`${files.length} file${files.length===1?'':'s'} selected · chunk count will be calculated during processing.`;
   }
 
   function validateSource(file){
-    if(!file.size||file.size>MAX_FILE_BYTES)throw Error('Source file must be between 1 byte and 50 MB.');
+    if(!file.size||file.size>MAX_SOURCE_BYTES)throw Error('Smart Split source file must be between 1 byte and 250 MB.');
     const ext=(file.name.split('.').pop()||'').toLowerCase();
     if(!['mp3','wav','m4a','webm','ogg','flac','aac','mp4'].includes(ext))throw Error('Use WAV, MP3, M4A, WebM, OGG, FLAC, AAC or MP4 audio.');
   }
@@ -215,7 +225,7 @@
     const sourceSeconds=await readDuration(file);
     if(sourceSeconds*1000>MAX_SOURCE_MS)throw Error('Audio must be under 4 hours.');
     const line=document.createElement('div');line.className='file-result tx-long-progress';results.appendChild(line);
-    line.innerHTML=`<strong>${file.name}</strong><small>Decoding audio for smart split…</small>`;
+    line.innerHTML=`<strong>${file.name}</strong><small>Decoding audio locally for smart split…</small>`;
     const buffer=await decodeFile(file),targetSeconds=targetMinutes()*60,pauseAware=smartInput.checked;
     const plan=buildPlan(buffer,targetSeconds,pauseAware),group=crypto.randomUUID(),uploaded=[],payload=[];
     line.querySelector('small').textContent=`${plan.chunks.length} chunks planned · ${plan.naturalCuts} boundary${plan.naturalCuts===1?'':'ies'} moved to a natural pause.`;
@@ -225,7 +235,7 @@
         line.querySelector('small').textContent=`Preparing part ${part} of ${plan.chunks.length} · ${formatTime(chunk.start)}–${formatTime(chunk.end)}${chunk.natural?' · natural pause':''}`;
         await new Promise(resolve=>setTimeout(resolve,0));
         const blob=encodeWavChunk(buffer,chunk.start,chunk.end);
-        if(blob.size>MAX_FILE_BYTES)throw Error(`Part ${part} is too large after conversion. Choose a shorter chunk duration.`);
+        if(blob.size>MAX_CHUNK_BYTES)throw Error(`Part ${part} is too large after conversion. Choose a shorter chunk duration.`);
         const path=`${pid}/long/${group}/${String(part).padStart(3,'0')}.wav`;
         const {error}=await db.storage.from('transcription_audio').upload(path,blob,{contentType:'audio/wav',upsert:false});
         if(error)throw error;uploaded.push(path);
