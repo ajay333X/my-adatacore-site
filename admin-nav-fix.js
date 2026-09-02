@@ -1,10 +1,11 @@
 (()=>{
   'use strict';
-  if(window.__adatacoreAdminNavFixV3)return;
-  window.__adatacoreAdminNavFixV3=true;
+  if(window.__adatacoreAdminNavFixV4)return;
+  window.__adatacoreAdminNavFixV4=true;
 
   const meta={
     overview:['Operations overview','Projects, permissions, review, payouts, support and platform health in one place.'],
+    'operations-center':['Operations Center','Prioritized exceptions, applications, reliability, QA appeals and platform audit history.'],
     access:['Access management','Manage platform access, project permissions, and contributor limits.'],
     staff:['Staff & roles','Manage operational staff responsibilities and project-scoped roles.'],
     'support-center':['Support Center','Review and resolve contributor support tickets.'],
@@ -52,6 +53,10 @@
         await loadAccess();
         if(seq!==refreshSeq)return;
         if(typeof renderAccessUsers==='function')renderAccessUsers();
+        return;
+      }
+      if(id==='operations-center'){
+        document.getElementById('opsSuiteRefresh')?.click();
         return;
       }
       if(id==='staff'){
