@@ -1,21 +1,132 @@
-(()=>{'use strict';
-const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
-const currentProject=()=>Number(new URLSearchParams(location.search).get('project'))||null;
-if(!document.querySelector('script[data-tx-billing-ui]')){const s=document.createElement('script');s.src='/transcription-billing-ui.js?v=2';s.dataset.txBillingUi='1';document.head.appendChild(s)}
-const assignButton=document.getElementById('assign'),table=document.getElementById('audioRows');
-if(!table)return;
-let archivePending=[],archived=[],archiveBusy=false;
-const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function message(text,error=false){const n=document.getElementById('notice');if(n){n.textContent=text;n.className='notice '+(error?'error':'success')}}
-if(assignButton){assignButton.textContent='Assignment Center';assignButton.title='Assign project access and task limits from the unified Assignment Center';assignButton.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const pid=currentProject();if(pid)location.href=`/admin/assignments?project=${pid}&layer=L1`},true)}
-function ensureArchiveUI(){const section=table.closest('section.card');if(!section)return;const toolbars=[...section.querySelectorAll('.toolbar')],bottom=toolbars[toolbars.length-1],top=toolbars[0];if(bottom&&!document.getElementById('txArchiveSelected')){const b=document.createElement('button');b.id='txArchiveSelected';b.textContent='Archive selected';b.title='Hide selected unassigned audio from the live queue without deleting it';const del=document.getElementById('queueDeleteSelected');bottom.insertBefore(b,del||bottom.querySelector('.push')||null);b.onclick=()=>openArchive(selectedIds())}if(top&&!document.getElementById('txArchivedManager')){const b=document.createElement('button');b.id='txArchivedManager';b.textContent='Archived';b.title='View, restore or delete archived transcription audio';top.insertBefore(b,document.getElementById('assign'));b.onclick=openArchived}if(!document.getElementById('txArchiveDialog')){document.body.insertAdjacentHTML('beforeend',`<dialog id="txArchiveDialog"><div class="dialog-head"><div><h2>Archive from live queue?</h2><p class="small muted">Archived audio is hidden from assignment but its AI draft and transcript data are preserved.</p></div><button id="txArchiveClose">Close</button></div><div class="dialog-body"><p id="txArchiveScope"></p><p class="small muted">Only unassigned live-queue audio can be archived.</p><p id="txArchiveMessage" class="small" role="status"></p></div><div class="dialog-foot"><button id="txArchiveCancel">Cancel</button><button id="txArchiveConfirm" class="primary">Archive selected</button></div></dialog><dialog id="txArchivedDialog"><div class="dialog-head"><div><h2>Archived transcription audio</h2><p class="small muted">Restore audio to the end of the live queue, or permanently delete it.</p></div><button id="txArchivedClose">Close</button></div><div class="dialog-body"><div class="toolbar" style="padding-left:0"><button id="txArchivedSelectAll">Select all</button><span id="txArchivedCount" class="small muted"></span></div><div id="txArchivedRows" class="source-list"></div><p id="txArchivedMessage" class="small" role="status"></p></div><div class="dialog-foot"><button id="txArchivedDelete" class="danger">Delete selected</button><button id="txArchivedRestore" class="primary">Restore selected</button></div></dialog>`);document.getElementById('txArchiveClose').onclick=document.getElementById('txArchiveCancel').onclick=()=>document.getElementById('txArchiveDialog').close();document.getElementById('txArchiveConfirm').onclick=confirmArchive;document.getElementById('txArchivedClose').onclick=()=>document.getElementById('txArchivedDialog').close();document.getElementById('txArchivedSelectAll').onclick=()=>{document.querySelectorAll('[data-archived-item]').forEach(x=>x.checked=true);updateArchivedCount()};document.getElementById('txArchivedRows').addEventListener('change',updateArchivedCount);document.getElementById('txArchivedRestore').onclick=restoreArchived;document.getElementById('txArchivedDelete').onclick=deleteArchived}}
-function selectedIds(){return [...table.querySelectorAll('input[data-item]:checked')].map(x=>x.dataset.item)}
-function openArchive(ids){archivePending=[...new Set(ids)].filter(Boolean);if(!archivePending.length){message('Select one or more unassigned live-queue audio modules first.',true);return}document.getElementById('txArchiveScope').innerHTML=`Archive <strong>${archivePending.length}</strong> selected audio module${archivePending.length===1?'':'s'}?`;document.getElementById('txArchiveMessage').textContent='';document.getElementById('txArchiveDialog').showModal()}
-async function confirmArchive(){if(archiveBusy||!archivePending.length)return;const pid=currentProject();if(!pid)return message('Choose a transcription project first.',true);archiveBusy=true;const b=document.getElementById('txArchiveConfirm'),m=document.getElementById('txArchiveMessage');b.disabled=true;m.textContent='Archiving…';try{const {data,error}=await db.rpc('tx_archive_queue_items',{p_project:pid,p_items:archivePending});if(error)throw error;document.getElementById('txArchiveDialog').close();message(`${data?.archived||0} audio module${data?.archived===1?'':'s'} archived${data?.skipped?`; ${data.skipped} protected item${data.skipped===1?' was':'s were'} skipped`:''}.`);location.reload()}catch(e){m.textContent=e.message}finally{archiveBusy=false;b.disabled=false}}
-async function openArchived(){ensureArchiveUI();const pid=currentProject();if(!pid)return message('Choose a transcription project first.',true);const d=document.getElementById('txArchivedDialog'),rows=document.getElementById('txArchivedRows');rows.innerHTML='<div class="empty">Loading archived audio…</div>';d.showModal();try{const {data,error}=await db.rpc('tx_get_archived',{p_project:pid});if(error)throw error;archived=Array.isArray(data)?data:[];rows.innerHTML=archived.length?archived.map(a=>`<label class="source-row"><input type="checkbox" data-archived-item="${a.id}"><span>${safe(a.display_name||a.recording_path?.split('/').pop()||'Audio')}<small>${safe(a.source_project_title||'Upload')} / ${safe(a.source_folder||'Root')} · archived ${a.archived_at?new Date(a.archived_at).toLocaleString():'recently'}</small></span></label>`).join(''):'<div class="empty">No archived audio.</div>';updateArchivedCount()}catch(e){rows.innerHTML=`<div class="empty">${safe(e.message)}</div>`}}
-function archivedIds(){return [...document.querySelectorAll('[data-archived-item]:checked')].map(x=>x.dataset.archivedItem)}
-function updateArchivedCount(){const ids=archivedIds();document.getElementById('txArchivedCount').textContent=`${ids.length} selected · ${archived.length} archived`;document.getElementById('txArchivedRestore').disabled=document.getElementById('txArchivedDelete').disabled=!ids.length}
-async function restoreArchived(){const ids=archivedIds(),pid=currentProject();if(!ids.length||!pid)return;const m=document.getElementById('txArchivedMessage');m.textContent='Restoring…';try{const {data,error}=await db.rpc('tx_restore_archived',{p_project:pid,p_items:ids});if(error)throw error;document.getElementById('txArchivedDialog').close();message(`${data?.restored||0} audio module${data?.restored===1?'':'s'} restored to the live queue.`);location.reload()}catch(e){m.textContent=e.message}}
-async function deleteArchived(){const ids=archivedIds(),pid=currentProject();if(!ids.length||!pid||!confirm(`Permanently delete ${ids.length} archived audio module${ids.length===1?'':'s'}?`))return;const m=document.getElementById('txArchivedMessage');m.textContent='Deleting…';try{const {data,error}=await db.rpc('tx_delete_queue_items',{p_project:pid,p_items:ids});if(error)throw error;const paths=(data?.deleted||[]).filter(x=>x.delete_storage&&x.recording_path).map(x=>x.recording_path);if(paths.length)await db.storage.from('transcription_audio').remove(paths);await openArchived();m.textContent='';message(`${data?.deleted_count||0} archived audio module${data?.deleted_count===1?'':'s'} deleted.`)}catch(e){m.textContent=e.message}}
-const observer=new MutationObserver(()=>{ensureArchiveUI();table.querySelectorAll('[data-queue-delete]').forEach(del=>{const id=del.dataset.queueDelete;if(del.parentElement?.querySelector(`[data-queue-archive="${id}"]`))return;const b=document.createElement('button');b.dataset.queueArchive=id;b.textContent='Archive';b.title='Archive this unassigned audio';b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();openArchive([id])};del.before(b)})});observer.observe(table,{childList:true,subtree:true});ensureArchiveUI();
+(()=>{
+  'use strict';
+  if(!window.supabase)return;
+  const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
+  const currentProject=()=>Number(new URLSearchParams(location.search).get('project'))||null;
+  const assignButton=document.getElementById('assign');
+  const archivedButton=document.getElementById('txArchivedManager');
+  const archivedDialog=document.getElementById('txArchivedDialog');
+  const archivedRows=document.getElementById('txArchivedRows');
+  const archivedCount=document.getElementById('txArchivedCount');
+  const archivedMessage=document.getElementById('txArchivedMessage');
+  const restoreButton=document.getElementById('txArchivedRestore');
+  const deleteButton=document.getElementById('txArchivedDelete');
+  let archived=[];
+  let busy=false;
+
+  const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function notice(text,error=false){
+    const n=document.getElementById('notice');
+    if(!n)return;
+    n.textContent=text;
+    n.className='notice '+(error?'error':'success');
+  }
+
+  if(!document.querySelector('script[data-tx-billing-ui]')){
+    const script=document.createElement('script');
+    script.src='/transcription-billing-ui.js?v=2';
+    script.dataset.txBillingUi='1';
+    document.head.appendChild(script);
+  }
+
+  if(assignButton){
+    assignButton.textContent='Assignment Center';
+    assignButton.title='Assign project access and task limits from the unified Assignment Center';
+    assignButton.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const pid=currentProject();
+      if(pid)location.href=`/admin/assignments?project=${pid}&layer=L1`;
+    },true);
+  }
+
+  function selectedArchived(){return [...document.querySelectorAll('[data-archived-item]:checked')].map(node=>node.dataset.archivedItem).filter(Boolean)}
+
+  function updateArchivedState(){
+    const ids=selectedArchived();
+    if(archivedCount)archivedCount.textContent=`${ids.length} selected · ${archived.length} archived`;
+    if(restoreButton)restoreButton.disabled=busy||!ids.length;
+    if(deleteButton)deleteButton.disabled=busy||!ids.length;
+  }
+
+  function renderArchived(){
+    archivedRows.innerHTML=archived.length?archived.map(item=>`<label class="source-row"><input type="checkbox" data-archived-item="${safe(item.id)}"><span>${safe(item.display_name||item.recording_path?.split('/').pop()||'Audio')}<small>${safe(item.source_project_title||'Upload')} / ${safe(item.source_folder||'Root')} · archived ${item.archived_at?new Date(item.archived_at).toLocaleString():'recently'}</small></span></label>`).join(''):'<div class="empty">No archived audio in this project.</div>';
+    updateArchivedState();
+  }
+
+  async function loadArchived(){
+    const pid=currentProject();
+    if(!pid)throw Error('Choose a transcription project first.');
+    archivedRows.innerHTML='<div class="empty">Loading archived audio…</div>';
+    archivedMessage.textContent='';
+    const {data,error}=await db.rpc('tx_get_archived',{p_project:pid});
+    if(error)throw Error(error.message);
+    archived=Array.isArray(data)?data:[];
+    renderArchived();
+  }
+
+  async function openArchived(){
+    if(!currentProject())return notice('Choose a transcription project first.',true);
+    archivedDialog.showModal();
+    try{await loadArchived()}catch(error){archivedRows.innerHTML=`<div class="empty">${safe(error.message)}</div>`}
+  }
+
+  async function restoreArchived(){
+    const ids=selectedArchived(),pid=currentProject();
+    if(!ids.length||!pid||busy)return;
+    busy=true;
+    updateArchivedState();
+    archivedMessage.textContent='Restoring…';
+    try{
+      const {data,error}=await db.rpc('tx_restore_archived',{p_project:pid,p_items:ids});
+      if(error)throw Error(error.message);
+      await loadArchived();
+      notice(`${data?.restored||0} audio module${data?.restored===1?'':'s'} restored to the end of the live queue${data?.skipped?`; ${data.skipped} protected item${data.skipped===1?' was':'s were'} skipped`:''}.`);
+    }catch(error){archivedMessage.textContent=error.message}
+    finally{busy=false;updateArchivedState()}
+  }
+
+  async function deleteArchived(){
+    const ids=selectedArchived(),pid=currentProject();
+    if(!ids.length||!pid||busy)return;
+    if(!confirm(`Permanently delete ${ids.length} archived audio module${ids.length===1?'':'s'}? This cannot be undone.`))return;
+    busy=true;
+    updateArchivedState();
+    archivedMessage.textContent='Deleting…';
+    try{
+      const {data,error}=await db.rpc('tx_delete_queue_items',{p_project:pid,p_items:ids});
+      if(error)throw Error(error.message);
+      const paths=(data?.deleted||[]).filter(item=>item.delete_storage&&item.recording_path).map(item=>item.recording_path);
+      let cleanupWarning='';
+      if(paths.length){
+        const {error:storageError}=await db.storage.from('transcription_audio').remove(paths);
+        if(storageError)cleanupWarning=' Direct-upload storage cleanup needs attention.';
+      }
+      await loadArchived();
+      notice(`${data?.deleted_count||0} archived audio module${data?.deleted_count===1?'':'s'} permanently deleted.${cleanupWarning}`,Boolean(cleanupWarning));
+    }catch(error){archivedMessage.textContent=error.message}
+    finally{busy=false;updateArchivedState()}
+  }
+
+  archivedButton?.addEventListener('click',openArchived);
+  document.getElementById('txArchivedClose')?.addEventListener('click',()=>archivedDialog.close());
+  document.getElementById('txArchivedSelectAll')?.addEventListener('click',()=>{
+    document.querySelectorAll('[data-archived-item]').forEach(node=>node.checked=true);
+    updateArchivedState();
+  });
+  archivedRows?.addEventListener('change',updateArchivedState);
+  restoreButton?.addEventListener('click',restoreArchived);
+  deleteButton?.addEventListener('click',deleteArchived);
+
+  const aiConnection=document.getElementById('aiConnection');
+  if(aiConnection){
+    const correctProviderLabel=()=>{
+      if(aiConnection.textContent.includes('OpenAI model access verified')){
+        aiConnection.textContent=aiConnection.textContent.replace('OpenAI model access verified','Groq Whisper access verified');
+      }
+    };
+    new MutationObserver(correctProviderLabel).observe(aiConnection,{childList:true,subtree:true,characterData:true});
+    correctProviderLabel();
+  }
 })();
