@@ -34,11 +34,16 @@ jobs:
           test -f workspace-entry.html
           test -f project-lab-entry.html
           test -f project-lab-advanced-controls.js
+          test -f project-lab-operations-suite.js
           test -f client-portal.html
           test -f client-portal.js
+          test -f client-delivery-center.js
+          test -f status.html
           test -f workspace-qualifications-guidelines.js
+          test -f workspace-operations-context.js
           test -f admin-nav-fix.js
           test -f admin-operations-health.js
+          test -f admin-operations-suite.js
           test -f admin-staff-roles.js
           test -f admin-finance-ledger.js
           test -f admin-support-center.js
@@ -51,10 +56,14 @@ jobs:
           test -f workspace-balance-ledger.js
           test -f workspace-platform-highlights.js
           test -f transcription-editor.js
+          test -f docs/supabase-auth-email-templates.md
           grep -q 'project-lab-advanced-controls.js?v=1' project-lab-entry.html
+          grep -q 'project-lab-operations-suite.js?v=1' project-lab-entry.html
           grep -q 'client-portal.js?v=1' client-portal.html
+          grep -q 'client-delivery-center.js?v=1' client-portal.html
           grep -q 'admin-operations-health.js?v=1' admin-entry.html
-          grep -q 'admin-nav-fix.js?v=3' admin-entry.html
+          grep -q 'admin-operations-suite.js?v=1' admin-entry.html
+          grep -q 'admin-nav-fix.js?v=4' admin-entry.html
           grep -q 'admin-staff-roles.js?v=3' admin-entry.html
           grep -q 'admin-support-center.js?v=2' admin-entry.html
           grep -q 'admin-finance-ledger.js?v=2' admin-entry.html
@@ -62,12 +71,16 @@ jobs:
           grep -q 'profileSkillsCard' workspace-support-skills.js
           grep -q 'Action required before new work' workspace-qualifications-guidelines.js
           grep -q 'Profile & Skills' workspace-platform-highlights.js
+          grep -q 'Please check your Spam or Junk folder as well' design-system.css
+          grep -q 'Please check your Spam or Junk folder as well' workspace-operations-context.js
+          grep -q 'Spam or Junk folder' verification-required.html
           for shell in workspace.html workspace-entry.html; do
             grep -q 'workspace-experience.js?v=3' "$shell"
             grep -q 'workspace-support-skills.js?v=3' "$shell"
             grep -q 'workspace-balance-ledger.js?v=2' "$shell"
             grep -q 'workspace-platform-highlights.js?v=3' "$shell"
             grep -q 'workspace-qualifications-guidelines.js?v=2' "$shell"
+            grep -q 'workspace-operations-context.js?v=1' "$shell"
             grep -q 'client-error-monitor.js?v=1' "$shell"
           done
           grep -q 'client-batch-review.js?v=5' client-batch-review.html
@@ -90,6 +103,7 @@ jobs:
             '/auth'
             '/workspace'
             '/client-portal'
+            '/status'
             '/admin'
             '/admin/assignments'
             '/admin/project-lab?project=81'
@@ -111,16 +125,21 @@ jobs:
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-platform-highlights.js?v=3'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-support-skills.js?v=3'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-qualifications-guidelines.js?v=2'
+          curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-operations-context.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-operations-suite.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-platform-navigation.js?v=1'
-          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-nav-fix.js?v=3'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-nav-fix.js?v=4'
           curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-advanced-controls.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-operations-suite.js?v=1'
           curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-portal.js?v=1'
+          curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-delivery-center.js?v=1'
+          curl --fail --silent --show-error --location "${base}/status" | grep -q 'Adatacore Status'
       - name: Check critical deployed assets
         shell: bash
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-nav-fix.js?v=3' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/project-lab-advanced-controls.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/client-portal.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
+          for asset in '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
