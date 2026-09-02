@@ -11,10 +11,23 @@
 <script>
 (async()=>{
   try{
+    const params=new URLSearchParams(location.search),impersonation=params.get('impersonation')||'';
+    const validImpersonation=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(impersonation);
+    if(impersonation&&!validImpersonation)throw new Error('Invalid contributor-view session');
     const response=await fetch('/review-secure?ui=task-id-v1',{cache:'no-store'});
     if(!response.ok)throw new Error('Review workspace returned '+response.status);
     let html=await response.text();
-    html=html.replace('</body>','<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt></body>');
+    if(validImpersonation){
+      const claimOriginal="db.rpc('claim_next_voice_l2_review',{p_task_id:taskId})";
+      const historyOriginal="db.rpc('get_voice_l2_review_history',{p_task_id:taskId,p_submission_id:item.submission_id})";
+      const submitOriginal="db.rpc('submit_voice_l2_review',{p_task_id:taskId,p_submission_id:item.submission_id,p_rubric:state,p_decision:decision,p_feedback:$('overallFeedback').value.trim()||null})";
+      if(!html.includes(claimOriginal)||!html.includes(historyOriginal)||!html.includes(submitOriginal))throw new Error('L2 support-mode compatibility check failed');
+      html=html.replace(claimOriginal,`db.rpc('admin_impersonation_claim_next_voice_l2_review',{p_session_id:'${impersonation}',p_task_id:taskId})`);
+      html=html.replace(historyOriginal,`db.rpc('admin_impersonation_get_voice_l2_review_history',{p_session_id:'${impersonation}',p_task_id:taskId,p_submission_id:item.submission_id})`);
+      html=html.replace(submitOriginal,`db.rpc('admin_impersonation_submit_voice_l2_review',{p_session_id:'${impersonation}',p_task_id:taskId,p_submission_id:item.submission_id,p_rubric:state,p_decision:decision,p_feedback:$('overallFeedback').value.trim()||null})`);
+    }
+    const addon='<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt>'+(validImpersonation?'<scr'+'ipt src="/task-impersonation.js?v=20260902-1"></scr'+'ipt>':'');
+    html=html.replace('</body>',addon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load L2 review. '+String(error.message||error)+'</div>'}
 })();
