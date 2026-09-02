@@ -14,7 +14,7 @@
     const response=await fetch('/project-lab',{cache:'no-store'});
     if(!response.ok)throw new Error('Project Lab returned '+response.status);
     let html=await response.text();
-    const addon='<scr'+'ipt src="/project-lab-assignment-center.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-advanced-controls.js?v=1"></scr'+'ipt>';
+    const addon='<scr'+'ipt src="/project-lab-assignment-center.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-advanced-controls.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-lab-operations-suite.js?v=1"></scr'+'ipt>';
     html=html.replace('</body>',addon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load Project Lab. '+String(error.message||error)+'</div>'}
