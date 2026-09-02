@@ -47,7 +47,8 @@
   function renderScopedProjects(){
     if(!can('projects'))return;
     const panel=document.getElementById('projects');if(!panel)return;
-    if(panel.querySelector('#scopedProjectRegistry'))return;
+    const existing=panel.querySelector('#scopedProjectRegistry');
+    if(existing){[...panel.children].forEach(child=>{if(child!==existing)child.remove()});return}
     const ps=assignedProjects();
     panel.innerHTML=`<div id="scopedProjectRegistry"><div class="section-title"><div><div class="eyebrow">Scoped project access</div><h2>Your assigned projects</h2><div class="page-sub">Only projects covered by your staff role are available here.</div></div></div><div class="admin-grid" id="scopedProjectCards"></div></div>`;
     const cards=panel.querySelector('#scopedProjectCards');
@@ -113,9 +114,7 @@
     if(!access||access.is_super_admin)return;
     const target=e.target instanceof Element?e.target:null;
     const tab=target?.closest('[data-tab]');
-    if(tab&&!can(tab.dataset.tab)){
-      e.preventDefault();e.stopImmediatePropagation();return;
-    }
+    if(tab&&!can(tab.dataset.tab)){e.preventDefault();e.stopImmediatePropagation();return}
     const a=target?.closest('a[href]');if(!a)return;
     const href=a.getAttribute('href')||'';
     if(href.startsWith('/admin/assignments')&&!capabilities().has('assignments')){e.preventDefault();e.stopImmediatePropagation();return}
