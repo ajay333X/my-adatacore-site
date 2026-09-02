@@ -1,6 +1,6 @@
 (()=>{'use strict';
 if(window.__adatacoreSecurityActivity)return;window.__adatacoreSecurityActivity=true;
-if(!window.db)return;
+if(typeof db==='undefined'||!db?.rpc)return;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=d=>{if(!d)return 'Unknown time';const x=new Date(d);return Number.isNaN(x.getTime())?'Unknown time':x.toLocaleString()};
 function device(ua=''){ua=String(ua);let browser='Browser',os='Unknown device';if(/Edg\//i.test(ua))browser='Edge';else if(/Chrome\//i.test(ua)&&!/Chromium/i.test(ua))browser='Chrome';else if(/Firefox\//i.test(ua))browser='Firefox';else if(/Safari\//i.test(ua)&&!/Chrome\//i.test(ua))browser='Safari';if(/Windows/i.test(ua))os='Windows';else if(/Android/i.test(ua))os='Android';else if(/iPhone|iPad|iPod/i.test(ua))os='iOS / iPadOS';else if(/Macintosh|Mac OS X/i.test(ua))os='macOS';else if(/Linux/i.test(ua))os='Linux';return `${browser} · ${os}`}
