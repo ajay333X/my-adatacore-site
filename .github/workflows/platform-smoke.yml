@@ -91,12 +91,13 @@ jobs:
           grep -q 'data-tx-tab="overview"' transcription-lab.html
           grep -q 'data-tx-tab="queue"' transcription-lab.html
           grep -q 'data-tx-tab="intake"' transcription-lab.html
-          grep -q 'id="dashboardReviewCount"' transcription-lab.html
+          grep -q 'id="dashboardTranscribedCount"' transcription-lab.html
           grep -q 'id="dashboardNextQueue"' transcription-lab.html
           grep -q 'id="dashboardProgressFill"' transcription-lab.html
           grep -q 'id="queueDeleteSelected"' transcription-lab.html
           grep -q 'id="queueArchiveSelected"' transcription-lab.html
           grep -q 'id="txArchivedManager"' transcription-lab.html
+          grep -q 'isTranscribed' transcription-lab-dashboard.js
           grep -q 'data-queue-drag' transcription-queue-priority.js
           grep -q "tx_queue_reorder" transcription-queue-priority.js
           grep -q "tx_delete_queue_items" transcription-queue-priority.js
@@ -173,7 +174,7 @@ jobs:
           grep -q 'data-tx-tab="overview"' <<<"$tx"
           grep -q 'data-tx-tab="queue"' <<<"$tx"
           grep -q 'data-tx-tab="intake"' <<<"$tx"
-          grep -q 'id="dashboardReviewCount"' <<<"$tx"
+          grep -q 'id="dashboardTranscribedCount"' <<<"$tx"
           grep -q 'id="dashboardNextQueue"' <<<"$tx"
           grep -q 'id="queueDeleteSelected"' <<<"$tx"
           grep -q 'id="queueArchiveSelected"' <<<"$tx"
