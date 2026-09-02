@@ -29,6 +29,7 @@
     {"source":"/transcription","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/auth","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
     {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/client-portal","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
     {"source":"/admin/assignments","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/project-lab","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
