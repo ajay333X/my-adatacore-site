@@ -59,6 +59,8 @@ jobs:
           test -f workspace-platform-highlights.js
           test -f transcription-editor.js
           test -f transcription-lab.html
+          test -f transcription-lab-ui.css
+          test -f transcription-lab-dashboard.js
           test -f transcription-queue-priority.js
           test -f transcription-admin-flow.js
           test -f docs/supabase-auth-email-templates.md
@@ -84,8 +86,14 @@ jobs:
           grep -q 'Please check your Spam or Junk folder as well' design-system.css
           grep -q 'Please check your Spam or Junk folder as well' workspace-operations-context.js
           grep -q 'Spam or Junk folder' verification-required.html
-          grep -q 'transcription-queue-priority.js?v=3' transcription-lab.html
-          grep -q 'transcription-admin-flow.js?v=2' transcription-lab.html
+          grep -q 'transcription-lab-ui.css?v=1' transcription-lab.html
+          grep -q 'transcription-lab-dashboard.js?v=1' transcription-lab.html
+          grep -q 'data-tx-tab="overview"' transcription-lab.html
+          grep -q 'data-tx-tab="queue"' transcription-lab.html
+          grep -q 'data-tx-tab="intake"' transcription-lab.html
+          grep -q 'id="dashboardReviewCount"' transcription-lab.html
+          grep -q 'id="dashboardNextQueue"' transcription-lab.html
+          grep -q 'id="dashboardProgressFill"' transcription-lab.html
           grep -q 'id="queueDeleteSelected"' transcription-lab.html
           grep -q 'id="queueArchiveSelected"' transcription-lab.html
           grep -q 'id="txArchivedManager"' transcription-lab.html
@@ -94,7 +102,9 @@ jobs:
           grep -q "tx_delete_queue_items" transcription-queue-priority.js
           grep -q "tx_archive_queue_items" transcription-queue-priority.js
           grep -q "tx_restore_archived" transcription-admin-flow.js
-          grep -q 'Groq Whisper access verified' transcription-admin-flow.js
+          grep -q 'Groq Whisper access verified' transcription-lab-dashboard.js
+          grep -q 'tx-metric-grid' transcription-lab-ui.css
+          grep -q 'tx-queue-card' transcription-lab-ui.css
           for shell in workspace.html workspace-entry.html; do
             grep -q 'workspace-experience.js?v=3' "$shell"
             grep -q 'workspace-support-skills.js?v=3' "$shell"
@@ -158,8 +168,13 @@ jobs:
           curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-delivery-center.js?v=1'
           curl --fail --silent --show-error --location "${base}/status" | grep -q 'Adatacore Status'
           tx="$(curl --fail --silent --show-error --location "${base}/admin/transcription?project=81")"
-          grep -q 'transcription-queue-priority.js?v=3' <<<"$tx"
-          grep -q 'transcription-admin-flow.js?v=2' <<<"$tx"
+          grep -q 'transcription-lab-ui.css?v=1' <<<"$tx"
+          grep -q 'transcription-lab-dashboard.js?v=1' <<<"$tx"
+          grep -q 'data-tx-tab="overview"' <<<"$tx"
+          grep -q 'data-tx-tab="queue"' <<<"$tx"
+          grep -q 'data-tx-tab="intake"' <<<"$tx"
+          grep -q 'id="dashboardReviewCount"' <<<"$tx"
+          grep -q 'id="dashboardNextQueue"' <<<"$tx"
           grep -q 'id="queueDeleteSelected"' <<<"$tx"
           grep -q 'id="queueArchiveSelected"' <<<"$tx"
           grep -q 'id="txArchivedManager"' <<<"$tx"
@@ -168,7 +183,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-theme.css?v=1' '/admin-theme.js?v=1' '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5' '/transcription-queue-priority.js?v=3' '/transcription-admin-flow.js?v=2'; do
+          for asset in '/admin-theme.css?v=1' '/admin-theme.js?v=1' '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5' '/transcription-lab-ui.css?v=1' '/transcription-lab-dashboard.js?v=1' '/transcription-queue-priority.js?v=3' '/transcription-admin-flow.js?v=2'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
