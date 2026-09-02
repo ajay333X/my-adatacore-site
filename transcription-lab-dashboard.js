@@ -44,9 +44,23 @@
     });
     if(remember){try{sessionStorage.setItem('adatacore-txlab-view',wanted)}catch(_){ }}
     if(wanted==='queue')setTimeout(()=>window.dispatchEvent(new Event('resize')),40);
+    if(wanted==='overview')scheduleRefresh(30);
   }
 
-  document.querySelectorAll('[data-tx-tab]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.txTab)));
+  const tabButtons=[...document.querySelectorAll('[data-tx-tab]')];
+  tabButtons.forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.txTab)));
+  tabButtons.forEach(button=>button.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const current=tabButtons.indexOf(button);
+    let next=current;
+    if(event.key==='ArrowLeft')next=(current-1+tabButtons.length)%tabButtons.length;
+    if(event.key==='ArrowRight')next=(current+1)%tabButtons.length;
+    if(event.key==='Home')next=0;
+    if(event.key==='End')next=tabButtons.length-1;
+    tabButtons[next]?.focus();
+    setTab(tabButtons[next]?.dataset.txTab);
+  }));
   document.querySelectorAll('[data-tx-open]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.txOpen)));
 
   const initial=(()=>{try{return sessionStorage.getItem('adatacore-txlab-view')||'overview'}catch(_){return 'overview'}})();
@@ -111,6 +125,12 @@
     if($('pipelineDone'))$('pipelineDone').textContent=done;
   }
 
+  function normalizeAiProviderLabel(){
+    const node=$('aiConnection');
+    if(!node)return;
+    if(node.textContent.includes('OpenAI model access verified'))node.textContent=node.textContent.replace('OpenAI model access verified','Groq Whisper access verified');
+  }
+
   async function refreshDashboard(){
     const pid=projectId();
     if(!pid)return;
@@ -146,6 +166,7 @@
       renderPipeline(items);
       renderAttention(attention(items,jobs,archived));
       renderNext(items);
+      normalizeAiProviderLabel();
     }catch(error){
       const target=$('dashboardAttention');
       if(target)target.innerHTML=`<div class="tx-attention-item bad"><span class="tx-attention-dot"></span><span class="tx-attention-copy"><strong>Dashboard could not refresh</strong><span>${esc(error.message)}</span></span></div>`;
@@ -162,12 +183,15 @@
   });
   $('queueRefresh')?.addEventListener('click',()=>scheduleRefresh(500));
   $('txArchivedManager')?.addEventListener('click',()=>scheduleRefresh(250));
+  $('dashboardArchivedOpen')?.addEventListener('click',()=>$('txArchivedManager')?.click());
   $('importConfirm')?.addEventListener('click',()=>scheduleRefresh(650));
   $('uploadConfirm')?.addEventListener('click',()=>scheduleRefresh(900));
   $('assignConfirm')?.addEventListener('click',()=>scheduleRefresh(650));
 
   const nameNode=$('projectName');
   if(nameNode)new MutationObserver(()=>scheduleRefresh(80)).observe(nameNode,{childList:true,subtree:true,characterData:true});
+  const aiConnection=$('aiConnection');
+  if(aiConnection)new MutationObserver(normalizeAiProviderLabel).observe(aiConnection,{childList:true,subtree:true,characterData:true});
 
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRefresh(50)});
   setInterval(()=>{if(!document.hidden&&document.querySelector('[data-tx-view="overview"]')?.classList.contains('active'))refreshDashboard()},30000);
