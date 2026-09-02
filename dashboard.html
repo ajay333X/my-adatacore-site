@@ -5,13 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Adatacore Workspace</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 <script>
-(()=>{
+(async()=>{
   const callback=location.search||location.hash;
   if(callback){
     location.replace('/auth'+location.search+location.hash);
     return;
   }
+  try{
+    const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',{auth:{persistSession:true,autoRefreshToken:true}});
+    const {data:{session}}=await db.auth.getSession();
+    if(!session){location.replace('/auth');return}
+    const {data:access,error}=await db.rpc('get_my_admin_access');
+    if(!error&&access?.allowed){location.replace('/admin');return}
+  }catch(_){ }
   location.replace('/workspace');
 })();
 </script>
