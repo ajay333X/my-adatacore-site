@@ -32,11 +32,21 @@ jobs:
           test -f admin-entry.html
           test -f admin-theme.css
           test -f admin-theme.js
+          test -f admin-role-access.js
+          test -f admin-addon-loader.js
           test -f workspace.html
           test -f workspace-entry.html
           test -f project-lab-entry.html
+          test -f project-lab-role-access.js
+          test -f project-lab-super-addons.js
           test -f project-lab-advanced-controls.js
           test -f project-lab-operations-suite.js
+          test -f assignment-center.html
+          test -f assignment-center.js
+          test -f admin-done-tasks.html
+          test -f admin-done-tasks.js
+          test -f admin-done-task-review.html
+          test -f admin-done-task-review.js
           test -f client-portal.html
           test -f client-portal.js
           test -f client-delivery-center.js
@@ -59,22 +69,44 @@ jobs:
           test -f workspace-platform-highlights.js
           test -f transcription-editor.js
           test -f docs/supabase-auth-email-templates.md
-          grep -q 'project-lab-advanced-controls.js?v=1' project-lab-entry.html
-          grep -q 'project-lab-operations-suite.js?v=1' project-lab-entry.html
+
+          grep -q 'admin-theme.css?v=2' admin-entry.html
+          grep -q 'admin-theme.js?v=2' admin-entry.html
+          grep -q 'admin-nav-fix.js?v=4' admin-entry.html
+          grep -q 'admin-platform-navigation.js?v=1' admin-entry.html
+          grep -q 'admin-role-access.js?v=1' admin-entry.html
+          grep -q 'admin-addon-loader.js?v=1' admin-entry.html
+          grep -q 'get_my_admin_access' admin-entry.html
+          grep -q 'admin-operations-health.js?v=1' admin-addon-loader.js
+          grep -q 'admin-operations-suite.js?v=1' admin-addon-loader.js
+          grep -q 'admin-staff-roles.js?v=4' admin-addon-loader.js
+          grep -q 'admin-support-center.js?v=2' admin-addon-loader.js
+          grep -q 'admin-finance-ledger.js?v=2' admin-addon-loader.js
+          grep -q "capabilities.includes(key)" admin-role-access.js
+
+          grep -q 'project-lab-role-access.js?v=1' project-lab-entry.html
+          grep -q 'project-lab-super-addons.js?v=1' project-lab-entry.html
+          grep -q 'staff_get_project_lab' project-lab-entry.html
+          grep -q 'project-lab-advanced-controls.js?v=1' project-lab-super-addons.js
+          grep -q 'project-lab-operations-suite.js?v=1' project-lab-super-addons.js
+
+          grep -q 'admin-theme.css?v=2' assignment-center.html
+          grep -q 'admin-theme.js?v=2' assignment-center.html
+          grep -q 'get_my_admin_access' assignment-center.js
+          grep -q "capabilities.includes('assignments')" assignment-center.js
+          grep -q 'admin-theme.css?v=2' admin-done-tasks.html
+          grep -q 'admin-theme.js?v=2' admin-done-tasks.html
+          grep -q 'get_my_admin_access' admin-done-tasks.js
+          grep -q "includes('qa_review')" admin-done-tasks.js
+          grep -q 'admin-theme.css?v=2' admin-done-task-review.html
+          grep -q 'admin-theme.js?v=2' admin-done-task-review.html
+          grep -q 'get_my_admin_access' admin-done-task-review.js
+
           grep -q 'client-portal.js?v=1' client-portal.html
           grep -q 'client-delivery-center.js?v=1' client-portal.html
-          grep -q 'admin-theme.css?v=1' admin-entry.html
-          grep -q 'admin-theme.js?v=1' admin-entry.html
           grep -q 'adatacore-admin-theme' admin-theme.js
           grep -q 'data-admin-theme="light"' admin-theme.css
           grep -q 'admin-theme-transition' admin-theme.css
-          grep -q 'admin-operations-health.js?v=1' admin-entry.html
-          grep -q 'admin-operations-suite.js?v=1' admin-entry.html
-          grep -q 'admin-nav-fix.js?v=4' admin-entry.html
-          grep -q 'admin-staff-roles.js?v=3' admin-entry.html
-          grep -q 'admin-support-center.js?v=2' admin-entry.html
-          grep -q 'admin-finance-ledger.js?v=2' admin-entry.html
-          grep -q 'admin-platform-navigation.js?v=1' admin-entry.html
           grep -q 'profileSkillsCard' workspace-support-skills.js
           grep -q 'Action required before new work' workspace-qualifications-guidelines.js
           grep -q 'Profile & Skills' workspace-platform-highlights.js
@@ -123,7 +155,7 @@ jobs:
             echo "Checking ${base}${path}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${path}" >/dev/null
           done
-      - name: Verify live shells contain new modules
+      - name: Verify live shells contain role-aware modules
         shell: bash
         run: |
           set -euo pipefail
@@ -133,13 +165,16 @@ jobs:
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-support-skills.js?v=3'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-qualifications-guidelines.js?v=2'
           curl --fail --silent --show-error --location "${base}/workspace" | grep -q 'workspace-operations-context.js?v=1'
-          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.css?v=1'
-          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.js?v=1'
-          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-operations-suite.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.css?v=2'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-theme.js?v=2'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-role-access.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-addon-loader.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-platform-navigation.js?v=1'
           curl --fail --silent --show-error --location "${base}/admin" | grep -q 'admin-nav-fix.js?v=4'
-          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-advanced-controls.js?v=1'
-          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-operations-suite.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-role-access.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin/project-lab?project=81" | grep -q 'project-lab-super-addons.js?v=1'
+          curl --fail --silent --show-error --location "${base}/admin/assignments" | grep -q 'admin-theme.js?v=2'
+          curl --fail --silent --show-error --location "${base}/admin/done-tasks" | grep -q 'admin-theme.js?v=2'
           curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-portal.js?v=1'
           curl --fail --silent --show-error --location "${base}/client-portal" | grep -q 'client-delivery-center.js?v=1'
           curl --fail --silent --show-error --location "${base}/status" | grep -q 'Adatacore Status'
@@ -148,7 +183,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
-          for asset in '/admin-theme.css?v=1' '/admin-theme.js?v=1' '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
+          for asset in '/admin-theme.css?v=2' '/admin-theme.js?v=2' '/admin-nav-fix.js?v=4' '/admin-platform-navigation.js?v=1' '/admin-role-access.js?v=1' '/admin-addon-loader.js?v=1' '/admin-operations-health.js?v=1' '/admin-operations-suite.js?v=1' '/admin-staff-roles.js?v=4' '/admin-support-center.js?v=2' '/admin-finance-ledger.js?v=2' '/project-lab-role-access.js?v=1' '/project-lab-super-addons.js?v=1' '/project-lab-advanced-controls.js?v=1' '/project-lab-operations-suite.js?v=1' '/workspace-experience.js?v=3' '/workspace-platform-highlights.js?v=3' '/workspace-support-skills.js?v=3' '/workspace-qualifications-guidelines.js?v=2' '/workspace-operations-context.js?v=1' '/client-portal.js?v=1' '/client-delivery-center.js?v=1' '/client-error-monitor.js?v=1' '/client-batch-review.js?v=5'; do
             echo "Checking ${base}${asset}"
             curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
           done
