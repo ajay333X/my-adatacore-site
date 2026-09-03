@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>CoreForge — Adatacore</title>
+<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+<script>try{document.documentElement.dataset.adminTheme=localStorage.getItem('adatacore-admin-theme')==='dark'?'dark':'light'}catch(_){document.documentElement.dataset.adminTheme='light'}</script>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="/admin-theme.css?v=1">
+<link rel="stylesheet" href="/coreforge.css?v=20260903-1">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script defer src="/coreforge.js?v=20260903-1"></script>
+</head>
+<body>
+<main class="cf-shell">
+  <header class="cf-topbar">
+    <a class="cf-brand" href="/admin"><span class="cf-logo">✦</span><span><strong>CoreForge</strong><small>Adatacore Model & Data Lab</small></span></a>
+    <div class="cf-top-actions"><span class="cf-access-pill">SUPER ADMIN · R&amp;D</span><button class="cf-btn ghost" id="refreshCoreForge" type="button">Refresh</button><a class="cf-btn ghost" href="/admin">Back to Admin</a></div>
+  </header>
+
+  <section class="cf-hero">
+    <div><div class="cf-eyebrow">Adatacore Intelligence</div><h1>Build, evaluate and operate <span>Adatacore intelligence.</span></h1><p>CoreForge tracks training rights, immutable datasets, benchmarks, experiments and model lineage before any model reaches real traffic.</p></div>
+    <div class="cf-orbit" aria-hidden="true"><span class="node n1">DATA</span><span class="node n2">QA</span><span class="node n3">ASR</span><span class="node n4">MODEL</span><i></i></div>
+  </section>
+
+  <nav class="cf-tabs" aria-label="CoreForge sections">
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="sources">Data Sources</button>
+    <button data-tab="datasets">Datasets</button>
+    <button data-tab="benchmarks">Benchmarks</button>
+    <button data-tab="runs">Training Runs</button>
+    <button data-tab="models">Models</button>
+  </nav>
+
+  <section class="cf-panel active" data-panel="overview">
+    <div class="cf-metrics" id="overviewMetrics"></div>
+    <div class="cf-grid two">
+      <article class="cf-card"><div class="cf-card-head"><div><span class="cf-kicker">Readiness</span><h2>Model development pipeline</h2></div><span class="cf-status neutral">FOUNDATION</span></div><div class="cf-pipeline" id="readinessPipeline"></div></article>
+      <article class="cf-card"><div class="cf-card-head"><div><span class="cf-kicker">Live inventory</span><h2>Trainable data by source</h2></div></div><div id="sourceBars" class="cf-bars"></div></article>
+    </div>
+    <article class="cf-card"><div class="cf-card-head"><div><span class="cf-kicker">First target</span><h2>Adatacore Speech</h2></div><span class="cf-status purple">ASR</span></div><div class="cf-target-grid"><div><strong>Goal</strong><p>Replace external rough transcription only after an in-house candidate beats the baseline on a frozen benchmark.</p></div><div><strong>Current rule</strong><p>No dataset can be frozen until every source is explicitly marked Adatacore-trainable.</p></div><div><strong>Deployment path</strong><p>Candidate → Shadow → Pilot → Production. Promotion will remain a Super-Admin action.</p></div></div></article>
+  </section>
+
+  <section class="cf-panel" data-panel="sources">
+    <div class="cf-section-head"><div><span class="cf-kicker">Governance first</span><h2>Training data sources</h2><p>Register where data came from and what Adatacore is legally allowed to do with it.</p></div><button class="cf-btn primary" data-open="sourceDialog" type="button">+ Add source</button></div>
+    <div class="cf-table-wrap"><table class="cf-table"><thead><tr><th>Source</th><th>Language</th><th>Inventory</th><th>Reviewed</th><th>Training rights</th><th></th></tr></thead><tbody id="sourceRows"></tbody></table></div>
+  </section>
+
+  <section class="cf-panel" data-panel="datasets">
+    <div class="cf-section-head"><div><span class="cf-kicker">Versioned inputs</span><h2>Datasets</h2><p>Create a dataset from permitted sources, then freeze it to snapshot exact audio IDs and transcript hashes.</p></div><button class="cf-btn primary" data-open="datasetDialog" type="button">+ Create dataset</button></div>
+    <div class="cf-table-wrap"><table class="cf-table"><thead><tr><th>Dataset</th><th>Task</th><th>Language</th><th>Items</th><th>Hours</th><th>Status</th><th></th></tr></thead><tbody id="datasetRows"></tbody></table></div>
+  </section>
+
+  <section class="cf-panel" data-panel="benchmarks">
+    <div class="cf-section-head"><div><span class="cf-kicker">Never train on the exam</span><h2>Benchmark library</h2><p>Benchmarks are separate evaluation sets used to compare every future candidate consistently.</p></div><button class="cf-btn primary" data-open="benchmarkDialog" type="button">+ New benchmark</button></div>
+    <div class="cf-empty-list" id="benchmarkRows"></div>
+  </section>
+
+  <section class="cf-panel" data-panel="runs">
+    <div class="cf-section-head"><div><span class="cf-kicker">Experiments</span><h2>Training runs</h2><p>CoreForge records jobs and lineage. Actual GPU training will run on an external worker, not inside Supabase.</p></div><button class="cf-btn primary" data-open="runDialog" type="button">+ Queue run</button></div>
+    <div class="cf-empty-list" id="runRows"></div>
+  </section>
+
+  <section class="cf-panel" data-panel="models">
+    <div class="cf-section-head"><div><span class="cf-kicker">Model registry</span><h2>Models</h2><p>Register trained artifacts and benchmark metrics before shadow or production promotion is ever enabled.</p></div><button class="cf-btn primary" data-open="modelDialog" type="button">+ Register model</button></div>
+    <div class="cf-empty-list" id="modelRows"></div>
+  </section>
+</main>
+
+<dialog class="cf-dialog" id="sourceDialog"><form method="dialog" id="sourceForm"><div class="cf-dialog-head"><div><span class="cf-kicker">Data governance</span><h3>Register training source</h3></div><button value="cancel" class="cf-icon-btn" aria-label="Close">×</button></div><input type="hidden" id="sourceId"><label>Existing transcription project<select id="sourceProject"><option value="">Manual / other source</option></select></label><div class="cf-form-grid"><label>Source name<input id="sourceName" required></label><label>Language<input id="sourceLanguage" placeholder="hi, mr, en…"></label></div><div class="cf-form-grid"><label>Source type<select id="sourceKind"><option value="transcription_project">Transcription project</option><option value="voice_project">Voice project</option><option value="manual_dataset">Manual dataset</option><option value="client_dataset">Client dataset</option></select></label><label>Training rights<select id="sourceRights"><option value="unknown">Unknown — blocked from training</option><option value="adatacore_trainable">Adatacore trainable</option><option value="client_private_only">Private model only</option><option value="client_exclusive">Client exclusive</option><option value="evaluation_only">Evaluation only</option></select></label></div><label>Rights basis<input id="sourceBasis" placeholder="Contract clause, internal collection consent, licence…"></label><label>Rights notes<textarea id="sourceNotes" rows="3" placeholder="Record any restrictions or review notes."></textarea></label><div class="cf-dialog-actions"><button value="cancel" class="cf-btn ghost">Cancel</button><button class="cf-btn primary" id="saveSource" value="default" type="submit">Save source</button></div></form></dialog>
+
+<dialog class="cf-dialog" id="datasetDialog"><form method="dialog" id="datasetForm"><div class="cf-dialog-head"><div><span class="cf-kicker">Dataset builder</span><h3>Create dataset</h3></div><button value="cancel" class="cf-icon-btn">×</button></div><div class="cf-form-grid"><label>Name<input id="datasetName" placeholder="HI-ASR-2026-09" required></label><label>Task<select id="datasetTask"><option value="asr">Speech recognition (ASR)</option><option value="audio_qa">Audio QA</option><option value="transcript_alignment">Transcript alignment</option><option value="naturalness">Naturalness</option><option value="emotion">Emotion</option></select></label></div><label>Language<input id="datasetLanguage" value="hi"></label><label class="cf-check"><input id="datasetReviewedOnly" type="checkbox"> Include only items with completed human review</label><div><span class="cf-label">Eligible sources</span><div id="datasetSources" class="cf-source-picker"></div></div><div class="cf-note">Only sources marked <strong>Adatacore trainable</strong> can be selected. Freezing later creates the immutable item manifest.</div><div class="cf-dialog-actions"><button value="cancel" class="cf-btn ghost">Cancel</button><button class="cf-btn primary" type="submit">Create draft</button></div></form></dialog>
+
+<dialog class="cf-dialog" id="benchmarkDialog"><form method="dialog" id="benchmarkForm"><div class="cf-dialog-head"><div><span class="cf-kicker">Evaluation</span><h3>New benchmark</h3></div><button value="cancel" class="cf-icon-btn">×</button></div><div class="cf-form-grid"><label>Name<input id="benchmarkName" required placeholder="Hindi Speech Benchmark"></label><label>Task<select id="benchmarkTask"><option value="asr">ASR</option><option value="audio_qa">Audio QA</option><option value="transcript_alignment">Transcript alignment</option></select></label></div><label>Language<input id="benchmarkLanguage" value="hi"></label><label>Source dataset<select id="benchmarkDataset"><option value="">Independent benchmark</option></select></label><label>Notes<textarea id="benchmarkNotes" rows="3" placeholder="Keep this data out of training."></textarea></label><div class="cf-dialog-actions"><button value="cancel" class="cf-btn ghost">Cancel</button><button class="cf-btn primary" type="submit">Create benchmark</button></div></form></dialog>
+
+<dialog class="cf-dialog" id="runDialog"><form method="dialog" id="runForm"><div class="cf-dialog-head"><div><span class="cf-kicker">Experiment</span><h3>Queue training run</h3></div><button value="cancel" class="cf-icon-btn">×</button></div><div class="cf-form-grid"><label>Run name<input id="runName" required placeholder="Hindi Speech v0.1"></label><label>Task<select id="runTask"><option value="asr">ASR</option><option value="audio_qa">Audio QA</option><option value="transcript_alignment">Transcript alignment</option></select></label></div><label>Frozen dataset<select id="runDataset" required></select></label><div class="cf-form-grid"><label>Base model<input id="runBaseModel" placeholder="Open pretrained speech model"></label><label>Compute<select id="runCompute"><option value="free_notebook">Free notebook</option><option value="local">Local machine</option><option value="external_worker">External worker</option><option value="cloud_gpu">Cloud GPU</option></select></label></div><label>Language<input id="runLanguage" value="hi"></label><div class="cf-note">This queues metadata only. No GPU worker is connected yet, so CoreForge will not pretend training has started.</div><div class="cf-dialog-actions"><button value="cancel" class="cf-btn ghost">Cancel</button><button class="cf-btn primary" type="submit">Queue run</button></div></form></dialog>
+
+<dialog class="cf-dialog" id="modelDialog"><form method="dialog" id="modelForm"><div class="cf-dialog-head"><div><span class="cf-kicker">Registry</span><h3>Register model candidate</h3></div><button value="cancel" class="cf-icon-btn">×</button></div><div class="cf-form-grid"><label>Model name<input id="modelName" required placeholder="Adatacore Hindi Speech"></label><label>Version<input id="modelVersion" required placeholder="v0.1"></label></div><div class="cf-form-grid"><label>Task<select id="modelTask"><option value="asr">ASR</option><option value="audio_qa">Audio QA</option><option value="transcript_alignment">Transcript alignment</option></select></label><label>Language<input id="modelLanguage" value="hi"></label></div><label>Training run<select id="modelRun"><option value="">None</option></select></label><label>Dataset<select id="modelDataset"><option value="">None</option></select></label><label>Benchmark<select id="modelBenchmark"><option value="">None</option></select></label><label>Base model<input id="modelBaseModel"></label><label>Metrics JSON<textarea id="modelMetrics" rows="4" placeholder='{"wer": 0.118, "cer": 0.054}'></textarea></label><label>Notes<textarea id="modelNotes" rows="3"></textarea></label><div class="cf-dialog-actions"><button value="cancel" class="cf-btn ghost">Cancel</button><button class="cf-btn primary" type="submit">Register candidate</button></div></form></dialog>
+
+<div class="cf-toast" id="coreforgeToast" role="status"></div>
+</body>
+</html>
