@@ -192,3 +192,22 @@ if(annotatorForm)annotatorForm.addEventListener('submit',async e=>{
     btn.textContent='Submit application';
   }
 });
+
+(()=>{
+  const footer=document.querySelector('.footer-inner');
+  if(footer){
+    const style=document.createElement('style');
+    style.textContent='.footer-pro-links{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end}.footer-pro-links a{color:#88889a;text-decoration:none;font-weight:650;transition:color .16s ease}.footer-pro-links a:hover{color:#d7d0ff}@media(max-width:620px){.footer-inner{align-items:flex-start;flex-direction:column}.footer-pro-links{justify-content:flex-start}}';
+    document.head.appendChild(style);
+    footer.innerHTML='<span>© 2026 Adatacore · Human data operations for AI</span><nav class="footer-pro-links" aria-label="Company and trust links"><a href="/trust">Trust Center</a><a href="/help">Help Center</a><a href="/status">Status</a><a href="/auth">Sign in</a></nav>';
+  }
+  const modal=elements.annotatorInfoModal;
+  if(modal){
+    const card=modal.querySelector('.modal-card'),title=card?.querySelector('h2'),copy=card?.querySelector('p'),button=card?.querySelector('.btn-primary');
+    if(title)title.textContent='Apply through the contributor onboarding flow.';
+    if(copy)copy.textContent='Create an account, complete your profile, choose a language and work track, then submit the relevant Voice Acting or Transcription assessment for review.';
+    if(button){button.textContent='Create account & apply →';button.onclick=()=>{location.href='/auth?mode=signup'}}
+    if(card&&!card.querySelector('[data-no-fee-note]')){const note=document.createElement('p');note.dataset.noFeeNote='1';note.style.cssText='margin-top:14px;padding-top:13px;border-top:1px solid var(--line);font-size:11px;color:#8f8fa1';note.textContent='Adatacore does not charge contributors a fee to apply or join a project.';card.insertBefore(note,button)}
+  }
+  window.switchToAnnotatorForm=()=>{closeAnnotatorInfoModal();location.href='/auth?mode=signup'};
+})();
