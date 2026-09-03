@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html script.js design-system.css
+            index.html homepage-v2.css homepage-v2.js script.js design-system.css
             trust.html help.html public-info.css status.html
             auth.html dashboard.html apply.html application-onboarding.js application-onboarding.css
             workspace.html workspace-entry.html workspace-application-banner.js
@@ -77,6 +77,11 @@ jobs:
               return 1
             fi
           }
+          check 'homepage-v2.css' index.html
+          check 'homepage-v2.js' index.html
+          check 'AI data workflows built for' index.html
+          check 'openProjectInquiry' homepage-v2.js
+          check 'company_inquiries' homepage-v2.js
           check 'get_my_application_onboarding' dashboard.html
           check "location.replace('/apply')" dashboard.html
           check 'application_choose_tracks' application-onboarding.js
@@ -142,6 +147,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
+          home="$(curl --fail --silent --show-error --location "${base}/")"
           workspace="$(curl --fail --silent --show-error --location "${base}/workspace")"
           admin="$(curl --fail --silent --show-error --location "${base}/admin")"
           apply="$(curl --fail --silent --show-error --location "${base}/apply")"
@@ -151,6 +157,9 @@ jobs:
           help="$(curl --fail --silent --show-error --location "${base}/help")"
           tx="$(curl --fail --silent --show-error --location "${base}/admin/transcription?project=81")"
 
+          grep -Fq 'homepage-v2.css' <<<"$home"
+          grep -Fq 'homepage-v2.js' <<<"$home"
+          grep -Fq 'AI data workflows built for' <<<"$home"
           grep -Fq 'workspace-experience.js' <<<"$workspace"
           grep -Fq 'workspace-application-banner.js' <<<"$workspace"
           grep -Fq 'admin-theme.css' <<<"$admin"
@@ -172,7 +181,7 @@ jobs:
           set -euo pipefail
           base='https://www.adatacore.com'
           assets=(
-            '/script.js' '/public-info.css'
+            '/homepage-v2.css' '/homepage-v2.js' '/script.js' '/public-info.css'
             '/application-onboarding.css' '/application-onboarding.js'
             '/workspace-application-banner.js'
             '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js'
