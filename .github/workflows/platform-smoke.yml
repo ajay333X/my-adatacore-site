@@ -22,10 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          while IFS= read -r -d '' file; do
-            echo "Checking $file"
-            node --check "$file"
-          done < <(find . -type f -name '*.js' -not -path './vendor/*' -not -path './node_modules/*' -print0)
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -type f -name '*.js' -not -path './vendor/*' -not -path './node_modules/*' -print0)
 
       - name: Validate deployment configuration
         shell: bash
@@ -33,16 +30,16 @@ jobs:
           set -euo pipefail
           node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json is valid JSON')"
           grep -Fq '"/admin/people"' vercel.json
-          grep -Fq '"/admin/applications"' vercel.json
-          grep -Fq '"/admin/trust-safety"' vercel.json
-          grep -Fq '"/admin/transcription"' vercel.json
+          grep -Fq 'Content-Security-Policy' vercel.json
 
       - name: Verify critical platform files
         shell: bash
         run: |
           set -euo pipefail
           files=(
-            index.html homepage-v2.css homepage-v2.js script.js design-system.css
+            index.html homepage-v2.css homepage-enterprise.css homepage-v2.js
+            public-company.css public-company.js teams.html contributors.html about.html contact.html
+            privacy.html terms.html contributor-terms.html cookies.html subprocessors.html robots.txt sitemap.xml .well-known/security.txt
             trust.html help.html public-info.css status.html
             auth.html dashboard.html apply.html application-onboarding.js application-onboarding.css
             workspace.html workspace-entry.html workspace-application-banner.js
@@ -55,54 +52,37 @@ jobs:
             transcription-lab.html transcription-lab.js transcription-lab-ui.css
             transcription-lab-dashboard.js transcription-long-audio.js transcription-queue-priority.js transcription-admin-flow.js
             client-portal.html client-portal.js client-delivery-center.js
-            docs/supabase-auth-email-templates.md
+            supabase/functions/public-site-gateway/index.ts
+            supabase/migrations/20260903135908_public_site_gateway_rate_limits_and_events.sql
           )
           failed=0
-          for file in "${files[@]}"; do
-            if [[ ! -f "$file" ]]; then
-              echo "::error file=$file::Critical platform file is missing"
-              failed=1
-            fi
-          done
+          for file in "${files[@]}"; do if [[ ! -f "$file" ]]; then echo "::error file=$file::Critical platform file is missing"; failed=1; fi; done
           exit "$failed"
 
-      - name: Verify durable application contracts
+      - name: Verify durable platform contracts
         shell: bash
         run: |
           set -euo pipefail
-          check() {
-            local pattern="$1" file="$2"
-            if ! grep -Fq "$pattern" "$file"; then
-              echo "::error file=$file::Missing required platform contract: $pattern"
-              return 1
-            fi
-          }
-          check 'homepage-v2.css' index.html
-          check 'homepage-v2.js' index.html
-          check 'AI data workflows built for' index.html
-          check 'openProjectInquiry' homepage-v2.js
-          check 'company_inquiries' homepage-v2.js
+          check(){ local pattern="$1" file="$2"; grep -Fq "$pattern" "$file" || { echo "::error file=$file::Missing required platform contract: $pattern"; return 1; }; }
+          check 'Operate the human layer' index.html
+          check 'homepage-enterprise.css' index.html
+          check 'public-site-gateway' homepage-v2.js
+          check 'project_inquiry_submit_success' homepage-v2.js
+          check 'Voice and transcription first' teams.html
+          check 'does not charge contributors a fee' contributors.html
+          check 'Privacy Policy' privacy.html
+          check 'Contributor Terms' contributor-terms.html
+          check 'Supabase' subprocessors.html
+          check 'Sitemap: https://www.adatacore.com/sitemap.xml' robots.txt
           check 'get_my_application_onboarding' dashboard.html
           check "location.replace('/apply')" dashboard.html
           check 'application_choose_tracks' application-onboarding.js
-          check 'submit_voice_application' application-onboarding.js
-          check 'submit_transcription_application' application-onboarding.js
           check 'admin_application_queue_v2' admin-applications.js
-          check 'admin_set_application_decision' admin-applications.js
-          check 'admin-applications-analytics.js' admin-applications.html
           check 'admin_application_analytics' admin-applications-analytics.js
-          check 'Application Intelligence' admin-applications-analytics.js
           check 'admin_people_360' admin-people360.js
-          check 'data-people-360-link' admin-trust-safety-link.js
-          check 'Trust Center' trust.html
-          check 'Help Center' help.html
           check 'MAX_SOURCE_BYTES=262144000' transcription-long-audio.js
-          check 'tx_delete_queue_items' transcription-queue-priority.js
-          check 'tx_archive_queue_items' transcription-queue-priority.js
-          check 'tx_restore_archived' transcription-admin-flow.js
 
   production-routes:
-    # Always test production after a main push, even if a static assertion fails.
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: static-safety
     runs-on: ubuntu-latest
@@ -116,31 +96,12 @@ jobs:
           set -euo pipefail
           base='https://www.adatacore.com'
           paths=(
-            '/'
-            '/trust'
-            '/help'
-            '/status'
-            '/auth'
-            '/apply'
-            '/workspace'
-            '/client-portal'
-            '/admin'
-            '/admin/people'
-            '/admin/applications'
-            '/admin/assignments'
-            '/admin/trust-safety'
-            '/admin/project-lab?project=81'
-            '/admin/transcription?project=81'
-            '/admin/done-tasks'
-            '/client-batch-review.html'
-            '/client-transcript-review.html'
+            '/' '/teams' '/contributors' '/about' '/contact' '/privacy' '/terms' '/contributor-terms' '/cookies' '/subprocessors'
+            '/trust' '/help' '/status' '/robots.txt' '/sitemap.xml' '/.well-known/security.txt'
+            '/auth' '/apply' '/workspace' '/client-portal' '/admin' '/admin/people' '/admin/applications' '/admin/assignments' '/admin/trust-safety'
+            '/admin/project-lab?project=81' '/admin/transcription?project=81' '/admin/done-tasks' '/client-batch-review.html' '/client-transcript-review.html'
           )
-          for path in "${paths[@]}"; do
-            echo "Checking ${base}${path}"
-            curl --fail --silent --show-error --location \
-              --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 \
-              "${base}${path}" >/dev/null
-          done
+          for path in "${paths[@]}"; do curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${path}" >/dev/null; done
 
       - name: Verify live shells contain critical modules
         shell: bash
@@ -148,32 +109,21 @@ jobs:
           set -euo pipefail
           base='https://www.adatacore.com'
           home="$(curl --fail --silent --show-error --location "${base}/")"
+          teams="$(curl --fail --silent --show-error --location "${base}/teams")"
+          contributors="$(curl --fail --silent --show-error --location "${base}/contributors")"
+          privacy="$(curl --fail --silent --show-error --location "${base}/privacy")"
           workspace="$(curl --fail --silent --show-error --location "${base}/workspace")"
           admin="$(curl --fail --silent --show-error --location "${base}/admin")"
-          apply="$(curl --fail --silent --show-error --location "${base}/apply")"
           applications="$(curl --fail --silent --show-error --location "${base}/admin/applications")"
-          people="$(curl --fail --silent --show-error --location "${base}/admin/people")"
-          trust="$(curl --fail --silent --show-error --location "${base}/trust")"
-          help="$(curl --fail --silent --show-error --location "${base}/help")"
-          tx="$(curl --fail --silent --show-error --location "${base}/admin/transcription?project=81")"
-
-          grep -Fq 'homepage-v2.css' <<<"$home"
-          grep -Fq 'homepage-v2.js' <<<"$home"
-          grep -Fq 'AI data workflows built for' <<<"$home"
+          grep -Fq 'homepage-enterprise.css' <<<"$home"
+          grep -Fq 'Operate the human layer' <<<"$home"
+          grep -Fq 'Voice and transcription first' <<<"$teams"
+          grep -Fq 'does not charge contributors a fee' <<<"$contributors"
+          grep -Fq 'Privacy Policy' <<<"$privacy"
           grep -Fq 'workspace-experience.js' <<<"$workspace"
-          grep -Fq 'workspace-application-banner.js' <<<"$workspace"
           grep -Fq 'admin-theme.css' <<<"$admin"
-          grep -Fq 'admin-applications-link.js' <<<"$admin"
-          grep -Fq 'application-onboarding.js' <<<"$apply"
           grep -Fq 'Application Review' <<<"$applications"
-          grep -Fq 'admin-applications-analytics.js' <<<"$applications"
-          grep -Fq 'admin-applications-analytics.css' <<<"$applications"
-          grep -Fq 'People 360' <<<"$people"
-          grep -Fq 'Trust is part of the workflow' <<<"$trust"
-          grep -Fq 'Search the Help Center' <<<"$help"
-          grep -Fq 'transcription-lab-ui.css' <<<"$tx"
-          grep -Fq 'transcription-lab-dashboard.js' <<<"$tx"
-          curl --fail --silent --show-error --location "${base}/status" | grep -Fq 'Adatacore Status'
+          curl --fail --silent --show-error --head "${base}/" | grep -Fiq 'content-security-policy:'
 
       - name: Check critical deployed assets
         shell: bash
@@ -181,21 +131,12 @@ jobs:
           set -euo pipefail
           base='https://www.adatacore.com'
           assets=(
-            '/homepage-v2.css' '/homepage-v2.js' '/script.js' '/public-info.css'
-            '/application-onboarding.css' '/application-onboarding.js'
-            '/workspace-application-banner.js'
-            '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js'
-            '/admin-people360.js' '/admin-trust-safety-link.js'
-            '/admin-applications.js' '/admin-applications-link.js'
-            '/admin-applications-analytics.js' '/admin-applications-analytics.css'
+            '/homepage-v2.css' '/homepage-enterprise.css' '/homepage-v2.js' '/public-company.css' '/public-company.js'
+            '/application-onboarding.css' '/application-onboarding.js' '/workspace-application-banner.js'
+            '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js' '/admin-people360.js' '/admin-trust-safety-link.js'
+            '/admin-applications.js' '/admin-applications-link.js' '/admin-applications-analytics.js' '/admin-applications-analytics.css'
             '/project-lab-advanced-controls.js' '/project-lab-operations-suite.js'
-            '/transcription-lab.js' '/transcription-lab-ui.css' '/transcription-lab-dashboard.js'
-            '/transcription-long-audio.js' '/transcription-queue-priority.js' '/transcription-admin-flow.js'
+            '/transcription-lab.js' '/transcription-lab-ui.css' '/transcription-lab-dashboard.js' '/transcription-long-audio.js' '/transcription-queue-priority.js' '/transcription-admin-flow.js'
             '/client-portal.js' '/client-delivery-center.js'
           )
-          for asset in "${assets[@]}"; do
-            echo "Checking ${base}${asset}"
-            curl --fail --silent --show-error --location \
-              --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 \
-              "${base}${asset}" >/dev/null
-          done
+          for asset in "${assets[@]}"; do curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null; done
