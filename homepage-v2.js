@@ -3,6 +3,7 @@ const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelecto
 const GATEWAY='https://llmhyezgcnbognmmsnzq.supabase.co/functions/v1/public-site-gateway';
 const modal=$('#projectModal'),toast=$('#homeToast'),menuBtn=$('#mobileNavBtn'),mobileMenu=$('#mobileMenu');
 let toastTimer=null,formStartedAt=0;
+$$('a[href="/subprocessors"]').forEach(a=>{if(a.closest('.home-nav,.home-mobile-menu,.home-footer,.trust-side'))a.remove()});
 function sessionId(){try{let v=sessionStorage.getItem('adatacore_public_session');if(!v){v=crypto.randomUUID();sessionStorage.setItem('adatacore_public_session',v)}return v}catch{return ''}}
 function refHost(){try{return document.referrer?new URL(document.referrer).hostname:''}catch{return ''}}
 function event(name){try{fetch(GATEWAY,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({action:'event',event_name:name,page_path:location.pathname,referrer_host:refHost(),session_id:sessionId()})}).catch(()=>{})}catch(_){}}
