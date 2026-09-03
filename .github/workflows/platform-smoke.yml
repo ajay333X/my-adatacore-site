@@ -17,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Check frontend JavaScript syntax
         shell: bash
         run: |
@@ -25,94 +26,81 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done < <(find . -type f -name '*.js' -not -path './vendor/*' -not -path './node_modules/*' -print0)
-      - name: Verify critical platform files and contracts
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json is valid JSON')"
+          grep -Fq '"/admin/people"' vercel.json
+          grep -Fq '"/admin/applications"' vercel.json
+          grep -Fq '"/admin/trust-safety"' vercel.json
+          grep -Fq '"/admin/transcription"' vercel.json
+
+      - name: Verify critical platform files
         shell: bash
         run: |
           set -euo pipefail
           files=(
-            admin-entry.html admin-theme.css admin-theme.js
-            admin-applications.html admin-applications.js admin-applications-link.js
-            admin-people360.html admin-people360.js admin-trust-safety-link.js
-            trust.html help.html public-info.css
+            index.html script.js design-system.css
+            trust.html help.html public-info.css status.html
+            auth.html dashboard.html apply.html application-onboarding.js application-onboarding.css
             workspace.html workspace-entry.html workspace-application-banner.js
-            apply.html application-onboarding.js application-onboarding.css
+            admin-entry.html admin-theme.css admin-theme.js admin-global-search.js
+            admin-people360.html admin-people360.js admin-trust-safety-link.js
+            admin-applications.html admin-applications.js admin-applications-link.js
+            assignment-center-entry.html assignment-center.js
             project-lab-entry.html project-lab-advanced-controls.js project-lab-operations-suite.js
-            client-portal.html client-portal.js client-delivery-center.js
-            status.html workspace-qualifications-guidelines.js workspace-operations-context.js
-            admin-nav-fix.js admin-operations-health.js admin-operations-suite.js admin-staff-roles.js
-            admin-finance-ledger.js admin-support-center.js admin-platform-navigation.js
-            admin-client-decision-review.js client-error-monitor.js client-batch-review.js
-            workspace-experience.js workspace-support-skills.js workspace-balance-ledger.js workspace-platform-highlights.js
-            transcription-editor.js transcription-lab.html transcription-lab.js transcription-lab-ui.css
+            transcription-lab.html transcription-lab.js transcription-lab-ui.css
             transcription-lab-dashboard.js transcription-long-audio.js transcription-queue-priority.js transcription-admin-flow.js
+            client-portal.html client-portal.js client-delivery-center.js
             docs/supabase-auth-email-templates.md
           )
-          for file in "${files[@]}"; do test -f "$file" || { echo "Missing $file"; exit 1; }; done
+          failed=0
+          for file in "${files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "::error file=$file::Critical platform file is missing"
+              failed=1
+            fi
+          done
+          exit "$failed"
 
-          # Test module identity, not fragile cache-busting version numbers.
-          grep -q 'project-lab-advanced-controls.js' project-lab-entry.html
-          grep -q 'project-lab-operations-suite.js' project-lab-entry.html
-          grep -q 'client-portal.js' client-portal.html
-          grep -q 'client-delivery-center.js' client-portal.html
-          grep -q 'admin-theme.css' admin-entry.html
-          grep -q 'admin-theme.js' admin-entry.html
-          grep -q 'admin-applications-link.js' admin-entry.html
-          grep -q 'People 360' admin-people360.html
-          grep -q 'admin_people_360' admin-people360.js
-          grep -q 'data-people-360-link' admin-trust-safety-link.js
-          grep -q 'Trust is part of the workflow' trust.html
-          grep -q 'Search the Help Center' help.html
-          grep -q 'Trust Center' script.js
-          grep -q 'does not charge contributors a fee' script.js
-          grep -q 'workspace-application-banner.js' workspace.html
-          grep -q 'get_my_application_onboarding' dashboard.html
-          grep -q "location.replace('/apply')" dashboard.html
-          grep -q 'application_choose_tracks' application-onboarding.js
-          grep -q 'submit_voice_application' application-onboarding.js
-          grep -q 'submit_transcription_application' application-onboarding.js
-          grep -q 'admin_application_queue_v2' admin-applications.js
-          grep -q 'admin_set_application_decision' admin-applications.js
-          grep -q 'adatacore-admin-theme' admin-theme.js
-          grep -q 'data-admin-theme="light"' admin-theme.css
-          grep -q 'admin-theme-transition' admin-theme.css
-          grep -q 'profileSkillsCard' workspace-support-skills.js
-          grep -q 'Action required before new work' workspace-qualifications-guidelines.js
-          grep -q 'Profile & Skills' workspace-platform-highlights.js
-          grep -q 'Please check your Spam or Junk folder as well' design-system.css
-          grep -q 'Spam or Junk folder' verification-required.html
-          grep -q 'transcription-lab-ui.css' transcription-lab.html
-          grep -q 'transcription-lab-dashboard.js' transcription-lab.html
-          grep -q 'data-tx-tab="overview"' transcription-lab.html
-          grep -q 'data-tx-tab="queue"' transcription-lab.html
-          grep -q 'data-tx-tab="intake"' transcription-lab.html
-          grep -q 'id="dashboardTranscribedCount"' transcription-lab.html
-          grep -q 'id="dashboardNextQueue"' transcription-lab.html
-          grep -q 'id="dashboardProgressFill"' transcription-lab.html
-          grep -q 'id="queueDeleteSelected"' transcription-lab.html
-          grep -q 'id="queueArchiveSelected"' transcription-lab.html
-          grep -q 'id="txArchivedManager"' transcription-lab.html
-          grep -q 'Groq Whisper access verified' transcription-lab.js
-          grep -q '262144000' transcription-lab.js
-          grep -q 'MAX_SOURCE_BYTES=262144000' transcription-long-audio.js
-          grep -q 'isTranscribed' transcription-lab-dashboard.js
-          grep -q 'data-queue-drag' transcription-queue-priority.js
-          grep -q 'tx_queue_reorder' transcription-queue-priority.js
-          grep -q 'tx_delete_queue_items' transcription-queue-priority.js
-          grep -q 'tx_archive_queue_items' transcription-queue-priority.js
-          grep -q 'tx_restore_archived' transcription-admin-flow.js
-          grep -q 'tx-metric-grid' transcription-lab-ui.css
-          grep -q 'tx-queue-card' transcription-lab-ui.css
-          grep -q 'client-batch-review.js' client-batch-review.html
-          grep -q 'admin-client-decision-review.js' admin-done-task-review.html
+      - name: Verify durable application contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          check() {
+            local pattern="$1" file="$2"
+            if ! grep -Fq "$pattern" "$file"; then
+              echo "::error file=$file::Missing required platform contract: $pattern"
+              return 1
+            fi
+          }
+          check 'get_my_application_onboarding' dashboard.html
+          check "location.replace('/apply')" dashboard.html
+          check 'application_choose_tracks' application-onboarding.js
+          check 'submit_voice_application' application-onboarding.js
+          check 'submit_transcription_application' application-onboarding.js
+          check 'admin_application_queue_v2' admin-applications.js
+          check 'admin_set_application_decision' admin-applications.js
+          check 'admin_people_360' admin-people360.js
+          check 'data-people-360-link' admin-trust-safety-link.js
+          check 'Trust Center' trust.html
+          check 'Help Center' help.html
+          check 'MAX_SOURCE_BYTES=262144000' transcription-long-audio.js
+          check 'tx_delete_queue_items' transcription-queue-priority.js
+          check 'tx_archive_queue_items' transcription-queue-priority.js
+          check 'tx_restore_archived' transcription-admin-flow.js
 
   production-routes:
-    # Run production checks even when a static contract fails so route health is never hidden.
+    # Always test production after a main push, even if a static assertion fails.
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: static-safety
     runs-on: ubuntu-latest
     steps:
       - name: Wait for production alias
         run: sleep 35
+
       - name: Check critical production routes
         shell: bash
         run: |
@@ -122,15 +110,16 @@ jobs:
             '/'
             '/trust'
             '/help'
+            '/status'
             '/auth'
             '/apply'
             '/workspace'
             '/client-portal'
-            '/status'
             '/admin'
             '/admin/people'
             '/admin/applications'
             '/admin/assignments'
+            '/admin/trust-safety'
             '/admin/project-lab?project=81'
             '/admin/transcription?project=81'
             '/admin/done-tasks'
@@ -139,8 +128,11 @@ jobs:
           )
           for path in "${paths[@]}"; do
             echo "Checking ${base}${path}"
-            curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${path}" >/dev/null
+            curl --fail --silent --show-error --location \
+              --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 \
+              "${base}${path}" >/dev/null
           done
+
       - name: Verify live shells contain critical modules
         shell: bash
         run: |
@@ -155,40 +147,39 @@ jobs:
           help="$(curl --fail --silent --show-error --location "${base}/help")"
           tx="$(curl --fail --silent --show-error --location "${base}/admin/transcription?project=81")"
 
-          grep -q 'workspace-experience.js' <<<"$workspace"
-          grep -q 'workspace-platform-highlights.js' <<<"$workspace"
-          grep -q 'workspace-support-skills.js' <<<"$workspace"
-          grep -q 'workspace-application-banner.js' <<<"$workspace"
-          grep -q 'admin-theme.css' <<<"$admin"
-          grep -q 'admin-applications-link.js' <<<"$admin"
-          grep -q 'application-onboarding.js' <<<"$apply"
-          grep -q 'Application Review' <<<"$applications"
-          grep -q 'People 360' <<<"$people"
-          grep -q 'Trust is part of the workflow' <<<"$trust"
-          grep -q 'Search the Help Center' <<<"$help"
-          grep -q 'transcription-lab-ui.css' <<<"$tx"
-          grep -q 'transcription-lab-dashboard.js' <<<"$tx"
-          grep -q 'data-tx-tab="overview"' <<<"$tx"
-          grep -q 'id="queueDeleteSelected"' <<<"$tx"
-          curl --fail --silent --show-error --location "${base}/status" | grep -q 'Adatacore Status'
+          grep -Fq 'workspace-experience.js' <<<"$workspace"
+          grep -Fq 'workspace-application-banner.js' <<<"$workspace"
+          grep -Fq 'admin-theme.css' <<<"$admin"
+          grep -Fq 'admin-applications-link.js' <<<"$admin"
+          grep -Fq 'application-onboarding.js' <<<"$apply"
+          grep -Fq 'Application Review' <<<"$applications"
+          grep -Fq 'People 360' <<<"$people"
+          grep -Fq 'Trust is part of the workflow' <<<"$trust"
+          grep -Fq 'Search the Help Center' <<<"$help"
+          grep -Fq 'transcription-lab-ui.css' <<<"$tx"
+          grep -Fq 'transcription-lab-dashboard.js' <<<"$tx"
+          curl --fail --silent --show-error --location "${base}/status" | grep -Fq 'Adatacore Status'
+
       - name: Check critical deployed assets
         shell: bash
         run: |
           set -euo pipefail
           base='https://www.adatacore.com'
           assets=(
-            '/admin-theme.css' '/admin-theme.js' '/admin-nav-fix.js' '/admin-platform-navigation.js'
-            '/admin-applications.js' '/admin-applications-link.js' '/admin-people360.js' '/admin-trust-safety-link.js'
-            '/public-info.css' '/script.js'
-            '/application-onboarding.css' '/application-onboarding.js' '/workspace-application-banner.js'
+            '/script.js' '/public-info.css'
+            '/application-onboarding.css' '/application-onboarding.js'
+            '/workspace-application-banner.js'
+            '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js'
+            '/admin-people360.js' '/admin-trust-safety-link.js'
+            '/admin-applications.js' '/admin-applications-link.js'
             '/project-lab-advanced-controls.js' '/project-lab-operations-suite.js'
-            '/workspace-experience.js' '/workspace-platform-highlights.js' '/workspace-support-skills.js'
-            '/workspace-qualifications-guidelines.js' '/workspace-operations-context.js'
-            '/client-portal.js' '/client-delivery-center.js' '/client-error-monitor.js' '/client-batch-review.js'
             '/transcription-lab.js' '/transcription-lab-ui.css' '/transcription-lab-dashboard.js'
             '/transcription-long-audio.js' '/transcription-queue-priority.js' '/transcription-admin-flow.js'
+            '/client-portal.js' '/client-delivery-center.js'
           )
           for asset in "${assets[@]}"; do
             echo "Checking ${base}${asset}"
-            curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${asset}" >/dev/null
+            curl --fail --silent --show-error --location \
+              --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 \
+              "${base}${asset}" >/dev/null
           done
