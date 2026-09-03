@@ -30,6 +30,7 @@ jobs:
           set -euo pipefail
           node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json is valid JSON')"
           grep -Fq '"/admin/people"' vercel.json
+          grep -Fq '"/admin/coreforge"' vercel.json
           grep -Fq 'Content-Security-Policy' vercel.json
 
       - name: Verify critical platform files
@@ -47,6 +48,7 @@ jobs:
             admin-people360.html admin-people360.js admin-trust-safety-link.js
             admin-applications.html admin-applications.js admin-applications-link.js
             admin-applications-analytics.js admin-applications-analytics.css
+            coreforge.html coreforge.css coreforge.js admin-coreforge-link.js
             assignment-center-entry.html assignment-center.js
             project-lab-entry.html project-lab-advanced-controls.js project-lab-operations-suite.js
             transcription-lab.html transcription-lab.js transcription-lab-ui.css
@@ -88,6 +90,10 @@ jobs:
           check 'admin_application_queue_v2' admin-applications.js
           check 'admin_application_analytics' admin-applications-analytics.js
           check 'admin_people_360' admin-people360.js
+          check 'CoreForge' coreforge.html
+          check 'coreforge_snapshot' coreforge.js
+          check '/admin/coreforge' admin-coreforge-link.js
+          check 'admin-coreforge-link.js' admin-entry.html
           check 'MAX_SOURCE_BYTES=262144000' transcription-long-audio.js
 
   production-routes:
@@ -106,7 +112,7 @@ jobs:
           paths=(
             '/' '/teams' '/contributors' '/about' '/contact' '/privacy' '/terms' '/contributor-terms' '/cookies' '/subprocessors'
             '/trust' '/help' '/status' '/robots.txt' '/sitemap.xml' '/.well-known/security.txt'
-            '/auth' '/apply' '/workspace' '/client-portal' '/admin' '/admin/people' '/admin/applications' '/admin/assignments' '/admin/trust-safety'
+            '/auth' '/apply' '/workspace' '/client-portal' '/admin' '/admin/people' '/admin/applications' '/admin/assignments' '/admin/trust-safety' '/admin/coreforge'
             '/admin/project-lab?project=81' '/admin/transcription?project=81' '/admin/done-tasks' '/client-batch-review.html' '/client-transcript-review.html'
           )
           for path in "${paths[@]}"; do curl --fail --silent --show-error --location --retry 8 --retry-delay 5 --retry-all-errors --max-time 20 "${base}${path}" >/dev/null; done
@@ -123,6 +129,7 @@ jobs:
           workspace="$(curl --fail --silent --show-error --location "${base}/workspace")"
           admin="$(curl --fail --silent --show-error --location "${base}/admin")"
           applications="$(curl --fail --silent --show-error --location "${base}/admin/applications")"
+          coreforge="$(curl --fail --silent --show-error --location "${base}/admin/coreforge")"
           home_css="$(curl --fail --silent --show-error --location "${base}/homepage-enterprise.css")"
           home_js="$(curl --fail --silent --show-error --location "${base}/homepage-v2.js")"
           public_css="$(curl --fail --silent --show-error --location "${base}/public-company.css")"
@@ -140,6 +147,8 @@ jobs:
           grep -Fq 'workspace-experience.js' <<<"$workspace"
           grep -Fq 'admin-theme.css' <<<"$admin"
           grep -Fq 'Application Review' <<<"$applications"
+          grep -Fq 'Adatacore Model & Data Lab' <<<"$coreforge"
+          grep -Fq 'coreforge.js' <<<"$coreforge"
           curl --fail --silent --show-error --location "${base}/assets/adatacore-logo.jpg" >/dev/null
           curl --fail --silent --show-error --head "${base}/" | grep -Fiq 'content-security-policy:'
 
@@ -153,6 +162,7 @@ jobs:
             '/application-onboarding.css' '/application-onboarding.js' '/workspace-application-banner.js'
             '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js' '/admin-people360.js' '/admin-trust-safety-link.js'
             '/admin-applications.js' '/admin-applications-link.js' '/admin-applications-analytics.js' '/admin-applications-analytics.css'
+            '/coreforge.css' '/coreforge.js' '/admin-coreforge-link.js'
             '/project-lab-advanced-controls.js' '/project-lab-operations-suite.js'
             '/transcription-lab.js' '/transcription-lab-ui.css' '/transcription-lab-dashboard.js' '/transcription-long-audio.js' '/transcription-queue-priority.js' '/transcription-admin-flow.js'
             '/client-portal.js' '/client-delivery-center.js'
