@@ -14,6 +14,7 @@
   ],
   "rewrites": [
     {"source":"/admin","destination":"/admin-entry"},
+    {"source":"/admin/people","destination":"/admin-people360"},
     {"source":"/admin/applications","destination":"/admin-applications"},
     {"source":"/admin/assignments","destination":"/assignment-center-entry"},
     {"source":"/admin/trust-safety","destination":"/trust-safety"},
@@ -34,6 +35,7 @@
     {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
     {"source":"/client-portal","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/admin/people","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/applications","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/assignments","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/trust-safety","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
