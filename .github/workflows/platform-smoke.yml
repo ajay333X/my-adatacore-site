@@ -49,6 +49,7 @@ jobs:
             admin-entry.html admin-theme.css admin-theme.js admin-global-search.js
             admin-people360.html admin-people360.js admin-trust-safety-link.js
             admin-applications.html admin-applications.js admin-applications-link.js
+            admin-applications-analytics.js admin-applications-analytics.css
             assignment-center-entry.html assignment-center.js
             project-lab-entry.html project-lab-advanced-controls.js project-lab-operations-suite.js
             transcription-lab.html transcription-lab.js transcription-lab-ui.css
@@ -83,6 +84,9 @@ jobs:
           check 'submit_transcription_application' application-onboarding.js
           check 'admin_application_queue_v2' admin-applications.js
           check 'admin_set_application_decision' admin-applications.js
+          check 'admin-applications-analytics.js' admin-applications.html
+          check 'admin_application_analytics' admin-applications-analytics.js
+          check 'Application Intelligence' admin-applications-analytics.js
           check 'admin_people_360' admin-people360.js
           check 'data-people-360-link' admin-trust-safety-link.js
           check 'Trust Center' trust.html
@@ -153,6 +157,8 @@ jobs:
           grep -Fq 'admin-applications-link.js' <<<"$admin"
           grep -Fq 'application-onboarding.js' <<<"$apply"
           grep -Fq 'Application Review' <<<"$applications"
+          grep -Fq 'admin-applications-analytics.js' <<<"$applications"
+          grep -Fq 'admin-applications-analytics.css' <<<"$applications"
           grep -Fq 'People 360' <<<"$people"
           grep -Fq 'Trust is part of the workflow' <<<"$trust"
           grep -Fq 'Search the Help Center' <<<"$help"
@@ -172,6 +178,7 @@ jobs:
             '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js'
             '/admin-people360.js' '/admin-trust-safety-link.js'
             '/admin-applications.js' '/admin-applications-link.js'
+            '/admin-applications-analytics.js' '/admin-applications-analytics.css'
             '/project-lab-advanced-controls.js' '/project-lab-operations-suite.js'
             '/transcription-lab.js' '/transcription-lab-ui.css' '/transcription-lab-dashboard.js'
             '/transcription-long-audio.js' '/transcription-queue-priority.js' '/transcription-admin-flow.js'
