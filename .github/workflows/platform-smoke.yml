@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html homepage-v2.css homepage-enterprise.css homepage-v2.js adatacore-mark.svg
+            index.html homepage-v2.css homepage-enterprise.css homepage-v2.js adatacore-mark.svg assets/adatacore-logo.jpg
             public-company.css public-company.js teams.html contributors.html about.html contact.html
             privacy.html terms.html contributor-terms.html cookies.html subprocessors.html robots.txt sitemap.xml .well-known/security.txt
             trust.html help.html public-info.css status.html
@@ -66,7 +66,10 @@ jobs:
           check(){ local pattern="$1" file="$2"; grep -Fq "$pattern" "$file" || { echo "::error file=$file::Missing required platform contract: $pattern"; return 1; }; }
           check 'Operate the human layer' index.html
           check 'homepage-enterprise.css' index.html
-          check 'Precision in Every Byte.' homepage-enterprise.css
+          check "url('/assets/adatacore-logo.jpg')" homepage-enterprise.css
+          check 'adatacore-mark-float' homepage-enterprise.css
+          check 'Precision in Every Byte.' homepage-v2.js
+          check 'initPrecisionTagline' homepage-v2.js
           check 'a.home-btn-primary{color:#fff!important}' homepage-enterprise.css
           check "url('/adatacore-mark.svg')" public-company.css
           check 'a.cp-btn.primary' public-company.css
@@ -121,10 +124,14 @@ jobs:
           admin="$(curl --fail --silent --show-error --location "${base}/admin")"
           applications="$(curl --fail --silent --show-error --location "${base}/admin/applications")"
           home_css="$(curl --fail --silent --show-error --location "${base}/homepage-enterprise.css")"
+          home_js="$(curl --fail --silent --show-error --location "${base}/homepage-v2.js")"
           public_css="$(curl --fail --silent --show-error --location "${base}/public-company.css")"
           grep -Fq 'homepage-enterprise.css' <<<"$home"
           grep -Fq 'Operate the human layer' <<<"$home"
-          grep -Fq 'Precision in Every Byte.' <<<"$home_css"
+          grep -Fq "url('/assets/adatacore-logo.jpg')" <<<"$home_css"
+          grep -Fq 'adatacore-mark-float' <<<"$home_css"
+          grep -Fq 'Precision in Every Byte.' <<<"$home_js"
+          grep -Fq 'initPrecisionTagline' <<<"$home_js"
           grep -Fq 'a.home-btn-primary{color:#fff!important}' <<<"$home_css"
           grep -Fq "url('/adatacore-mark.svg')" <<<"$public_css"
           grep -Fq 'Voice and transcription first' <<<"$teams"
@@ -133,6 +140,7 @@ jobs:
           grep -Fq 'workspace-experience.js' <<<"$workspace"
           grep -Fq 'admin-theme.css' <<<"$admin"
           grep -Fq 'Application Review' <<<"$applications"
+          curl --fail --silent --show-error --location "${base}/assets/adatacore-logo.jpg" >/dev/null
           curl --fail --silent --show-error --head "${base}/" | grep -Fiq 'content-security-policy:'
 
       - name: Check critical deployed assets
@@ -141,7 +149,7 @@ jobs:
           set -euo pipefail
           base='https://www.adatacore.com'
           assets=(
-            '/adatacore-mark.svg' '/homepage-v2.css' '/homepage-enterprise.css' '/homepage-v2.js' '/public-company.css' '/public-company.js' '/public-info.css'
+            '/assets/adatacore-logo.jpg' '/adatacore-mark.svg' '/homepage-v2.css' '/homepage-enterprise.css' '/homepage-v2.js' '/public-company.css' '/public-company.js' '/public-info.css'
             '/application-onboarding.css' '/application-onboarding.js' '/workspace-application-banner.js'
             '/admin-theme.css' '/admin-theme.js' '/admin-global-search.js' '/admin-people360.js' '/admin-trust-safety-link.js'
             '/admin-applications.js' '/admin-applications-link.js' '/admin-applications-analytics.js' '/admin-applications-analytics.css'
