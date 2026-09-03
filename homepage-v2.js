@@ -1,0 +1,21 @@
+(()=>{'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const FORM_API='https://llmhyezgcnbognmmsnzq.supabase.co/rest/v1';
+const FORM_KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const modal=$('#projectModal'),toast=$('#homeToast'),menuBtn=$('#mobileNavBtn'),mobileMenu=$('#mobileMenu');
+let toastTimer=null;
+function lockBody(v){document.body.style.overflow=v?'hidden':''}
+function openProject(){if(!modal)return;modal.classList.add('open');modal.setAttribute('aria-hidden','false');lockBody(true);setTimeout(()=>$('#inqName')?.focus(),50)}
+function closeProject(){if(!modal)return;modal.classList.remove('open');modal.setAttribute('aria-hidden','true');lockBody(false)}
+window.openProjectInquiry=openProject;
+function showToast(title,message){if(!toast)return;toast.innerHTML=`<strong>${escapeHtml(title)}</strong><span>${escapeHtml(message)}</span>`;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),5200)}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function postInquiry(payload){const res=await fetch(`${FORM_API}/company_inquiries`,{method:'POST',headers:{apikey:FORM_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok){let message='We could not submit your inquiry right now. Please try again.';try{const d=await res.json();if(String(d?.message||'').includes('project_details'))message='Please add a little more detail about your project.'}catch(_){}throw new Error(message)}}
+const form=$('#projectInquiryForm');
+if(form)form.addEventListener('submit',async e=>{e.preventDefault();const submit=$('#inqSubmit');const fullName=$('#inqName').value.trim(),companyName=$('#inqCompany').value.trim(),email=$('#inqEmail').value.trim().toLowerCase(),stage=$('#inqStage').value,details=$('#inqDetails').value.trim();if(fullName.length<2)return showToast('Check your name','Please enter your full name.');if(companyName.length<2)return showToast('Company required','Please enter your company or team name.');if(!email.includes('@'))return showToast('Check your email','Please enter a valid work email.');if(details.length<10)return showToast('Add more context','Please add at least a short project brief so we can route your inquiry correctly.');submit.disabled=true;submit.textContent='Sending…';try{await postInquiry({full_name:fullName,company_name:companyName,email,budget_range:stage||null,project_details:details});form.reset();closeProject();showToast('Project inquiry received','Thanks. Your project brief has been submitted to Adatacore.')}catch(err){showToast('Submission unsuccessful',err.message||'Please try again.')}finally{submit.disabled=false;submit.textContent='Send project inquiry'}});
+$$('[data-close-modal]').forEach(el=>el.addEventListener('click',closeProject));modal?.addEventListener('click',e=>{if(e.target===modal)closeProject()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeProject();if(mobileMenu?.classList.contains('open'))toggleMenu(false)}});
+function toggleMenu(force){if(!menuBtn||!mobileMenu)return;const open=typeof force==='boolean'?force:!mobileMenu.classList.contains('open');mobileMenu.classList.toggle('open',open);menuBtn.classList.toggle('open',open);menuBtn.setAttribute('aria-expanded',String(open))}
+menuBtn?.addEventListener('click',()=>toggleMenu());$$('#mobileMenu a').forEach(a=>a.addEventListener('click',()=>toggleMenu(false)));
+$$('.faq-v2-btn').forEach(btn=>btn.addEventListener('click',()=>{const item=btn.closest('.faq-v2-item'),open=item.classList.toggle('open');btn.setAttribute('aria-expanded',String(open))}));
+if('IntersectionObserver'in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');io.unobserve(entry.target)}}),{threshold:.12,rootMargin:'0px 0px -40px'});$$('.reveal-v2').forEach(el=>io.observe(el))}else $$('.reveal-v2').forEach(el=>el.classList.add('visible'));
+})();
