@@ -1,0 +1,5 @@
+Contact: https://www.adatacore.com/trust#report
+Policy: https://www.adatacore.com/trust
+Canonical: https://www.adatacore.com/.well-known/security.txt
+Preferred-Languages: en, hi
+Expires: 2027-09-03T00:00:00Z
