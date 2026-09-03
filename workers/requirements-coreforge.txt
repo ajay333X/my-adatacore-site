@@ -1,6 +1,6 @@
 torch>=2.3,<3
 transformers>=4.46,<5
-datasets>=3.2,<5
+datasets>=3.2,<4
 accelerate>=1.2,<2
 huggingface_hub>=0.27,<1
 requests>=2.32,<3
