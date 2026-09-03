@@ -107,7 +107,7 @@ def materialize_source(run: dict[str, Any], dataset_meta: dict[str, Any], source
     validation_pct = int((run.get("config") or {}).get("validation_pct") or criteria.get("validation_pct") or 5)
 
     print(f"Streaming {repo}/{config or '-'}@{revision[:12]} until {target_hours:.1f}h")
-    ds = load_dataset(repo, config, split=split_name, streaming=True, revision=revision, token=HF_TOKEN)
+    ds = load_dataset(repo, config, split=split_name, streaming=True, revision=revision, token=HF_TOKEN, trust_remote_code=True)
     try:
         ds = ds.cast_column(audio_col, Audio(sampling_rate=16000))
     except Exception:
@@ -246,7 +246,7 @@ def train_asr(payload: dict[str, Any]) -> tuple[dict[str, float], str]:
         num_train_epochs=float(cfg.get("epochs", 3)),
         gradient_checkpointing=True,
         fp16=bool(torch.cuda.is_available()),
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         logging_steps=25,
         predict_with_generate=True,
@@ -318,7 +318,7 @@ def main() -> None:
         "host": socket.gethostname(),
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
         "cuda": torch.cuda.is_available(),
-        "worker_version": "0.1.0",
+        "worker_version": "0.1.1",
         "tasks": ["asr"],
     }
     print(f"CoreForge worker online: {capabilities}")
