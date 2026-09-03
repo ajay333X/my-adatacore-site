@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /workspace
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /apply
+Disallow: /voice-engine
+Disallow: /review
+Disallow: /client-portal
+Sitemap: https://www.adatacore.com/sitemap.xml
