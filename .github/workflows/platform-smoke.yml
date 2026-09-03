@@ -32,6 +32,8 @@ jobs:
           files=(
             admin-entry.html admin-theme.css admin-theme.js
             admin-applications.html admin-applications.js admin-applications-link.js
+            admin-people360.html admin-people360.js admin-trust-safety-link.js
+            trust.html help.html public-info.css
             workspace.html workspace-entry.html workspace-application-banner.js
             apply.html application-onboarding.js application-onboarding.css
             project-lab-entry.html project-lab-advanced-controls.js project-lab-operations-suite.js
@@ -55,6 +57,13 @@ jobs:
           grep -q 'admin-theme.css' admin-entry.html
           grep -q 'admin-theme.js' admin-entry.html
           grep -q 'admin-applications-link.js' admin-entry.html
+          grep -q 'People 360' admin-people360.html
+          grep -q 'admin_people_360' admin-people360.js
+          grep -q 'data-people-360-link' admin-trust-safety-link.js
+          grep -q 'Trust is part of the workflow' trust.html
+          grep -q 'Search the Help Center' help.html
+          grep -q 'Trust Center' script.js
+          grep -q 'does not charge contributors a fee' script.js
           grep -q 'workspace-application-banner.js' workspace.html
           grep -q 'get_my_application_onboarding' dashboard.html
           grep -q "location.replace('/apply')" dashboard.html
@@ -111,12 +120,15 @@ jobs:
           base='https://www.adatacore.com'
           paths=(
             '/'
+            '/trust'
+            '/help'
             '/auth'
             '/apply'
             '/workspace'
             '/client-portal'
             '/status'
             '/admin'
+            '/admin/people'
             '/admin/applications'
             '/admin/assignments'
             '/admin/project-lab?project=81'
@@ -138,6 +150,9 @@ jobs:
           admin="$(curl --fail --silent --show-error --location "${base}/admin")"
           apply="$(curl --fail --silent --show-error --location "${base}/apply")"
           applications="$(curl --fail --silent --show-error --location "${base}/admin/applications")"
+          people="$(curl --fail --silent --show-error --location "${base}/admin/people")"
+          trust="$(curl --fail --silent --show-error --location "${base}/trust")"
+          help="$(curl --fail --silent --show-error --location "${base}/help")"
           tx="$(curl --fail --silent --show-error --location "${base}/admin/transcription?project=81")"
 
           grep -q 'workspace-experience.js' <<<"$workspace"
@@ -148,6 +163,9 @@ jobs:
           grep -q 'admin-applications-link.js' <<<"$admin"
           grep -q 'application-onboarding.js' <<<"$apply"
           grep -q 'Application Review' <<<"$applications"
+          grep -q 'People 360' <<<"$people"
+          grep -q 'Trust is part of the workflow' <<<"$trust"
+          grep -q 'Search the Help Center' <<<"$help"
           grep -q 'transcription-lab-ui.css' <<<"$tx"
           grep -q 'transcription-lab-dashboard.js' <<<"$tx"
           grep -q 'data-tx-tab="overview"' <<<"$tx"
@@ -160,7 +178,8 @@ jobs:
           base='https://www.adatacore.com'
           assets=(
             '/admin-theme.css' '/admin-theme.js' '/admin-nav-fix.js' '/admin-platform-navigation.js'
-            '/admin-applications.js' '/admin-applications-link.js'
+            '/admin-applications.js' '/admin-applications-link.js' '/admin-people360.js' '/admin-trust-safety-link.js'
+            '/public-info.css' '/script.js'
             '/application-onboarding.css' '/application-onboarding.js' '/workspace-application-banner.js'
             '/project-lab-advanced-controls.js' '/project-lab-operations-suite.js'
             '/workspace-experience.js' '/workspace-platform-highlights.js' '/workspace-support-skills.js'
