@@ -29,12 +29,22 @@
     {"source":"/review","destination":"/review-entry"}
   ],
   "headers": [
+    {"source":"/","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; connect-src 'self' https://llmhyezgcnbognmmsnzq.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/teams","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; connect-src 'self' https://llmhyezgcnbognmmsnzq.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/contributors","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; connect-src 'self' https://llmhyezgcnbognmmsnzq.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/about","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; connect-src 'self' https://llmhyezgcnbognmmsnzq.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/contact","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; connect-src 'self' https://llmhyezgcnbognmmsnzq.supabase.co; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/privacy","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/terms","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/contributor-terms","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/cookies","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
+    {"source":"/subprocessors","headers":[{"key":"Content-Security-Policy","value":"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"}]},
     {"source":"/apply","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/transcription","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
-    {"source":"/auth","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
-    {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/auth","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/dashboard","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/client-portal","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
-    {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/admin","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/people","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/applications","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/assignments","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
@@ -44,9 +54,9 @@
     {"source":"/admin/transcription-vault","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/done-tasks","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/admin/done-task","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
-    {"source":"/voice-engine","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
-    {"source":"/review","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
-    {"source":"/workspace","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"}]},
+    {"source":"/voice-engine","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/review","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
+    {"source":"/workspace","headers":[{"key":"Cache-Control","value":"private, no-store, max-age=0"},{"key":"X-Robots-Tag","value":"noindex"}]},
     {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"Permissions-Policy","value":"camera=(), geolocation=(), payment=()"},{"key":"X-Frame-Options","value":"DENY"}]}
   ]
 }
