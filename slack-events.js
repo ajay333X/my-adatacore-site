@@ -8,13 +8,17 @@
   const U='https://llmhyezgcnbognmmsnzq.supabase.co';
   const K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
   const db=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
-  let busy=false;
+  const FRESH_MS=30*60*1000;
+  const seenApps=new Set(),seenTickets=new Set();
+  let busy=false,joinChecked=false;
 
+  const fresh=v=>{if(!v)return false;const t=new Date(v).getTime(),d=Date.now()-t;return Number.isFinite(t)&&d>=0&&d<=FRESH_MS};
   async function notify(type,payload={}){
     try{
-      const {error}=await db.functions.invoke('slack-notify',{body:{type,...payload}});
-      if(error)console.warn('Slack event skipped:',error.message||error);
-    }catch(error){console.warn('Slack event skipped:',error)}
+      const {data,error}=await db.functions.invoke('slack-notify',{body:{type,...payload}});
+      if(error){console.warn('Slack event skipped:',error.message||error);return false}
+      return data?.ok!==false;
+    }catch(error){console.warn('Slack event skipped:',error);return false}
   }
 
   async function scan(){
@@ -24,17 +28,15 @@
       const {data:{session}}=await db.auth.getSession();
       if(!session)return;
 
-      // Safe to call on each eligible page: the backend applies freshness checks
-      // and a unique event key so existing contributors never create duplicates.
-      await notify('contributor_joined');
+      if(!joinChecked){joinChecked=true;await notify('contributor_joined')}
 
       if(location.pathname==='/apply'||location.pathname==='/apply/'){
         const {data,error}=await db.rpc('get_my_application_onboarding');
         if(!error){
           for(const app of Array.isArray(data?.applications)?data.applications:[]){
-            if(['pending','under_review','approved'].includes(String(app.status||''))){
-              await notify('application_submitted',{application_id:app.id});
-            }
+            const id=String(app.id||'');
+            if(!id||seenApps.has(id)||!['pending','under_review','approved'].includes(String(app.status||''))||!fresh(app.submitted_at||app.updated_at))continue;
+            if(await notify('application_submitted',{application_id:app.id}))seenApps.add(id);
           }
         }
       }
@@ -43,7 +45,9 @@
         const {data,error}=await db.rpc('get_my_support_tickets');
         if(!error){
           for(const ticket of Array.isArray(data)?data:[]){
-            await notify('support_ticket_created',{ticket_id:ticket.id});
+            const id=String(ticket.id||'');
+            if(!id||seenTickets.has(id)||!fresh(ticket.created_at))continue;
+            if(await notify('support_ticket_created',{ticket_id:ticket.id}))seenTickets.add(id);
           }
         }
       }
@@ -51,7 +55,7 @@
   }
 
   scan();
-  const timer=setInterval(scan,8000);
+  const timer=setInterval(scan,10000);
   window.addEventListener('focus',scan);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scan()});
   window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
