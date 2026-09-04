@@ -45,10 +45,11 @@
           <button class="primary" id="signinButton" type="submit">Sign in</button>
         </div></form>
 
-        <form class="view" id="signupForm" novalidate><div class="stack">
+        <form class="view" id="signupForm"><div class="stack">
           <div><label class="label" for="signupName"><span>Full name</span></label><div class="input-wrap"><input class="input" id="signupName" autocomplete="name" placeholder="Your full name" required></div></div>
           <div><label class="label" for="signupEmail"><span>Email address</span></label><div class="input-wrap"><input class="input" id="signupEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div></div>
           <div><label class="label" for="signupPassword"><span>Password</span></label><div class="input-wrap"><input class="input with-toggle" id="signupPassword" type="password" autocomplete="new-password" placeholder="Create a password" minlength="8" required><button class="toggle" type="button" data-toggle-password="signupPassword" aria-label="Show password"></button></div><div class="hint">Use at least 8 characters. You will verify ownership of your email before workspace access.</div><div class="strength"><div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div><div class="strength-text" id="strengthText">Start with 8+ characters</div></div></div>
+          <label style="display:flex;align-items:flex-start;gap:9px;font-size:11px;line-height:1.55;color:#737782;cursor:pointer"><input id="signupConsent" type="checkbox" required style="margin:3px 0 0;flex:0 0 auto"><span>By creating an account, I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="/contributor-terms" target="_blank" rel="noopener">Contributor Terms</a>, and acknowledge the <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
           <button class="primary" id="signupButton" type="submit">Create account</button>
         </div></form>
 
