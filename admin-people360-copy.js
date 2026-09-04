@@ -101,7 +101,7 @@
   const loadAccess360=()=>{
     if(document.querySelector('script[data-access360-loader]'))return;
     const s=document.createElement('script');
-    s.src='/admin-people360-access.js?v=20260904-1';
+    s.src='/admin-people360-access.js?v=20260904-2';
     s.dataset.access360Loader='1';
     document.body.appendChild(s);
   };
