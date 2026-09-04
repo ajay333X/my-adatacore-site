@@ -1,0 +1,48 @@
+/* Adatacore Admin clean layout v2 — presentation only; no controls are hidden or disabled. */
+:root{--admin-sidebar-w:248px;--admin-content-max:1480px;--admin-radius:14px}
+.app-shell{min-height:100vh}
+.sidebar{width:var(--admin-sidebar-w)!important;padding:14px 12px!important;gap:4px!important;overflow-y:auto!important;scrollbar-width:thin}
+.sidebar .brand{min-height:48px;padding:8px 10px!important;margin-bottom:8px!important;border-radius:12px}
+.sidebar .nav-group{margin:4px 0 10px!important;padding:0!important}
+.sidebar .nav-label{margin:14px 10px 6px!important;font-size:9px!important;letter-spacing:.12em!important;font-weight:850!important;text-transform:uppercase}
+.sidebar .nav-link{min-height:38px!important;padding:9px 10px!important;margin:2px 0!important;border-radius:10px!important;font-size:12px!important;line-height:1.25!important;transition:background .16s ease,color .16s ease,transform .16s ease!important}
+.sidebar .nav-link:hover{transform:translateX(1px)}
+.sidebar .nav-link.active{font-weight:800!important}
+.admin-nav-section{margin:14px 9px 5px;color:var(--muted2);font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;pointer-events:none}
+.admin-nav-divider{height:1px;background:var(--line);margin:10px 8px;opacity:.8}
+.app-main{min-width:0!important;padding:0 24px 36px!important}
+.page-header{position:sticky!important;top:0!important;z-index:80!important;margin:0 -24px 22px!important;padding:18px 24px 16px!important;background:color-mix(in srgb,var(--bg) 88%,transparent)!important;backdrop-filter:blur(18px);border-bottom:1px solid var(--line)!important}
+.page-header h1{font-size:24px!important;letter-spacing:-.035em!important;margin:3px 0 4px!important}
+.page-header .page-sub{max-width:760px!important;font-size:11px!important;line-height:1.55!important}
+.admin-header-actions{gap:7px!important}
+.panel{max-width:var(--admin-content-max);margin:0 auto}
+.section-title{margin:22px 0 12px!important;align-items:flex-end!important}
+.section-title h2{font-size:17px!important;letter-spacing:-.02em!important}
+.card{border-radius:var(--admin-radius)!important;padding:16px!important}
+.overview-grid{gap:10px!important}
+.metric-mini{padding:15px!important}
+.metric-mini strong{font-size:23px!important;margin-top:5px!important}
+.split,.admin-grid,.snapshot-grid{gap:10px!important}
+.toolbar{gap:7px!important}
+.btn{min-height:36px!important;padding:8px 11px!important;border-radius:10px!important;font-size:11px!important;font-weight:750!important}
+.input{min-height:38px!important;border-radius:10px!important;font-size:12px!important}
+textarea.input{min-height:90px!important}
+.pill{border-radius:999px!important;padding:5px 8px!important;font-size:9px!important;font-weight:800!important}
+.data-row{padding:12px 4px!important;gap:12px!important}
+.list>.data-row:first-child{padding-top:4px!important}
+.list>.data-row:last-child{padding-bottom:4px!important}
+table{width:100%}
+th{position:sticky;top:0;z-index:2;background:var(--panel);font-size:9px!important;letter-spacing:.06em!important;text-transform:uppercase;white-space:nowrap}
+td{font-size:11px!important;line-height:1.45}
+th,td{padding:10px 9px!important}
+.snapshot-card,.access-user,.payment-card{box-shadow:none!important}
+.finder-shell{border-radius:16px!important}
+.finder-top{padding:14px!important}
+.finder-results{padding:0 8px 10px!important}
+.finder-result{padding:10px!important}
+.empty{padding:24px!important;border-radius:12px;color:var(--muted)!important}
+.admin-compact-note{font-size:10px;color:var(--muted);line-height:1.5}
+@media(min-width:1500px){.app-main{padding-left:32px!important;padding-right:32px!important}.page-header{margin-left:-32px!important;margin-right:-32px!important;padding-left:32px!important;padding-right:32px!important}}
+@media(max-width:980px){:root{--admin-sidebar-w:220px}.app-main{padding-left:18px!important;padding-right:18px!important}.page-header{margin-left:-18px!important;margin-right:-18px!important;padding-left:18px!important;padding-right:18px!important}}
+@media(max-width:760px){.page-header{position:relative!important;top:auto!important}.app-main{padding-bottom:24px!important}.card{padding:14px!important}.sidebar .nav-link{min-height:42px!important}}
+@media(prefers-reduced-motion:reduce){.sidebar .nav-link{transition:none!important}.sidebar .nav-link:hover{transform:none}}
