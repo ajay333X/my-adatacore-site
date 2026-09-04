@@ -19,8 +19,8 @@
 
   function tidySidebar(){
     const sidebar=document.querySelector('.sidebar');
-    if(!sidebar)return;
-    const links=[...sidebar.querySelectorAll('.nav-link')].filter(x=>!x.closest('[data-admin-clean-group]'));
+    if(!sidebar||sidebar.dataset.cleanNav==='1')return;
+    const links=[...sidebar.querySelectorAll('.nav-link')];
     if(!links.length)return;
 
     const seen=new Set();
@@ -40,6 +40,7 @@
     sidebar.querySelectorAll('.nav-label').forEach(x=>{
       if(!x.textContent.trim())x.remove();
     });
+    sidebar.dataset.cleanNav='1';
   }
 
   function improveTables(){
@@ -57,6 +58,6 @@
 
   function apply(){tidySidebar();improveTables();markDangerous();}
   apply();
-  const observer=new MutationObserver(()=>requestAnimationFrame(apply));
+  const observer=new MutationObserver(()=>requestAnimationFrame(()=>{improveTables();markDangerous();}));
   observer.observe(document.body,{childList:true,subtree:true});
 })();
