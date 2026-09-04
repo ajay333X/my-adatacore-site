@@ -1,0 +1,128 @@
+:root{
+  color-scheme:light;
+  --bg:#f6f7fb;
+  --bg2:#ffffff;
+  --panel:#ffffff;
+  --panel2:#fafaff;
+  --panel3:#f7f8fc;
+  --line:#e3e5ee;
+  --line2:#d4d7e4;
+  --text:#171822;
+  --muted:#6f7280;
+  --muted2:#9699a8;
+  --brand:#6d4aff;
+  --brand2:#6845ef;
+  --brand-soft:#f1edff;
+  --green:#198754;
+  --green-soft:#ecf8f2;
+  --red:#c33b54;
+  --red-soft:#fff0f3;
+  --amber:#a56b00;
+  --shadow:0 18px 48px rgba(24,29,55,.08);
+}
+html{background:var(--bg);color-scheme:light}
+body{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(109,74,255,.08),transparent 30%),
+    radial-gradient(circle at 94% 92%,rgba(82,196,163,.07),transparent 24%),
+    var(--bg)!important;
+  color:var(--text)!important;
+}
+.qa-shell{background:transparent}
+.qa-top{
+  background:rgba(255,255,255,.92)!important;
+  border-bottom-color:var(--line)!important;
+  box-shadow:0 1px 0 rgba(31,35,54,.02);
+}
+.qa-back{color:#5f6270!important}
+.qa-back:hover{color:var(--brand)!important}
+.qa-title,.qa-hero h1,.qa-section h2,.qa-option strong,.qa-stage strong,.qa-review-card strong,.qa-summary strong{color:var(--text)!important}
+.eyebrow{color:#7059c7!important}
+.card,.qa-card{
+  background:#fff!important;
+  border-color:var(--line)!important;
+  box-shadow:var(--shadow)!important;
+}
+.qa-section{
+  background:#fff!important;
+  border-color:var(--line)!important;
+}
+.qa-section.active{
+  border-color:#cfc5ff!important;
+  box-shadow:0 8px 26px rgba(109,74,255,.07)!important;
+}
+.qa-progress-step i,
+.qa-stage,
+.qa-review-card,
+.qa-counter button{
+  background:#fafaff!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+}
+.qa-stage.active{
+  background:#f6f2ff!important;
+  border-color:#b8a6ff!important;
+  box-shadow:0 0 0 3px rgba(109,74,255,.06)!important;
+}
+.qa-stage:hover,.qa-counter button:hover{border-color:#c7baff!important}
+.qa-selected,.qa-summary{
+  background:#f7f4ff!important;
+  border-color:#ded5ff!important;
+}
+.qa-dropdown{
+  background:#fff!important;
+  border-color:var(--line2)!important;
+  box-shadow:0 18px 48px rgba(31,35,54,.14)!important;
+}
+.qa-option{color:var(--text)!important}
+.qa-option:hover,.qa-option:focus-visible{background:#f7f7fb!important}
+.input,.qa-search{
+  background:#fff!important;
+  color:#1b1c27!important;
+  border-color:var(--line2)!important;
+  box-shadow:none;
+}
+.input::placeholder,.qa-search::placeholder{color:#a1a4b1!important}
+.input:focus,.qa-search:focus{
+  border-color:#876dff!important;
+  box-shadow:0 0 0 3px rgba(109,74,255,.10)!important;
+}
+.btn-secondary{
+  background:#fff!important;
+  color:#4a4d5b!important;
+  border-color:var(--line2)!important;
+}
+.btn-secondary:hover:not(:disabled){background:#f7f7fb!important;border-color:#c5c8d6!important}
+.btn-primary{
+  background:linear-gradient(135deg,#6845ef,#8263ff)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(109,74,255,.18)!important;
+}
+.pill{
+  background:#fff!important;
+  color:#626574!important;
+  border-color:var(--line)!important;
+}
+.pill-brand{
+  background:#f1edff!important;
+  color:#6045d3!important;
+  border-color:#d8ceff!important;
+}
+.qa-progress-step.active i{
+  background:#f1edff!important;
+  border-color:#cfc2ff!important;
+  color:#6845ef!important;
+}
+.qa-progress-step.done i{
+  background:#ecf8f2!important;
+  border-color:#bce3d3!important;
+  color:#198754!important;
+}
+.qa-step-num,.qa-avatar{background:#f1edff!important;color:#6845ef!important}
+.qa-section.complete .qa-step-num{background:#ecf8f2!important;color:#198754!important}
+.qa-result{background:#ecf8f2!important;border-color:#bce3d3!important}
+.qa-result-icon{background:#dff3e9!important;color:#198754!important}
+.qa-error{background:#fff0f3!important;border-color:#f3c5cf!important;color:#b72f4b!important}
+.qa-loading .qa-assign::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.36),transparent)!important}
+.field-title{color:#5f6270!important}
+@media(max-width:720px){.qa-top{background:rgba(255,255,255,.96)!important}}
