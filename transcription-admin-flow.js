@@ -30,6 +30,13 @@
     document.head.appendChild(script);
   }
 
+  if(!document.querySelector('script[data-tx-excel-export]')){
+    const script=document.createElement('script');
+    script.src='/transcription-export.js?v=1';
+    script.dataset.txExcelExport='1';
+    document.head.appendChild(script);
+  }
+
   if(assignButton){
     assignButton.textContent='Assignment Center';
     assignButton.title='Assign project access and task limits from the unified Assignment Center';
