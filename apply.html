@@ -4,79 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#f6f7fb">
-<title>Apply — Adatacore</title>
-<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+<meta name="theme-color" content="#f7f8fc">
+<title>Contributor Application — Adatacore</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <link rel="stylesheet" href="/application-onboarding.css?v=20260903-3">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
-<script defer src="/application-onboarding.js?v=20260903-3"></script>
+<script defer src="https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script defer src="/application-sdk-guard.js?v=20260904-1"></script>
+<script defer src="/application-onboarding.js?v=20260904-1"></script>
 </head>
 <body>
-<main class="app-shell">
-  <div class="app-top">
-    <a class="app-brand" href="/"><span class="app-mark" aria-hidden="true"></span><span>Adatacore</span></a>
-    <a class="app-exit" id="workspaceLink" href="/workspace">Workspace</a>
-  </div>
+<div class="app-shell onboarding-shell">
+  <aside class="onboarding-sidebar">
+    <a class="onboarding-brand" href="/"><span class="onboarding-mark">A</span><span><strong>Adatacore</strong><small>Contributor Application</small></span></a>
+    <div class="onboarding-progress" id="stepNav"></div>
+    <div class="onboarding-side-note"><strong>Qualification first</strong><p>Applications are reviewed before project access is granted. Assessment availability does not guarantee project work.</p></div>
+    <a class="onboarding-back" id="workspaceLink" href="/workspace">← Back to Workspace</a>
+  </aside>
 
-  <section class="app-hero">
-    <div class="glass hero-copy">
-      <div class="eyebrow">Contributor onboarding</div>
-      <h1>Show us how you work.</h1>
-      <p>Complete your profile, choose the work you are interested in, and submit a short language-specific assessment. You can review your recording or transcription before anything is submitted.</p>
-    </div>
-    <aside class="glass progress-card" aria-label="Application progress">
-      <div class="progress-head"><div><div class="eyebrow">Progress</div><div class="progress-value" id="progressValue">0%</div></div><span class="pill under_review" id="overallState">Getting ready</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="step-list">
-        <div class="mini-step" id="miniProfile"><span class="dot">1</span><span>Profile information</span></div>
-        <div class="mini-step" id="miniInterests"><span class="dot">2</span><span>Language &amp; skills</span></div>
-        <div class="mini-step" id="miniAssessment"><span class="dot">3</span><span>Assessment submission</span></div>
-      </div>
-    </aside>
-  </section>
+  <main class="onboarding-main">
+    <header class="onboarding-top"><div><div class="onboarding-kicker">Contributor qualification</div><h1 id="pageTitle">Complete your application</h1><p id="pageSubtitle">Tell us about your background, choose a track and complete the relevant assessment.</p></div><div class="status-chip" id="applicationStatus">Draft</div></header>
 
-  <section class="glass workspace">
-    <div class="step-panel active" id="loadingPanel">
-      <div class="section-head"><div><div class="eyebrow">Secure setup</div><h2>Loading your application…</h2><p>We are checking your profile and application state.</p></div></div>
-    </div>
+    <div id="message" class="onboarding-message" role="status" aria-live="polite"></div>
 
-    <section class="step-panel" id="profilePanel">
-      <div class="section-head"><div><div class="eyebrow">Step 1 of 3</div><h2>Complete your profile</h2><p>This information is saved to the same profile you see in your Adatacore Workspace. Required fields are used for account verification and project eligibility.</p></div></div>
-      <form id="profileForm">
-        <div class="form-grid">
-          <div class="field full"><label for="fullName">Full name</label><input id="fullName" autocomplete="name" placeholder="Your full name" required></div>
-          <div class="field"><label for="dob">Date of birth</label><input id="dob" type="date" required></div>
-          <div class="field"><label for="country">Country / region</label><select id="country" required><option value="">Select your country</option></select></div>
-          <div class="field"><label for="phone">Phone number</label><input id="phone" inputmode="numeric" autocomplete="tel-national" placeholder="National number only" required></div>
-          <div class="field"><label for="education">Education <span style="color:#8c8f9d;font-weight:600">(optional)</span></label><input id="education" autocomplete="organization-title" placeholder="e.g. B.Tech, BA, Diploma"></div>
-          <div class="field"><label for="occupation">Occupation <span style="color:#8c8f9d;font-weight:600">(optional)</span></label><input id="occupation" placeholder="e.g. Student, Voice Artist, Freelancer"></div>
-        </div>
-        <div class="actions"><button class="btn btn-primary" id="saveProfile" type="submit">Save &amp; continue</button></div>
-      </form>
+    <section class="onboarding-view active" id="view-profile">
+      <div class="onboarding-card"><div class="card-head"><div><span class="step-label">Step 1 of 4</span><h2>Profile & contact</h2><p>Use accurate information. Reviewers use this profile when evaluating your application.</p></div></div>
+      <form id="profileForm" class="form-grid">
+        <label class="field"><span>Full name</span><input id="fullName" maxlength="120" autocomplete="name" required></label>
+        <label class="field"><span>Country</span><select id="country" required><option value="">Select country</option></select></label>
+        <label class="field"><span>Phone number</span><div class="phone-row"><span id="callingCode">+</span><input id="phone" inputmode="tel" autocomplete="tel-national" placeholder="Phone number" required></div><small id="phoneHint"></small></label>
+        <label class="field"><span>Occupation / current role</span><input id="occupation" maxlength="160" placeholder="e.g. Student, QA reviewer, freelancer"></label>
+        <label class="field full"><span>Education / background</span><textarea id="education" maxlength="1200" rows="4" placeholder="Briefly describe your education, training or relevant background."></textarea></label>
+        <label class="field full"><span>Relevant experience</span><textarea id="experience" maxlength="1600" rows="5" placeholder="Voice acting, transcription, language QA, annotation, audio production, etc."></textarea></label>
+        <div class="form-actions full"><button class="btn primary" type="submit">Save and continue</button></div>
+      </form></div>
     </section>
 
-    <section class="step-panel" id="interestsPanel">
-      <div class="section-head"><div><div class="eyebrow">Step 2 of 3</div><h2>Choose your language and skills</h2><p>Select the language you want to apply for, then choose Voice Acting, Transcription, or both when available.</p></div></div>
-      <div class="eyebrow" style="margin-bottom:10px">Language</div>
-      <div class="language-grid" id="languageGrid"></div>
-      <div class="eyebrow" style="margin:26px 0 10px">I am interested in</div>
+    <section class="onboarding-view" id="view-track">
+      <div class="onboarding-card"><div class="card-head"><div><span class="step-label">Step 2 of 4</span><h2>Choose your language & track</h2><p>Select the work you want to qualify for. You can apply for additional tracks later.</p></div></div>
       <div class="track-grid" id="trackGrid"></div>
-      <div class="actions"><button class="btn btn-secondary" id="backProfile" type="button">Back</button><button class="btn btn-primary" id="saveInterests" type="button">Continue to assessment</button></div>
+      <div class="form-actions"><button class="btn secondary" type="button" data-back="profile">Back</button><button class="btn primary" id="trackContinue" type="button">Continue to assessment</button></div></div>
     </section>
 
-    <section class="step-panel" id="assessmentPanel">
-      <div class="section-head"><div><div class="eyebrow">Step 3 of 3</div><h2>Your assessment</h2><p>Complete each selected assessment carefully. You can replay or retry before submitting, and nothing is final until you press the submission button.</p></div></div>
-      <div class="assessment-stack" id="assessmentStack"></div>
-      <div class="actions"><button class="btn btn-secondary" id="backInterests" type="button">Back to skills</button></div>
+    <section class="onboarding-view" id="view-assessment">
+      <div class="onboarding-card"><div class="card-head"><div><span class="step-label">Step 3 of 4</span><h2 id="assessmentTitle">Assessment</h2><p id="assessmentIntro">Complete the assessment carefully. Your submission will be reviewed by the Adatacore team.</p></div></div>
+      <div id="assessmentBody"></div>
+      <div class="form-actions"><button class="btn secondary" type="button" data-back="track">Back</button><button class="btn primary" id="assessmentSubmit" type="button">Submit application</button></div></div>
     </section>
 
-    <section class="step-panel" id="statusPanel">
-      <div class="section-head"><div><div class="eyebrow">Application center</div><h2>Your applications</h2><p>You can continue using Adatacore while our team reviews submitted assessments. Review updates will appear here and in your Workspace.</p></div><a class="btn btn-secondary" href="/workspace">Open Workspace</a></div>
-      <div class="status-stack" id="statusStack"></div>
-      <div class="actions"><button class="btn btn-secondary" id="newApplication" type="button">Apply for another language or skill</button></div>
+    <section class="onboarding-view" id="view-status">
+      <div class="onboarding-card status-card"><div class="status-orb" id="statusOrb">✓</div><div class="step-label">Application status</div><h2 id="statusTitle">Application submitted</h2><p id="statusCopy">Your assessment has been received. You can continue using your workspace while it is reviewed.</p><div class="review-note" id="reviewNote" hidden></div><div class="status-actions"><a class="btn primary" href="/workspace">Go to Workspace</a><button class="btn secondary" id="startAnother" type="button">Apply for another track</button></div></div>
     </section>
-  </section>
-</main>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+</div>
 </body>
 </html>
