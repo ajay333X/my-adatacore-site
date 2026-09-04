@@ -32,7 +32,7 @@
 
   if(!document.querySelector('script[data-tx-excel-export]')){
     const script=document.createElement('script');
-    script.src='/transcription-export.js?v=1';
+    script.src='/transcription-export.js?v=2';
     script.dataset.txExcelExport='1';
     document.head.appendChild(script);
   }
