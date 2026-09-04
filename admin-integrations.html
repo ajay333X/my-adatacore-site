@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Integrations — Adatacore Admin</title>
+<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
+<script>try{document.documentElement.dataset.adminTheme=localStorage.getItem('adatacore-admin-theme')==='dark'?'dark':'light'}catch(_){document.documentElement.dataset.adminTheme='light'}</script>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="/admin-theme.css?v=1">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<style>
+body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{max-width:1040px;margin:auto;padding:28px 20px 72px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px}.brand{font-weight:900;text-decoration:none;color:var(--text)}.hero{margin:34px 0 18px}.hero h1{font-size:36px;letter-spacing:-.05em;margin:6px 0}.hero p{color:var(--muted);margin:0;line-height:1.6}.grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}.card{padding:20px}.slack-head{display:flex;align-items:center;justify-content:space-between;gap:14px}.slack-brand{display:flex;align-items:center;gap:12px}.slack-icon{width:42px;height:42px;border-radius:13px;background:#4a154b;color:white;display:grid;place-items:center;font-weight:900}.status{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800}.dot{width:8px;height:8px;border-radius:50%;background:#a1a1aa}.status.connected .dot{background:#059669}.status.error .dot{background:#e11d48}.switches{display:grid;gap:0;margin-top:18px;border-top:1px solid var(--line)}.switch-row{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}.switch-row strong{display:block;font-size:12px}.switch-row span{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.45}.toggle{width:42px;height:24px;position:relative;flex:0 0 auto}.toggle input{opacity:0;width:0;height:0}.track{position:absolute;inset:0;border-radius:99px;background:var(--line2);cursor:pointer;transition:.15s}.track:after{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.2);transition:.15s}.toggle input:checked+.track{background:#7c3aed}.toggle input:checked+.track:after{transform:translateX(18px)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.notice{margin-top:12px;font-size:11px;min-height:18px;color:var(--muted)}.notice.ok{color:#047857}.notice.error{color:#be123c}.metric{padding:15px 0;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}.metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.metric-value{font-size:24px;font-weight:850;margin-top:5px}.secret-note{font-size:10px;line-height:1.6;color:var(--muted);margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}@media(max-width:800px){.grid{grid-template-columns:1fr}.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top"><a class="brand" href="/admin">Adatacore Admin</a><a class="btn btn-secondary" href="/admin" style="text-decoration:none">Back to Admin</a></div>
+  <header class="hero"><div class="eyebrow">Super Admin · Integrations</div><h1>Slack</h1><p>Control which Adatacore events are sent to your private Slack operations channel. The webhook itself stays in Supabase Secrets and is never shown in the browser.</p></header>
+  <div class="grid">
+    <section class="card">
+      <div class="slack-head"><div class="slack-brand"><div class="slack-icon">S</div><div><strong>Adatacore for Slack</strong><div class="page-sub">Operations notifications</div></div></div><div id="connection" class="status"><span class="dot"></span><span>Checking…</span></div></div>
+      <div class="switches">
+        <div class="switch-row"><div><strong>Slack integration</strong><span>Master switch for all Slack delivery.</span></div><label class="toggle"><input id="enabled" type="checkbox"><span class="track"></span></label></div>
+        <div class="switch-row"><div><strong>New contributor</strong><span>Notify when a genuinely new account reaches the contributor flow.</span></div><label class="toggle"><input id="newContributor" type="checkbox"><span class="track"></span></label></div>
+        <div class="switch-row"><div><strong>Application submitted</strong><span>Notify when a fresh Voice Acting or Transcription application is submitted.</span></div><label class="toggle"><input id="applicationSubmitted" type="checkbox"><span class="track"></span></label></div>
+        <div class="switch-row"><div><strong>Application decision</strong><span>Prepared for approval, rejection and changes-requested events.</span></div><label class="toggle"><input id="applicationDecision" type="checkbox"><span class="track"></span></label></div>
+        <div class="switch-row"><div><strong>Support ticket</strong><span>Notify when a contributor creates a fresh support ticket.</span></div><label class="toggle"><input id="supportTicket" type="checkbox"><span class="track"></span></label></div>
+      </div>
+      <div class="actions"><button id="save" class="btn btn-primary" type="button">Save settings</button><button id="test" class="btn btn-secondary" type="button">Send test message</button><button id="refresh" class="btn btn-secondary" type="button">Refresh</button></div>
+      <div id="message" class="notice"></div>
+      <div class="secret-note">Secret used: <strong>SLACK_OPERATIONS_WEBHOOK</strong>. Its value is never returned to this page.</div>
+    </section>
+    <aside class="card"><div class="eyebrow">Delivery log</div><div class="metric"><div class="metric-label">Delivered</div><div id="delivered" class="metric-value">—</div></div><div class="metric"><div class="metric-label">Failed</div><div id="failed" class="metric-value">—</div></div><div class="secret-note">Duplicate protection is enabled, so refreshing a page will not repeatedly post the same application or ticket.</div></aside>
+  </div>
+</main>
+<script>
+window.addEventListener('DOMContentLoaded',async()=>{
+  const U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+  const db=supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
+  const $=id=>document.getElementById(id),msg=(text,kind='')=>{const e=$('message');e.textContent=text;e.className='notice '+kind};
+  async function guard(){const {data:{session}}=await db.auth.getSession();if(!session)return location.replace('/auth');const {data,error}=await db.rpc('get_my_admin_access');if(error||data?.is_super_admin!==true)return location.replace('/admin')}
+  async function load(){msg('Loading…');const [settings,status]=await Promise.all([db.rpc('admin_slack_get_settings'),db.functions.invoke('slack-notify',{body:{type:'status'}})]);if(settings.error)throw settings.error;const s=settings.data||{};$('enabled').checked=!!s.enabled;$('newContributor').checked=!!s.notify_new_contributor;$('applicationSubmitted').checked=!!s.notify_application_submitted;$('applicationDecision').checked=!!s.notify_application_decision;$('supportTicket').checked=!!s.notify_support_ticket;$('delivered').textContent=Number(s.delivered_count||0).toLocaleString();$('failed').textContent=Number(s.failed_count||0).toLocaleString();const connected=status.data?.connected===true,c=$('connection');c.className='status '+(connected?'connected':'error');c.innerHTML=`<span class="dot"></span><span>${connected?'Connected':'Webhook not detected'}</span>`;msg(connected?'Slack connection is ready.':'The Edge Function cannot see SLACK_OPERATIONS_WEBHOOK yet.',connected?'ok':'error')}
+  $('save').onclick=async()=>{try{$('save').disabled=true;msg('Saving…');const {error}=await db.rpc('admin_slack_update_settings',{p_enabled:$('enabled').checked,p_notify_new_contributor:$('newContributor').checked,p_notify_application_submitted:$('applicationSubmitted').checked,p_notify_application_decision:$('applicationDecision').checked,p_notify_support_ticket:$('supportTicket').checked});if(error)throw error;msg('Slack settings saved.','ok');await load()}catch(e){msg(String(e.message||e),'error')}finally{$('save').disabled=false}};
+  $('test').onclick=async()=>{try{$('test').disabled=true;msg('Sending test message…');const {data,error}=await db.functions.invoke('slack-notify',{body:{type:'test'}});if(error)throw error;if(!data?.ok)throw Error(data?.error||'Slack did not accept the test message.');msg('Test message delivered to Slack.','ok');await load()}catch(e){msg(String(e.message||e),'error')}finally{$('test').disabled=false}};
+  $('refresh').onclick=()=>load().catch(e=>msg(String(e.message||e),'error'));
+  try{await guard();await load()}catch(e){msg(String(e.message||e),'error')}
+});
+</script>
+</body>
+</html>
