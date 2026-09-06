@@ -55,22 +55,10 @@
         if(typeof renderAccessUsers==='function')renderAccessUsers();
         return;
       }
-      if(id==='operations-center'){
-        document.getElementById('opsSuiteRefresh')?.click();
-        return;
-      }
-      if(id==='staff'){
-        document.getElementById('staffRoleRefresh')?.click();
-        return;
-      }
-      if(id==='support-center'){
-        document.getElementById('supportRefresh')?.click();
-        return;
-      }
-      if(id==='finance-ledger'){
-        document.getElementById('ledgerRefresh')?.click();
-        return;
-      }
+      if(id==='operations-center'){document.getElementById('opsSuiteRefresh')?.click();return;}
+      if(id==='staff'){document.getElementById('staffRoleRefresh')?.click();return;}
+      if(id==='support-center'){document.getElementById('supportRefresh')?.click();return;}
+      if(id==='finance-ledger'){document.getElementById('ledgerRefresh')?.click();return;}
       if(typeof refresh==='function')await refresh();
       if(seq!==refreshSeq)return;
       if(id==='overview'&&typeof renderOverview==='function')renderOverview();
@@ -78,27 +66,20 @@
       if(seq!==refreshSeq)return;
       const panel=document.getElementById(id);
       let notice=panel?.querySelector('[data-admin-panel-error]');
-      if(panel&&!notice){
-        notice=document.createElement('div');
-        notice.dataset.adminPanelError='1';
-        notice.className='card';
-        notice.style.cssText='margin-bottom:14px;color:var(--red);font-size:12px';
-        panel.prepend(notice);
-      }
+      if(panel&&!notice){notice=document.createElement('div');notice.dataset.adminPanelError='1';notice.className='card';notice.style.cssText='margin-bottom:14px;color:var(--red);font-size:12px';panel.prepend(notice)}
       if(notice)notice.textContent=`Unable to refresh this section: ${String(error?.message||error||'Unknown error')}`;
     }
   }
 
-  function switchPanel(id){
+  function writeState(id,mode='push'){
+    try{history[mode+'State']({...(history.state||{}),adminTab:id},'', '/admin')}catch(_){ }
+  }
+
+  function switchPanel(id,options={}){
     if(!id)return;
-    if(id==='tasks'){
-      location.assign('/admin/assignments');
-      return;
-    }
+    if(id==='tasks'){location.assign('/admin/assignments');return;}
     if(!forceVisible(id))return;
-    try{
-      history.replaceState(null,'',id==='overview'?'/admin':`/admin#${encodeURIComponent(id)}`);
-    }catch(_){ }
+    if(!options.skipHistory)writeState(id,options.replace?'replace':'push');
     refreshPanel(id);
   }
 
@@ -114,7 +95,14 @@
   try{window.showTab=switchPanel}catch(_){ }
   window.adatacoreAdminShowTab=switchPanel;
 
-  const initial=location.hash.replace(/^#/,'');
-  if(initial&&document.getElementById(initial)&&initial!=='tasks')forceVisible(initial);
-  else forceVisible('overview');
+  window.addEventListener('popstate',e=>{
+    const id=e.state?.adminTab||'overview';
+    if(document.getElementById(id)&&id!=='tasks'){forceVisible(id);refreshPanel(id)}
+  });
+
+  const legacy=location.hash.replace(/^#/,'');
+  const initial=(legacy&&document.getElementById(legacy)&&legacy!=='tasks')?legacy:(history.state?.adminTab&&document.getElementById(history.state.adminTab)?history.state.adminTab:'overview');
+  forceVisible(initial);
+  // Migrate old bookmarked #tabs to the clean /admin URL without losing the selected panel.
+  writeState(initial,'replace');
 })();
