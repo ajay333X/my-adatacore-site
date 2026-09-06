@@ -1,0 +1,1 @@
+(()=>{'use strict';try{const c=new URLSearchParams(location.search).get('ref');if(c&&/^[A-Za-z0-9]{6,16}$/.test(c))localStorage.setItem('adatacore-referral-code',c.toUpperCase())}catch(_){}})();
