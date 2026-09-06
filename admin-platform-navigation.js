@@ -29,7 +29,12 @@
     panel.innerHTML=`<div class="section-title"><div><div class="eyebrow">${esc(eyebrow)}</div><h2>${esc(title)}</h2><div class="page-sub">${esc(sub)}</div></div></div><div data-platform-panel-body><div class="card empty">Loading ${esc(title.toLowerCase())}…</div></div>`;
     main.appendChild(panel);return panel;
   }
-  function moveCard(cardId,panelId){const card=document.getElementById(cardId),body=document.querySelector(`#${CSS.escape(panelId)} [data-platform-panel-body]`);if(!card||!body)return false;body.innerHTML='';body.appendChild(card);card.style.marginTop='0';return true}
+  function moveCard(cardId,panelId){
+    const card=document.getElementById(cardId),body=document.querySelector(`#${CSS.escape(panelId)} [data-platform-panel-body]`);
+    if(!card||!body)return false;
+    if(card.parentElement===body)return true;
+    body.innerHTML='';body.appendChild(card);card.style.marginTop='0';return true;
+  }
 
   const sectionRules=[
     {label:'Overview',match:n=>['overview'].includes(n.key)},
@@ -40,11 +45,15 @@
     {label:'Platform',match:n=>/integration|coreforge|social/i.test(n.text)}
   ];
   function navInfo(el){return {el,key:el.dataset.tab||'',text:(el.textContent||'').trim()}}
+  let lastNavSignature='';
   function organizeNavigation(){
     const group=controlGroup();if(!group)return;
-    group.querySelectorAll('.admin-nav-section-label').forEach(x=>x.remove());
     const items=[...group.children].filter(el=>el.classList?.contains('nav-link')).map(navInfo);
     if(!items.length)return;
+    const signature=items.map(n=>`${n.key}|${n.text}|${n.el.getAttribute('href')||''}`).sort().join('||');
+    if(signature===lastNavSignature&&group.querySelector('.admin-nav-section-label'))return;
+    lastNavSignature=signature;
+    group.querySelectorAll('.admin-nav-section-label').forEach(x=>x.remove());
     const used=new Set();
     for(const section of sectionRules){
       const matches=items.filter(n=>!used.has(n.el)&&section.match(n));
@@ -77,6 +86,7 @@
   }
   mount();
   let tidyTimer=null;
-  const observer=new MutationObserver(()=>{clearTimeout(tidyTimer);tidyTimer=setTimeout(mount,60)});
+  const observer=new MutationObserver(()=>{clearTimeout(tidyTimer);tidyTimer=setTimeout(mount,120)});
   observer.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>{try{observer.disconnect()}catch(_){};mount()},2500);
 })();
