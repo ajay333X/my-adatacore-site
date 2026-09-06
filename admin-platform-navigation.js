@@ -15,6 +15,12 @@
     const after=afterId?group.querySelector(`[data-tab="${afterId}"]`):null;
     if(after?.nextSibling)group.insertBefore(b,after.nextSibling);else group.appendChild(b);
   }
+  function ensureWorkspaceLink(){
+    const group=controlGroup();if(!group||group.querySelector('[data-contributor-workspace-link]'))return;
+    const a=document.createElement('a');a.className='nav-link';a.href='/workspace';a.dataset.contributorWorkspaceLink='1';a.textContent='Contributor Workspace';
+    const overview=group.querySelector('[data-tab="overview"]');
+    if(overview?.nextSibling)group.insertBefore(a,overview.nextSibling);else group.prepend(a);
+  }
   function ensurePanel(id,title,eyebrow,sub){
     let panel=document.getElementById(id);if(panel)return panel;
     const main=document.querySelector('.app-main');if(!main)return null;
@@ -29,6 +35,7 @@
   }
   function mount(){
     document.querySelector('[data-tab="social"]')?.remove();document.getElementById('social')?.remove();
+    ensureWorkspaceLink();
     addTab('staff','Staff & Roles','access');
     addTab('support-center','Support Center','staff');
     addTab('finance-ledger','Finance Ledger','payments');
@@ -39,9 +46,9 @@
     moveCard('adminSupportCenter','support-center');
     moveCard('financeLedger','finance-ledger');
     addOverviewTools();
-    const initial=location.hash.replace(/^#/,'');if(['staff','support-center','finance-ledger'].includes(initial))setTimeout(()=>window.adatacoreAdminShowTab?.(initial),0);
+    const initial=history.state?.adminTab||location.hash.replace(/^#/,'');if(['staff','support-center','finance-ledger'].includes(initial))setTimeout(()=>window.adatacoreAdminShowTab?.(initial,{replace:true}),0);
   }
   mount();
-  const observer=new MutationObserver(()=>{mount();if(document.getElementById('staffRoleCard')&&document.getElementById('adminSupportCenter')&&document.getElementById('financeLedger'))observer.disconnect()});
+  const observer=new MutationObserver(()=>{mount();if(document.getElementById('staffRoleCard')&&document.getElementById('adminSupportCenter')&&document.getElementById('financeLedger')&&document.querySelector('[data-contributor-workspace-link]'))observer.disconnect()});
   observer.observe(document.body,{childList:true,subtree:true});
 })();
