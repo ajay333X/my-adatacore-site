@@ -1,0 +1,22 @@
+(()=>{'use strict';
+const U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const db=supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let busy=false;
+function ensureStyles(){if(document.getElementById('announcementBannerStyles'))return;const s=document.createElement('style');s.id='announcementBannerStyles';s.textContent=`
+#workspaceAnnouncementCenter{margin:0 0 18px;display:grid;gap:10px}
+.wa-card{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:16px 18px;box-shadow:0 8px 26px rgba(22,24,35,.06);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.wa-card.important{border-color:rgba(245,158,11,.3);background:linear-gradient(135deg,rgba(245,158,11,.08),var(--panel) 55%)}
+.wa-card.critical{border-color:rgba(225,29,72,.28);background:linear-gradient(135deg,rgba(225,29,72,.08),var(--panel) 55%)}
+.wa-kicker{font-size:9px;letter-spacing:.09em;text-transform:uppercase;font-weight:850;color:var(--muted);margin-bottom:5px}.wa-title{font-size:14px;font-weight:850;color:var(--text)}.wa-body{font-size:11px;line-height:1.6;color:var(--muted);margin-top:5px}.wa-project{font-weight:750;color:var(--text)}.wa-actions{display:flex;align-items:center;gap:8px}.wa-ack{white-space:nowrap}.wa-error{font-size:10px;color:var(--red);margin-top:5px}
+@media(max-width:720px){.wa-card{grid-template-columns:1fr}.wa-actions{justify-content:flex-start}.wa-ack{width:100%}}
+`;document.head.appendChild(s)}
+function host(){let h=document.getElementById('workspaceAnnouncementCenter');if(h)return h;const header=document.querySelector('.page-header');if(!header)return null;h=document.createElement('section');h.id='workspaceAnnouncementCenter';h.setAttribute('aria-live','polite');header.insertAdjacentElement('afterend',h);return h}
+function hideBottomAnnouncements(){document.querySelectorAll('#view-today .today-card').forEach(card=>{const e=card.querySelector('.eyebrow');if(e&&e.textContent.trim().toLowerCase()==='announcements')card.style.display='none'})}
+function render(items){const h=host();if(!h)return;const pending=(items||[]).filter(a=>!a.acknowledged);if(!pending.length){h.innerHTML='';h.style.display='none';hideBottomAnnouncements();return}h.style.display='grid';h.innerHTML=pending.map(a=>`<article class="wa-card ${esc(a.severity||'info')}"><div><div class="wa-kicker">${a.severity==='critical'?'Critical announcement':a.severity==='important'?'Important announcement':'Project announcement'} · ${esc(a.project_name||'Adatacore')}</div><div class="wa-title">${esc(a.title)}</div><div class="wa-body"><span class="wa-project">${esc(a.project_name||'')}</span>${a.project_name?' · ':''}${esc(a.body)}</div><div class="wa-error" data-ack-error="${a.id}"></div></div><div class="wa-actions"><button class="btn btn-primary wa-ack" type="button" data-announcement-ack="${a.id}">${a.requires_ack?'Acknowledge':'Got it'}</button></div></article>`).join('');
+h.querySelectorAll('[data-announcement-ack]').forEach(btn=>btn.onclick=()=>ack(btn));hideBottomAnnouncements()}
+async function ack(btn){if(busy)return;busy=true;btn.disabled=true;const id=btn.dataset.announcementAck;const {error}=await db.rpc('acknowledge_my_project_announcement',{p_announcement:id});if(error){const e=document.querySelector(`[data-ack-error="${id}"]`);if(e)e.textContent='Could not acknowledge. Please try again.';btn.disabled=false;busy=false;return}const card=btn.closest('.wa-card');if(card){card.style.opacity='.45';card.style.transform='translateY(-4px)';setTimeout(()=>{card.remove();const h=host();if(h&&!h.children.length)h.style.display='none'},140)}busy=false;setTimeout(load,250)}
+async function load(){const {data,error}=await db.rpc('get_my_contributor_home');if(error)return;render(data?.announcements||[])}
+function start(){ensureStyles();load();setTimeout(hideBottomAnnouncements,300);window.addEventListener('hashchange',()=>setTimeout(hideBottomAnnouncements,80));document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});setInterval(()=>{if(!document.hidden)load()},60000)}
+if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',()=>setTimeout(start,220),{once:true});else setTimeout(start,220);
+})();
