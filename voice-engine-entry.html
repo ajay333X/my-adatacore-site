@@ -17,6 +17,7 @@
     const response=await fetch('/voice-engine-secure?ui=task-id-v1',{cache:'no-store'});
     if(!response.ok)throw new Error('Voice workspace returned '+response.status);
     let html=await response.text();
+    html=html.replace('</head>','<link rel="stylesheet" href="/platform-theme.css?v=1"></head>');
     if(validImpersonation){
       const startOriginal="db.rpc('start_solo_voice_session',{p_project:project,p_task_id:taskId})";
       const completeOriginal="db.rpc('complete_voice_session',{p_session:sessionId,p_recording_path:path,p_duration:seconds})";
@@ -24,7 +25,7 @@
       html=html.replace(startOriginal,`db.rpc('admin_impersonation_start_solo_voice_session',{p_session_id:'${impersonation}',p_project:project,p_task_id:taskId})`);
       html=html.replace(completeOriginal,`db.rpc('admin_impersonation_complete_solo_voice_session',{p_session_id:'${impersonation}',p_voice_session:sessionId,p_recording_path:path,p_duration:seconds})`);
     }
-    const addon='<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt>'+(validImpersonation?'<scr'+'ipt src="/task-impersonation.js?v=20260902-1"></scr'+'ipt>':'');
+    const addon='<scr'+'ipt src="/task-id-copy.js?v=20260901-1"></scr'+'ipt>'+(validImpersonation?'<scr'+'ipt src="/task-impersonation.js?v=20260902-1"></scr'+'ipt>':'')+'<scr'+'ipt src="/platform-theme.js?v=1"></scr'+'ipt>';
     html=html.replace('</body>',addon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load voice workspace. '+String(error.message||error)+'</div>'}
