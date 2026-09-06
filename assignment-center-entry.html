@@ -15,10 +15,10 @@
     if(!response.ok)throw new Error('Assignment Center returned '+response.status);
     let html=await response.text();
     const design='<link rel="stylesheet" href="/design-system.css">';
-    const light=design+'<link rel="stylesheet" href="/assignment-center-light.css?v=20260904-1">';
-    html=html.includes(design)?html.replace(design,light):html.replace('</head>','<link rel="stylesheet" href="/assignment-center-light.css?v=20260904-1"></head>');
+    const themed=design+'<link rel="stylesheet" href="/assignment-center-light.css?v=20260904-1"><link rel="stylesheet" href="/platform-theme.css?v=1">';
+    html=html.includes(design)?html.replace(design,themed):html.replace('</head>','<link rel="stylesheet" href="/assignment-center-light.css?v=20260904-1"><link rel="stylesheet" href="/platform-theme.css?v=1"></head>');
     const old='<scr'+'ipt src="/assignment-center.js?v=1"></scr'+'ipt>';
-    const next='<scr'+'ipt src="/assignment-center-role-loader.js?v=20260902-1"></scr'+'ipt>';
+    const next='<scr'+'ipt src="/assignment-center-role-loader.js?v=20260902-1"></scr'+'ipt><scr'+'ipt src="/platform-theme.js?v=1"></scr'+'ipt>';
     if(!html.includes(old))throw new Error('Assignment Center script signature changed.');
     html=html.replace(old,next);
     document.open();document.write(html);document.close();
