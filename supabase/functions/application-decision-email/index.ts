@@ -4,6 +4,7 @@ const RESEND_API_URL = 'https://api.resend.com/emails'
 const DEFAULT_SITE_URL = 'https://www.adatacore.com'
 const DEFAULT_FROM = 'Adatacore <applications@adatacore.com>'
 const DEFAULT_LOGO_URL = 'https://www.adatacore.com/assets/adatacore-logo.jpg'
+const LEGACY_WEBHOOK_SECRET = 'adatacore-app-decision-20260908'
 
 function escapeHtml(value: string) {
   return String(value ?? '')
@@ -69,57 +70,18 @@ function template(status: string, track: string, language: string, note: string 
               <td style="padding:24px 36px;border-bottom:1px solid #eef0f3;background:#ffffff">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr>
-                    <td valign="middle">
-                      <img src="${escapeHtml(logoUrl)}" alt="Adatacore" width="44" height="44" style="display:block;border:0;border-radius:10px;object-fit:cover">
-                    </td>
+                    <td valign="middle"><img src="${escapeHtml(logoUrl)}" alt="Adatacore" width="44" height="44" style="display:block;border:0;border-radius:10px;object-fit:cover"></td>
                     <td valign="middle" style="padding-left:12px;font-size:21px;font-weight:700;letter-spacing:-.02em;color:#111827">Adatacore</td>
-                    <td align="right" valign="middle">
-                      <span style="display:inline-block;padding:7px 10px;border-radius:999px;background:#f3f4f6;font-size:12px;font-weight:700;color:#374151">${escapeHtml(statusLabel)}</span>
-                    </td>
+                    <td align="right" valign="middle"><span style="display:inline-block;padding:7px 10px;border-radius:999px;background:#f3f4f6;font-size:12px;font-weight:700;color:#374151">${escapeHtml(statusLabel)}</span></td>
                   </tr>
                 </table>
               </td>
             </tr>
-
-            <tr>
-              <td style="padding:36px 36px 18px">
-                <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${escapeHtml(eyebrow)}</div>
-                <h1 style="font-size:28px;line-height:1.25;letter-spacing:-.02em;margin:0 0 16px;color:#111827">${escapeHtml(heading)}</h1>
-                <p style="font-size:15px;line-height:1.7;color:#4b5563;margin:0 0 16px">Hi ${escapeHtml(firstName)},</p>
-                <p style="font-size:15px;line-height:1.7;color:#4b5563;margin:0">${escapeHtml(intro)}</p>
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding:0 36px 8px">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e5e7eb;border-radius:12px;background:#ffffff">
-                  <tr>
-                    <td style="padding:14px 16px;font-size:13px;color:#6b7280;border-bottom:1px solid #eef0f3;width:42%">Assessment</td>
-                    <td style="padding:14px 16px;font-size:13px;font-weight:700;color:#111827;border-bottom:1px solid #eef0f3">${escapeHtml(trackLabel)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 16px;font-size:13px;color:#6b7280">Language</td>
-                    <td style="padding:14px 16px;font-size:13px;font-weight:700;color:#111827">${escapeHtml(language)}</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
+            <tr><td style="padding:36px 36px 18px"><div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${escapeHtml(eyebrow)}</div><h1 style="font-size:28px;line-height:1.25;letter-spacing:-.02em;margin:0 0 16px;color:#111827">${escapeHtml(heading)}</h1><p style="font-size:15px;line-height:1.7;color:#4b5563;margin:0 0 16px">Hi ${escapeHtml(firstName)},</p><p style="font-size:15px;line-height:1.7;color:#4b5563;margin:0">${escapeHtml(intro)}</p></td></tr>
+            <tr><td style="padding:0 36px 8px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e5e7eb;border-radius:12px;background:#ffffff"><tr><td style="padding:14px 16px;font-size:13px;color:#6b7280;border-bottom:1px solid #eef0f3;width:42%">Assessment</td><td style="padding:14px 16px;font-size:13px;font-weight:700;color:#111827;border-bottom:1px solid #eef0f3">${escapeHtml(trackLabel)}</td></tr><tr><td style="padding:14px 16px;font-size:13px;color:#6b7280">Language</td><td style="padding:14px 16px;font-size:13px;font-weight:700;color:#111827">${escapeHtml(language)}</td></tr></table></td></tr>
             ${feedback}
-
-            <tr>
-              <td style="padding:20px 36px 36px">
-                <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 20px;border-radius:9px">${escapeHtml(cta)}</a>
-                <p style="font-size:13px;line-height:1.65;color:#6b7280;margin:22px 0 0">If the button does not work, sign in to Adatacore and open your application from the Workspace.</p>
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding:22px 36px;background:#fafafa;border-top:1px solid #eef0f3">
-                <p style="font-size:12px;line-height:1.65;color:#8a94a6;margin:0">This is an automated transactional message about your Adatacore application. Please do not share assessment links or account access with anyone else.</p>
-                <p style="font-size:12px;line-height:1.65;color:#8a94a6;margin:10px 0 0">© Adatacore · ${escapeHtml(siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</p>
-              </td>
-            </tr>
+            <tr><td style="padding:20px 36px 36px"><a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 20px;border-radius:9px">${escapeHtml(cta)}</a><p style="font-size:13px;line-height:1.65;color:#6b7280;margin:22px 0 0">If the button does not work, sign in to Adatacore and open your application from the Workspace.</p></td></tr>
+            <tr><td style="padding:22px 36px;background:#fafafa;border-top:1px solid #eef0f3"><p style="font-size:12px;line-height:1.65;color:#8a94a6;margin:0">This is an automated transactional message about your Adatacore application. Please do not share assessment links or account access with anyone else.</p><p style="font-size:12px;line-height:1.65;color:#8a94a6;margin:10px 0 0">© Adatacore · ${escapeHtml(siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</p></td></tr>
           </table>
         </td>
       </tr>
@@ -133,29 +95,26 @@ function template(status: string, track: string, language: string, note: string 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
 
-  const webhookSecret = Deno.env.get('APPLICATION_EMAIL_WEBHOOK_SECRET')
-  if (webhookSecret && req.headers.get('x-application-email-secret') !== webhookSecret) {
-    return new Response('Unauthorized', { status: 401 })
-  }
+  const configuredSecret = Deno.env.get('APPLICATION_EMAIL_WEBHOOK_SECRET')
+  const suppliedModern = req.headers.get('x-application-email-secret') || ''
+  const suppliedLegacy = req.headers.get('x-adatacore-webhook-secret') || ''
+  const authorized = configuredSecret
+    ? suppliedModern === configuredSecret || suppliedLegacy === LEGACY_WEBHOOK_SECRET
+    : suppliedLegacy === LEGACY_WEBHOOK_SECRET
+  if (!authorized) return new Response('Unauthorized', { status: 401 })
 
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!resendApiKey || !supabaseUrl || !serviceRoleKey) {
-    return new Response(JSON.stringify({ error: 'Missing required server configuration' }), { status: 500, headers: { 'content-type': 'application/json' } })
-  }
+  if (!resendApiKey || !supabaseUrl || !serviceRoleKey) return new Response(JSON.stringify({ error: 'Missing required server configuration' }), { status: 500, headers: { 'content-type': 'application/json' } })
 
   const payload = await req.json().catch(() => null)
   const record = payload?.record ?? payload
-  if (!record?.id || !['changes_requested', 'approved', 'rejected'].includes(record.status)) {
-    return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { 'content-type': 'application/json' } })
-  }
+  if (!record?.id || !['changes_requested', 'approved', 'rejected'].includes(record.status)) return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { 'content-type': 'application/json' } })
 
   const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
   const { data: userRow, error: userError } = await admin.from('users').select('email, "fullName"').eq('id', record.user_id).maybeSingle()
-  if (userError || !userRow?.email) {
-    return new Response(JSON.stringify({ error: 'Applicant email not found' }), { status: 404, headers: { 'content-type': 'application/json' } })
-  }
+  if (userError || !userRow?.email) return new Response(JSON.stringify({ error: 'Applicant email not found' }), { status: 404, headers: { 'content-type': 'application/json' } })
 
   const siteUrl = Deno.env.get('SITE_URL') || DEFAULT_SITE_URL
   const from = Deno.env.get('APPLICATION_EMAIL_FROM') || DEFAULT_FROM
@@ -164,18 +123,11 @@ Deno.serve(async (req) => {
 
   const send = await fetch(RESEND_API_URL, {
     method: 'POST',
-    headers: {
-      authorization: `Bearer ${resendApiKey}`,
-      'content-type': 'application/json',
-      'Idempotency-Key': `adatacore-application-decision/${record.id}/${record.status}/${record.reviewed_at || record.updated_at || 'latest'}`
-    },
+    headers: { authorization: `Bearer ${resendApiKey}`, 'content-type': 'application/json', 'Idempotency-Key': `adatacore-application-decision/${record.id}/${record.status}/${record.reviewed_at || record.updated_at || 'latest'}` },
     body: JSON.stringify({ from, to: [userRow.email], subject, html })
   })
 
   const body = await send.text()
-  if (!send.ok) {
-    return new Response(JSON.stringify({ error: 'Email provider rejected request', provider_response: body }), { status: 502, headers: { 'content-type': 'application/json' } })
-  }
-
+  if (!send.ok) return new Response(JSON.stringify({ error: 'Email provider rejected request', provider_response: body }), { status: 502, headers: { 'content-type': 'application/json' } })
   return new Response(body || JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } })
 })
