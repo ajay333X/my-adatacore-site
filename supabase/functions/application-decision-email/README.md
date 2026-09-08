@@ -1,0 +1,1 @@
+Application decision email notifications are sent by the `application-decision-email` Supabase Edge Function. The database trigger is defined in `supabase/migrations/20260908183600_application_decision_email_notifications.sql`.
