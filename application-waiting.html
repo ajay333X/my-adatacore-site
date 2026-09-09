@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f7f8fb">
+<title>Application Under Review — Adatacore</title>
+<link rel="icon" href="/favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<style>
+:root{--bg:#f6f7fa;--panel:#fff;--line:#e5e7eb;--text:#17171f;--muted:#70717f;--brand:#7c3aed;--soft:#f3efff;--green:#059669}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#eee8ff 0,transparent 34%),var(--bg);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);display:grid;place-items:center;padding:28px}.shell{width:min(720px,100%)}.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;font-weight:850;letter-spacing:.03em}.brand img{width:34px;height:34px;border-radius:10px;object-fit:cover}.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:42px;box-shadow:0 22px 60px rgba(34,24,67,.08);text-align:center}.status{width:76px;height:76px;border-radius:24px;margin:0 auto 22px;display:grid;place-items:center;background:var(--soft);border:1px solid #ded2ff;color:var(--brand);font-size:32px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;color:var(--brand);font-size:11px;font-weight:800}.card h1{font-size:32px;line-height:1.15;margin:10px 0 12px}.copy{font-size:15px;line-height:1.7;color:var(--muted);max-width:560px;margin:0 auto}.progress{margin:30px auto 22px;display:flex;justify-content:center;align-items:center;gap:8px}.progress span{width:8px;height:8px;border-radius:50%;background:#ddd5f8;animation:p 1.2s infinite ease-in-out}.progress span:nth-child(2){animation-delay:.15s}.progress span:nth-child(3){animation-delay:.3s}@keyframes p{0%,80%,100%{transform:scale(.7);opacity:.45}40%{transform:scale(1);opacity:1}}.note{border-top:1px solid var(--line);margin-top:28px;padding-top:22px;font-size:13px;line-height:1.65;color:var(--muted)}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}.btn{border:1px solid var(--line);background:#fff;color:#30303a;border-radius:12px;padding:11px 16px;font-weight:750;font-size:13px;cursor:pointer;text-decoration:none}.btn:hover{border-color:#cfc8de}.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.meta{margin-top:18px;font-size:12px;color:#9293a0}.error{color:#b42318;margin-top:14px;font-size:13px}.hidden{display:none}@media(max-width:600px){.card{padding:30px 22px}.card h1{font-size:27px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="brand"><img src="/assets/adatacore-logo.jpg" alt="Adatacore"><span>ADATACORE</span></div>
+  <section class="card">
+    <div class="status">⌛</div>
+    <div class="eyebrow">Application submitted</div>
+    <h1>Waiting for review of your application</h1>
+    <p class="copy">Your application has been received and is currently with the Adatacore review team. Your contributor workspace will become available only after your application is approved.</p>
+    <div class="progress" aria-label="Review in progress"><span></span><span></span><span></span></div>
+    <div id="reviewState" class="meta">Checking your latest application status…</div>
+    <div class="note">You do not need to submit another application while this review is pending. If the reviewer requests changes, you will be returned to the application page to update your assessment.</div>
+    <div class="actions"><button id="checkNow" class="btn primary" type="button">Check status</button><button id="signOut" class="btn" type="button">Sign out</button></div>
+    <div id="error" class="error hidden"></div>
+  </section>
+</main>
+<script>
+(()=>{
+  const U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+  const db=supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
+  const state=document.getElementById('reviewState'),error=document.getElementById('error'),check=document.getElementById('checkNow');
+  let busy=false;
+  function setError(message){error.textContent=message||'';error.classList.toggle('hidden',!message)}
+  async function refresh(){
+    if(busy)return;busy=true;check.disabled=true;setError('');
+    try{
+      const {data:{session}}=await db.auth.getSession();
+      if(!session){location.replace('/auth');return}
+      const {data:access}=await db.rpc('get_my_admin_access');
+      if(access?.allowed){location.replace('/admin');return}
+      const {data:onboarding,error:e}=await db.rpc('get_my_application_onboarding');
+      if(e)throw e;
+      const apps=Array.isArray(onboarding?.applications)?onboarding.applications:[];
+      if(!apps.length){location.replace('/apply');return}
+      if(apps.some(a=>a.status==='approved')){state.textContent='Approved — opening your workspace…';location.replace('/workspace');return}
+      if(apps.some(a=>a.status==='changes_requested'||a.status==='draft'||a.status==='rejected')){location.replace('/apply');return}
+      const pending=apps.filter(a=>a.status==='pending'||a.status==='under_review');
+      if(!pending.length){location.replace('/apply');return}
+      const reviewing=pending.some(a=>a.status==='under_review');
+      state.textContent=reviewing?'Your application is currently under review.':'Your application is in the review queue.';
+    }catch(e){setError(e.message||'Could not check your application status. Please try again.')}finally{busy=false;check.disabled=false}
+  }
+  check.onclick=refresh;
+  document.getElementById('signOut').onclick=async()=>{await db.auth.signOut();location.replace('/auth')};
+  window.addEventListener('DOMContentLoaded',refresh);
+  setInterval(refresh,30000);
+})();
+</script>
+</body>
+</html>
