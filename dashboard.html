@@ -29,7 +29,15 @@
     const {data:access,error}=await db.rpc('get_my_admin_access');
     if(!error&&access?.allowed){location.replace('/admin');return}
     const {data:onboarding,error:onboardingError}=await db.rpc('get_my_application_onboarding');
-    if(!onboardingError&&onboarding?.must_onboard&&!onboarding?.onboarding_complete){location.replace('/apply');return}
+    if(!onboardingError&&onboarding){
+      const apps=Array.isArray(onboarding.applications)?onboarding.applications:[];
+      const approved=apps.some(a=>a.status==='approved');
+      const pending=apps.some(a=>a.status==='pending'||a.status==='under_review');
+      const action=apps.some(a=>a.status==='draft'||a.status==='changes_requested');
+      const rejected=apps.some(a=>a.status==='rejected');
+      if(!approved&&pending){location.replace('/application-waiting');return}
+      if(!approved&&(action||rejected||onboarding.must_onboard&&!onboarding.onboarding_complete)){location.replace('/apply');return}
+    }
   }catch(_){ }
   location.replace('/workspace');
 })();
