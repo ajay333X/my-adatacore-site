@@ -5,12 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Workspace — Adatacore</title>
 <meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 <style>html,body{margin:0;min-height:100%;background:#f6f7fa;color:#666;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.boot{min-height:100vh;display:grid;place-items:center;font-size:12px}</style>
 </head>
-<body><div class="boot">Loading secure workspace…</div>
+<body><div class="boot">Checking workspace access…</div>
 <script>
 (async()=>{
   try{
+    if(!window.supabase?.createClient)throw new Error('Secure workspace service did not load.');
+    const db=window.supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',{auth:{persistSession:true,autoRefreshToken:true}});
+    const {data:{session}}=await db.auth.getSession();
+    if(!session){location.replace('/auth');return}
+    const {error:accessError}=await db.rpc('get_contributor_workspace');
+    if(accessError){
+      const m=String(accessError.message||'');
+      if(m.includes('PLATFORM_BLOCKED')){location.replace('/access-revoked');return}
+      if(m.includes('VERIFICATION_REQUIRED')){location.replace('/verification-required');return}
+      if(m.includes('APPLICATION_REVIEW_REQUIRED')){location.replace('/application-waiting');return}
+      if(m.includes('APPLICATION_ACTION_REQUIRED')||m.includes('APPLICATION_NOT_APPROVED')||m.includes('APPLICATION_REQUIRED')){location.replace('/apply');return}
+      throw accessError;
+    }
     const response=await fetch('/workspace-core',{cache:'no-store'});
     if(!response.ok)throw new Error('Workspace returned '+response.status);
     let html=await response.text();
