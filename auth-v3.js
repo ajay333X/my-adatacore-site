@@ -329,5 +329,20 @@
   else setMode(new URLSearchParams(location.search).get('mode')==='signup'?'signup':'signin');
 
   // Warm the auth dependency only after every local control is already interactive.
-  getClient().then(client=>client.auth.getSession().then(({data:{session}})=>{if(session) routeSession(client,session);})).catch(()=>{});
+  // Resolve the saved session before showing the sign-in form, to prevent login-page flash.
+  const revealAuth=()=>document.body.classList.add('ac-auth-ready');
+  const bootFallback=setTimeout(revealAuth,8000);
+  (async()=>{
+    try{
+      if(!recoveryRequested){
+        const client=await getClient();
+        const {data:{session}}=await client.auth.getSession();
+        if(session){
+          const routed=await routeSession(client,session);
+          if(routed)return;
+        }
+      }
+    }catch(_){/* Keep sign-in usable if session restoration fails. */}
+    finally{clearTimeout(bootFallback);revealAuth();}
+  })();
 })();
