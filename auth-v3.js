@@ -169,7 +169,7 @@
     authListenerAttached=true;
     client.auth.onAuthStateChange((event,session)=>{
       if(event==='PASSWORD_RECOVERY'){setMode('reset');return;}
-      if(['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED'].includes(event)&&!recoveryRequested){
+      if(['SIGNED_IN'].includes(event)&&!recoveryRequested){
         queueMicrotask(()=>routeSession(client,session));
       }
     });
@@ -339,10 +339,10 @@
         const {data:{session}}=await client.auth.getSession();
         if(session){
           const routed=await routeSession(client,session);
-          if(routed)return;
+          if(routed){clearTimeout(bootFallback);return;}
         }
       }
     }catch(_){/* Keep sign-in usable if session restoration fails. */}
-    finally{clearTimeout(bootFallback);revealAuth();}
+    finally{clearTimeout(bootFallback);if(!redirecting)revealAuth();}
   })();
 })();
