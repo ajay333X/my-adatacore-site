@@ -9,20 +9,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        :root { --accent: #A78BFA; --bg-dark: #030308; }
+        :root { --accent: #99c3ec; --bg-dark: #020609; }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #030308; 
+            background-color: #020609; 
             color: #f8fafc; 
             min-height: 100vh; 
             display: flex; 
             align-items: center; 
             justify-content: center;
-            background-image: radial-gradient(circle at 50% 30%, rgba(167, 139, 250, 0.05) 0%, transparent 60%);
+            background-image: radial-gradient(circle at 50% 30%, rgba(153,195,236, 0.05) 0%, transparent 60%);
         }
         .glass-panel { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 32px; box-shadow: 0 30px 70px rgba(0,0,0,0.8); }
         .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; transition: all 0.3s ease; }
-        .glass-card:hover { border-color: rgba(167, 139, 250, 0.2); background: rgba(255, 255, 255, 0.03); }
+        .glass-card:hover { border-color: rgba(153,195,236, 0.2); background: rgba(255, 255, 255, 0.03); }
         
         .status-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; }
         .action-btn { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
@@ -38,8 +38,9 @@
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.98) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
         .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.1); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(153,195,236, 0.1); border-radius: 10px; }
     </style>
+<link rel="stylesheet" href="/brand-palette.css?v=20261101-1">
 </head>
 <body class="p-4 md:p-8 w-full">
 

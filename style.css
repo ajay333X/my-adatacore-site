@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         :root {
-            --accent: #A78BFA;
-            --bg-dark: #0D0D1F;
-            --card-bg: rgba(26, 26, 46, 0.6);
+            --accent: #99c3ec;
+            --bg-dark: #071625;
+            --card-bg: rgba(12,36,60, 0.6);
         }
 
         body { 
@@ -14,36 +14,36 @@
         }
 
         .grid-pattern {
-            background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px);
+            background-image: radial-gradient(rgba(153,195,236, 0.08) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
         .glass {
-            background: rgba(26, 26, 46, 0.7);
+            background: rgba(12,36,60, 0.7);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(153,195,236, 0.15);
         }
 
         .text-gradient {
-            background: linear-gradient(to bottom right, #FFFFFF 30%, #A78BFA);
+            background: linear-gradient(to bottom right, #FFFFFF 30%, #99c3ec);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .accent-gradient {
-            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            background: linear-gradient(135deg, #4a94dd, #99c3ec);
         }
 
         .card-glow {
             background: var(--card-bg);
-            border: 1px solid rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(153,195,236, 0.1);
             transition: all 0.3s ease;
             transform-style: preserve-3d;
         }
 
         .card-glow:hover {
-            border-color: rgba(167, 139, 250, 0.4);
-            box-shadow: 0 0 25px rgba(167, 139, 250, 0.1);
+            border-color: rgba(153,195,236, 0.4);
+            box-shadow: 0 0 25px rgba(153,195,236, 0.1);
         }
 
         @keyframes marquee {
@@ -61,7 +61,7 @@
             position: absolute;
             top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; height: 800px;
-            background: radial-gradient(circle at 50% 20%, rgba(167, 139, 250, 0.12), transparent 70%);
+            background: radial-gradient(circle at 50% 20%, rgba(153,195,236, 0.12), transparent 70%);
             pointer-events: none;
         }
 
@@ -90,12 +90,12 @@
         .btn-shine:active { transform: scale(0.95); } /* Click effect */
 
         .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.3); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(153,195,236, 0.3); border-radius: 10px; }
 
         /* 4.2: NEON LINE FOR INPUTS */
         input, textarea, select {
             background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(167, 139, 250, 0.1) !important;
+            border: 1px solid rgba(153,195,236, 0.1) !important;
             color: white !important;
             position: relative;
             z-index: 1;
@@ -113,8 +113,8 @@
             position: absolute;
             bottom: 0; left: 50%;
             width: 0; height: 2px;
-            background: #A78BFA;
-            box-shadow: 0 0 10px #A78BFA;
+            background: #99c3ec;
+            box-shadow: 0 0 10px #99c3ec;
             transition: all 0.4s ease;
             z-index: 2;
         }
@@ -124,7 +124,7 @@
             left: 0;
         }
 
-        select option { background: #0D0D1F; color: white; }
+        select option { background: #071625; color: white; }
         html { scroll-behavior: smooth; }
 
         .reveal {

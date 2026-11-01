@@ -25,11 +25,11 @@ body.tx-studio-demo{background:#f7f8fa;color:#2d3238}
 .tx-studio-demo .wave-region{border-width:1px;background:color-mix(in srgb,var(--lane) 12%,transparent)}
 .tx-studio-demo .wave-region.selected{background:color-mix(in srgb,var(--lane) 20%,transparent)}
 .tx-studio-demo .region-label{opacity:.7}
-.tx-studio-demo .wave-caption{padding:8px 13px;font-size:9px;background:#fbfbfc}
+.tx-studio-demo .wave-caption{padding:8px 13px;font-size:9px;background:#f9fcfe}
 .tx-studio-demo .segment-card{margin-top:8px;border-radius:7px;overflow:visible}
 .tx-studio-demo .player-bar{top:58px;padding:9px 12px;gap:7px;background:#fff;border-radius:7px 7px 0 0}
 .tx-studio-demo .player-bar button{padding:7px 10px;font-size:11px}
-.tx-studio-demo .toolbar{padding:8px 12px;gap:8px;background:#fbfbfc}
+.tx-studio-demo .toolbar{padding:8px 12px;gap:8px;background:#f9fcfe}
 .tx-studio-demo .toolbar input,.tx-studio-demo .toolbar select{padding:7px 9px;font-size:11px}
 .tx-studio-demo .segment-table{font-size:10px;background:#fff}
 .tx-studio-demo .segment-table thead th{position:sticky;top:103px;z-index:12;background:#fafafa;color:#5d636b;font-size:9px;padding:7px 8px;border-bottom:1px solid #dfe3e8}
