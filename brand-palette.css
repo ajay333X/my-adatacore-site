@@ -42,3 +42,8 @@ html .btn-primary{background:#FD6E88;color:#072D59;box-shadow:0 6px 18px rgba(7,
 html .btn-primary:hover{background:#ff8da2}
 @media(max-width:720px){.hero-v2,.cp-hero{padding-top:48px;padding-bottom:48px}.hero-v2 h1,.cp-hero h1{font-size:clamp(40px,10vw,58px)}.hero-v2-grid{gap:36px}.home-btn,.cp-btn{min-height:44px}.section-v2,.cp-section{padding-block:54px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ops-console,.ops-console:hover{transform:none}}
+
+.auth-page .primary{background:#FD6E88;color:#072D59;box-shadow:0 8px 24px rgba(7,45,89,.12)}
+.auth-page .heading p,.auth-page .divider,.auth-page .legal,.auth-page .hint,.auth-page .security{color:#526b80}
+.auth-page input::placeholder{color:#657b8e;opacity:1}
+.auth-page .heading h2,.auth-page .brand-copy strong{color:#072D59}
