@@ -47,3 +47,7 @@ html .btn-primary:hover{background:#ff8da2}
 .auth-page .heading p,.auth-page .divider,.auth-page .legal,.auth-page .hint,.auth-page .security{color:#526b80}
 .auth-page input::placeholder{color:#657b8e;opacity:1}
 .auth-page .heading h2,.auth-page .brand-copy strong{color:#072D59}
+
+.company-page a.cp-btn.primary,.company-page .cp-cta-box a.cp-btn.primary{background:#FD6E88!important;color:#072D59!important;border-color:#FD6E88!important}
+.company-page a.cp-btn.primary:hover{background:#ff8da2!important}
+.cp-panel.dark .cp-list span,.cp-section.dark .cp-card p,.cp-section.dark .cp-card li{color:#c1dbea}
