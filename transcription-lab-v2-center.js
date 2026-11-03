@@ -298,7 +298,9 @@ async function refreshReports(force=false){
  if(!force&&state.reportsLoaded)return;
  $('v2opsReportsList').replaceChildren(node('p','v2ops-empty','Loading project reports…'));
  try{
-  const result=await rpc('tx_v2_admin_operations',{p_project_id:pj()});
+  const targetProject=pj();
+  const result=await rpc('tx_v2_admin_operations',{p_project_id:targetProject});
+  if(pj()!==targetProject)return;
   state.reports=Array.isArray(result?.reports)?result.reports:[];
   state.history=Array.isArray(result?.activity)?result.activity:[];
   state.reportsLoaded=true;
@@ -507,7 +509,7 @@ document.addEventListener('txv2:data',e=>{
  }
  updatePeopleFilters();rerenderQueue();renderQA();renderPeople();
  $('v2opsProjectSettings').href='/admin/project-lab?project='+nextProject;
- if(document.querySelector('[data-tx-view="reports"]')?.classList.contains('active'))refreshReports(true);
+ if(changing||!state.reportsLoaded||document.querySelector('[data-tx-view="reports"]')?.classList.contains('active'))refreshReports(true);
  if(state.rulesLoadedFor!==nextProject)loadRules();
  if(state.viewMode==='cards')drawCards();
 });
