@@ -48,6 +48,7 @@ function finishInline(){
  inline=null;selectionRange=null;
  toolbar.hidden=true;optionBox.hidden=true;optionBox.replaceChildren();
  previous.node.contentEditable='false';
+ previous.node.classList.remove('v2-inline-editor');
  // The stable transcript renderer restores syntax highlighting after edit.
  refreshRows();
 }
@@ -118,6 +119,7 @@ document.addEventListener('focusin',e=>{
  if(inline&&!inline.node.contains(e.target)&&!toolbar.contains(e.target))finishInline();
 });
 $('v2InlineDone').addEventListener('click',finishInline);
+for(const id of ['undo','redo','importTranscript'])$(id)?.addEventListener('click',finishInline,true);
 toolbar.addEventListener('pointerdown',e=>{
  if(e.target.closest('button'))e.preventDefault();
 });
