@@ -1,0 +1,32 @@
+/* Saved caption visibility in Transcription Lab V2 */
+.tx-v2 .v2-caption-overview{display:flex;align-items:center;gap:15px;margin:16px 0 20px;padding:17px 21px;border:1px solid #4d3b69;border-radius:14px;background:linear-gradient(115deg,#291e3d,#1d192c);box-shadow:0 10px 30px #0002}
+.tx-v2 .v2-caption-icon{width:45px;height:45px;flex:none;display:grid;place-items:center;font-size:29px;border-radius:13px;background:#4b326a;border:1px solid #705298;color:#d7bcff}
+.tx-v2 .v2-caption-overview-copy{flex:1;min-width:0}
+.tx-v2 .v2-caption-overview-copy strong{display:block;font-size:15px;color:#f2ebff;letter-spacing:-.02em}
+.tx-v2 .v2-caption-overview-copy p{font-size:11px;line-height:1.55;color:#b2a4c7;margin:6px 0 0}
+.tx-v2 .v2-caption-overview button{background:#a784f6;border:1px solid #c1a3ff;color:#20132e;font-size:11px;font-weight:800;border-radius:9px}
+.tx-v2 .v2-caption-queue-count{display:inline-flex;align-items:center;gap:8px;border:1px solid #5f477f;border-radius:999px;padding:7px 10px;background:#382a4f;color:#d9bfff;font-size:10px;font-weight:750;white-space:nowrap}
+.tx-v2 .v2-caption-queue-count:before{content:"";height:6px;width:6px;border-radius:50%;background:#ab8bf8}
+.tx-v2 .v2-caption-inline{display:flex;flex-direction:column;gap:5px;align-items:flex-start;margin-top:7px;max-width:390px}
+.tx-v2 .v2-caption-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 7px;font-size:10px;font-weight:750;border-radius:7px;border:1px solid #5a4276;color:#e2c6ff;background:#352647}
+.tx-v2 .v2-caption-pill.ready:before{content:"";height:5px;width:5px;border-radius:50%;background:#aa8bf9}
+.tx-v2 .v2-caption-pill.missing{background:#272233;color:#958ba7;border-color:#3c334a}
+.tx-v2 .v2-caption-excerpt{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#c1b1d1;font-size:10px;line-height:1.55;overflow-wrap:anywhere;max-width:360px}
+.tx-v2 #audioRows td:last-child{min-width:124px}
+.tx-v2 .v2-view-captions{margin:7px 0 0;padding:7px 9px;border-radius:8px;border:1px solid #725591;background:#42305d;color:#eee0ff;font-size:10px!important}
+.tx-v2 .v2-view-captions:hover:not(:disabled){background:#5d4283;border-color:#a487da}
+.tx-v2 .v2-view-captions:disabled{background:transparent;border-color:#3c354d;color:#8a8199}
+.tx-v2 .v2-captions-dialog{width:min(760px,calc(100vw - 26px));max-height:min(86vh,920px);padding:0;border-radius:17px;overflow:hidden;border:1px solid #5a4475;background:#171425;color:#f2e9ff;box-shadow:0 28px 120px #000a}
+.tx-v2 .v2-captions-dialog::backdrop{background:#060412cf;backdrop-filter:blur(7px)}
+.tx-v2 .v2-captions-dialog .dialog-head{background:#231b33;border-bottom:1px solid #403350;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.tx-v2 .v2-captions-dialog .dialog-head h2{color:#f3eaff;font-size:20px;letter-spacing:-.035em;margin:7px 0}
+.tx-v2 .v2-caption-kicker{color:#b896f4;letter-spacing:.12em;font-size:10px;font-weight:800}
+.tx-v2 .v2-captions-dialog .dialog-body{max-height:min(60vh,680px);overflow:auto;padding:0}
+.tx-v2 .v2-caption-line{display:grid;grid-template-columns:136px 1fr auto;gap:15px;align-items:start;padding:15px 20px;border-bottom:1px solid #362c48}
+.tx-v2 .v2-caption-line:hover{background:#221b31}
+.tx-v2 .v2-caption-time{font-size:11px;font-weight:750;font-variant-numeric:tabular-nums;color:#b7a1d7;white-space:nowrap}
+.tx-v2 .v2-caption-text{font-size:13px;color:#eae1f4;line-height:1.65;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.tx-v2 .v2-caption-jump{font-size:10px;color:#d0b4ff;white-space:nowrap}
+.tx-v2 .v2-captions-dialog .dialog-foot{padding:14px 22px;background:#231b33;border-top:1px solid #453355;display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.tx-v2 .v2-captions-dialog .dialog-foot .button.primary{background:#ac8bfa;color:#20112f;border-color:#c5aaff;font-weight:800}
+@media(max-width:760px){.tx-v2 .v2-caption-overview{flex-wrap:wrap;padding:14px}.tx-v2 .v2-caption-overview button{width:100%}.tx-v2 .v2-caption-line{grid-template-columns:1fr;gap:8px;padding:13px 16px}.tx-v2 .v2-caption-jump{justify-self:start}}
