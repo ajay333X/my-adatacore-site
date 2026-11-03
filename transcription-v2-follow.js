@@ -69,7 +69,7 @@ function updateProgress(ms=audio.currentTime*1000){
  controls.progress.setAttribute('aria-valuenow',String(n));
  controls.percent.textContent=n+'%';
  const playing=!audio.paused&&ms>=s.start&&ms<s.end;
- controls.status.textContent=playing?'● NOW PLAYING':editingText?'EDITING CAPTION':'CURRENT CAPTION';
+ controls.status.textContent=playing?'● PLAYING':editingText?'EDITING CAPTION':'CURRENT SECTION';
  root.classList.toggle('v2-slide-playing',playing);
 }
 function paintSlide(force=false){
@@ -96,14 +96,20 @@ function paintSlide(force=false){
 }
 function highlightFull(){
  if(!flow)return;
- for(const b of flow.querySelectorAll('[data-edit-segment]'))b.classList.toggle('v2-caption-active',b.dataset.editSegment===currentId);
- if(root.classList.contains('v2-slide-show-all')&&controls.follow.checked&&!audio.paused){
-  const active=flow.querySelector('.v2-caption-active');
-  if(active){
-   const top=active.offsetTop-flow.offsetTop,bottom=top+active.offsetHeight;
-   if(top<flow.scrollTop+15||bottom>flow.scrollTop+flow.clientHeight-15)flow.scrollTop=Math.max(0,top-flow.clientHeight*.3);
-  }
+ const active=flow.querySelector('[data-edit-segment="'+CSS.escape(String(currentId||''))+'"]');
+ for(const b of flow.querySelectorAll('[data-edit-segment]')){
+  const isActive=b===active;
+  b.classList.toggle('v2-caption-active',isActive);
+  if(isActive)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');
  }
+ if(!active||!controls.follow.checked||editingText||!flow.clientHeight)return;
+ // Scroll only the transcript reading area, never the full page. Keep the
+ // currently spoken words near the upper middle with comfortable context.
+ const rect=active.getBoundingClientRect(),outer=flow.getBoundingClientRect();
+ if(rect.top>=outer.top+30&&rect.bottom<=outer.bottom-40)return;
+ const top=flow.scrollTop+(rect.top-outer.top)-Math.max(28,flow.clientHeight*.28);
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ flow.scrollTo({top:Math.max(0,top),behavior:reduced?'instant':'smooth'});
 }
 function setActive(id,{seek=false,play=false}={}){
  const s=timeline.find(s=>s.id===id);
@@ -210,7 +216,7 @@ controls.follow.addEventListener('change',()=>{
 controls.full.addEventListener('click',()=>{
  const expanded=!root.classList.contains('v2-slide-show-all');
  root.classList.toggle('v2-slide-show-all',expanded);
- controls.full.textContent=expanded?'Hide full transcript ↑':'Show full transcript ↓';
+ controls.full.textContent=expanded?'Collapse transcript ↑':'Expand transcript ↓';
  controls.full.setAttribute('aria-expanded',String(expanded));
  if(expanded)highlightFull();
 });

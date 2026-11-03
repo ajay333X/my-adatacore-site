@@ -207,3 +207,133 @@ body.tx-v2-editor.v2-slideshow .v2-table-wrap {scroll-margin-top:275px}
  body.tx-v2-editor .v2-slide-enter .v2-slide-text {animation:none!important}
  body.tx-v2-editor .v2-slide-track>span {transition:none!important}
 }
+
+/* V2 follow-along refinement: paragraph-first, small active section, restrained motion. */
+body.tx-v2-editor.v2-slideshow .v2-slide-view{background:#fff!important}
+body.tx-v2-editor.v2-slideshow .v2-caption-panel{
+  margin:9px 12px 12px!important;border-color:#dce5ed!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-caption-heading{
+  padding:8px 13px!important;min-height:36px!important;
+  background:#fbfcfe!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-nav{
+  padding:7px 14px!important;min-height:38px!important;
+  border-bottom:1px solid #eef1f5!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-position{font-size:10px!important;gap:7px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-controls{gap:5px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-controls button{
+  height:28px!important;min-height:28px!important;font-size:10px!important;
+  padding:4px 9px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-follow{font-size:10px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-stage{
+  min-height:0!important;max-width:none!important;
+  padding:11px 16px 12px!important;
+  border-bottom:1px solid #e9eef3!important;
+  background:#f7faff!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-status{
+  margin:0 0 4px!important;font-size:9px!important;letter-spacing:.06em!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-track{height:2px!important;margin:0 0 9px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-text{
+  min-height:0!important;max-width:none!important;
+  margin:0!important;text-align:left!important;
+  font-size:14.2px!important;font-weight:580!important;
+  line-height:1.6!important;color:#24374b!important;
+  max-height:130px;overflow-y:auto;white-space:pre-wrap;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-placeholder{font-size:12px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-actions{
+  justify-content:flex-start!important;gap:6px!important;margin:9px 0 0!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-actions button{
+  height:29px!important;min-height:29px!important;
+  padding:5px 9px!important;font-size:10px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-editor{
+  max-width:none!important;min-height:70px!important;max-height:180px!important;
+  padding:9px 11px!important;font-size:13px!important;line-height:1.65!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-editor-label{max-width:none!important;margin-bottom:5px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-coming{
+  padding:7px 14px!important;background:#fbfcfd!important;gap:10px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-next-kicker{font-size:9px!important}
+body.tx-v2-editor.v2-slideshow #v2SlideUpcoming{font-size:10.5px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-footer{
+  padding:6px 13px!important;background:#fff!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-footer button{font-size:10px!important}
+body.tx-v2-editor.v2-slideshow .v2-slide-footer span{font-size:10px!important}
+body.tx-v2-editor.v2-slideshow .v2-caption-flow,
+body.tx-v2-editor.v2-slideshow.v2-slide-show-all .v2-caption-flow{
+  display:block!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+  max-height:290px!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  padding:13px 15px 16px!important;margin:0!important;
+  background:#fff!important;
+  color:#334257!important;
+  font-size:12.5px!important;font-weight:450!important;
+  line-height:2.15!important;
+  border-top:1px solid #ecf0f4!important;
+  scroll-padding-top:50px;
+  scrollbar-width:thin;scrollbar-color:#c7d4e1 #f7f9fb;
+}
+body.tx-v2-editor.v2-slideshow.v2-slide-show-all .v2-caption-flow{
+  max-height:560px!important;min-height:260px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-caption-piece{
+  display:inline!important;
+  font-size:inherit!important;
+  font-weight:inherit!important;
+  line-height:inherit!important;
+  border-radius:4px!important;
+  padding:2px 3px!important;
+  color:#39495b!important;
+  background:transparent!important;
+  transition:background-color .20s ease,color .20s ease,box-shadow .20s ease!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-caption-piece.v2-caption-active{
+  color:#0c568d!important;
+  background:#e7f4ff!important;
+  box-shadow:inset 0 -2px #62a9dd!important;
+  font-weight:670!important;
+  font-size:13.2px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-caption-piece:focus-visible{
+  outline:2px solid #70a9d5!important;outline-offset:2px!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-caption-hint{
+  display:block!important;padding:7px 14px!important;
+  font-size:10px!important;color:#8393a4!important;
+  background:#fcfdff!important;border-top:1px solid #eef1f5!important;
+}
+body.tx-v2-editor.v2-slideshow .v2-slide-enter .v2-slide-text{
+  animation:v2-follow-fade .17s ease-out both!important;
+}
+@keyframes v2-follow-fade{
+  from{opacity:.78;transform:translateY(2px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:700px){
+ body.tx-v2-editor.v2-slideshow .v2-slide-nav{gap:6px!important;padding:7px 10px!important}
+ body.tx-v2-editor.v2-slideshow .v2-slide-controls{gap:4px!important}
+ body.tx-v2-editor.v2-slideshow .v2-slide-stage{padding:10px 11px!important}
+ body.tx-v2-editor.v2-slideshow .v2-slide-text{font-size:13.5px!important;line-height:1.55!important}
+ body.tx-v2-editor.v2-slideshow .v2-caption-flow,
+ body.tx-v2-editor.v2-slideshow.v2-slide-show-all .v2-caption-flow{
+   max-height:250px!important;padding:11px 12px!important;font-size:12px!important;line-height:2!important;
+ }
+ body.tx-v2-editor.v2-slideshow.v2-slide-show-all .v2-caption-flow{max-height:440px!important}
+ body.tx-v2-editor.v2-slideshow .v2-caption-piece.v2-caption-active{font-size:12.6px!important}
+ body.tx-v2-editor.v2-slideshow .v2-slide-footer span{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tx-v2-editor.v2-slideshow .v2-slide-enter .v2-slide-text{animation:none!important}
+ body.tx-v2-editor.v2-slideshow .v2-caption-piece{transition:none!important}
+}
