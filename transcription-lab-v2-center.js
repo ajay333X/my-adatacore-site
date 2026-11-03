@@ -217,7 +217,18 @@ function renderQA(){
  }
 }
 $('v2opsQaStatus').addEventListener('change',renderQA);
-$('v2opsQaRefresh').addEventListener('click',()=>{renderQA();toast('QA list refreshed from current project data.')});
+$('v2opsQaRefresh').addEventListener('click',async()=>{
+ const btn=$('v2opsQaRefresh');btn.disabled=true;
+ try{
+  const targetProject=pj();
+  const result=await rpc('tx_get_lab',{p_project_id:targetProject});
+  if(pj()!==targetProject)return;
+  if(Array.isArray(result?.items))state.items=result.items;
+  if(Array.isArray(result?.people))state.people=result.people;
+  renderQA();renderPeople();toast('QA list refreshed from the project.');
+ }catch(e){toast('Unable to refresh QA: '+e.message,true)}
+ finally{btn.disabled=false}
+});
 async function compareText(id,holder){
  const existing=holder.querySelector('.v2ops-compare');if(existing){existing.remove();return}
  const out=node('div','v2ops-compare'),loading=node('p','v2ops-empty','Loading saved and submitted captions…');out.append(loading);holder.append(out);
