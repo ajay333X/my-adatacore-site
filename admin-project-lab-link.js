@@ -5,7 +5,7 @@
   if(!document.getElementById('projectLabLinkStyles')){
     const style=document.createElement('style');
     style.id='projectLabLinkStyles';
-    style.textContent=`.project-lab-open,.transcription-open{display:inline-flex;align-items:center;gap:6px}.project-lab-open:after,.transcription-open:after{content:'↗';font-size:10px}.project-stock-head .project-lab-toolbar{justify-content:flex-end;flex-wrap:wrap}.transcription-open{border-color:rgba(124,58,237,.28)!important}`;
+    style.textContent=`.project-lab-open,.transcription-open{display:inline-flex;align-items:center;gap:6px}.project-lab-open:after,.transcription-open:after{content:'↗';font-size:10px}.project-stock-head .project-lab-toolbar{justify-content:flex-end;flex-wrap:wrap}.transcription-open{border-color:rgba(124,58,237,.28)!important}.transcription-v2-open{border:1px solid rgba(168,125,247,.6)!important;color:#8663df!important;font-weight:800!important}`;
     document.head.appendChild(style);
   }
 
@@ -16,6 +16,13 @@
     setText(document.querySelector('[data-tab="projects"]'),'Project Lab');
     const nav=document.querySelector('[data-tab="projects"]');
     if(nav&&!document.getElementById('transcriptionLabNav')){const link=document.createElement('a');link.id='transcriptionLabNav';link.className=nav.className;link.classList.remove('active');link.href='/admin/transcription';link.textContent='Transcription Lab';nav.insertAdjacentElement('afterend',link)}
+    if(nav&&!document.getElementById('transcriptionLabV2Nav')){
+      const current=document.getElementById('transcriptionLabNav')||nav;
+      const link=document.createElement('a');
+      link.id='transcriptionLabV2Nav';link.className=nav.className;link.classList.remove('active');
+      link.href='/admin/transcription-v2?project=93';link.textContent='✦ Transcription Lab V.2';
+      current.insertAdjacentElement('afterend',link);
+    }
     const panel=document.getElementById('projects');
     if(!panel)return;
     setText(panel.querySelector('.section-title h2'),'Project Lab');
@@ -38,6 +45,11 @@
       const project=(typeof projects!=='undefined'?projects:[]).find(p=>Number(p.id)===id);
       if(project?.project_type==='transcription'&&!wrap.querySelector('.transcription-open')){
         const t=document.createElement('a');t.className='btn btn-secondary transcription-open';t.href=`/admin/transcription?project=${id}`;t.textContent='Transcription';wrap.appendChild(t);
+      }
+      if(project?.project_type==='transcription'&&!wrap.querySelector('.transcription-v2-open')){
+        const v2=document.createElement('a');v2.className='btn btn-secondary transcription-v2-open';
+        v2.href=`/admin/transcription-v2?project=${id}`;v2.textContent='✦ Transcription V.2';
+        wrap.appendChild(v2);
       }
     });
   };

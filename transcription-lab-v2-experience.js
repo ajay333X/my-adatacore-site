@@ -23,6 +23,10 @@
   const fmtTime=s=>{s=Math.max(0,Number(s)||0);return s>=3600?Math.floor(s/3600)+'h '+Math.round((s%3600)/60)+'m':s>=60?Math.floor(s/60)+'m '+Math.round(s%60)+'s':Math.round(s)+'s';};
   function updateFacts(detail){
     state.pid=detail.projectId;state.items=detail.items||[];state.jobs=detail.jobs||[];
+    const vaultUrl='/admin/transcription-vault?project='+(state.pid||93);
+    if($('vaultLink'))$('vaultLink').href=vaultUrl;
+    const railVault=document.querySelector('.v2-rail a[title="Audio Vault"]');
+    if(railVault)railVault.href=vaultUrl;
     const items=state.items,total=items.length,finished=items.filter(i=>['submitted','in_review','changes_requested','approved','reviewed'].includes(i.status)).length;
     const approved=items.filter(i=>['approved','reviewed'].includes(i.status)).length;
     const sources=[...new Set(items.map(i=>i.source_project_title).filter(Boolean))].sort();
