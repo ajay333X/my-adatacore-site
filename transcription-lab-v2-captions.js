@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const table=$('audioRows'),dialog=$('v2CaptionsDialog');if(!table||!dialog)return;
 const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
-let requestId=0,index=new Map(),active=null,detail=null;
+let requestId=0,index=new Map(),active=null,detail=null,currentProjectId=null;
 const mtime=ms=>{const n=Math.max(0,Number(ms)||0),seconds=Math.floor(n/1000);return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')};
 const status=s=>['approved','reviewed'].includes(s)?'Approved':['submitted','in_review','changes_requested'].includes(s)?'Submitted for review':'Saved draft · Not submitted';
 const rpc=async(name,args)=>{const {data,error}=await db.rpc(name,args);if(error)throw Error(error.message);return data};
@@ -35,6 +35,7 @@ function decorate(){
 let queued=false;
 new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate()})}).observe(table,{childList:true,subtree:false});
 async function load(pid){
+  currentProjectId=pid;
   const token=++requestId;index.clear();label(summary,'Checking saved captions…');label(headline,'Loading saved captions…');
   try{
     const rows=await rpc('tx_v2_caption_index',{p_project_id:pid});if(token!==requestId)return;
@@ -47,6 +48,19 @@ async function load(pid){
   }catch(e){if(token!==requestId)return;label(summary,'Captions unavailable');label(headline,'Could not load captions');label(description,String(e?.message||e))}
 }
 document.addEventListener('txv2:data',e=>{const pid=Number(e.detail?.projectId||0);if(pid)load(pid)});
+$('v2RestoreCaptions')?.addEventListener('click',async()=>{
+  const button=$('v2RestoreCaptions'),pid=currentProjectId;
+  if(!pid||button.disabled)return;
+  button.disabled=true;button.textContent='Checking previous captions…';
+  const notice=$('notice');
+  try{
+    const result=await rpc('tx_v2_restore_existing_captions',{p_project_id:pid});
+    const count=Number(result?.restored_items||0),lines=Number(result?.restored_segments||0);
+    if(notice){notice.textContent=count?count+' audio transcripts restored with '+lines+' caption lines. Existing edits were preserved.':'No missing captions were found for identical audio in other transcription projects. Existing transcripts are unchanged.';notice.className='notice success'}
+    await load(pid);
+  }catch(e){if(notice){notice.textContent=String(e?.message||e);notice.className='notice error'}}
+  finally{button.disabled=false;button.textContent='↺ Restore captions'}
+});
 table.addEventListener('click',async e=>{
   const btn=e.target.closest('[data-caption-item]');if(!btn||btn.disabled)return;
   const id=String(btn.dataset.captionItem||'');if(!/^[0-9a-f-]{36}$/i.test(id))return;
