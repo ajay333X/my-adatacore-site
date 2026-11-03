@@ -24,6 +24,14 @@ function lineRecords(){
  }).filter(x=>x.field);
 }
 function rowOf(id){return lineRecords().find(x=>x.id===id)}
+function allRecords(){
+ const snapshot=window.txV2Snapshot?.();
+ if(!Array.isArray(snapshot?.segments))return lineRecords();
+ return snapshot.segments.map((s,i)=>({
+  id:s.id,index:i,field:null,row:null,start:Number(s.start_ms),end:Number(s.end_ms),
+  speaker:s.speaker_id||'',text:String(s.transcript||'')
+ }));
+}
 function refreshRows(){rows.dispatchEvent(new Event('input',{bubbles:true}))}
 function syncInline(){
  if(!inline)return;
@@ -58,6 +66,8 @@ function startInline(id,source=null){
   node=flow.querySelector('[data-edit-segment="'+CSS.escape(id)+'"]');
   if(!node)return false;
  }
+ // Tell the stable editor to take an undo checkpoint before paragraph edits.
+ line.field.dispatchEvent(new FocusEvent('focusin',{bubbles:true}));
  const editor=document.createElement('span');
  editor.className='v2-inline-editor v2-caption-piece v2-caption-active';
  editor.contentEditable='plaintext-only';
@@ -238,7 +248,7 @@ $('play')?.addEventListener('click',()=>{
 },true);
 audio.addEventListener('timeupdate',()=>{
  if(rangeA!==null&&rangeB!==null&&!audio.paused&&rangeB>rangeA+.15&&audio.currentTime>=rangeB){
-  // Preserve the native selection playback logic by controlling only this A/B region.
+  // Preserve the native playback engine; only move the playhead at the loop boundary.
   if(typeof window.txV2SeekTo==='function')window.txV2SeekTo(rangeA*1000);
   else audio.currentTime=rangeA;
  }
@@ -259,7 +269,7 @@ function rangesLength(intervals){
  return total;
 }
 function updateProgress(){
- const lines=lineRecords(),filled=lines.filter(x=>x.text.trim()).length,whole=lines.length;
+ const lines=allRecords(),filled=lines.filter(x=>x.text.trim()).length,whole=lines.length;
  $('v2TextProgress').querySelector('strong').textContent=filled+'/'+whole+' lines';
  const seconds=duration(),cover=seconds>0?rangesLength(lines.filter(x=>x.text.trim()&&Number.isFinite(x.start)&&Number.isFinite(x.end)).map(x=>[clamp(x.start/1000,0,seconds),clamp(x.end/1000,0,seconds)])):0;
  $('v2CoverageProgress').querySelector('strong').textContent=seconds>0?Math.round(100*cover/seconds)+'%':'—';
@@ -297,7 +307,7 @@ function formatWarnings(text){
  return out;
 }
 function audit(){
- const lines=lineRecords(),errors=[],warnings=[],durationMs=duration()*1000;
+ const lines=allRecords(),errors=[],warnings=[],durationMs=window.txV2Snapshot?.()?.duration_ms||duration()*1000;
  if(!lines.length)errors.push({label:'No transcript segments yet',id:null});
  for(const line of lines){
   if(!line.text.trim())errors.push({label:'Line '+(line.index+1)+' has no transcript text',id:line.id});
@@ -323,10 +333,17 @@ function jump(id){
  if(!id){window.scrollTo({top:0,behavior:'smooth'});return}
  finishInline();
  window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id}}));
- const element=flow.querySelector('[data-edit-segment="'+CSS.escape(id)+'"]');
+ let element=flow.querySelector('[data-edit-segment="'+CSS.escape(id)+'"]');
+ if(!element){
+  // If filters hid this segment, clear filters before navigating to the issue.
+  if($('speakerFilter')){$('speakerFilter').value='';$('speakerFilter').dispatchEvent(new Event('change',{bubbles:true}))}
+  if($('textSearch')){$('textSearch').value='';$('textSearch').dispatchEvent(new Event('input',{bubbles:true}))}
+  element=flow.querySelector('[data-edit-segment="'+CSS.escape(id)+'"]');
+ }
  if(element)startInline(id,element);
  else{
-  $('v2EditMode')?.click();
+  const switcher=$('v2EditMode');
+  if(switcher&&!root.classList.contains('v2-segment-editing'))switcher.click();
   rows.querySelector('tr[data-segment="'+CSS.escape(id)+'"] textarea')?.focus();
  }
 }
