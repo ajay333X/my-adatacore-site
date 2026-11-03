@@ -60,6 +60,7 @@ function startInline(id,source=null){
  }
  if(inline?.id===id){inline.node.focus();return true}
  finishInline();
+ if(!audio.paused)audio.pause();
  let node=source||flow.querySelector('[data-edit-segment="'+CSS.escape(id)+'"]');
  if(!node){
   window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id}}));
@@ -148,6 +149,20 @@ function replaceSelection(text,{requireSelection=false}={}){
  announce('Tag added. Check that it matches the recording and project rules.');
  closeOptions();
 }
+// NST and style insertions must never delete spoken words. Wrap only when an
+// explicit selection is needed (FL/PRO/emphasis).
+function insertAtCaret(text){
+ if(!inline)return announce('Click a line in the paragraph to edit it first.',true);
+ const range=storedSelection();
+ if(!range)return announce('Place the cursor where the tag belongs.',true);
+ if(!range.collapsed)range.collapse(true);
+ const node=document.createTextNode(text);
+ range.insertNode(node);range.setStartAfter(node);range.collapse(true);
+ const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);selectionRange=range.cloneRange();
+ syncInline();inline.node.focus({preventScroll:true});
+ announce('Tag inserted without removing the original words. Verify it matches the audio.');
+ closeOptions();
+}
 function selectedText(){return storedSelection()?.toString()||''}
 function closeOptions(){optionMode='';optionBox.hidden=true;optionBox.replaceChildren()}
 function optionButton(label,cb){
@@ -160,7 +175,7 @@ function showOptions(mode){
  closeOptions();optionMode=mode;optionBox.hidden=false;
  if(mode==='nst'){
   const hint=document.createElement('small');hint.textContent='Insert only when clearly audible; check the approved project tag list.';optionBox.append(hint);
-  ['[हँसी]','[हल्की-हँसी]','[दीर्घश्वास]'].forEach(tag=>optionButton(tag,()=>replaceSelection(tag+' ')));
+  ['[हँसी]','[हल्की-हँसी]','[दीर्घश्वास]'].forEach(tag=>optionButton(tag,()=>insertAtCaret(tag+' ')));
  }else{
   const hint=document.createElement('small');
   hint.textContent=mode==='style'?'Enter an approved style tag (without brackets).': 'Write the exact Hindi pronunciation for the selected number.';
@@ -174,7 +189,7 @@ function showOptions(mode){
    if(mode==='style'){
     const tag=word.replace(/^<|>$/g,'');
     if(!/^[\p{L}\p{N}_ -]{1,80}$/u.test(tag))return announce('Enter a valid approved tag name.',true);
-    replaceSelection('<'+tag+'> ');
+    insertAtCaret('<'+tag+'> ');
    }else{
     const numeral=selectedText().trim();
     if(!/^\{?\d+(?:[.,-]\d+)*\}?$/.test(numeral))return announce('Select the numeral in the paragraph before adding PRO.',true);
