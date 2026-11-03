@@ -122,7 +122,7 @@ const saveStatus=$('saveState');
 if(saveStatus)new MutationObserver(updateDock).observe(saveStatus,{childList:true,characterData:true,subtree:true});
 if($('submit'))new MutationObserver(updateDock).observe($('submit'),{attributes:true,attributeFilter:['disabled']});
 function onlineState(){
- $('v2cbConnection').textContent=navigator.onLine?'● Connected':'○ Offline · drafts may not sync';
+ $('v2cbConnection').textContent=navigator.onLine?'● Network online':'○ Network offline · changes may not sync';
  $('v2cbConnection').dataset.offline=String(!navigator.onLine);
 }
 window.addEventListener('online',onlineState);
@@ -164,6 +164,12 @@ audio.addEventListener('loadedmetadata',renderBookmarkTrack);
 // split/merge actions here forward to its existing handlers and checkpoints.
 function gotoSegment(id,seek=false,play=false){
  const segment=segments().find(s=>String(s.id)===String(id));if(!segment)return;
+ // The follow controller reads the rendered segment rows. Clear search/speaker
+ // filters only when this segment is hidden so navigation never silently fails.
+ if(!rows.querySelector('tr[data-segment="'+CSS.escape(String(id))+'"]')){
+  if($('speakerFilter').value){$('speakerFilter').value='';$('speakerFilter').dispatchEvent(new Event('change',{bubbles:true}))}
+  if($('textSearch').value){$('textSearch').value='';$('textSearch').dispatchEvent(new Event('input',{bubbles:true}))}
+ }
  window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id:segment.id}}));
  if(seek){if(window.txV2SeekTo)window.txV2SeekTo(segment.start_ms,play);else audio.currentTime=segment.start_ms/1000}
  const piece=flow.querySelector('[data-edit-segment="'+CSS.escape(segment.id)+'"]');
@@ -529,6 +535,7 @@ document.addEventListener('keydown',e=>{
   return;
  }
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'&&!e.shiftKey){
+  if(document.querySelector('dialog[open]'))return;
   e.preventDefault();toggleFind(true);findInput.select();return;
  }
  if(e.key==='Escape'&&!findBar.hidden){toggleFind(false);return}
