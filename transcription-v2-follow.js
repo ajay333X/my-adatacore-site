@@ -109,7 +109,8 @@ function highlightFull(){
  if(rect.top>=outer.top+30&&rect.bottom<=outer.bottom-40)return;
  const top=flow.scrollTop+(rect.top-outer.top)-Math.max(28,flow.clientHeight*.28);
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
- flow.scrollTo({top:Math.max(0,top),behavior:reduced?'instant':'smooth'});
+ const preferred=typeof window.txV2CBScrollBehavior==='function'?window.txV2CBScrollBehavior():'smooth';
+ flow.scrollTo({top:Math.max(0,top),behavior:reduced?'instant':preferred});
 }
 function setActive(id,{seek=false,play=false}={}){
  const s=timeline.find(s=>s.id===id);

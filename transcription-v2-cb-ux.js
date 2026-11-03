@@ -23,7 +23,7 @@ let bookmarks=getStorage(bookmarkKey,[]);
 if(!Array.isArray(bookmarks))bookmarks=[];
 bookmarks=bookmarks.filter(x=>x&&Number.isFinite(Number(x.at))&&Number(x.at)>=0).slice(-80);
 const snapshot=()=>window.txV2Snapshot?.()||null;
-const segments=()=>Array.isArray(snapshot()?.segments)?snapshot().segments:[];
+const segments=()=>{const s=snapshot();return Array.isArray(s?.segments)?s.segments:[]};
 const isEditable=()=>snapshot()?.editable===true;
 const current=()=>audio.currentTime||0;
 const duration=()=>Number.isFinite(audio.duration)?audio.duration:safeNum(snapshot()?.duration_ms)/1000;
@@ -258,8 +258,11 @@ function renderSegments(){
    tools.append(b('Split',()=>doRowAction(segment.id,'split')));
    tools.append(b('Merge',()=>doRowAction(segment.id,'merge')));
   }
-  head.addEventListener('click',()=>gotoSegment(segment.id,true,false));head.classList.add('v2cb-nav-target');
-  item.append(head,p,tools);nav.append(item);
+  const jump=b('',()=>gotoSegment(segment.id,true,false),'v2cb-nav-jump');
+  jump.setAttribute('aria-label','Jump to audio section '+(i+1));
+  jump.append(...[...head.childNodes].map(x=>x.cloneNode(true)));head.replaceWith(jump);
+  jump.classList.add('v2cb-nav-target');
+  item.append(jump,p,tools);nav.append(item);
  }
  results.append(nav);
  const box=n('section','v2cb-bookmark-list');box.append(n('h3','','Bookmarked positions'));
@@ -323,7 +326,7 @@ function renderQuality(){
  results.append(stats);
  const actions=n('div','v2cb-sidebar-buttons');
  actions.append(b('✓ Run full quality check',()=>{closeAssist();trigger('v2CheckQuality')}));
- actions.append(b('View segment table',()=>{closeAssist();trigger('v2EditMode')}));
+ actions.append(b('View segment table',()=>{closeAssist();if(!root.classList.contains('v2-segment-editing'))trigger('v2EditMode');document.querySelector('.v2-table-wrap')?.scrollIntoView({behavior:'smooth',block:'nearest'})}));
  results.append(actions);
  if(!items.length){results.append(n('p','v2cb-empty','No structural errors detected. Audio accuracy and appropriate tagging still require a complete human review.'));return}
  const list=n('div','v2cb-issue-list');
@@ -405,7 +408,7 @@ function refresh(){
  updateDock();
  quality();
  if(!assist.hidden&&['segments','quality'].includes(activeTab))renderAssist();
- if($('v2cbFindbar')&&!$('v2cbFindbar').hidden)refreshMatches(false);
+ if($('v2cbFindbar')&&!$('v2cbFindbar').hidden)refreshMatches(true);
 }
 new MutationObserver(requestRefresh).observe(rows,{childList:true});
 rows.addEventListener('input',requestRefresh);
