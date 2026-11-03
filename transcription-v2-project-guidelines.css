@@ -1,0 +1,22 @@
+body.tx-v2-editor #v2CBRulesOpen{min-height:32px!important;padding:6px 10px!important;border:1px solid #d7e1eb!important;background:#fff!important;color:#51769a!important;border-radius:7px!important;font-size:10px!important;font-weight:790!important;white-space:nowrap}
+body.tx-v2-editor #v2CBRulesOpen:hover{background:#edf6fd!important;border-color:#b8d8ec!important}
+body.tx-v2-editor .v2-cb-rules-dialog{width:min(650px,calc(100vw - 24px));max-height:85vh;padding:0!important;border-radius:12px!important;border:1px solid #dce4ed!important;background:#fff!important;color:#2f4358!important;box-shadow:0 28px 100px #16294159!important;overflow:hidden}
+body.tx-v2-editor .v2-cb-rules-dialog::backdrop{background:#17294285;backdrop-filter:blur(3px)}
+body.tx-v2-editor .v2-cb-rules-dialog .dialog-head{display:flex;align-items:start;justify-content:space-between;gap:10px;padding:18px 20px!important;background:#f8fafc!important;border-bottom:1px solid #e5ebf2!important}
+body.tx-v2-editor .v2-cb-rules-dialog h2{color:#2a4057!important;font-size:18px!important;letter-spacing:-.03em;margin:0 0 6px!important}
+body.tx-v2-editor .v2-cb-rules-dialog .dialog-head p{color:#8192a4!important;font-size:10px!important;line-height:1.55;margin:0!important}
+body.tx-v2-editor .v2-cb-rules-dialog .dialog-body{padding:18px 20px!important;overflow:auto;max-height:58vh;background:#fff!important}
+body.tx-v2-editor .v2-cb-rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+body.tx-v2-editor .v2-cb-rule-summary{padding:11px;background:#f9fbfc;border:1px solid #e5ebf1;border-radius:7px;min-width:0}
+body.tx-v2-editor .v2-cb-rule-summary small{display:block;font-size:9px;color:#879aac;margin-bottom:5px}
+body.tx-v2-editor .v2-cb-rule-summary strong{display:block;font-size:11px;color:#39516b;overflow-wrap:anywhere}
+body.tx-v2-editor .v2-cb-rule-section{margin:0 0 15px;padding:13px 14px;border:1px solid #e6edf3;border-radius:8px}
+body.tx-v2-editor .v2-cb-rule-section h3{font-size:11px;color:#405c76;margin:0 0 10px;font-weight:815}
+body.tx-v2-editor .v2-cb-rule-value{font-size:11px;line-height:1.7;color:#526a80;white-space:pre-wrap;overflow-wrap:anywhere}
+body.tx-v2-editor .v2-cb-rule-tags{display:flex;flex-wrap:wrap;gap:6px}
+body.tx-v2-editor .v2-cb-rule-tags code{background:#edf5fc;color:#4b7eac;border:1px solid #d4e6f5;border-radius:5px;padding:5px 8px;font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere}
+body.tx-v2-editor .v2-cb-rule-empty{color:#8292a4;font-size:11px;line-height:1.6;margin:8px 0}
+body.tx-v2-editor .v2-cb-rule-footer{font-size:10px;color:#8c9bac;line-height:1.6;margin:13px 0 0}
+body.tx-v2-editor .v2-cb-rules-dialog .dialog-foot{display:flex;justify-content:flex-end;padding:12px 20px!important;background:#f9fbfc!important;border-top:1px solid #e6edf3!important}
+body.tx-v2-editor .v2-cb-rules-dialog .dialog-foot button{background:#fff!important;color:#526d86!important;border:1px solid #d9e4ee!important;border-radius:7px!important;font-size:11px!important}
+@media(max-width:610px){body.tx-v2-editor .v2-cb-rules-dialog .dialog-head,body.tx-v2-editor .v2-cb-rules-dialog .dialog-body,body.tx-v2-editor .v2-cb-rules-dialog .dialog-foot{padding:13px!important}body.tx-v2-editor .v2-cb-rule-grid{grid-template-columns:1fr}body.tx-v2-editor #v2CBRulesOpen{padding:5px 8px!important;font-size:9px!important}}
