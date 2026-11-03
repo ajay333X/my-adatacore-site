@@ -4,7 +4,7 @@
 // It does not modify the existing save, review, export or audio logic.
 const $=id=>document.getElementById(id),root=document.body,rows=$('segmentRows'),pane=$('v2CaptionPanel'),flow=$('v2CaptionFlow'),sum=$('v2CaptionSummary'),toggle=$('v2EditMode');
 if(!rows||!pane||!flow||!toggle)return;
-let editing=false,previousCount=null,scheduled=false;
+let editing=false,previousCount=0,hydrated=false,scheduled=false;
 function setEditing(value){
  editing=Boolean(value);root.classList.toggle('v2-segment-editing',editing);
  toggle.textContent=editing?'Done editing':'Edit captions';
@@ -30,12 +30,14 @@ function rich(target,source){
 function sync(){
  scheduled=false;
  const visible=[...rows.querySelectorAll('tr[data-segment]')];
- if(previousCount!==null&&visible.length>previousCount)setEditing(true);
+ const saveState=$('saveState')?.textContent||'';
+ const isLoaded=/^(All changes saved|Read only|Unsaved changes|Saving|Submitted)/.test(saveState);
+ if(!hydrated){if(isLoaded)hydrated=true;}else if(visible.length>previousCount)setEditing(true);
  previousCount=visible.length;
  const filled=visible.filter(row=>String(row.querySelector('textarea[data-field="transcript"]')?.value||'').trim());
  pane.hidden=filled.length===0;
  const counter=$('segmentCount')?.textContent||'';
- if(sum)sum.textContent=filled.length+' saved '+(filled.length===1?'caption':'captions')+(counter?' · '+counter:'');
+ if(sum)sum.textContent=filled.length+' '+(filled.length===1?'caption line':'caption lines')+(counter?' · '+counter:'');
  flow.replaceChildren();
  const fragment=document.createDocumentFragment();
  filled.forEach((row,i)=>{
