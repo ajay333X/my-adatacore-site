@@ -105,7 +105,7 @@ body.tx-v2-editor{--studio-bg:#0a0b14;--studio-panel:#141524;--studio-card:#1719
 .tx-v2-editor .segment-card>.toolbar button{min-height:37px;font-size:11px;padding:8px 13px}
 .tx-v2-editor .segment-card>.toolbar #exportFormat{margin-left:auto}
 .tx-v2-editor .v2-table-wrap{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#645174 #151421}
-.tx-v2-editor .segment-table{width:100%;min-width:890px;table-layout:fixed;border-collapse:collapse!important;background:#141421!important;font-size:12px!important}
+.tx-v2-editor .segment-table{display:table!important;width:100%;min-width:890px;table-layout:fixed;border-collapse:collapse!important;background:#141421!important;font-size:12px!important}
 .tx-v2-editor .segment-table thead{display:table-header-group!important}
 .tx-v2-editor .segment-table tbody{display:table-row-group!important}
 .tx-v2-editor .segment-table tr{display:table-row!important;border:0!important;border-radius:0!important;box-shadow:none!important}
