@@ -38,6 +38,7 @@ function sync(){
  pane.hidden=visible.length===0;
  const counter=$('segmentCount')?.textContent||'';
  if(sum)sum.textContent=filled.length+' '+(filled.length===1?'caption line':'caption lines')+(counter?' · '+counter:'');
+ if(flow.querySelector('.v2-inline-editor'))return;
  flow.replaceChildren();
  const fragment=document.createDocumentFragment();
  filled.forEach((row,i)=>{
