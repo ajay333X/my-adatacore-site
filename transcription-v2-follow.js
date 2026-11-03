@@ -238,7 +238,7 @@ $('lanes')?.addEventListener('pointerup',e=>{
  const id=region.dataset.region;
  queueMicrotask(()=>{if(timeline.some(s=>s.id===id))setActive(id)});
 });
-const waveform=$('.v2-wave-card'),transport=$('.player-bar');
+const waveform=document.querySelector('.v2-wave-card'),transport=document.querySelector('.player-bar');
 if(waveform&&transport){
  // Dock the actual playback transport with the timeline so it stays available
  // when the user is correcting the very last caption.
