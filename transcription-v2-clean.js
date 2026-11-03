@@ -12,8 +12,8 @@ function setEditing(value){
 }
 toggle.addEventListener('click',()=>{setEditing(!editing);if(editing)document.querySelector('.v2-table-wrap')?.scrollIntoView({behavior:'smooth',block:'nearest'});});
 $('v2CaptionExpand')?.addEventListener('click',()=>{setEditing(true);document.querySelector('.v2-table-wrap')?.scrollIntoView({behavior:'smooth',block:'nearest'})});
-$('addSegment')?.addEventListener('click',()=>setEditing(true),true);
-$('v2QuickAdd')?.addEventListener('click',()=>setEditing(true),true);
+$('addSegment')?.addEventListener('click',()=>{if(!root.classList.contains('v2-slideshow'))setEditing(true)},true);
+$('v2QuickAdd')?.addEventListener('click',()=>{if(!root.classList.contains('v2-slideshow'))setEditing(true)},true);
 const cls=token=>token.startsWith('[')?'v2-inline-nst':token.startsWith('{')?'v2-inline-pro':token.startsWith('*')?'v2-inline-emphasis':'v2-inline-tag';
 const pattern=/(<\/?[^<>]{1,100}>|\[[^\]\n]{1,55}\]|\{(?:PRO:[^}\n]{1,140}|\d{1,12})\}|\*[^*\n]{1,80}\*)/g;
 function rich(target,source){
@@ -35,7 +35,7 @@ function sync(){
  if(!hydrated){if(isLoaded)hydrated=true;}else if(visible.length>previousCount)setEditing(true);
  previousCount=visible.length;
  const filled=visible.filter(row=>String(row.querySelector('textarea[data-field="transcript"]')?.value||'').trim());
- pane.hidden=filled.length===0;
+ pane.hidden=visible.length===0;
  const counter=$('segmentCount')?.textContent||'';
  if(sum)sum.textContent=filled.length+' '+(filled.length===1?'caption line':'caption lines')+(counter?' · '+counter:'');
  flow.replaceChildren();
@@ -57,7 +57,9 @@ rows.addEventListener('change',schedule);
 document.getElementById('segmentCount')&&new MutationObserver(schedule).observe($('segmentCount'),{childList:true,subtree:true,characterData:true});
 flow.addEventListener('click',e=>{
  const piece=e.target.closest('[data-edit-segment]');if(!piece)return;
- const id=piece.dataset.editSegment;setEditing(true);
+ const id=piece.dataset.editSegment;
+ if(root.classList.contains('v2-slideshow')){window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id}}));return}
+ setEditing(true);
  requestAnimationFrame(()=>{
   const row=[...rows.querySelectorAll('tr[data-segment]')].find(x=>x.dataset.segment===id);
   if(!row)return;
