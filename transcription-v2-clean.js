@@ -32,7 +32,7 @@ function sync(){
  const visible=[...rows.querySelectorAll('tr[data-segment]')];
  const saveState=$('saveState')?.textContent||'';
  const isLoaded=/^(All changes saved|Read only|Unsaved changes|Saving|Submitted)/.test(saveState);
- if(!hydrated){if(isLoaded)hydrated=true;}else if(visible.length>previousCount)setEditing(true);
+ if(!hydrated){if(isLoaded)hydrated=true;}else if(visible.length>previousCount&&!root.classList.contains('v2-slideshow'))setEditing(true);
  previousCount=visible.length;
  const filled=visible.filter(row=>String(row.querySelector('textarea[data-field="transcript"]')?.value||'').trim());
  pane.hidden=visible.length===0;
