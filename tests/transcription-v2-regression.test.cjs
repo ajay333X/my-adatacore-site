@@ -48,8 +48,10 @@ test('New client scripts parse and references are connected to markup',()=>{
  for(const [file,htmlFile] of pairs){
   const js=read(file),html=read(htmlFile),known=new Set(ids(html));
   assert.doesNotThrow(()=>new vm.Script(js,{filename:file}));
+  // The overview metric chooser is created on demand in JavaScript.
+  const dynamicIds=new Set(['v2opsMetricChooser']);
   for(const m of js.matchAll(/\$\('([^']+)'\)/g)){
-   assert.ok(known.has(m[1]),file+' references missing '+m[1]);
+   assert.ok(known.has(m[1])||dynamicIds.has(m[1]),file+' references missing '+m[1]);
   }
  }
 });
