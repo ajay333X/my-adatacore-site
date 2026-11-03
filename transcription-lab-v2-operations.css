@@ -897,3 +897,30 @@ body.tx-v2 button:disabled{
     scroll-behavior:auto!important;
   }
 }
+
+/* Shared table styles for archived items and modal lists, not just the live queue. */
+body.tx-v2 table th{
+  background:#f7f9fb!important;color:#7a8798!important;
+  border-color:#e4e9f0!important;box-shadow:none!important;
+  font-size:10px!important;letter-spacing:.03em!important;
+}
+body.tx-v2 dialog table td,
+body.tx-v2 dialog table td strong{
+  color:#43546c!important;
+}
+body.tx-v2 dialog table tbody tr:hover td{background:#f8fafc!important}
+body.tx-v2 .dialog-body input[type="search"],
+body.tx-v2 .dialog-body input[type="text"],
+body.tx-v2 .dialog-body input[type="number"],
+body.tx-v2 .dialog-body select,
+body.tx-v2 .dialog-body textarea{
+  min-height:36px!important;
+  padding:8px 10px!important;
+  font-size:12px!important;
+}
+body.tx-v2 .dialog-body label{
+  color:#5c6a7d!important;line-height:1.55!important;
+}
+body.tx-v2 button[disabled],body.tx-v2 .button[aria-disabled="true"]{
+  cursor:not-allowed!important;
+}
