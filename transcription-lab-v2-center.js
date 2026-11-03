@@ -94,7 +94,7 @@ $('v2opsFiltersOpen').addEventListener('click',()=>{
  $('v2opsFiltersOpen').setAttribute('aria-expanded',String(show));
 });
 $('v2opsClearView').addEventListener('click',clearFilters);
-const saved=()=>setting('views',[]);
+const saved=()=>{const arr=setting('views',[]);return Array.isArray(arr)?arr:[]};
 function renderViews(){
  const v=saved();$('v2opsSavedViews').replaceChildren(labelOption('','Saved views'),...v.map((x,i)=>labelOption(String(i),x.name)));
 }
@@ -106,7 +106,7 @@ $('v2opsSaveView').addEventListener('click',()=>{
  store('views',views.slice(-16));renderViews();toast('Queue view saved for this browser.');
 });
 $('v2opsSavedViews').addEventListener('change',()=>{
- const v=saved()[Number($('v2opsSavedViews').value)];if(!v)return;
+ const idx=$('v2opsSavedViews').value;if(idx==='')return;const v=saved()[Number(idx)];if(!v)return;
  for(const k of Object.keys(filters))setFilter(k,String(v.filters?.[k]??(k==='sort'?'queue':'')),false);
  $('statusFilter').value=v.status||'';$('v2SourceFilter').value=v.source||'';
  if(window.txV2Filters)window.txV2Filters.source=$('v2SourceFilter').value;
@@ -348,10 +348,12 @@ function fillRules(r){
 }
 async function loadRules(){
  if(!pj())return;
+ const targetProject=pj();
  $('v2opsRulesNotice').textContent='Loading project guidelines…';
  try{
   const result=await rpc('tx_v2_get_project_guidelines',{p_project_id:pj()});
-  fillRules(result?.rules||{});state.rulesVersion=Number(result?.version)||0;
+  if(targetProject!==pj())return;
+  fillRules(result?.rules||{});state.rulesVersion=Number(result?.version)||0;state.rulesLoadedFor=targetProject;
   $('v2opsRulesVersion').textContent=state.rulesVersion?'Version '+state.rulesVersion:'Not configured';
   $('v2opsRulesNotice').textContent=state.rulesVersion?'Loaded saved project guidelines.':'No guidelines configured yet. Changes are saved only when you click Save.';
   $('v2opsProjectSettings').href='/admin/project-lab?project='+pj();
@@ -433,7 +435,8 @@ async function loadCaptions(a,section){
 function openDrawer(id,seek=0){
  const a=itemBy(id);if(!a)return;
  if(!drawer.hidden)stopPreview();
- state.drawerFocus=document.activeElement;state.detail=a.id;
+ if(drawer.hidden)state.drawerFocus=document.activeElement;
+ state.detail=a.id;
  $('v2opsDrawerTitle').textContent=a.display_name||'Audio recording';
  $('v2opsDrawerSubtitle').textContent=statusName(a.status)+' · '+fmtTime(a.duration_seconds);
  $('v2opsDrawerEditor').href=openEditor(a.id);
@@ -467,7 +470,7 @@ function decorateTable(){
   tr.dataset.v2opsRow=id;
   const cell=tr.lastElementChild;
   if(!cell?.querySelector('[data-v2ops-details]')){
-   const b=button('Details',()=>openDrawer(id),'v2ops-details-button');
+   const b=node('button','v2ops-details-button','Details');b.type='button';
    b.dataset.v2opsDetails=id;
    cell?.append(b);
   }
@@ -488,13 +491,13 @@ document.addEventListener('txv2:data',e=>{
  state.project=nextProject;state.items=Array.isArray(detail.items)?detail.items:[];state.people=Array.isArray(detail.people)?detail.people:[];state.jobs=Array.isArray(detail.jobs)?detail.jobs:[];
  if(changing){
   for(const k of Object.keys(filters))setFilter(k,k==='sort'?'queue':'',false);
-  state.reportsLoaded=false;state.reports=[];state.history=[];
-  renderViews();setCardMode(setting('display','table')==='cards'?'cards':'table');applyMetrics();loadRules();
+  state.reportsLoaded=false;state.reports=[];state.history=[];state.rulesVersion=0;state.rulesLoadedFor=null;
+  renderViews();setCardMode(setting('display','table')==='cards'?'cards':'table');applyMetrics();
  }
  updatePeopleFilters();rerenderQueue();renderQA();renderPeople();
  $('v2opsProjectSettings').href='/admin/project-lab?project='+nextProject;
  if(document.querySelector('[data-tx-view="reports"]')?.classList.contains('active'))refreshReports(true);
- if(!changing)loadRules();
+ if(state.rulesLoadedFor!==nextProject)loadRules();
  if(state.viewMode==='cards')drawCards();
 });
 all('[data-tx-tab]').forEach(b=>b.addEventListener('click',()=>{
