@@ -48,7 +48,7 @@ function setMonitor(){gains.forEach((g,i)=>g.gain.value=mutedTracks.has(i)?0:($(
 async function playAudio(){try{await enableMonitor();await audio.play()}catch(e){toast('Could not play audio. Check the file or try again.')}}
 function togglePlay(){if(!audio.src)return;if(audio.paused){if(audio.currentTime*1000>=duration)audio.currentTime=0;playAudio()}else audio.pause()}
 function playSegment(s){audio.currentTime=s.start_ms/1000;loopStart=s.start_ms/1000;stopAt=s.end_ms/1000;playAudio()}
-if(document.body.classList.contains('tx-v2-editor'))window.txV2Snapshot=()=>({segments:structuredClone(segments),duration_ms:duration,editable:canEdit(),status:data?.item?.status||''});
+if(document.body.classList.contains('tx-v2-editor'))window.txV2Snapshot=()=>({segments:structuredClone(segments),duration_ms:duration,editable:canEdit(),status:data?.item?.status||'',project_id:data?.project?.id||null});
 if(document.body.classList.contains('tx-v2-editor'))window.txV2SeekTo=(milliseconds,play=false)=>{const ms=Math.max(0,Math.min(duration||0,Number(milliseconds)||0));stopAt=null;loopStart=null;audio.currentTime=ms/1000;paintPlayhead();if(play)playAudio()}
 function tick(){if(!audio.paused){if(stopAt!==null&&audio.currentTime>=stopAt){if($('loop').checked&&loopStart!==null)audio.currentTime=loopStart;else{audio.pause();stopAt=null}}else if(duration&&audio.currentTime*1000>=duration)audio.pause();paintPlayhead()}requestAnimationFrame(tick)}
 function exportFile(content,name,type){const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}

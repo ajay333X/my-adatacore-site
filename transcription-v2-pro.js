@@ -175,7 +175,8 @@ function showOptions(mode){
  closeOptions();optionMode=mode;optionBox.hidden=false;
  if(mode==='nst'){
   const hint=document.createElement('small');hint.textContent='Insert only when clearly audible; check the approved project tag list.';optionBox.append(hint);
-  ['[हँसी]','[हल्की-हँसी]','[दीर्घश्वास]'].forEach(tag=>optionButton(tag,()=>insertAtCaret(tag+' ')));
+  const allowed=Array.isArray(window.txV2ProjectRules?.nst)&&window.txV2ProjectRules.nst.length?window.txV2ProjectRules.nst:['[हँसी]','[हल्की-हँसी]','[दीर्घश्वास]'];
+  allowed.slice(0,60).forEach(tag=>optionButton(tag,()=>insertAtCaret(tag+' ')));
  }else{
   const hint=document.createElement('small');
   hint.textContent=mode==='style'?'Enter an approved style tag (without brackets).': 'Write the exact Hindi pronunciation for the selected number.';
@@ -189,6 +190,8 @@ function showOptions(mode){
    if(mode==='style'){
     const tag=word.replace(/^<|>$/g,'');
     if(!/^[\p{L}\p{N}_ -]{1,80}$/u.test(tag))return announce('Enter a valid approved tag name.',true);
+    const approved=window.txV2ProjectRules?.style;
+    if(Array.isArray(approved)&&approved.length&&!approved.some(x=>String(x).replace(/^<|>$/g,'')===tag))return announce('This style tag is not on the approved project list. Open Guidelines to verify.',true);
     insertAtCaret('<'+tag+'> ');
    }else{
     const numeral=selectedText().trim();
