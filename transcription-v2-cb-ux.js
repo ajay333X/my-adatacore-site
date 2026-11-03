@@ -31,7 +31,11 @@ const activeSegment=()=>{
  const ms=current()*1000,list=segments().slice().sort((a,b)=>safeNum(a.start_ms)-safeNum(b.start_ms));
  return list.find(s=>safeNum(s.start_ms)<=ms&&ms<safeNum(s.end_ms))||list.find(s=>safeNum(s.start_ms)>ms)||list.at(-1)||null;
 };
-const words=text=>String(text||'').trim().split(/\s+/u).filter(Boolean).length;
+const words=text=>String(text||'')
+ .replace(/<[^>]{1,160}>/g,' ')
+ .replace(/\[[^\]\n]{1,100}\]/g,' ')
+ .replace(/\{PRO:[^}\n]{1,180}\}/g,' ')
+ .trim().split(/\s+/u).filter(Boolean).length;
 const tagDescriptions={
  '[हँसी]':'Clearly audible laughter. Confirm the sound in the recording.',
  '[हल्की-हँसी]':'A clearly audible gentle or short laugh, not merely a smiling voice.',
@@ -333,6 +337,8 @@ function renderQuality(){
  const actions=n('div','v2cb-sidebar-buttons');
  actions.append(b('✓ Run full quality check',()=>{closeAssist();trigger('v2CheckQuality')}));
  actions.append(b('View segment table',()=>{closeAssist();if(!root.classList.contains('v2-segment-editing'))trigger('v2EditMode');document.querySelector('.v2-table-wrap')?.scrollIntoView({behavior:'smooth',block:'nearest'})}));
+ actions.append(b('Review history',()=>{closeAssist();trigger('historyBtn')}));
+ actions.append(b('Report audio issue',()=>{closeAssist();trigger('v2ReportAudio')}));
  results.append(actions);
  if(!items.length){results.append(n('p','v2cb-empty','No structural errors detected. Audio accuracy and appropriate tagging still require a complete human review.'));return}
  const list=n('div','v2cb-issue-list');

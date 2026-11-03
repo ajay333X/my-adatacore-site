@@ -99,12 +99,12 @@
 <aside id="v2cbAssist" class="v2cb-assist" role="dialog" aria-modal="true" aria-labelledby="v2cbAssistTitle" tabindex="-1" hidden>
  <header class="v2cb-assist-head"><div><span class="v2cb-assist-kicker">CONTRIBUTOR TOOLS</span><h2 id="v2cbAssistTitle">Workspace assistant</h2><p>Navigation, checks and preferences—without leaving your recording.</p></div><button id="v2cbAssistClose" type="button" aria-label="Close tools">✕</button></header>
  <nav class="v2cb-assist-tabs" role="tablist" aria-label="Contributor workspace tools">
-  <button type="button" data-v2cb-tab="segments" class="is-active" aria-selected="true">Segments</button>
-  <button type="button" data-v2cb-tab="quality" aria-selected="false">Quality</button>
-  <button type="button" data-v2cb-tab="tags" aria-selected="false">Tags</button>
-  <button type="button" data-v2cb-tab="settings" aria-selected="false">Settings</button>
+  <button type="button" role="tab" aria-controls="v2cbAssistBody" data-v2cb-tab="segments" class="is-active" aria-selected="true">Segments</button>
+  <button type="button" role="tab" aria-controls="v2cbAssistBody" data-v2cb-tab="quality" aria-selected="false">Quality</button>
+  <button type="button" role="tab" aria-controls="v2cbAssistBody" data-v2cb-tab="tags" aria-selected="false">Tags</button>
+  <button type="button" role="tab" aria-controls="v2cbAssistBody" data-v2cb-tab="settings" aria-selected="false">Settings</button>
  </nav>
- <div id="v2cbAssistBody" class="v2cb-assist-body" role="tabpanel" aria-live="polite"></div>
+ <div id="v2cbAssistBody" class="v2cb-assist-body" role="tabpanel"></div>
  <footer class="v2cb-assist-foot"><button id="v2cbAssistGuidelines" type="button">Project guidelines ↗</button><button id="v2cbAssistCheck" type="button">Run quality check ↗</button></footer>
 </aside>
 
