@@ -119,6 +119,13 @@ body.tx-v2-editor .v2cb-wave-hover{
 }
 body.tx-v2-editor .v2cb-wave-hover[hidden]{display:none!important}
 body.tx-v2-editor .v2-wave-card .wave-content{position:relative}
+body.tx-v2-editor.v2cb-wave-ready .v2-wave-card #lanes{
+ animation:v2cb-wave-arrive .23s ease-out both;
+}
+@keyframes v2cb-wave-arrive{
+ from{opacity:.7;filter:saturate(.8)}
+ to{opacity:1;filter:saturate(1)}
+}
 body.tx-v2-editor .v2-caption-piece{
  transition:background-color .18s ease,color .18s ease,box-shadow .18s ease!important;
 }
@@ -250,6 +257,7 @@ body.tx-v2-editor #workStatus{
  body.tx-v2-editor .v2cb-workflow:before,
  body.tx-v2-editor.v2cb-playing .v2cb-play-bars i,
  body.tx-v2-editor.v2cb-saving #saveState:before{animation:none!important}
+ body.tx-v2-editor.v2cb-wave-ready .v2-wave-card #lanes{animation:none!important}
  body.tx-v2-editor .v2-wave-card button,
  body.tx-v2-editor .v2cb-workbar-actions button,
  body.tx-v2-editor .v2-caption-piece,

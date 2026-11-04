@@ -62,6 +62,18 @@ function showWaveHover(e){
 pane.addEventListener('pointermove',showWaveHover,{passive:true});
 pane.addEventListener('pointerleave',()=>tip.hidden=true);
 pane.addEventListener('scroll',()=>tip.hidden=true,{passive:true});
+const lanes=$('lanes');
+if(lanes){
+ const reveal=()=>{
+  if(lanes.querySelector('.speaker-lane,.lane-wave,canvas')){
+   root.classList.add('v2cb-wave-ready');
+   observer.disconnect();
+  }
+ };
+ const observer=new MutationObserver(reveal);
+ observer.observe(lanes,{childList:true,subtree:true});
+ reveal();
+}
 for(const event of ['play','playing','pause','ended','waiting','loadedmetadata','error','emptied'])audio.addEventListener(event,updatePlayer);
 if(status)new MutationObserver(paintWorkflow).observe(status,{childList:true,subtree:true,characterData:true});
 if(save)new MutationObserver(updateSave).observe(save,{childList:true,subtree:true,characterData:true});
@@ -99,12 +111,15 @@ function drawCommands(){
 }
 function openCommands(){
  if(document.querySelector('dialog[open]')&&!modal.open)return;
+ const tools=$('v2cbAssist');
+ if(tools&&!tools.hidden)btn('v2cbAssistClose');
  commandPreviousFocus=document.activeElement;
  commandInput.value='';drawCommands();
  if(!modal.open)modal.showModal();
  commandInput.focus({preventScroll:true});
 }
 function choose(c){
+ commandPreviousFocus=null; // The chosen control is responsible for focus.
  modal.close();
  if(c?.action)c.action();
 }
