@@ -3,7 +3,8 @@
 // Listening coverage for the CB transcription project (93).
 // Counts unique intervals the browser reports as PLAYED, not seeks/position.
 // Progress is stored by the server per recording+contributor; only server-confirmed
-// 100% unlocks submission. Review and admin modes are not gated.
+// 100% unlocks submission. Reviewer approvals are excluded; admins testing
+// a contributor task have the same requirement as regular contributors.
 const $=id=>document.getElementById(id);
 const gate=$('v2cbListenGate'),fill=$('v2cbListenFill'),meter=$('v2cbListenMeter'),
       label=$('v2cbListenText'),audio=$('audio'),submit=$('submit');
@@ -146,7 +147,8 @@ const detect=setInterval(()=>{
  const s=window.txV2Snapshot?.();
  if(!s||!s.project_id||!s.mode)return;
  hasStarted=true;clearInterval(detect);
- if(Number(s.project_id)!==93||s.mode!=='contributor'){
+ const isTaskSubmission=(s.mode==='contributor')||(s.mode==='admin'&&['unassigned','assigned','in_progress','changes_requested'].includes(s.status));
+ if(Number(s.project_id)!==93||!isTaskSubmission){
   gate.hidden=true;authorize(true);return;
  }
  enabled=true;gate.hidden=false;render();syncButtons();
