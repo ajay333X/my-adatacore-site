@@ -79,7 +79,7 @@ test('Review presentation is responsive and respects reduced motion',()=>{
  const css=src('transcription-v2-review.css');
  assert.ok(css.includes('grid-template-columns:1fr'));
  for(const name of ['v2ReviewFeedbackOpen','v2ReviewDiffOpen','v2ReviewRatings',
-   'v2ReviewDetailDialog','v2ReviewScoreSummary','v2ReviewDiffRows']){
+   'v2review-detail-dialog','v2review-score-summary','v2review-diff-rows']){
    assert.ok(css.includes(name),'Missing style for '+name);
  }
  for(const id of diff.split("$('").slice(1).map(x=>x.split("'")[0])){
