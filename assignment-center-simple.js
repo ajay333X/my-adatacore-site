@@ -204,8 +204,8 @@ async function apply(){
   p_project_id:Number(project.id),
   p_user_ids:selection().map(p=>p.id),
   p_membership:$('membershipAction').value,
-  p_level:$('levelChoice').value,
-  p_tasks_per_day:num($('dailyTasks').value)
+  p_level:$('membershipAction').value==='revoked'?'L1':$('levelChoice').value,
+  p_tasks_per_day:$('membershipAction').value==='revoked'?1:num($('dailyTasks').value)
  };
  const savedPeople=[...picked],projectId=Number(project.id);
  busy=true;renderActions();$('actionResult').hidden=true;
