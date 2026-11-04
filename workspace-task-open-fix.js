@@ -7,7 +7,8 @@ function openTask(button){
   const layer=String(button.dataset.layer||'L1');
   const title=String(button.dataset.title||'');
   if(transcription){
-    window.location.assign('/transcription?item='+encodeURIComponent(transcription));
+    const route=Number(button.dataset.transcriptionProject)===93?'/transcription-v2':'/transcription';
+    window.location.assign(route+'?item='+encodeURIComponent(transcription));
     return;
   }
   if(!id)return;
