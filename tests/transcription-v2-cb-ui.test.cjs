@@ -73,7 +73,8 @@ test('Original submission flow checks listening coverage but preserves reviewers
  assert.ok(core.includes("data?.mode==='contributor'")&&core.includes("data?.mode==='admin'"),'Contributor and admin test submissions must be gated');
  assert.ok(core.includes('window.txV2RefreshSubmitButtons=buttons'),'Submit buttons should refresh when coverage verified');
  assert.ok(core.includes('window.txV2ListeningReady!==true'),'Must be gated until verified completion');
- assert.ok(core.includes("const r=await rpc('tx_submit'"),'Existing submission RPC should not be replaced');
+ assert.ok(core.includes("rpc('tx_submit'")&&core.includes("rpc('tx_review_submit'"),'Preserve the legacy submission RPC while enabling V2 review ratings');
+ assert.ok(core.includes("document.body.classList.contains('tx-v2-editor')"),'Legacy transcription must not depend on V2-only review UI');
 });
 
 test('Tiny progress bar sits above the waveform and permits jump to missing audio',()=>{
