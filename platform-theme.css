@@ -14,3 +14,72 @@ html.platform-page-ready body{animation:platform-page-in .18s ease both}html.pla
 .workspace-view{transform-origin:50% 0}.workspace-view.platform-view-enter{animation:platform-view-in .18s cubic-bezier(.2,.72,.2,1) both}
 @keyframes platform-page-in{from{opacity:.985}to{opacity:1}}@keyframes platform-view-in{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){html[data-adatacore-theme] body,html[data-adatacore-theme] .app-main,html[data-adatacore-theme] .sidebar,html[data-adatacore-theme] .card,html[data-adatacore-theme] .surface,html[data-adatacore-theme] .btn-secondary,html[data-adatacore-theme] input,html[data-adatacore-theme] select,html[data-adatacore-theme] textarea,.platform-theme-toggle{transition:none!important}.workspace-view.platform-view-enter,html.platform-page-ready body{animation:none!important}}
+
+
+/* Adatacore motion system — shared by admin and contributor workspaces.
+   Transform/opacity first: no delayed business actions or layout animations. */
+:root{
+  --ac-motion-fast:120ms;
+  --ac-motion-base:190ms;
+  --ac-motion-slow:260ms;
+  --ac-motion-ease:cubic-bezier(.22,.76,.24,1);
+  --ac-motion-enter:cubic-bezier(.16,1,.3,1);
+}
+html[data-adatacore-theme] :is(button,.btn,.nav-link,[role="button"],a.card,.platform-theme-toggle){
+  -webkit-tap-highlight-color:transparent;
+  transition-property:transform,opacity,background-color,border-color,color,box-shadow,filter;
+  transition-duration:var(--ac-motion-base);
+  transition-timing-function:var(--ac-motion-ease);
+}
+@media(hover:hover) and (pointer:fine){
+  html[data-adatacore-theme] :is(.btn,.platform-theme-toggle,button:not(.nav-link)):not(:disabled):not([aria-disabled="true"]):hover{
+    filter:brightness(1.035);
+  }
+  html[data-adatacore-theme] :is(.card-hover,.txfb-card):hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(35,25,65,.11);
+    transition:transform var(--ac-motion-slow) var(--ac-motion-ease),box-shadow var(--ac-motion-slow) ease,border-color var(--ac-motion-base) ease;
+  }
+}
+html[data-adatacore-theme] :is(button,.btn,[role="button"]):not(:disabled):active{
+  transform:scale(.985);
+  transition-duration:var(--ac-motion-fast);
+}
+html[data-adatacore-theme] :is(button,.btn,a,input,select,textarea,[role="button"],[tabindex]):focus-visible{
+  outline:2px solid var(--brand,#8b5cf6);
+  outline-offset:3px;
+  transition:outline-offset var(--ac-motion-fast) ease,box-shadow var(--ac-motion-fast) ease;
+}
+html[data-adatacore-theme] :is(input,textarea,select,.input):not(:disabled){
+  transition:border-color var(--ac-motion-base) ease,box-shadow var(--ac-motion-base) ease,background-color var(--ac-motion-base) ease,color var(--ac-motion-base) ease;
+}
+html[data-adatacore-theme] :is(.nav-link,.tab,[role="tab"]){
+  transition:background-color var(--ac-motion-base) ease,color var(--ac-motion-base) ease,box-shadow var(--ac-motion-base) ease,transform var(--ac-motion-base) var(--ac-motion-ease);
+}
+html[data-adatacore-theme] :is(.workspace-view.platform-view-enter,.platform-view-enter){
+  animation:ac-view-reveal var(--ac-motion-slow) var(--ac-motion-enter) both;
+}
+@keyframes ac-view-reveal{from{opacity:.25;transform:translate3d(0,7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+html[data-adatacore-theme] dialog[open],
+html[data-adatacore-theme] [popover]:popover-open{
+  animation:ac-dialog-in var(--ac-motion-slow) var(--ac-motion-enter) both;
+}
+@keyframes ac-dialog-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+html[data-adatacore-theme] dialog::backdrop{
+  background:rgba(4,5,15,.5);
+  animation:ac-backdrop-in var(--ac-motion-base) ease both;
+}
+@keyframes ac-backdrop-in{from{opacity:0}to{opacity:1}}
+html[data-adatacore-theme] :is(.pill,.badge,.txfb-new,[role="status"]){
+  transition:color var(--ac-motion-base) ease,background-color var(--ac-motion-base) ease,border-color var(--ac-motion-base) ease,opacity var(--ac-motion-base) ease;
+}
+html[data-adatacore-theme] :is(button,.btn,[role="button"]):disabled{
+  cursor:not-allowed;filter:none;transform:none;
+}
+@media(prefers-reduced-motion:reduce){
+  :root{--ac-motion-fast:0ms;--ac-motion-base:0ms;--ac-motion-slow:0ms}
+  html[data-adatacore-theme] :is(button,.btn,.nav-link,[role="button"],a.card,.platform-theme-toggle,input,textarea,select,.input,.card-hover,.txfb-card,.tab,[role="tab"],.pill,.badge,.txfb-new,[role="status"]){
+    animation:none!important;transition:none!important;transform:none!important;
+  }
+  html[data-adatacore-theme] :is(.workspace-view.platform-view-enter,.platform-view-enter,dialog[open],[popover]:popover-open,dialog::backdrop){animation:none!important}
+}
