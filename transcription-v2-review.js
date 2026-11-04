@@ -34,10 +34,12 @@ function updateMode(){
  rated.hidden=!isReviewer;
  const open=$('v2ReviewFeedbackOpen');
  const allow=Boolean(isReviewer&&s.editable);
- open.hidden=!allow&&!detail?.reviews?.length;
+ open.hidden=!Boolean(s.mode);
  open.textContent=allow?'✎ Feedback':'✉ View feedback';
  $('v2ReviewDiffOpen').hidden=false;
  $('v2ReviewDiffOpen').textContent=isReviewer?'⇄ Diff view · L1 vs L2':'⇄ Diff view';
+ const workbar=$('v2cbWorkbar')?.querySelector('.v2cb-workbar-left strong');
+ if(workbar)workbar.textContent=isReviewer?'L2 quality review':'Transcription workspace';
  const note=$('reviewDescription');
  if(isReviewer&&note)note.textContent='Verify the original L1 work, compare your edits, rate each category and submit your decision.';
 }
@@ -117,7 +119,7 @@ function scoreFeedback(r){
  explanation.append(create('p','',r.feedback?.trim()||'No written feedback was provided.'));
  feedback.append(explanation);
  const s=snapshot();
- if(s?.mode==='contributor'&&!r.seen){
+ if(detail?.is_original_contributor&&!r.seen){
   void request('tx_mark_review_seen',{p_history_id:Number(r.history_id)}).then(()=>{
    r.seen=true;window.dispatchEvent(new Event('txv2:feedback-read'));
   }).catch(()=>{});
@@ -195,8 +197,16 @@ async function openDiff(preferred){
 $('v2ReviewDiffOpen').addEventListener('click',()=>void openDiff());
 $('v2ReviewFeedbackOpen').addEventListener('click',()=>{
  const s=snapshot();
- if(reviewer()&&s?.editable)$('submit')?.click();
- else void openDiff();
+ if(reviewer()&&s?.editable){
+  // Open the original editor's review form directly, without the unrelated
+  // transcription preflight popup. Its save/validation still runs.
+  const submit=$('submit');
+  if(submit&&!submit.disabled&&typeof submit.onclick==='function'){
+   void Promise.resolve(submit.onclick.call(submit)).catch(e=>{
+    $('reviewMessage').textContent=String(e.message||e);
+   });
+  }
+ }else void openDiff();
 });
 $('v2ReviewSelect').addEventListener('change',()=>{
  basis.querySelector('option[value="review"]').disabled=!selectedReview();
