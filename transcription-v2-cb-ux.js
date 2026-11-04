@@ -532,13 +532,13 @@ document.addEventListener('keydown',e=>{
  const el=e.target;
  if(!assist.hidden){
   if(e.key==='Escape'){e.preventDefault();closeAssist();return}
-  if(e.key==='Tab'){
+  if(e.key==='Tab'&&assist.getAttribute('aria-modal')==='true'){
    const focusables=[...assist.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')].filter(x=>x.getClientRects().length);
    if(!focusables.length)return;
    if(e.shiftKey&&document.activeElement===focusables[0]){e.preventDefault();focusables.at(-1).focus()}
    else if(!e.shiftKey&&document.activeElement===focusables.at(-1)){e.preventDefault();focusables[0].focus()}
   }
-  return;
+  if(assist.getAttribute('aria-modal')==='true')return;
  }
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'&&!e.shiftKey){
   if(document.querySelector('dialog[open]'))return;

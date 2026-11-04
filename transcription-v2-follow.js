@@ -102,7 +102,9 @@ function highlightFull(){
   b.classList.toggle('v2-caption-active',isActive);
   if(isActive)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');
  }
- if(!active||!controls.follow.checked||editingText||!flow.clientHeight)return;
+ if(!active||!controls.follow.checked||editingText||!flow.clientHeight||
+    root.classList.contains('v2cb-follow-suspended')||
+    flow.querySelector('.v2-inline-editor')||!controls.editor.hidden)return;
  // Scroll only the transcript reading area, never the full page. Keep the
  // currently spoken words near the upper middle with comfortable context.
  const rect=active.getBoundingClientRect(),outer=flow.getBoundingClientRect();
