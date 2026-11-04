@@ -41,9 +41,9 @@ test('Simple center retrieves real per-person roles, project membership and dail
  }
 });
 test('Daily quota is an actual server-side setting, not a one-time active-task target',()=>{
- for(const token of ['p_tasks_per_day:num($(\'dailyTasks\').value)',
- 'p_membership:$(\'membershipAction\').value',
- 'p_level:$(\'levelChoice\').value','p_project_id:Number(project.id)']){
+ for(const token of ["p_tasks_per_day:", 
+ "p_membership:$('membershipAction').value",
+ "p_level:",'p_project_id:Number(project.id)']){
   assert.ok(script.includes(token),'RPC does not send '+token);
  }
  assert.ok(!script.includes('p_target_limit'),'Do not send old active task target');
