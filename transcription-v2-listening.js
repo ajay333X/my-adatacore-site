@@ -102,11 +102,13 @@ function capturePlayed(){
    pending.add(sec);added=true;
   }
  }
- if(added){render();if(pending.size>=7)void saveProgress()}
+ if(added){render();if(pending.size>=6&&Date.now()-lastSave>=2900)void saveProgress()}
 }
 async function saveProgress(){
  if(!enabled||complete||loading||saving||!pending.size||!navigator.onLine)return;
- const batch=[...pending].sort((a,b)=>a-b).slice(0,24);
+ // Leave enough time for the server's 2.25x playback-credit budget to refill.
+ if(Date.now()-lastSave<2900)return;
+ const batch=[...pending].sort((a,b)=>a-b).slice(0,6);
  saving=true;lastSave=Date.now();
  try{
   const response=await rpc('tx_listening_record',{p_item:itemId,p_seconds:batch});
@@ -124,13 +126,13 @@ async function saveProgress(){
   authorize(false);
  }finally{saving=false;render()}
  if(!complete&&pending.size&&navigator.onLine&&!failed){
-  setTimeout(()=>void saveProgress(),1200);
+  setTimeout(()=>void saveProgress(),3150);
  }
 }
 function onMediaTime(){
  if(!enabled||complete)return;
  capturePlayed();
- if(Date.now()-lastSave>4500&&pending.size)void saveProgress();
+ if(Date.now()-lastSave>3000&&pending.size)void saveProgress();
 }
 for(const event of ['timeupdate','pause','ended','seeked','durationchange'])
  audio.addEventListener(event,onMediaTime);
