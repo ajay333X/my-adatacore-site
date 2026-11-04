@@ -10,7 +10,7 @@ const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_pu
 const model={projects:[],people:[],access:[],review_levels:[],synced_at:null};
 const selected=new Set();
 const previews={L1:new Map(),L2:new Map()};
-let project=null,busy=false,loading=false,refreshSerial=0,previewSerial=0,initialized=false;
+let project=null,busy=false,loading=false,refreshSerial=0,previewSerial=0,initialized=false,lastLimitOwner='';
 const create=(tag,cls,text)=>{
  const el=document.createElement(tag);if(cls)el.className=cls;
  if(text!==undefined)el.textContent=String(text);return el;
@@ -175,6 +175,11 @@ async function refreshPreviews(){
 }
 function renderActions(){
  const chosen=allSelected(),quantity=chosen.length,stage=$('taskLayer').value,access=$('accessAction').value;
+ const singleOwner=quantity===1?(String(project?.id)+':'+String(chosen[0].id)):'';
+ if(singleOwner!==lastLimitOwner){
+  $('reviewLimit').value=String(singleOwner?(n(role(chosen[0])?.l2_limit)||10):10);
+  lastLimitOwner=singleOwner;
+ }
  const level=$('reviewLevel').value;
  const transcription=tx(),isRevoke=access==='revoked';
  $('actionCount').textContent=quantity+' '+(quantity===1?'person':'people');
@@ -209,6 +214,10 @@ function renderActions(){
  else if(actionStage&&!activeProject())problem='This project is not active. New assignments are disabled.';
  else if(access==='keep'&&actionLevel==='KEEP'&&!actionStage)
   problem='Choose a change to apply: grant/revoke access, set a review level, or assign tasks.';
+ else if(transcription&&['L2','BOTH'].includes(actionLevel)&&
+  (!Number.isInteger(Number($('reviewLimit').value))||n($('reviewLimit').value)<1||n($('reviewLimit').value)>100)){
+  problem='The L2 active task limit must be a whole number between 1 and 100.';
+ }
  else if(actionStage){
   const target=n($('taskTarget').value);
   if(!Number.isInteger(target)||target<1||target>100)problem='Task target must be between 1 and 100.';
@@ -237,8 +246,8 @@ function renderActions(){
   'No eligible audio is queued for this level right now. Permissions can be saved, but zero new tasks may be assigned.':
   $('autoCapacity').checked?'Inventory can be added automatically for this non-transcription project.':
   'No task inventory is available; enable automatic capacity or add project inventory.');
- if(access==='revoked')warnings.push('Project access stops immediately. Existing assignments remain recorded but are not accessible while revoked.');
- if(transcription&&actionLevel==='L2')warnings.push('New L1 claims are blocked, but previously assigned L1 tasks will still appear until finished.');
+ if(access==='revoked')warnings.push('Project access is revoked for contributors. Existing assignments remain recorded, and separate administrator permissions may still provide management access.');
+ if(transcription&&actionLevel==='L2')warnings.push('Changing review level explicitly enrolls the person in the project. New L1 claims are blocked; previously assigned L1 tasks remain available to finish.');
  if(actionStage&&selected.size){
   const open=chosen.reduce((sum,p)=>sum+n(previews[actionStage].get(String(p.id))?.open_work),0);
   $('previewSummary').textContent='Currently open '+actionStage+' tasks for selected people: '+open+
@@ -329,6 +338,7 @@ async function reload(preserveProject=false){
     model.projects.find(p=>p.lifecycle_status==='active')||model.projects[0]||null;
   if(next){
    const changed=Number(next.id)!==Number(project?.id);
+   if(changed)lastLimitOwner='';
    project=next;
    if(changed)selected.clear();
    $('projectContext').textContent=next.project_name+' · '+(next.project_type||'General project').replace('_',' ');
