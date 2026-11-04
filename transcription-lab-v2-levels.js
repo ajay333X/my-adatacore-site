@@ -78,7 +78,7 @@ async function load(){
 }
 function edit(person){
  if(busy||loading)return;
- selected=person;mode.value=person.level||'L1';limit.value=String(Number(person.l2_limit||10));
+ selected=person;mode.value=person.level||'L1';limit.value=String(Number(person.l2_limit||10));limit.disabled=mode.value==='L1'||mode.value==='PAUSED';
  $('txLevelsPerson').textContent=(person.name||person.email||'Contributor')+' · '+(person.email||person.uid||'');
  $('txLevelsActive').textContent=Number(person.active_l1||0)+' existing L1 tasks · '+Number(person.active_l2||0)+' active L2 reviews · '+Number(person.l1_remaining||0)+' L1 claims available';
  $('txLevelsDialogMessage').textContent='';
@@ -109,8 +109,8 @@ async function save(){
    p_project_id:projectId,p_user_id:selected.user_id,p_level:mode.value,p_l2_limit:qty
   });
   modal.close();
-  show('Saved '+(saved.level==='BOTH'?'L1 + L2':saved.level)+' access. New assignments now follow these permissions.');
   await load();
+  show('Saved '+(saved.level==='BOTH'?'L1 + L2':saved.level)+' access. New assignments now follow these permissions.');
  }catch(e){$('txLevelsDialogMessage').textContent=e.message}
  finally{busy=false;$('txLevelsSave').disabled=false;$('txLevelsSave').textContent='Save review level'}
 }
