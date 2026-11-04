@@ -65,8 +65,8 @@ test('Listening progress uses actual played media ranges and server-confirmed co
  assert.ok(js.includes('window.txV2ListeningReady'),'Completion must be server-confirmed');
  assert.ok(js.includes("s.mode==='admin'")&&js.includes("s.mode==='contributor'"),'Admin testing and contributor submission must be gated');
  assert.ok(html.includes('id="v2cbListenMeter"'),'Thin listening meter missing');
- assert.ok(html.includes('/transcription-v2-listening.js?v=2'),'Listening script not loaded');
- assert.ok(html.includes('/transcription-v2-listening.css?v=2'),'Listening styles not loaded');
+ assert.ok(html.includes('/transcription-v2-listening.js?v=3'),'Listening script not loaded');
+ assert.ok(html.includes('/transcription-v2-listening.css?v=3'),'Listening styles not loaded');
 });
 test('Original submission flow checks listening coverage but preserves reviewers',()=>{
  const core=src('transcription-editor.js');

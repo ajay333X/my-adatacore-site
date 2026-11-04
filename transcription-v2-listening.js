@@ -7,7 +7,7 @@
 // a contributor task have the same requirement as regular contributors.
 const $=id=>document.getElementById(id);
 const gate=$('v2cbListenGate'),fill=$('v2cbListenFill'),meter=$('v2cbListenMeter'),
-      label=$('v2cbListenText'),audio=$('audio'),submit=$('submit');
+      label=$('v2cbListenText'),jump=$('v2cbJumpGap'),audio=$('audio'),submit=$('submit');
 if(!document.body.classList.contains('tx-v2-editor')||!gate||!fill||!audio||!submit||!window.supabase)return;
 const itemId=new URLSearchParams(location.search).get('item');
 if(!/^[0-9a-f-]{36}$/i.test(itemId||''))return;
@@ -26,6 +26,12 @@ function render(){
  if(!enabled)return;
  const count=new Set([...heard,...pending]).size;
  const percent=total?Math.min(100,Math.floor((count/total)*100)):0;
+ const verifiedPercent=total?Math.min(100,Math.floor((heard.size/total)*100)):0;
+ const covered=new Set([...heard,...pending]);
+ const firstUnplayed=(()=>{if(!total)return null;const at=Math.max(0,Math.floor(audio.currentTime||0));for(let i=at;i<total;i++)if(!covered.has(i))return i;for(let i=0;i<at;i++)if(!covered.has(i))return i;return null})();
+ window.txV2ListeningUIState={required:enabled,complete,percent,verifiedPercent,total,heard:heard.size,pending:pending.size,firstUnplayed,syncError:failed||null};
+ jump.disabled=complete||firstUnplayed===null||loading;
+ window.dispatchEvent(new CustomEvent('txv2:listening',{detail:window.txV2ListeningUIState}));
  fill.style.width=percent+'%';
  meter.setAttribute('aria-valuenow',String(percent));
  meter.setAttribute('aria-valuetext',total?count+' of '+total+' audio seconds played':'Audio duration unavailable');
@@ -33,7 +39,7 @@ function render(){
  gate.classList.toggle('v2cb-listen-pending',Boolean(!complete&&pending.size));
  gate.dataset.error=failed?'true':'false';
  if(complete){
-  label.textContent='100% · Full recording played · Ready to submit';
+  label.textContent='100% · Verified · Submit unlocked';
  }else if(failed){
   label.textContent=percent+'% · Progress not synced — reconnect and keep listening';
   gate.title='We could not verify listening progress. Click the bar to retry.';
@@ -140,6 +146,19 @@ for(const event of ['timeupdate','pause','ended','seeked','durationchange'])
 audio.addEventListener('ended',()=>{capturePlayed();void saveProgress()});
 window.addEventListener('online',()=>{failed='';render();void saveProgress();if(!heard.size)void loadState()});
 window.addEventListener('pagehide',()=>{if(pending.size)void saveProgress()});
+function jumpToUnplayed(){
+ if(!enabled||complete||!total)return false;
+ const covered=new Set([...heard,...pending]),at=Math.max(0,Math.floor(audio.currentTime||0));
+ let t=-1;for(let i=at;i<total;i++)if(!covered.has(i)){t=i;break}
+ if(t<0)for(let i=0;i<at;i++)if(!covered.has(i)){t=i;break}
+ if(t<0){if(pending.size)void saveProgress();return false}
+ const seek=Math.max(0,t-0.18);
+ if(typeof window.txV2SeekTo==='function')window.txV2SeekTo(seek*1000,true);
+ else{audio.currentTime=seek;audio.play().catch(()=>{})}
+ return true;
+}
+window.txV2JumpToUnplayed=jumpToUnplayed;
+jump.addEventListener('click',e=>{e.stopPropagation();jumpToUnplayed()});
 gate.addEventListener('click',()=>{if(enabled&&!complete){if(failed)void loadState();else void saveProgress()}});
 setInterval(()=>{if(enabled&&!complete){capturePlayed();if(pending.size)void saveProgress()}},4800);
 const detect=setInterval(()=>{

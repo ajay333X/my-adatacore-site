@@ -293,7 +293,11 @@ function updateProgress(){
  $('v2TextProgress').querySelector('strong').textContent=filled+'/'+whole+' lines';
  const seconds=duration(),cover=seconds>0?rangesLength(lines.filter(x=>x.text.trim()&&Number.isFinite(x.start)&&Number.isFinite(x.end)).map(x=>[clamp(x.start/1000,0,seconds),clamp(x.end/1000,0,seconds)])):0;
  $('v2CoverageProgress').querySelector('strong').textContent=seconds>0?Math.round(100*cover/seconds)+'%':'—';
- $('v2ListeningProgress').querySelector('strong').textContent=seconds>0?'≈'+Math.min(100,Math.round(100*coverageSeconds.size/Math.max(1,Math.ceil(seconds))))+'%':'—';
+ const listeningUI=window.txV2ListeningUIState;
+ const listenChip=$('v2ListeningProgress');
+ listenChip.firstChild.textContent=listeningUI?.required?'Server verified ':'Played this session ';
+ listenChip.querySelector('strong').textContent=listeningUI?.required?(listeningUI.verifiedPercent+'%'+(listeningUI.pending?' · syncing':''))
+  :seconds>0?'≈'+Math.min(100,Math.round(100*coverageSeconds.size/Math.max(1,Math.ceil(seconds))))+'%':'—';
 }
 audio.addEventListener('timeupdate',()=>{
  const seconds=duration();
