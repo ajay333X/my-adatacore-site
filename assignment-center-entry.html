@@ -10,7 +10,7 @@
   const response=await fetch('/assignment-center',{cache:'no-store'});
   if(!response.ok)throw new Error('Workspace returned '+response.status);
   const html=await response.text();
-  if(!html.includes('/assignment-center-v2.js?v=1'))throw new Error('Updated Assignment Center is not available yet');
+  if(!html.includes('/assignment-center-simple.js?v=1'))throw new Error('Updated Assignment Center is not available yet');
   document.open();document.write(html);document.close();
  }catch(error){
   document.querySelector('.boot').textContent='Could not open Assignment Center: '+String(error.message||error);

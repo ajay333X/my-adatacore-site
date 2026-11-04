@@ -1,0 +1,96 @@
+/* Adatacore Assignment Center — three settings, no duplicate quota fields. */
+.ac-intro{margin-bottom:16px}
+.ac-intro h1{font-size:clamp(23px,2.1vw,29px)}
+.ac-stats{gap:9px}
+.ac-stat{min-height:79px;padding:12px 14px}
+.ac-stat strong{font-size:22px}
+.ac-simple-field{
+ padding:0 0 17px;margin:0 0 17px;
+ border-bottom:1px solid #ece8f1;gap:9px;
+}
+.ac-simple-field>label{
+ display:flex;align-items:center;gap:10px;
+ color:#352d46;font-size:12px;font-weight:830;
+}
+.ac-simple-number{
+ flex:none;display:grid;place-items:center;
+ width:24px;height:24px;border-radius:7px;
+ background:#f0eaf6;border:1px solid #e5daed;
+ color:#795d9b;font-size:11px;font-weight:900;
+}
+.ac-simple-field select{
+ min-height:43px!important;border-radius:8px!important;
+ font-size:12px!important;font-weight:720;
+ color:#322942!important;
+}
+.ac-simple-field small{font-size:10px;line-height:1.55;color:#8a8297}
+.ac-daily-input{display:flex;align-items:center;gap:0;border:1px solid #ddd7e7;border-radius:9px;background:#fff;overflow:hidden}
+.ac-daily-input button{
+ display:grid;place-items:center;flex:none;
+ width:40px;height:44px;border:0;background:#f7f3fa;
+ color:#6f528f;font-size:20px;font-weight:650;
+}
+.ac-daily-input button:hover:not(:disabled){background:#eee5f5}
+.ac-daily-input #dailyTasks{
+ flex:1;min-width:45px;border:0!important;
+ min-height:44px!important;height:44px;
+ padding:8px 2px!important;text-align:center;
+ border-radius:0!important;background:#fff!important;
+ color:#322742!important;font-size:20px!important;
+ font-weight:850!important;letter-spacing:-.03em;
+ -moz-appearance:textfield;
+}
+.ac-daily-input #dailyTasks::-webkit-inner-spin-button,
+.ac-daily-input #dailyTasks::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ac-daily-suffix{
+ flex:none;display:grid;place-items:center;
+ align-self:stretch;padding:0 14px;background:#fbf9fd;
+ border-left:1px solid #e8e0ef;color:#8a7a9a;
+ font-size:11px;font-weight:800;
+}
+.ac-simple-disabled{opacity:.42}
+.ac-simple-summary{
+ display:flex;align-items:center;min-height:45px;
+ padding:11px 12px;margin:3px 0 13px;
+ background:#f7f6fa;border:1px solid #e8e5ef;
+ border-radius:8px;color:#6e637e;
+ font-size:11px;font-weight:660;line-height:1.6;
+}
+.ac-simple-summary:before{
+ content:"";display:inline-block;flex:none;
+ width:6px;height:6px;margin-right:9px;
+ background:#8666a8;border-radius:50%;
+}
+.ac-action-simple .ac-selected-preview{
+ background:#f9f5fd;margin-bottom:19px;
+ border-left:3px solid #8865ae;font-size:11px;
+}
+.ac-action-simple .ac-primary{min-height:46px}
+.ac-action-simple .ac-action-disclaimer{
+ margin-top:12px;font-size:10px;line-height:1.6;
+}
+.ac-workspace{grid-template-columns:minmax(225px,255px) minmax(380px,1fr) minmax(280px,319px)}
+.ac-member-work-column .ac-member-work{color:#897b98}
+.ac-member-role .ac-role{
+ min-width:45px;justify-content:center;
+}
+.ac-stat:nth-child(3),.ac-stat:nth-child(4){display:none}
+.ac-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ac-stat:nth-child(1),.ac-stat:nth-child(2){min-height:80px}
+@media(max-width:1400px){
+ .ac-workspace{grid-template-columns:220px minmax(330px,1fr) minmax(270px,290px)}
+}
+@media(max-width:1100px){
+ .ac-workspace{grid-template-columns:230px minmax(0,1fr)}
+ .ac-action-body.ac-action-simple{display:block;padding:17px}
+ .ac-action-body.ac-action-simple>*{margin-bottom:15px}
+ .ac-actions{position:static}
+}
+@media(max-width:760px){
+ .ac-workspace{display:block}
+ .ac-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ac-action-body.ac-action-simple{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ac-simple-field *,.ac-daily-input *{transition:none!important}
+}
