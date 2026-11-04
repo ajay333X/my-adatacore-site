@@ -88,3 +88,27 @@ test('Responsive accessible interaction, focus and reduced-motion support',()=>{
   assert.ok(known.has(id),'Script references nonexistent control: '+id);
  }
 });
+
+test('Admin assignments route loads the replacement interface, not the legacy role loader',()=>{
+ const entry=file('assignment-center-entry.html');
+ assert.ok(entry.includes('/assignment-center-v2.js?v=1'));
+ assert.ok(entry.includes("fetch('/assignment-center'"));
+ assert.ok(!entry.includes('/assignment-center-role-loader.js'));
+ const inline=entry.split('<script>')[1]?.split('</script>')[0];
+ assert.ok(inline);
+ assert.doesNotThrow(()=>new vm.Script(inline));
+ const adminLink=file('admin-assignment-center-link.js');
+ assert.ok(adminLink.includes('Assignment Center'));
+ assert.ok(adminLink.includes('/admin/assignments'));
+ assert.doesNotThrow(()=>new vm.Script(adminLink));
+});
+test('Contributor workspace loads permission-aware assignment scripts',()=>{
+ const main=file('workspace.html'),entry=file('workspace-entry.html'),workspace=file('workspace-core.html');
+ assert.ok(main.includes('/workspace-project-groups.js?v=6'));
+ assert.ok(entry.includes('/workspace-project-groups.js?v=6'));
+ assert.ok(main.includes('/workspace-task-open-fix.js?v=2'));
+ assert.ok(workspace.includes('data-transcription-project'));
+ const blocks=workspace.split('<script>').slice(1).map(x=>x.split('</script>')[0]);
+ assert.ok(blocks.length>=2);
+ for(const s of blocks)assert.doesNotThrow(()=>new vm.Script(s));
+});
