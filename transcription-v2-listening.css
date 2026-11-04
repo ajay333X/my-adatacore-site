@@ -1,0 +1,37 @@
+/* Tiny, persistent listening meter below the CB transcription header.
+   Gray track + green verified playback coverage; no replacement of other UI. */
+body.tx-v2-editor .v2cb-listen-gate{
+ position:sticky;top:72px;z-index:79;
+ box-sizing:border-box;padding:5px clamp(15px,2.2vw,36px) 6px;
+ background:#f7f8fa;color:#667689;border-bottom:1px solid #e1e7ed;
+ box-shadow:0 1px 3px #1b29380b;cursor:default;
+}
+body.tx-v2-editor .v2cb-listen-gate[hidden]{display:none!important}
+body.tx-v2-editor .v2cb-listen-label{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ margin:0 0 4px;font-size:9px;line-height:1.2;
+ letter-spacing:.01em;font-weight:760;
+}
+body.tx-v2-editor #v2cbListenText{
+ font-size:9px;font-weight:720;color:#77889b;
+ text-align:right;font-variant-numeric:tabular-nums;
+}
+body.tx-v2-editor .v2cb-listen-track{
+ width:100%;height:4px;background:#dce1e7;border-radius:99px;overflow:hidden;
+}
+body.tx-v2-editor .v2cb-listen-fill{
+ display:block;height:100%;width:0;background:#35ad72;border-radius:99px;
+ transition:width .18s ease-out;will-change:width;
+}
+body.tx-v2-editor .v2cb-listen-complete #v2cbListenText{color:#258657}
+body.tx-v2-editor .v2cb-listen-complete .v2cb-listen-fill{background:#249f64}
+body.tx-v2-editor .v2cb-listen-gate[data-error=true] #v2cbListenText{color:#a86645}
+body.tx-v2-editor .v2cb-listen-gate[data-error=true]{cursor:pointer}
+@media(max-width:760px){
+ body.tx-v2-editor .v2cb-listen-gate{top:72px;padding:5px 12px 6px}
+ body.tx-v2-editor .v2cb-listen-label{font-size:9px}
+ body.tx-v2-editor #v2cbListenText{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tx-v2-editor .v2cb-listen-fill{transition:none}
+}
