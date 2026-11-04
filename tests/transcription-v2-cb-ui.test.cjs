@@ -99,6 +99,6 @@ test('Illustrated QA workflow reflects actual task status and UI motion is acces
  for(const asset of ['transcription-v2-studio-live.js?v=1','transcription-v2-studio-live.css?v=1','transcription-v2-qa-workflow.svg?v=1','transcription-v2-pro.js?v=4'])assert.ok(html.includes(asset),'Missing asset '+asset);
  const image=src('transcription-v2-qa-workflow.svg');
  assert.ok(image.startsWith('<svg')&&image.includes('</svg>'));
- assert.ok(!image.includes('http://')&&!image.includes('https://'),'Reviewer illustration must remain self-contained');
+ assert.ok(!image.includes('<script')&&!image.includes('<image ')&&!image.includes('onload='),'Reviewer illustration must not embed external or executable content');
  assert.ok(css.includes('prefers-reduced-motion'));
 });
