@@ -1,35 +1,123 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Quick Assignment — Adatacore</title>
-<link rel="icon" href="/favicon.png?v=20260831-3" type="image/png">
-<link rel="stylesheet" href="/design-system.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
-<style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.qa-shell{min-height:100vh}.qa-top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;min-height:66px;padding:10px 20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(18px)}.qa-back{color:var(--muted);font-size:12px;font-weight:760;text-decoration:none}.qa-title{font-size:15px;font-weight:880}.qa-sub{font-size:10px;color:var(--muted);margin-top:2px}.qa-actions{margin-left:auto;display:flex;gap:8px;align-items:center}.qa-main{width:min(1040px,100%);margin:auto;padding:28px 20px 64px}.qa-hero{margin-bottom:18px;animation:qaRise .34s ease both}.qa-hero .eyebrow{margin-bottom:7px}.qa-hero h1{font-size:32px;line-height:1.08;letter-spacing:-.045em;margin:0 0 9px}.qa-hero p{margin:0;max-width:720px;color:var(--muted);font-size:12px;line-height:1.65}.qa-card{overflow:visible;animation:qaRise .42s .04s ease both}.qa-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px 18px;border-bottom:1px solid var(--line)}.qa-progress-step{display:flex;align-items:center;gap:8px;min-width:0;color:var(--muted2);font-size:9px;font-weight:800;transition:.22s ease}.qa-progress-step i{width:22px;height:22px;flex:0 0 22px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);font-style:normal;transition:.22s ease}.qa-progress-step.done,.qa-progress-step.active{color:var(--text)}.qa-progress-step.done i{background:rgba(16,185,129,.11);border-color:rgba(16,185,129,.25);color:#0f9f6e;transform:scale(1.05)}.qa-progress-step.active i{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 34%,var(--line));color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 8%,transparent)}.qa-body{padding:20px}.qa-section{padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--panel);transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease,opacity .22s ease}.qa-section+.qa-section{margin-top:12px}.qa-section.active{border-color:color-mix(in srgb,var(--brand) 28%,var(--line));box-shadow:0 8px 28px color-mix(in srgb,var(--brand) 6%,transparent)}.qa-section.locked{opacity:.52}.qa-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}.qa-section-title{display:flex;align-items:flex-start;gap:10px}.qa-step-num{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:900;transition:.2s ease}.qa-section.complete .qa-step-num{background:rgba(16,185,129,.11);color:#0f9f6e}.qa-section h2{font-size:14px;margin:1px 0 3px}.qa-section-desc{font-size:9px;color:var(--muted);line-height:1.45}.qa-search-wrap{position:relative}.qa-search{width:100%;height:46px;padding:0 14px 0 42px;font-size:12px;border-radius:12px}.qa-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:14px;pointer-events:none}.qa-dropdown{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 7px);max-height:286px;overflow:auto;padding:6px;border:1px solid var(--line2);border-radius:13px;background:var(--panel);box-shadow:0 18px 48px rgba(0,0,0,.16);display:none;transform-origin:top;animation:qaDrop .16s ease both}.qa-dropdown.open{display:block}.qa-option{width:100%;display:flex;align-items:center;gap:11px;padding:10px;border:0;border-radius:9px;background:transparent;color:var(--text);text-align:left;cursor:pointer;transition:.14s ease}.qa-option:hover,.qa-option:focus-visible{background:var(--panel2);outline:none}.qa-avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:900;flex:0 0 34px}.qa-option-copy{min-width:0;flex:1}.qa-option strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qa-option small{display:block;margin-top:3px;color:var(--muted);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qa-option-meta{font-size:8px;color:var(--muted2);white-space:nowrap}.qa-empty{padding:20px;text-align:center;color:var(--muted);font-size:10px}.qa-selected{display:none;margin-top:10px;padding:10px 11px;border:1px solid color-mix(in srgb,var(--brand) 24%,var(--line));border-radius:11px;background:color-mix(in srgb,var(--brand-soft) 55%,var(--panel));align-items:center;gap:10px;animation:qaSelect .18s ease both}.qa-selected.visible{display:flex}.qa-selected-copy{flex:1;min-width:0}.qa-selected strong{display:block;font-size:11px}.qa-selected small{display:block;font-size:9px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis}.qa-change{border:0;background:transparent;color:var(--brand);font-size:9px;font-weight:850;cursor:pointer}.qa-stage-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qa-stage{position:relative;padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);cursor:pointer;text-align:left;color:var(--text);transition:.18s ease}.qa-stage:hover{transform:translateY(-1px);border-color:var(--line2)}.qa-stage.active{border-color:color-mix(in srgb,var(--brand) 42%,var(--line));background:color-mix(in srgb,var(--brand-soft) 48%,var(--panel));box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 6%,transparent)}.qa-stage strong{display:block;font-size:12px}.qa-stage span{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.45}.qa-stage-badge{position:absolute;right:10px;top:10px;font-size:8px;font-weight:900;color:var(--brand)}.qa-limit-row{display:grid;grid-template-columns:minmax(190px,.55fr) 1fr;gap:16px;align-items:center}.qa-counter{display:grid;grid-template-columns:42px 1fr 42px;gap:7px}.qa-counter button{height:42px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);font-size:18px;cursor:pointer;transition:.15s ease}.qa-counter button:hover{background:var(--brand-soft);color:var(--brand);border-color:color-mix(in srgb,var(--brand) 30%,var(--line))}.qa-counter input{height:42px;text-align:center;font-size:16px;font-weight:850}.qa-presets{display:flex;gap:6px;flex-wrap:wrap}.qa-preset{padding:7px 10px;border-radius:999px;font-size:9px}.qa-review{display:grid;grid-template-columns:1fr 1fr;gap:12px}.qa-review-card{padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.qa-review-card span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);font-weight:850}.qa-review-card strong{display:block;margin-top:6px;font-size:14px}.qa-review-card small{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.45}.qa-summary{grid-column:1/-1;padding:13px 14px;border-radius:12px;background:color-mix(in srgb,var(--brand-soft) 45%,var(--panel));border:1px solid color-mix(in srgb,var(--brand) 18%,var(--line));font-size:10px;line-height:1.55}.qa-summary strong{font-size:11px}.qa-footer{display:flex;align-items:center;gap:10px;margin-top:14px}.qa-assign{min-width:190px;justify-content:center;position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease}.qa-assign:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 10px 24px color-mix(in srgb,var(--brand) 18%,transparent)}.qa-assign:disabled{opacity:.5;cursor:not-allowed}.qa-status{font-size:9px;color:var(--muted)}.qa-result{display:none;margin-top:14px;padding:14px;border-radius:13px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);animation:qaSelect .22s ease both}.qa-result.visible{display:flex;align-items:flex-start;gap:10px}.qa-result-icon{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;background:rgba(16,185,129,.12);color:#0f9f6e;font-weight:900}.qa-result strong{font-size:11px}.qa-result p{margin:4px 0 0;color:var(--muted);font-size:9px;line-height:1.5}.qa-error{display:none;margin-bottom:12px;padding:11px 12px;border-radius:11px;background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.18);font-size:10px;color:#be334d}.qa-error.visible{display:block}.qa-loading{pointer-events:none}.qa-loading .qa-card{opacity:.72}.qa-loading .qa-assign::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%);animation:qaShimmer 1s linear infinite}@keyframes qaRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes qaDrop{from{opacity:0;transform:translateY(-4px) scale(.985)}to{opacity:1;transform:none}}@keyframes qaSelect{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}@keyframes qaShimmer{to{transform:translateX(100%)}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}@media(max-width:720px){.qa-main{padding:18px 12px 48px}.qa-top{padding:10px 12px}.qa-actions .pill{display:none}.qa-progress{grid-template-columns:1fr 1fr}.qa-progress-step span{white-space:nowrap}.qa-limit-row,.qa-review{grid-template-columns:1fr}.qa-summary{grid-column:auto}.qa-footer{align-items:stretch;flex-direction:column}.qa-assign{width:100%}.qa-stage-grid{grid-template-columns:1fr}.qa-hero h1{font-size:27px}}
-</style>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="robots" content="noindex,nofollow">
+ <meta name="theme-color" content="#241d31">
+ <title>Assignment Center · Adatacore</title>
+ <link rel="icon" href="/favicon.png">
+ <link rel="stylesheet" href="/assignment-center-v2.css?v=1">
+ <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+ <script defer src="/assignment-center-v2.js?v=1"></script>
 </head>
 <body>
-<div class="qa-shell">
-<header class="qa-top"><a class="qa-back" href="/admin">← Admin</a><span style="width:1px;height:24px;background:var(--line)"></span><span class="brand-mark"></span><div><div class="qa-title">Quick Assignment</div><div class="qa-sub">Participant → project → stage → task target</div></div><div class="qa-actions"><span class="pill pill-brand">Admin protected</span><button id="refresh" class="btn btn-secondary">Refresh</button></div></header>
-<main class="qa-main">
-<section class="qa-hero"><div class="eyebrow">Fast work distribution</div><h1>Assign tasks without the clutter.</h1><p>Find one participant, pick a project, choose L1 or L2, and set how many open tasks they should have. Adatacore automatically tops them up to that target instead of creating duplicates.</p></section>
-<div id="error" class="qa-error"></div>
-<section class="card qa-card">
-<div class="qa-progress"><div id="progPerson" class="qa-progress-step active"><i>1</i><span>Participant</span></div><div id="progProject" class="qa-progress-step"><i>2</i><span>Project</span></div><div id="progStage" class="qa-progress-step"><i>3</i><span>L1 / L2</span></div><div id="progTasks" class="qa-progress-step"><i>4</i><span>Task target</span></div></div>
-<div class="qa-body">
-<section id="secPerson" class="qa-section active"><div class="qa-section-head"><div class="qa-section-title"><div class="qa-step-num">1</div><div><h2>Search participant</h2><div class="qa-section-desc">Search by name, email, or Adatacore UID.</div></div></div></div><div class="qa-search-wrap"><span class="qa-search-icon">⌕</span><input id="participantSearch" class="input qa-search" autocomplete="off" placeholder="Start typing a participant…"><div id="participantOptions" class="qa-dropdown"></div></div><div id="participantSelected" class="qa-selected"></div></section>
-<section id="secProject" class="qa-section locked"><div class="qa-section-head"><div class="qa-section-title"><div class="qa-step-num">2</div><div><h2>Search project</h2><div class="qa-section-desc">Only active projects you are allowed to assign are shown.</div></div></div></div><div class="qa-search-wrap"><span class="qa-search-icon">⌕</span><input id="projectSearch" class="input qa-search" autocomplete="off" placeholder="Search project name or type…" disabled><div id="projectOptions" class="qa-dropdown"></div></div><div id="projectSelected" class="qa-selected"></div></section>
-<section id="secStage" class="qa-section locked"><div class="qa-section-head"><div class="qa-section-title"><div class="qa-step-num">3</div><div><h2>Choose assignment stage</h2><div class="qa-section-desc">Select production work or review/audit work.</div></div></div></div><div class="qa-stage-grid"><button class="qa-stage active" type="button" data-layer="L1" disabled><span class="qa-stage-badge">SELECTED</span><strong>L1 · Production</strong><span>Give the participant production tasks from this project.</span></button><button class="qa-stage" type="button" data-layer="L2" disabled><span class="qa-stage-badge"></span><strong>L2 · Review / Audit</strong><span>Give the participant reviewer tasks from this project.</span></button></div></section>
-<section id="secTasks" class="qa-section locked"><div class="qa-section-head"><div class="qa-section-title"><div class="qa-step-num">4</div><div><h2>How many tasks should they have?</h2><div class="qa-section-desc">This is a target for open work. Existing active tasks are kept.</div></div></div></div><div class="qa-limit-row"><div class="qa-counter"><button id="minus" type="button" disabled>−</button><input id="taskTarget" class="input" type="number" min="1" max="100" value="5" disabled><button id="plus" type="button" disabled>+</button></div><div><div class="field-title">Quick choices</div><div class="qa-presets"><button class="btn btn-secondary qa-preset" data-target="1" disabled>1</button><button class="btn btn-secondary qa-preset" data-target="3" disabled>3</button><button class="btn btn-secondary qa-preset" data-target="5" disabled>5</button><button class="btn btn-secondary qa-preset" data-target="10" disabled>10</button><button class="btn btn-secondary qa-preset" data-target="20" disabled>20</button></div></div></div></section>
-<section id="secReview" class="qa-section locked"><div class="qa-section-head"><div class="qa-section-title"><div class="qa-step-num">✓</div><div><h2>Review & assign</h2><div class="qa-section-desc">One final check before the assignment is applied.</div></div></div></div><div id="reviewGrid" class="qa-review"><div class="qa-summary">Complete the four steps above to preview this assignment.</div></div><div class="qa-footer"><button id="assign" class="btn btn-primary qa-assign" disabled>Assign tasks</button><span id="status" class="qa-status">Waiting for participant and project.</span></div><div id="result" class="qa-result"></div></section>
-</div>
-</section>
-</main>
-</div>
-<script src="/assignment-center.js?v=1"></script>
-</body>
-</html>
+ <div class="ac-shell">
+  <header class="ac-header">
+   <div class="ac-brand">
+    <a class="ac-back" href="/admin" aria-label="Back to admin dashboard">←</a>
+    <span class="ac-mark" aria-hidden="true">A</span>
+    <div><div class="ac-brand-line">ADATA<span>CORE</span> <span class="ac-brand-sep">/</span> OPERATIONS</div>
+     <div class="ac-brand-title">Assignment Center</div>
+    </div>
+   </div>
+   <div class="ac-header-right">
+    <span id="syncStatus" class="ac-sync" role="status"><span class="ac-sync-dot"></span> Connecting…</span>
+    <button id="refreshAll" type="button" class="ac-head-button" title="Refresh live projects, users and access">↻ <span>Refresh</span></button>
+    <a href="/admin" class="ac-head-button ac-admin-link">Admin panel ↗</a>
+   </div>
+  </header>
+  <main class="ac-main">
+   <div class="ac-intro">
+    <div><div class="ac-eyebrow">WORKFORCE OPERATIONS <span class="ac-divider">/</span> ACCESS & ASSIGNMENTS</div>
+     <h1>One workspace. Every project.</h1>
+     <p>Manage contributor membership, review levels, and task assignments using live Adatacore data. Existing work is never silently cancelled.</p>
+    </div>
+    <div class="ac-intro-side"><span class="ac-intro-label">PERMISSION MODEL</span><strong>Project-specific controls</strong><span>Grant · Revoke · Assign · Review</span></div>
+   </div>
+   <section class="ac-stats" aria-label="Live account and project metrics">
+    <div class="ac-stat"><span>MANAGED PROJECTS</span><strong id="statProjects">—</strong><small>Within your admin scope</small></div>
+    <div class="ac-stat"><span>CONTRIBUTORS</span><strong id="statPeople">—</strong><small>Platform directory</small></div>
+    <div class="ac-stat"><span>EXPLICIT GRANTS</span><strong id="statGrants">—</strong><small>Active project memberships</small></div>
+    <div class="ac-stat"><span>EXPLICIT REVOCATIONS</span><strong id="statRevoked">—</strong><small>Blocked project memberships</small></div>
+   </section>
+   <div class="ac-workspace">
+    <aside class="ac-panel ac-projects" aria-labelledby="projectsTitle">
+     <div class="ac-panel-heading"><div><span class="ac-section-kicker">01 / SCOPE</span><h2 id="projectsTitle">Projects</h2></div><span class="ac-mini-count" id="projectCount">—</span></div>
+     <label class="ac-search"><span aria-hidden="true">⌕</span><input id="projectSearch" type="search" placeholder="Find a project…" autocomplete="off" aria-label="Search managed projects"></label>
+     <div class="ac-project-list" id="projectList" role="listbox" aria-label="Choose a project"><div class="ac-skeleton">Loading projects…</div></div>
+     <div class="ac-side-footer"><span class="ac-small-dot"></span> Only projects you can manage are shown. <span>All active and archived projects remain visible.</span></div>
+    </aside>
+    <section class="ac-panel ac-people" aria-labelledby="peopleTitle">
+     <div class="ac-panel-heading ac-people-heading">
+      <div><span class="ac-section-kicker">02 / PEOPLE</span><h2 id="peopleTitle">Contributor access</h2><p id="projectContext">Select a project to inspect its members</p></div>
+      <div class="ac-queue-stats" id="queueStats" aria-label="Available task capacity">—</div>
+     </div>
+     <div class="ac-toolbar">
+      <label class="ac-search ac-person-search"><span aria-hidden="true">⌕</span><input id="peopleSearch" type="search" placeholder="Search name, email or worker ID…" autocomplete="off" aria-label="Search all contributors"></label>
+      <select id="peopleFilter" aria-label="Filter contributors by membership">
+       <option value="all">All contributors</option><option value="active">Explicit access</option>
+       <option value="inherited">Inherited access</option><option value="revoked">Revoked</option>
+       <option value="selected">Selected only</option>
+      </select>
+      <label class="ac-check-toggle"><input id="activeOnly" type="checkbox" checked> Active accounts</label>
+     </div>
+     <div class="ac-table-heading"><label class="ac-select-head"><input id="selectVisible" type="checkbox" aria-label="Select all visible contributors"> <span id="visibleCount">—</span></label><span>PROJECT ACCESS</span><span>ROLE & WORKLOAD</span><span></span></div>
+     <div class="ac-roster" id="peopleList" aria-live="polite"><div class="ac-skeleton">Select a project to see contributors.</div></div>
+     <div class="ac-roster-footer">
+      <span id="selectedInfo">0 selected</span>
+      <button id="clearSelection" type="button">Clear selection</button>
+      <span id="rosterDetail">Changes are scoped to the selected project.</span>
+     </div>
+    </section>
+    <aside class="ac-panel ac-actions" aria-labelledby="actionTitle">
+     <div class="ac-panel-heading"><div><span class="ac-section-kicker">03 / APPLY</span><h2 id="actionTitle">Manage selection</h2></div><span id="actionCount" class="ac-count-badge">0 people</span></div>
+     <div class="ac-action-body">
+      <div class="ac-selected-preview" id="selectedPreview">Choose a project and select contributors to begin.</div>
+      <div class="ac-field">
+       <label for="accessAction">Project access</label>
+       <select id="accessAction">
+        <option value="keep">Keep current access</option>
+        <option value="active">Grant / restore access</option>
+        <option value="revoked">Revoke project access</option>
+       </select>
+       <small id="accessHelp">Inherited access means the legacy default permits access without an explicit record.</small>
+      </div>
+      <div id="reviewField" class="ac-field" hidden>
+       <label for="reviewLevel">Transcription review level</label>
+       <select id="reviewLevel">
+        <option value="KEEP">Keep current level</option>
+        <option value="L1">L1 · Transcription only</option>
+        <option value="L2">L2 · Review only</option>
+        <option value="BOTH">L1 + L2 · Both levels</option>
+        <option value="PAUSED">Paused · No new tasks</option>
+       </select>
+       <div id="reviewLimitField" class="ac-inline-field" hidden><label for="reviewLimit">Maximum active L2 reviews</label><input id="reviewLimit" type="number" min="1" max="100" value="10"></div>
+       <small id="reviewHelp">Changing a level affects new tasks; any existing L1 work remains assigned.</small>
+      </div>
+      <div class="ac-section-break"><span>OPTIONAL TASK ASSIGNMENT</span></div>
+      <div class="ac-field">
+       <label for="taskLayer">Assign new work</label>
+       <select id="taskLayer"><option value="">No new tasks</option><option value="L1">L1 · Production</option><option value="L2">L2 · Review</option></select>
+      </div>
+      <div id="targetField" class="ac-field" hidden>
+       <label for="taskTarget">Target active tasks per person</label>
+       <div class="ac-stepper"><button id="targetDown" type="button" aria-label="Decrease task target">−</button><input id="taskTarget" type="number" min="1" max="100" value="1"><button id="targetUp" type="button" aria-label="Increase task target">+</button></div>
+       <small>Top up to this target. Already-open tasks are counted, not replaced.</small>
+      </div>
+      <label id="capacityField" class="ac-capacity-checkbox" hidden><input id="autoCapacity" type="checkbox"> Auto-add project inventory when needed <small>For non-transcription projects only</small></label>
+      <div class="ac-impact" aria-live="polite"><strong>Before you apply</strong><p id="impactText">Choose a project and contributors. Access changes take effect immediately in the assignment and permission systems.</p><div id="previewSummary" class="ac-preview-summary"></div></div>
+      <button id="applyChanges" type="button" class="ac-primary" disabled>Apply changes</button>
+      <p class="ac-action-disclaimer">Access revocation blocks project entry but does not delete transcripts or cancel existing work. L3 is not yet part of this review pipeline.</p>
+      <div id="actionResult" class="ac-result" role="status" hidden></div>
+     </div>
+    </aside>
+   </div>
+  </main>
+ </div>
+ <dialog id="confirmRevoke" class="ac-dialog" aria-labelledby="confirmTitle">
+  <div class="ac-dialog-icon" aria-hidden="true">!</div>
+  <h2 id="confirmTitle">Revoke project access?</h2>
+  <p id="confirmText">This will prevent the selected contributors from opening this project or claiming new work. Their existing task records will be kept.</p>
+  <div class="ac-dialog-buttons"><button id="revokeCancel" type="button">Cancel</button><button id="revokeConfirm" type="button">Revoke access</button></div>
+ </dialog>
+</body></html>
