@@ -375,7 +375,7 @@ body.tx-v2-editor .v2cb-inspector-resize[hidden]{display:none!important}
  body.tx-v2-editor .v2cb-current-label{max-width:130px;overflow:hidden;text-overflow:ellipsis}
  body.tx-v2-editor .v2cb-workbar-actions{width:100%!important;justify-content:flex-start!important}
  body.tx-v2-editor .v2cb-workbar-actions button{flex:0 1 auto!important}
- body.tx-v2-editor .v2cb-workbar-actions #v2cbBookmark{display:none!important}
+ body.tx-v2-editor .v2cb-workbar-actions #v2cbBookmark{padding:5px 7px!important}
  body.tx-v2-editor .v2-wave-card .v2-pane-head,
  body.tx-v2-editor .v2-transcript-card .v2-pane-head{
   padding:9px 12px!important;min-height:55px!important;
