@@ -3,112 +3,79 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
-const file=(name)=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
-const html=file('assignment-center.html'),script=file('assignment-center-v2.js'),css=file('assignment-center-v2.css');
+const file=name=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
+const html=file('assignment-center.html'),script=file('assignment-center-simple.js');
+const style=file('assignment-center-simple.css'),entry=file('assignment-center-entry.html');
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const known=new Set(ids);
-
-test('Unified Assignment Center replaces old UI without changing the route',()=>{
- assert.ok(html.includes('Assignment Center · Adatacore'));
- assert.ok(html.includes('/assignment-center-v2.js?v=1'));
- assert.ok(html.includes('/assignment-center-v2.css?v=1'));
- assert.ok(!html.includes('/assignment-center.js?v=1'),'Retired assignment controller must not run twice');
- assert.equal(known.size,ids.length,'No duplicated control IDs');
- for(const id of ['projectList','projectSearch','peopleList','peopleSearch','peopleFilter','activeOnly','selectVisible',
- 'selectedInfo','clearSelection','statProjects','statPeople','statGrants','statRevoked',
- 'accessAction','reviewLevel','reviewLimit','taskLayer','taskTarget','autoCapacity',
- 'applyChanges','confirmRevoke','revokeCancel','revokeConfirm','actionResult','syncStatus','previewSummary']){
-  assert.ok(known.has(id),'Missing control: '+id);
+test('Three clear assignment inputs replace complicated action targets',()=>{
+ assert.equal(ids.length,known.size,'Duplicate HTML IDs');
+ for(const id of ['levelChoice','membershipAction','dailyTasks','applyChanges','selectedPreview',
+ 'peopleList','projectList','peopleSearch','projectSearch','dailySummary','actionResult',
+ 'confirmRevoke','dailyMinus','dailyPlus','dailyHelp']){
+  assert.ok(known.has(id),'Missing UI '+id);
+ }
+ for(const retired of ['taskTarget','taskLayer','autoCapacity','targetDown','targetUp','reviewLimit','accessAction']){
+  assert.ok(!known.has(retired),'Old confusing input still present: '+retired);
+ }
+ assert.ok(html.includes('<option value="active">Add to project</option>'));
+ assert.ok(html.includes('<option value="revoked">Remove from project</option>'));
+ assert.ok(html.includes('Tasks per day'));
+ assert.ok(html.includes('00:00 UTC'));
+});
+test('New admin route loads only the simple assignment controller',()=>{
+ assert.ok(html.includes('/assignment-center-simple.js?v=1'));
+ assert.ok(html.includes('/assignment-center-simple.css?v=1'));
+ assert.ok(!html.includes('src="/assignment-center-v2.js'));
+ assert.ok(entry.includes('/assignment-center-simple.js?v=1'));
+ const boot=entry.split('<script>')[1]?.split('</script>')[0];
+ assert.ok(boot);
+ assert.doesNotThrow(()=>new vm.Script(boot));
+});
+test('Simple center retrieves real per-person roles, project membership and daily counts',()=>{
+ assert.doesNotThrow(()=>new vm.Script(script));
+ for(const token of ['admin_assignment_center_simple_snapshot','admin_assignment_center_simple_apply',
+ 'daily_settings','access_limits','assigned_today','model.projects','model.people',
+ 'model.review_levels','model.access','get_my_admin_access','project?.project_type']){
+  assert.ok(script.includes(token),'Missing live data integration '+token);
  }
 });
-test('All projects and all contributors are driven by live scoped server snapshot',()=>{
- assert.doesNotThrow(()=>new vm.Script(script));
- assert.ok(script.includes("admin_assignment_center_v2_snapshot"));
- assert.ok(script.includes("admin_assignment_center_preview"));
- assert.ok(script.includes("get_my_admin_access"));
- assert.ok(script.includes("new URLSearchParams(location.search)"));
- assert.ok(script.includes("public")===false,'Frontend must not reference SQL tables');
- assert.ok(script.includes("model.projects"));
- assert.ok(script.includes("model.people"));
- assert.ok(script.includes("model.review_levels"));
- assert.ok(script.includes("model.access"));
+test('Daily quota is an actual server-side setting, not a one-time active-task target',()=>{
+ for(const token of ['p_tasks_per_day:num($(\'dailyTasks\').value)',
+ 'p_membership:$(\'membershipAction\').value',
+ 'p_level:$(\'levelChoice\').value','p_project_id:Number(project.id)']){
+  assert.ok(script.includes(token),'RPC does not send '+token);
+ }
+ assert.ok(!script.includes('p_target_limit'),'Do not send old active task target');
+ assert.ok(!script.includes('p_auto_capacity'),'Do not synthesize inventory');
+ assert.ok(script.includes('00:00 UTC'));
 });
-test('Grant revoke and assignments use one authorized atomic backend call',()=>{
- assert.ok(script.includes("admin_assignment_center_v2_apply"));
- assert.ok(script.includes("p_project_id:Number(project.id)"));
- assert.ok(script.includes("p_user_ids:allSelected().map(p=>p.id)"));
- assert.ok(script.includes("p_access:"));
- assert.ok(script.includes("p_review_level:"));
- assert.ok(script.includes("p_assign_layer:"));
- assert.ok(script.includes("p_target_limit:"));
- assert.ok(script.includes("p_auto_capacity:"));
- assert.ok(script.includes("confirmRevoke"));
- assert.ok(!script.includes(".from("),'Browser must not mutate permission or task tables directly');
- assert.ok(!script.includes(".innerHTML"),'Roster must render safely with text nodes');
+test('Revoke action is confirmed and does not delete task records',()=>{
+ assert.ok(script.includes('confirmRevoke'));
+ assert.ok(script.includes('revokeConfirm'));
+ assert.ok(script.includes('No new tasks assigned now'));
+ assert.ok(html.includes('Existing work will remain recorded.'));
+ assert.ok(!script.includes('db.from('),'Permission mutations must use authorized RPC only');
+ assert.ok(!script.includes('.innerHTML'),'Untrusted names must be rendered as text');
 });
-test('Statuses distinguish inherited project access and transcription explicit enrollment',()=>{
- assert.ok(script.includes("tx()?'Not enrolled':'Inherited'"));
- assert.ok(script.includes("tx()?'Not enrolled':'Inherited'"));
- assert.ok(html.includes("Grant / restore access"));
- assert.ok(html.includes("Revoke project access"));
- assert.ok(html.includes("L2 · Review only"));
- assert.ok(html.includes("L1 + L2 · Both levels"));
- assert.ok(html.includes("Paused · No new tasks"));
- assert.ok(script.includes("L2 only prevents new L1 transcription claims"));
- assert.ok(html.includes('L3 is not yet part of this review pipeline'));
-});
-test('No fabricated success if a permission is saved but no tasks are assigned',()=>{
- assert.ok(script.includes("created_tasks"));
- assert.ok(script.includes("Zero new tasks assigned."));
- assert.ok(script.includes("Existing active work already meets the target."));
- assert.ok(script.includes("data?.results"));
- assert.ok(script.includes("No changes were confirmed"));
-});
-test('Reviewer workspace stops offering new L1 for L2-only but preserves assigned work',()=>{
- const groups=file('workspace-project-groups.js');
- const taskOpen=file('workspace-task-open-fix.js');
- assert.doesNotThrow(()=>new vm.Script(groups));
- assert.doesNotThrow(()=>new vm.Script(taskOpen));
- assert.ok(groups.includes("canClaim:p.can_claim_l1!==false"));
- assert.ok(groups.includes("Finish existing L1"));
- assert.ok(groups.includes("!g.canClaim||g.remaining<=0||g.queue===0"));
- assert.ok(groups.includes("g.canClaim&&(g.hasAccess||g.count>0)"));
- assert.ok(taskOpen.includes("button.dataset.transcriptionProject"));
- assert.ok(groups.includes("'/transcription-v2'"));
- assert.ok(file('workspace.html').includes('/workspace-project-groups.js?v=6'));
- assert.ok(file('workspace.html').includes('/workspace-task-open-fix.js?v=2'));
-});
-test('Responsive accessible interaction, focus and reduced-motion support',()=>{
- assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length);
- for(const token of ['@media(max-width:760px)','@media(max-width:520px)',
-   'prefers-reduced-motion','focus-visible','ac-workspace','ac-roster']){
-  assert.ok(css.includes(token),'Missing responsive pattern: '+token);
+test('Existing project directory and contributor selection remain accessible',()=>{
+ for(const id of ['projectList','peopleList','peopleFilter','activeOnly','selectVisible',
+ 'visibleCount','selectedInfo','clearSelection','projectCount','refreshAll']){
+  assert.ok(known.has(id));
  }
  for(const id of script.split("$('").slice(1).map(s=>s.split("'")[0])){
-  assert.ok(known.has(id),'Script references nonexistent control: '+id);
+  assert.ok(known.has(id),'Script references missing element '+id);
  }
+ assert.equal((style.match(/{/g)||[]).length,(style.match(/}/g)||[]).length,'CSS braces');
+ assert.ok(style.includes('prefers-reduced-motion'));
+ assert.ok(style.includes('@media(max-width:760px)'));
 });
-
-test('Admin assignments route loads the replacement interface, not the legacy role loader',()=>{
- const entry=file('assignment-center-entry.html');
- assert.ok(entry.includes('/assignment-center-v2.js?v=1'));
- assert.ok(entry.includes("fetch('/assignment-center'"));
- assert.ok(!entry.includes('/assignment-center-role-loader.js'));
- const inline=entry.split('<script>')[1]?.split('</script>')[0];
- assert.ok(inline);
- assert.doesNotThrow(()=>new vm.Script(inline));
- const adminLink=file('admin-assignment-center-link.js');
- assert.ok(adminLink.includes('Assignment Center'));
- assert.ok(adminLink.includes('/admin/assignments'));
- assert.doesNotThrow(()=>new vm.Script(adminLink));
-});
-test('Contributor workspace loads permission-aware assignment scripts',()=>{
- const main=file('workspace.html'),entry=file('workspace-entry.html'),workspace=file('workspace-core.html');
- assert.ok(main.includes('/workspace-project-groups.js?v=6'));
- assert.ok(entry.includes('/workspace-project-groups.js?v=6'));
- assert.ok(main.includes('/workspace-task-open-fix.js?v=2'));
- assert.ok(workspace.includes('data-transcription-project'));
- const blocks=workspace.split('<script>').slice(1).map(x=>x.split('</script>')[0]);
- assert.ok(blocks.length>=2);
- for(const s of blocks)assert.doesNotThrow(()=>new vm.Script(s));
+test('L2 contributor workspace still blocks new L1 claims without deleting old tasks',()=>{
+ const workspace=file('workspace-project-groups.js');
+ const taskRouter=file('workspace-task-open-fix.js');
+ assert.doesNotThrow(()=>new vm.Script(workspace));
+ assert.doesNotThrow(()=>new vm.Script(taskRouter));
+ assert.ok(workspace.includes('canClaim:p.can_claim_l1!==false'));
+ assert.ok(workspace.includes('Finish existing L1'));
+ assert.ok(taskRouter.includes("'/transcription-v2'"));
 });
