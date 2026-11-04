@@ -39,7 +39,7 @@ test('Queue routing is a deliberate admin-only action on one selected audio item
 });
 test('Queue UI explains locked stages and prevents reviewer self-review by email',()=>{
  for(const fragment of ["route_l1","route_l2","L2 needs an actual submitted L1 transcript",
- "Reviewers cannot review their own L1 submissions","already assigned to a reviewer",
+ "Reviewers cannot review their own L1 submissions","An L2 reviewer is already assigned",
  "Approved work is locked","No active L2 reviewers","txqTabBadge"]){
   assert.ok(control.includes(fragment),'Missing safety explanation: '+fragment);
  }
