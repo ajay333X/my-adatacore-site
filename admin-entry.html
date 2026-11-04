@@ -17,7 +17,7 @@
     let html=await response.text();
     let theme='light';try{const a=localStorage.getItem('adatacore-theme'),b=localStorage.getItem('adatacore-admin-theme');theme=(a==='dark'||a==='light')?a:((b==='dark'||b==='light')?b:'light')}catch(_){ }
     html=html.replace('<html lang="en">',`<html lang="en" data-admin-theme="${theme}" data-adatacore-theme="${theme}">`);
-    html=html.replace('</head>','<link rel="stylesheet" href="/admin-theme.css?v=2"><link rel="stylesheet" href="/platform-theme.css?v=2"><link rel="stylesheet" href="/admin-clean-v2.css?v=20260904-1"></head>');
+    html=html.replace('</head>','<link rel="stylesheet" href="/admin-theme.css?v=2"><link rel="stylesheet" href="/platform-theme.css?v=2"><link rel="stylesheet" href="/admin-clean-v2.css?v=20260904-1"><link rel="stylesheet" href="/project-ui-polish.css?v=1"></head>');
     html=html.replace('<a class="nav-link" href="/dashboard">Contributor view</a>','<a class="nav-link" href="/workspace">Contributor view</a>');
     const oldGuard=`async function guard(){const {data:{user}}=await db.auth.getUser();if(!user)return location.replace('/auth');currentAdminId=user.id;const {data:p}=await db.from('users').select('role,accountStatus').eq('id',user.id).single();if(p?.role!=='admin'||p?.accountStatus!=='active'){alert('Active admin access required');return location.replace('/dashboard')}await refresh()}`;
     const newGuard=`async function guard(){const {data:{user}}=await db.auth.getUser();if(!user)return location.replace('/auth');currentAdminId=user.id;const {data:access,error}=await db.rpc('get_my_admin_access');if(error||!access?.allowed)return location.replace('/workspace');window.__adatacoreAdminAccess=access;if(access.is_super_admin)await refresh()}`;
