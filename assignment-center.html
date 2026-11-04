@@ -6,9 +6,9 @@
  <meta name="theme-color" content="#241d31">
  <title>Assignment Center · Adatacore</title>
  <link rel="icon" href="/favicon.png">
- <link rel="stylesheet" href="/assignment-center-v2.css?v=1">
+ <link rel="stylesheet" href="/assignment-center-v2.css?v=1"><link rel="stylesheet" href="/assignment-center-simple.css?v=1">
  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
- <script defer src="/assignment-center-v2.js?v=1"></script>
+ <script defer src="/assignment-center-simple.js?v=1"></script>
 </head>
 <body>
  <div class="ac-shell">
@@ -30,9 +30,9 @@
    <div class="ac-intro">
     <div><div class="ac-eyebrow">WORKFORCE OPERATIONS <span class="ac-divider">/</span> ACCESS & ASSIGNMENTS</div>
      <h1>One workspace. Every project.</h1>
-     <p>Manage contributor membership, review levels, and task assignments using live Adatacore data. Existing work is never silently cancelled.</p>
+     <p>Choose a contributor, set their level and daily task limit, then add or remove them from a project.</p>
     </div>
-    <div class="ac-intro-side"><span class="ac-intro-label">PERMISSION MODEL</span><strong>Project-specific controls</strong><span>Grant · Revoke · Assign · Review</span></div>
+    <div class="ac-intro-side"><span class="ac-intro-label">PERMISSION MODEL</span><strong>Project-specific controls</strong><span>Level · Membership · Daily limit</span></div>
    </div>
    <section class="ac-stats" aria-label="Live account and project metrics">
     <div class="ac-stat"><span>MANAGED PROJECTS</span><strong id="statProjects">—</strong><small>Within your admin scope</small></div>
@@ -61,7 +61,7 @@
       </select>
       <label class="ac-check-toggle"><input id="activeOnly" type="checkbox" checked> Active accounts</label>
      </div>
-     <div class="ac-table-heading"><label class="ac-select-head"><input id="selectVisible" type="checkbox" aria-label="Select all visible contributors"> <span id="visibleCount">—</span></label><span>PROJECT ACCESS</span><span>ROLE & WORKLOAD</span><span></span></div>
+     <div class="ac-table-heading"><label class="ac-select-head"><input id="selectVisible" type="checkbox" aria-label="Select all visible contributors"> <span id="visibleCount">—</span></label><span>PROJECT ACCESS</span><span>LEVEL & DAILY LIMIT</span><span></span></div>
      <div class="ac-roster" id="peopleList" aria-live="polite"><div class="ac-skeleton">Select a project to see contributors.</div></div>
      <div class="ac-roster-footer">
       <span id="selectedInfo">0 selected</span>
@@ -71,43 +71,38 @@
     </section>
     <aside class="ac-panel ac-actions" aria-labelledby="actionTitle">
      <div class="ac-panel-heading"><div><span class="ac-section-kicker">03 / APPLY</span><h2 id="actionTitle">Manage selection</h2></div><span id="actionCount" class="ac-count-badge">0 people</span></div>
-     <div class="ac-action-body">
-      <div class="ac-selected-preview" id="selectedPreview">Choose a project and select contributors to begin.</div>
-      <div class="ac-field">
-       <label for="accessAction">Project access</label>
-       <select id="accessAction">
-        <option value="keep">Keep current access</option>
-        <option value="active">Grant / restore access</option>
-        <option value="revoked">Revoke project access</option>
+     <div class="ac-action-body ac-action-simple">
+      <div class="ac-selected-preview" id="selectedPreview">Select a contributor to manage their access.</div>
+      <div class="ac-field ac-simple-field">
+       <label for="levelChoice"><span class="ac-simple-number">1</span> Level</label>
+       <select id="levelChoice">
+        <option value="L1">L1 · Contributor</option>
+        <option value="L2">L2 · Reviewer</option>
+        <option value="BOTH">L1 + L2 · Both</option>
        </select>
-       <small id="accessHelp">Inherited access means the legacy default permits access without an explicit record.</small>
+       <small id="levelHelp">Choose which work this person can receive.</small>
       </div>
-      <div id="reviewField" class="ac-field" hidden>
-       <label for="reviewLevel">Transcription review level</label>
-       <select id="reviewLevel">
-        <option value="KEEP">Keep current level</option>
-        <option value="L1">L1 · Transcription only</option>
-        <option value="L2">L2 · Review only</option>
-        <option value="BOTH">L1 + L2 · Both levels</option>
-        <option value="PAUSED">Paused · No new tasks</option>
+      <div class="ac-field ac-simple-field">
+       <label for="membershipAction"><span class="ac-simple-number">2</span> Project access</label>
+       <select id="membershipAction">
+        <option value="active">Add to project</option>
+        <option value="revoked">Remove from project</option>
        </select>
-       <div id="reviewLimitField" class="ac-inline-field" hidden><label for="reviewLimit">Maximum active L2 reviews</label><input id="reviewLimit" type="number" min="1" max="100" value="10"></div>
-       <small id="reviewHelp">Changing a level affects new tasks; any existing L1 work remains assigned.</small>
+       <small id="accessHelp">Removing access won't erase completed work or existing task records.</small>
       </div>
-      <div class="ac-section-break"><span>OPTIONAL TASK ASSIGNMENT</span></div>
-      <div class="ac-field">
-       <label for="taskLayer">Assign new work</label>
-       <select id="taskLayer"><option value="">No new tasks</option><option value="L1">L1 · Production</option><option value="L2">L2 · Review</option></select>
+      <div class="ac-field ac-simple-field" id="dailyField">
+       <label for="dailyTasks"><span class="ac-simple-number">3</span> Tasks per day</label>
+       <div class="ac-daily-input">
+        <button id="dailyMinus" type="button" aria-label="Decrease daily task limit">−</button>
+        <input id="dailyTasks" type="number" min="1" max="100" step="1" value="5" inputmode="numeric">
+        <button id="dailyPlus" type="button" aria-label="Increase daily task limit">+</button>
+        <span class="ac-daily-suffix">/ day</span>
+       </div>
+       <small id="dailyHelp">Maximum new tasks per day, shared across levels. Resets at 00:00 UTC (5:30 AM IST).</small>
       </div>
-      <div id="targetField" class="ac-field" hidden>
-       <label for="taskTarget">Target active tasks per person</label>
-       <div class="ac-stepper"><button id="targetDown" type="button" aria-label="Decrease task target">−</button><input id="taskTarget" type="number" min="1" max="100" value="1"><button id="targetUp" type="button" aria-label="Increase task target">+</button></div>
-       <small>Top up to this target. Already-open tasks are counted, not replaced.</small>
-      </div>
-      <label id="capacityField" class="ac-capacity-checkbox" hidden><input id="autoCapacity" type="checkbox"> Auto-add project inventory when needed <small>For non-transcription projects only</small></label>
-      <div class="ac-impact" aria-live="polite"><strong>Before you apply</strong><p id="impactText">Choose a project and contributors. Access changes take effect immediately in the assignment and permission systems.</p><div id="previewSummary" class="ac-preview-summary"></div></div>
-      <button id="applyChanges" type="button" class="ac-primary" disabled>Apply changes</button>
-      <p class="ac-action-disclaimer">Access revocation blocks project entry but does not delete transcripts or cancel existing work. L3 is not yet part of this review pipeline.</p>
+      <div class="ac-simple-summary" id="dailySummary" role="status">Select a contributor to see their current daily limit.</div>
+      <button id="applyChanges" type="button" class="ac-primary" disabled>Save changes</button>
+      <p class="ac-action-disclaimer" id="actionNote">Tasks are only assigned when eligible work is available. Existing work will not be cancelled.</p>
       <div id="actionResult" class="ac-result" role="status" hidden></div>
      </div>
     </aside>
@@ -116,8 +111,8 @@
  </div>
  <dialog id="confirmRevoke" class="ac-dialog" aria-labelledby="confirmTitle">
   <div class="ac-dialog-icon" aria-hidden="true">!</div>
-  <h2 id="confirmTitle">Revoke project access?</h2>
-  <p id="confirmText">This will prevent the selected contributors from opening this project or claiming new work. Their existing task records will be kept.</p>
-  <div class="ac-dialog-buttons"><button id="revokeCancel" type="button">Cancel</button><button id="revokeConfirm" type="button">Revoke access</button></div>
+  <h2 id="confirmTitle">Remove project access?</h2>
+  <p id="confirmText">Remove these contributors from this project? Existing work will remain recorded.</p>
+  <div class="ac-dialog-buttons"><button id="revokeCancel" type="button">Cancel</button><button id="revokeConfirm" type="button">Remove access</button></div>
  </dialog>
 </body></html>
