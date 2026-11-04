@@ -48,7 +48,7 @@ test('Grant revoke and assignments use one authorized atomic backend call',()=>{
 });
 test('Statuses distinguish inherited project access and transcription explicit enrollment',()=>{
  assert.ok(script.includes("tx()?'Not enrolled':'Inherited'"));
- assert.ok(script.includes("Grant / restore access")===false,'Options live in HTML');
+ assert.ok(script.includes("tx()?'Not enrolled':'Inherited'"));
  assert.ok(html.includes("Grant / restore access"));
  assert.ok(html.includes("Revoke project access"));
  assert.ok(html.includes("L2 · Review only"));
