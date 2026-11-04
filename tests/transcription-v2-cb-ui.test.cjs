@@ -102,3 +102,47 @@ test('Illustrated QA workflow reflects actual task status and UI motion is acces
  assert.ok(!image.includes('<script')&&!image.includes('<image ')&&!image.includes('onload='),'Reviewer illustration must not embed external or executable content');
  assert.ok(css.includes('prefers-reduced-motion'));
 });
+
+test('Refined layout preserves existing controls and server verified submit',()=>{
+ const page=src('transcription-v2.html');
+ const ids=page.split('id="').slice(1).map(item=>item.split('"')[0]);
+ const knownIds=new Set(ids);
+ assert.equal(ids.length,knownIds.size,'Duplicate HTML IDs');
+ const needed=['audio','save','submit','confirmSubmit','segmentRows','v2CaptionFlow','v2InlineNST',
+ 'v2InlineStyle','v2InlineFL','v2InlinePRO','v2InlineEmphasis','v2cbListenGate',
+ 'v2cbJumpGap','v2cbBottomDock','v2cbAssist','v2cbTaskInstructions',
+ 'v2cbResumeFollow','v2cbPreviewToggle','v2cbTranscriptResize',
+ 'v2cbInspectorResize','v2cbReplayLine','v2cbEditLine','v2cbSubmitHint'];
+ for(const id of needed)assert.ok(knownIds.has(id),'Missing control '+id);
+ for(const asset of ['transcription-v2-refinement.js?v=1','transcription-v2-refinement.css?v=1',
+ 'transcription-v2-follow.js?v=3','transcription-v2-cb-ux.js?v=2']){
+  assert.ok(page.includes('/'+asset),'Missing asset '+asset);
+ }
+ const wave=page.indexOf('<section class="card v2-wave-card"');
+ assert.ok(wave<page.indexOf('id="v2cbListenGate"'));
+ assert.ok(page.indexOf('id="v2cbListenGate"')<page.indexOf('id="waveScroller"'));
+ assert.ok(src('transcription-editor.js').includes('window.txV2ListeningReady!==true'));
+ assert.ok(src('transcription-editor.js').includes("rpc('tx_submit'"));
+});
+test('Additive UX uses existing controls, preserves access and reduces motion',()=>{
+ const script=src('transcription-v2-refinement.js');
+ const css=src('transcription-v2-refinement.css');
+ assert.doesNotThrow(()=>new vm.Script(script));
+ assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length);
+ const page=src('transcription-v2.html');
+ const ids=new Set(page.split('id="').slice(1).map(item=>item.split('"')[0]));
+ for(const id of script.split("$('").slice(1).map(item=>item.split("'")[0])){
+  assert.ok(ids.has(id),'Unknown script ID '+id);
+ }
+ for(const fragment of ['IntersectionObserver','floatingDock.hidden','v2cb-follow-suspended',
+ 'aria-valuenow','pointermove','inspectorWidth','v2cb-refine-inspector-docked',
+ 'txv2:listening','pref.previewCollapsed','v2SlideReplay']){
+  assert.ok(script.includes(fragment),'Missing UI feature '+fragment);
+ }
+ assert.ok(css.includes('prefers-reduced-motion'));
+ assert.ok(css.includes('v2cb-task-instructions'));
+ assert.ok(css.includes('v2cb-transcript-resize'));
+ assert.ok(!css.includes('#v2cbBookmark{display:none'));
+ assert.ok(src('transcription-v2-follow.js').includes('v2cb-follow-suspended'));
+ assert.ok(src('transcription-v2-cb-ux.js').includes("assist.getAttribute('aria-modal')==='true'"));
+});
