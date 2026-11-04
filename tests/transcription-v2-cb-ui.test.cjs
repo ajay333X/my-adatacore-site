@@ -53,3 +53,25 @@ test('CB additions reuse the existing editing and submission handlers',()=>{
  assert.ok(src('transcription-v2-follow.js').includes('window.txV2CBScrollBehavior'));
  assert.ok(src('transcription-v2-cb-ux.css').includes('v2-slide-show-all .v2-caption-flow'));
 });
+
+
+test('Listening progress uses actual played media ranges and server-confirmed completion',()=>{
+ const js=src('transcription-v2-listening.js');
+ const css=src('transcription-v2-listening.css');
+ assert.doesNotThrow(()=>new vm.Script(js));
+ assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length);
+ assert.ok(js.includes('audio.played'),'A seek-only progress bar is not acceptable');
+ assert.ok(js.includes("tx_listening_state")&&js.includes("tx_listening_record"),'Progress must be stored on server');
+ assert.ok(js.includes('window.txV2ListeningReady'),'Completion must be server-confirmed');
+ assert.ok(js.includes('s.mode')&&js.includes("contributor"),'Only contributor submissions should be gated');
+ assert.ok(html.includes('id="v2cbListenMeter"'),'Thin listening meter missing');
+ assert.ok(html.includes('/transcription-v2-listening.js?v=1'),'Listening script not loaded');
+ assert.ok(html.includes('/transcription-v2-listening.css?v=1'),'Listening styles not loaded');
+});
+test('Original submission flow checks listening coverage but preserves reviewers',()=>{
+ const core=src('transcription-editor.js');
+ assert.ok(core.includes("data?.mode==='contributor'"),'Reviewers/admins must be exempt');
+ assert.ok(core.includes('window.txV2RefreshSubmitButtons=buttons'),'Submit buttons should refresh when coverage verified');
+ assert.ok(core.includes('window.txV2ListeningReady!==true'),'Must be gated until verified completion');
+ assert.ok(core.includes("const r=await rpc('tx_submit'"),'Existing submission RPC should not be replaced');
+});
