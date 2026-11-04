@@ -133,9 +133,10 @@ window.addEventListener('txv2:listening',e=>{
  const image=workflow.querySelector('img');
  if(image)image.title=state.required?'Listening '+state.verifiedPercent+'% verified by server':'QA workflow illustration';
 });
+let checks=0;
 const timer=setInterval(()=>{
  paintWorkflow();
- if(taskLoaded)clearInterval(timer);
+ if(taskLoaded||++checks>=100)clearInterval(timer);
 },350);
 updatePlayer();updateSave();
 })();

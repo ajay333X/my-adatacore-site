@@ -75,3 +75,30 @@ test('Original submission flow checks listening coverage but preserves reviewers
  assert.ok(core.includes('window.txV2ListeningReady!==true'),'Must be gated until verified completion');
  assert.ok(core.includes("const r=await rpc('tx_submit'"),'Existing submission RPC should not be replaced');
 });
+
+test('Tiny progress bar sits above the waveform and permits jump to missing audio',()=>{
+ const start=html.indexOf('<section class="card v2-wave-card"');
+ const progress=html.indexOf('id="v2cbListenGate"');
+ const waveform=html.indexOf('id="waveScroller"');
+ assert.ok(start>=0&&start<progress&&progress<waveform,'Listening line must be inside waveform');
+ assert.ok(progress>html.indexOf('<main class="editor-page'),'Bar must not be pinned below top navigation');
+ assert.ok(known.has('v2cbJumpGap'),'Jump to unheard audio button missing');
+ const js=src('transcription-v2-listening.js');
+ assert.ok(js.includes('window.txV2JumpToUnplayed'),'Missing playback gap navigation');
+ assert.ok(js.includes('firstUnplayed'),'Coverage must be based on unplayed seconds');
+ assert.ok(js.includes('tx_listening_record'),'Listening verification must stay server-side');
+});
+test('Illustrated QA workflow reflects actual task status and UI motion is accessible',()=>{
+ const js=src('transcription-v2-studio-live.js');
+ const css=src('transcription-v2-studio-live.css');
+ assert.doesNotThrow(()=>new vm.Script(js));
+ assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length);
+ for(const status of ['submitted','in_review','changes_requested','approved'])assert.ok(js.includes(status),'Missing task status '+status);
+ for(const id of ['v2cbWorkflow','v2cbWorkflowTitle','v2cbPlayState','v2cbWaveHover','v2cbCommandDialog','v2cbCommandSearch','v2cbCommandList'])assert.ok(known.has(id),'Missing UI '+id);
+ for(const token of js.split("$('").slice(1).map(part=>part.split("'")[0]))assert.ok(known.has(token),'Script references missing ID '+token);
+ for(const asset of ['transcription-v2-studio-live.js?v=1','transcription-v2-studio-live.css?v=1','transcription-v2-qa-workflow.svg?v=1','transcription-v2-pro.js?v=4'])assert.ok(html.includes(asset),'Missing asset '+asset);
+ const image=src('transcription-v2-qa-workflow.svg');
+ assert.ok(image.startsWith('<svg')&&image.includes('</svg>'));
+ assert.ok(!image.includes('http://')&&!image.includes('https://'),'Reviewer illustration must remain self-contained');
+ assert.ok(css.includes('prefers-reduced-motion'));
+});
