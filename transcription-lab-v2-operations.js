@@ -9,6 +9,7 @@ if(!hero||!projectList)return;
 const headings={
  overview:'Overview · pipeline and project health',
  queue:'Live Queue · day-to-day transcription operations',
+ queues:'Queue Control · manage L1/L2 pending work and routing',
  intake:'Intake & AI · importing and preparing recordings'
 };
 function syncTab(){
