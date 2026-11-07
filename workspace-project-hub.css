@@ -56,3 +56,10 @@ html.ac-contributor-simple .ac-feedback-note p{margin:6px 0 0;white-space:pre-wr
 html.ac-contributor-simple .ac-detail-loading{padding:50px;text-align:center;color:var(--muted);font-size:12px}
 @media(max-width:710px){html.ac-contributor-simple .ac-project-grid{grid-template-columns:1fr}html.ac-contributor-simple .ac-detail-tabs{gap:19px}html.ac-contributor-simple .ac-detail-panel{padding:16px}html.ac-contributor-simple .ac-feedback-table{font-size:11px}html.ac-contributor-simple .ac-feedback-table td,html.ac-contributor-simple .ac-feedback-table th{padding:12px 5px}html.ac-contributor-simple .ac-project-head h2{font-size:26px}}
 @media(prefers-reduced-motion:reduce){html.ac-contributor-simple .ac-project-card,html.ac-contributor-simple .ac-detail-tab{transition:none!important}html.ac-contributor-simple .ac-project-card:hover{transform:none!important}}
+html.ac-contributor-simple .ac-project-library-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:10px 0}
+html.ac-contributor-simple .ac-project-library-bar span{font-size:12px;font-weight:760;color:var(--muted)}
+html.ac-contributor-simple .ac-project-library-entry{border:1px solid var(--line);border-radius:12px;padding:17px 18px!important;margin:8px 0;background:var(--panel)}
+html.ac-contributor-simple .ac-project-library-entry .ac-project-library-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:3px}
+html.ac-contributor-simple .ac-project-library-entry h4{margin:0;font-size:13px}
+html.ac-contributor-simple .ac-project-library-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+html.ac-contributor-simple .ac-project-library-actions .btn{font-size:11px;padding:8px 11px}
