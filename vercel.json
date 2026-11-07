@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/test-editor",
+      "destination": "/sandbox-real-editor-entry"
+    },
+    {
       "source": "/admin/test-workspace",
       "destination": "/admin-test-workspace"
     },
