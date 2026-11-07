@@ -14,6 +14,10 @@
   try{
     const params=new URLSearchParams(location.search),impersonation=params.get('impersonation')||'';
     const validImpersonation=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(impersonation);
+    const sandbox=params.get('test_session')||'';
+    const validSandbox=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sandbox);
+    if(sandbox&&!validSandbox)throw new Error('Invalid sandbox session');
+    if(sandbox&&impersonation)throw new Error('Cannot combine admin support mode and sandbox');
     if(impersonation&&!validImpersonation)throw new Error('Invalid contributor-view session');
     if(!validImpersonation){
       const guardDb=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',{auth:{persistSession:true,autoRefreshToken:true}});
@@ -32,9 +36,19 @@
       if(!html.includes(original))throw new Error('Contributor workspace compatibility check failed');
       html=html.replace(original,replacement);
     }
+    if(validSandbox){
+      const rpc="db.rpc('get_contributor_workspace')";
+      if(!html.includes(rpc))throw new Error('Workspace sandbox adapter signature changed');
+      html=html.replace(rpc,`db.rpc('admin_sandbox_workspace',{p_session_id:'${sandbox}'})`);
+      const buttonAttr='data-id="${Number(t.id)}"';
+      if(!html.includes(buttonAttr))throw new Error('Workspace task button signature changed');
+      html=html.replace(buttonAttr,'data-sandbox-id="${esc(t.sandbox_id||\'\')}" '+buttonAttr);
+      html=html.replace('</head>','<link rel="stylesheet" href="/workspace-sandbox.css?v=1"></head>');
+    }
+    const sandboxAddon='<scr'+'ipt src="/workspace-sandbox-mode.js?v=1"></scr'+'ipt>';
     const normalAddon='<scr'+'ipt src="/vendor/libphonenumber-max-1.13.12.js"></scr'+'ipt><scr'+'ipt src="/phone-fields.js?v=2"></scr'+'ipt><scr'+'ipt src="/workspace-account-controls.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-profile-menu.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-project-groups.js?v=7"></scr'+'ipt><scr'+'ipt src="/workspace-review-inbox.js?v=1"></scr'+'ipt><scr'+'ipt src="/workspace-experience.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-support-skills.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-balance-ledger.js?v=2"></scr'+'ipt><scr'+'ipt src="/workspace-platform-highlights.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-qualifications-guidelines.js?v=2"></scr'+'ipt><scr'+'ipt src="/workspace-operations-context.js?v=1"></scr'+'ipt><scr'+'ipt src="/workspace-security-activity.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-application-banner.js?v=20260902-1"></scr'+'ipt><scr'+'ipt src="/workspace-overview-order.js?v=20260904-1"></scr'+'ipt><scr'+'ipt src="/workspace-greeting.js?v=20260904-1"></scr'+'ipt><scr'+'ipt src="/slack-events.js?v=20260904-1"></scr'+'ipt><scr'+'ipt src="/workspace-task-open-fix.js?v=2"></scr'+'ipt><scr'+'ipt src="/workspace-clean-navigation.js?v=3"></scr'+'ipt><scr'+'ipt src="/workspace-contributor-home.js?v=2"></scr'+'ipt><scr'+'ipt src="/workspace-announcement-banner.js?v=1"></scr'+'ipt><scr'+'ipt src="/workspace-referrals.js?v=1"></scr'+'ipt><scr'+'ipt src="/platform-theme.js?v=2"></scr'+'ipt><scr'+'ipt src="/client-error-monitor.js?v=1"></scr'+'ipt>';
     const impersonationAddon='<scr'+'ipt src="/workspace-impersonation.js?v=20260902-1"></scr'+'ipt><scr'+'ipt src="/platform-theme.js?v=2"></scr'+'ipt><scr'+'ipt src="/client-error-monitor.js?v=1"></scr'+'ipt>';
-    html=html.replace('</body>',(validImpersonation?impersonationAddon:normalAddon)+'</body>');
+    html=html.replace('</body>',(validSandbox?sandboxAddon:(validImpersonation?impersonationAddon:normalAddon))+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load workspace. '+String(error.message||error)+'</div>'}
 })();
