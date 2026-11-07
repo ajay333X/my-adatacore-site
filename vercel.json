@@ -46,6 +46,14 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/test-workspace",
+      "destination": "/admin-test-workspace"
+    },
+    {
+      "source": "/admin/test-accounts",
+      "destination": "/admin-test-accounts"
+    },
+    {
       "source": "/admin",
       "destination": "/admin-entry"
     },
