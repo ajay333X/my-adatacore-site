@@ -22,7 +22,7 @@ location.assign('/admin/test-workspace?session='+encodeURIComponent(id)+'&task='
 },true);
 
 let sandboxAccountId=null,sandboxProjectId=null,opening=false;
-async function sandboxTaskOpen(projectId,isReview){
+async function sandboxTaskOpen(projectId,isReview,claimKind='live'){
  if(opening)return;opening=true;
  try{
   let activeSession=id;
@@ -31,7 +31,7 @@ async function sandboxTaskOpen(projectId,isReview){
     if(error)throw error;
     activeSession=data.session_id;
   }
-  const {data,error}=await client.rpc('admin_sandbox_real_claim',{p_session_id:activeSession,p_kind:'live'});
+  const {data,error}=await client.rpc('admin_sandbox_real_claim',{p_session_id:activeSession,p_kind:claimKind});
   if(error)throw error;
   if(!data?.claim_id)throw Error('No eligible real task available at this level.');
   location.assign('/admin/test-editor?test_session='+encodeURIComponent(activeSession)+'&item='+encodeURIComponent(data.claim_id));
@@ -55,6 +55,17 @@ async function initializeProjectCards(){
  const {data,error}=await client.rpc('admin_sandbox_workspace',{p_session_id:id});
  if(error)throw error;
  sandboxAccountId=data?.sandbox?.account_id;sandboxProjectId=data?.sandbox?.project_id;
+ if(data?.sandbox?.level==='L2'){
+   const control=document.createElement('button');
+   control.id='sandboxReviewL1';control.type='button';
+   control.className='sandbox-review-l1';
+   control.textContent='Review dummy L1 submission';
+   control.title='Review a real audio source submitted by the other dummy, without affecting production';
+   const header=banner.querySelector('div');
+   if(header)header.append(' · ',control);
+   control.onclick=()=>sandboxTaskOpen(Number(sandboxProjectId),true,'test_submission');
+ }
+
  const response=await fetch('/workspace-project-groups.js?v=7',{cache:'no-store'});
  if(!response.ok)throw Error('Project cards could not be loaded');
  let source=await response.text();
