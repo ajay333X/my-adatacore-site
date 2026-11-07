@@ -51,10 +51,34 @@ document.addEventListener('click',e=>{
  const sub=document.getElementById('viewSub');
  if(sub)sub.textContent='TEST MODE · This project action needs a sandbox adapter.';
 },true);
+
+function renderGrantedProjects(projects){
+ const home=document.getElementById('view-overview');
+ if(!home)return;
+ let section=document.getElementById('sandboxGrantedProjects');
+ if(!section){section=document.createElement('section');section.id='sandboxGrantedProjects';section.className='sandbox-granted-projects';home.insertBefore(section,home.firstElementChild)}
+ const list=Array.isArray(projects)?projects:[];
+ section.innerHTML='<div class="section-title"><div><div class="eyebrow">Project access</div><h2>Assigned projects</h2></div><span class="pill pill-brand">'+list.length+' assigned</span></div>'+
+ '<div class="task-grid">'+(list.length?list.map(p=>{
+  const supported=p.type==='transcription';
+  return '<article class="card card-hover task-card"><div class="task-top"><span class="pill pill-brand">'+safe(p.role)+'</span><span class="pill pill-green"><span class="status-dot"></span>Access granted</span></div>'+
+  '<h3>'+safe(p.name)+'</h3><div class="task-public-id">Project '+Number(p.id)+' · '+safe(p.type||'Project')+'</div>'+
+  '<div class="task-actions"><span class="muted" style="font-size:11px">'+(supported?'Real queue · isolated test claims':'Project visible · claim adapter not configured')+'</span>'+
+  (supported?'<button type="button" class="btn btn-primary sandbox-granted-open" data-project="'+Number(p.id)+'">Open project →</button>':'<button type="button" class="btn btn-secondary" disabled>Testing unavailable</button>')+'</div></article>';
+ }).join(''):'<div class="card empty" style="grid-column:1/-1">No projects assigned. Grant access in Admin → Test Accounts.</div>')+'</div>';
+ section.querySelectorAll('.sandbox-granted-open').forEach(b=>b.addEventListener('click',()=>{
+  const projectId=Number(b.dataset.project);
+  const native=Array.from(document.querySelectorAll('.project-open')).find(x=>Number(x.dataset.txProject||x.dataset.txReviewProject)===projectId);
+  if(native){native.scrollIntoView({behavior:'smooth',block:'center'});native.focus();return}
+  const assignments=document.querySelector('[data-view-link="assignments"]');
+  if(assignments)assignments.click();
+ }));
+}
 async function initializeProjectCards(){
  const {data,error}=await client.rpc('admin_sandbox_workspace',{p_session_id:id});
  if(error)throw error;
  sandboxAccountId=data?.sandbox?.account_id;sandboxProjectId=data?.sandbox?.project_id;
+ renderGrantedProjects(data?.sandbox?.projects);
  if(data?.sandbox?.level==='L2'){
    const control=document.createElement('button');
    control.id='sandboxReviewL1';control.type='button';
