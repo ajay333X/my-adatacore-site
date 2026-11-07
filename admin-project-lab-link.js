@@ -23,6 +23,16 @@
       link.href='/admin/transcription-v2?project=93';link.textContent='✦ Transcription Lab V.2';
       current.insertAdjacentElement('afterend',link);
     }
+    const a=window.__adatacoreAdminAccess;
+    const canTest=!!a?.is_super_admin||(Array.isArray(a?.projects)&&a.projects.some(p=>Number(p.id)===93&&Array.isArray(p.roles)&&p.roles.some(r=>r==='project_manager'||r==='qa_manager')));
+    if(nav&&canTest&&!document.getElementById('sandboxTestAccountsNav')){
+      const after=document.getElementById('transcriptionLabV2Nav')||document.getElementById('transcriptionLabNav')||nav;
+      const link=document.createElement('a');
+      link.id='sandboxTestAccountsNav';link.className=nav.className;
+      link.classList.remove('active');link.href='/admin/test-accounts';
+      link.textContent='Test Accounts (Sandbox)';
+      after.insertAdjacentElement('afterend',link);
+    }
     const panel=document.getElementById('projects');
     if(!panel)return;
     setText(panel.querySelector('.section-title h2'),'Project Lab');
