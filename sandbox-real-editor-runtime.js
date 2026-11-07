@@ -20,7 +20,10 @@ document.addEventListener('click',event=>{
  if(link){event.preventDefault();event.stopImmediatePropagation();goBack()}
 },true);
 async function boot(){
- await call('admin_sandbox_real_open',{p_session_id:sessionId,p_claim_id:claimId});
+ const snapshot=await call('admin_sandbox_real_open',{p_session_id:sessionId,p_claim_id:claimId});
+ if(Number(snapshot?.sandbox?.source_current_revision)!==Number(snapshot?.sandbox?.source_revision)){
+  banner.querySelector('span').textContent='TEST MODE · Source task has changed since this snapshot. Release and claim again to inspect the latest version.';
+ }
  const response=await fetch('/transcription-editor.js?v=9',{cache:'no-store'});
  if(!response.ok)throw Error('Production transcription editor unavailable');
  let source=await response.text();
