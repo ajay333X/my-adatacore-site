@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Test Contributor Workspace · Adatacore</title>
+<link rel="icon" href="/favicon.png" type="image/png"><link rel="stylesheet" href="/sandbox-test.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+</head>
+<body>
+<div class="sx-fixed-banner"><span><strong>TEST MODE</strong> · Passwordless sandbox · No real payouts, messages, assignments or production submissions</span><button class="sx-btn" style="min-height:32px;padding:5px 10px" id="exitBtn">Exit to Admin</button></div>
+<main class="sx-shell">
+<header class="sx-top"><a class="sx-brand" href="/admin/test-accounts"><span class="sx-mark">A</span><span>Adatacore <span class="sx-muted">/ Contributor Workspace</span></span></a><span class="sx-badge" id="roleBadge">Checking session…</span></header>
+<section class="sx-hero"><div><div class="sx-eyebrow">Sandbox / Transcription TTS / Project 93</div><h1 id="welcome">Test contributor</h1><p id="explain">Loading your isolated test queue…</p></div><button class="sx-btn" id="reloadBtn">↻ Refresh tasks</button></section>
+<div id="notice" class="sx-note" role="status">Validating secure admin session…</div>
+<div class="sx-grid three" style="margin:18px 0"><div class="sx-kpi"><strong id="countMine">—</strong><span>Available test tasks</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>Pending L2 review</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved</span></div></div>
+<section class="sx-grid" style="grid-template-columns:minmax(240px,.75fr) minmax(0,1.45fr);align-items:start">
+<div class="sx-panel" style="min-width:0"><div class="sx-row sx-between"><h2 id="queueTitle">My test tasks</h2><span class="sx-badge">Test data</span></div><p>Only tasks from your private sandbox are displayed here.</p>
+<div id="taskList" class="sx-stack"></div>
+<div id="newTask" class="sx-stack sx-hidden" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--sx-line)">
+<h2>Create a test task</h2><div class="sx-field"><label for="newTitle">Task title</label><input id="newTitle" class="sx-input" maxlength="120" value="Hindi Transcription Practice"></div>
+<div class="sx-field"><label for="newSource">Sample audio reference / expected words (optional)</label><textarea id="newSource" class="sx-textarea" placeholder="Type sample spoken words for your test. This does not upload real audio."></textarea></div>
+<button id="createBtn" class="sx-btn primary">+ Create isolated test task</button></div>
+</div>
+<div class="sx-panel" style="min-width:0"><div id="editor"><div class="sx-note">Select a task to open the test transcription or review editor.</div></div></div>
+</section>
+<section class="sx-panel"><h2>Testing boundaries</h2><p>This isolated workspace reproduces L1→L2 routing, feedback, and transcript comparison. It is not a real contributor login and cannot change production task inventory, balances, real notifications or live task history.</p><div class="sx-row"><span class="sx-badge good">Isolated data</span><span class="sx-badge">Owner-scoped session</span><span class="sx-badge">Automatic expiry</span></div></section>
+</main><div id="toast" class="sx-toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const URL='https://llmhyezgcnbognmmsnzq.supabase.co',KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const session=new URLSearchParams(location.search).get('session')||'';
+const el=id=>document.getElementById(id);
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data=null,selected=null,busy=false;
+function note(message,bad){el('notice').textContent=message;el('notice').className='sx-note'+(bad?' sx-error':'')}
+function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3000)}
+async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw new Error(r.error.message);return r.data}
+function role(){return data?.account?.level||'L1'}
+function available(t){return role()==='L2'?t.status==='l2_pending':['l1_ready','l1_draft','changes_requested'].includes(t.status)}
+function statusLabel(t){return({l1_ready:'Ready for L1',l1_draft:'Draft saved',l2_pending:'Waiting for L2',changes_requested:'Changes requested',approved:'Approved'}[t.status]||t.status)}
+function statusClass(t){return t.status==='approved'?'good':t.status==='changes_requested'?'warn':''}
+async function load(){
+ const result=await call('admin_sandbox_session',{p_session_id:session});data=result;
+ const tasks=data.tasks||[];if(selected&&!tasks.some(t=>t.id===selected))selected=null;
+ el('welcome').textContent='Welcome, '+data.account.name;
+ el('explain').textContent=data.account.level==='L1'?'Submit a practice transcription, then review L2 feedback and requested changes.':'Audit pending test transcriptions, edit text, grade the work and return feedback to L1.';
+ el('roleBadge').textContent=data.account.level+' · Private test identity';
+ el('queueTitle').textContent=data.account.level==='L1'?'L1 task queue':'L2 review queue';
+ el('newTask').classList.toggle('sx-hidden',data.account.level!=='L1');
+ el('countMine').textContent=tasks.filter(available).length;
+ el('countPending').textContent=tasks.filter(t=>t.status==='l2_pending').length;
+ el('countDone').textContent=tasks.filter(t=>t.status==='approved').length;
+ el('taskList').innerHTML=tasks.length?tasks.map(t=>'<button type="button" class="sx-task'+(selected===t.id?' active':'')+'" data-task="'+safe(t.id)+'" style="display:block;width:100%;text-align:left"><div class="sx-row sx-between"><h3>'+safe(t.title)+'</h3><span class="sx-badge '+statusClass(t)+'">'+safe(statusLabel(t))+'</span></div><p>Revision '+Number(t.revision)+' · '+safe(new Date(t.updated_at).toLocaleString())+'</p></button>').join(''):'<div class="sx-note">No sandbox tasks yet.'+(role()==='L2'?' Open Dummy 01 and submit an L1 task first.':' Create a practice task below.')+'</div>';
+ if(selected)renderEditor(tasks.find(t=>t.id===selected));else el('editor').innerHTML='<div class="sx-note">Select a task from the queue. Test actions will stay inside this sandbox.</div>';
+ note('Secure sandbox session active · Expires '+new Date(data.expires_at).toLocaleTimeString()+'.');
+}
+function diff(t){return '<div class="sx-split"><div><div class="sx-diff-label">L1 submitted text</div><div class="sx-diff">'+safe(t.draft_text||'—')+'</div></div><div><div class="sx-diff-label">L2 corrected text</div><div class="sx-diff">'+safe(t.reviewed_text||'Not reviewed')+'</div></div></div>'}
+function renderEditor(t){
+ if(!t)return;
+ let content='<div class="sx-row sx-between"><div><div class="sx-eyebrow">Task '+safe(String(t.id).slice(0,8))+'</div><h2>'+safe(t.title)+'</h2></div><span class="sx-badge '+statusClass(t)+'">'+safe(statusLabel(t))+'</span></div>';
+ if(t.source_text)content+='<div class="sx-field" style="margin-bottom:15px"><label>Expected speech / test reference</label><div class="sx-diff">'+safe(t.source_text)+'</div></div>';
+ if(role()==='L1'){
+  if(t.status==='changes_requested')content+='<div class="sx-note sx-warning" style="margin-bottom:15px"><strong>L2 requested changes</strong><div>'+safe(t.feedback)+'</div></div>'+diff(t);
+  if(['l1_ready','l1_draft','changes_requested'].includes(t.status)){
+   content+='<div class="sx-field" style="margin:15px 0"><label for="draft">Your transcription</label><textarea id="draft" class="sx-textarea" rows="9" placeholder="Type your practice transcript">'+safe(t.draft_text)+'</textarea></div><div class="sx-row"><button id="saveDraft" class="sx-btn">Save draft</button><button id="submitL1" class="sx-btn primary">Submit to L2 →</button></div>';
+  }else{content+='<div class="sx-note">This task has been submitted. Review its status and feedback below.</div>'}
+  if(t.status==='approved')content+='<div class="sx-note" style="margin-top:12px"><strong>Approved</strong><div>'+safe(t.feedback||'Reviewed successfully.')+'</div></div>'+diff(t);
+ }else{
+  if(t.status==='l2_pending'){
+   content+='<div class="sx-field"><label for="reviewText">Review / corrected transcription</label><textarea id="reviewText" class="sx-textarea" rows="9">'+safe(t.draft_text)+'</textarea></div><div class="sx-grid" style="margin-top:14px"><div class="sx-field"><label for="reviewDecision">Review decision</label><select id="reviewDecision" class="sx-select"><option value="approve">Approve</option><option value="request_changes">Request changes</option></select></div><div class="sx-field"><label for="reviewScore">Overall rating</label><select id="reviewScore" class="sx-select"><option value="5">5 / 5</option><option value="4">4 / 5</option><option value="3">3 / 5</option><option value="2">2 / 5</option><option value="1">1 / 5</option></select></div></div><div class="sx-field" style="margin:15px 0"><label for="reviewFeedback">Reviewer feedback</label><textarea id="reviewFeedback" class="sx-textarea" placeholder="Explain corrections or why the task is approved."></textarea></div><button id="submitL2" class="sx-btn primary">Submit L2 review →</button>';
+  }else{content+='<div class="sx-note">This task is not pending L2 review.</div>'+diff(t);if(t.feedback)content+='<div class="sx-note" style="margin-top:12px">'+safe(t.feedback)+'</div>'}
+ }
+ el('editor').innerHTML=content;
+ if(el('saveDraft'))el('saveDraft').onclick=()=>act('save_draft',t.id,{text:el('draft').value});
+ if(el('submitL1'))el('submitL1').onclick=()=>act('submit_l1',t.id,{text:el('draft').value});
+ if(el('submitL2'))el('submitL2').onclick=()=>act('submit_l2',t.id,{text:el('reviewText').value,decision:el('reviewDecision').value,feedback:el('reviewFeedback').value,ratings:{overall:Number(el('reviewScore').value)}});
+}
+async function act(action,taskId,payload){
+ if(busy)return;busy=true;
+ try{await call('admin_sandbox_action',{p_session_id:session,p_action:action,p_task_id:taskId,p_payload:payload});await load();toast(action==='submit_l1'?'Submitted to sandbox L2.':action==='submit_l2'?'L2 feedback saved.':action==='create_task'?'Practice task created.':'Draft saved.')}
+ catch(e){note(e.message,true)}finally{busy=false}
+}
+el('taskList').addEventListener('click',e=>{const b=e.target.closest('[data-task]');if(!b)return;selected=b.dataset.task;load().catch(e=>note(e.message,true))});
+el('createBtn').onclick=async()=>{
+ const title=el('newTitle').value.trim(),source_text=el('newSource').value;
+ if(!title)return note('Please enter a task title.',true);
+ await act('create_task',null,{title,source_text});el('newSource').value='';
+};
+el('reloadBtn').onclick=()=>load().catch(e=>note(e.message,true));
+el('exitBtn').onclick=async()=>{try{await call('admin_sandbox_action',{p_session_id:session,p_action:'end_session'})}catch(_){}location.replace('/admin/test-accounts')};
+(async()=>{
+ try{if(!/^[a-f0-9-]{36}$/i.test(session))throw new Error('Missing or invalid sandbox session.');
+ const r=await db.auth.getUser();if(!r.data.user){location.replace('/auth');return}
+ await load();
+ }catch(e){note('Cannot open this test session: '+e.message,true)}
+})();
+})();
+</script>
+</body></html>
