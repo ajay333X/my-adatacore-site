@@ -24,7 +24,7 @@
       const {data:{session}}=await guardDb.auth.getSession();
       if(!session)return location.replace('/auth');
       const {data:onboarding,error:onboardingError}=await guardDb.rpc('get_my_application_onboarding');
-      if(!onboardingError&&onboarding?.must_onboard&&!onboarding?.onboarding_complete)return location.replace('/apply');
+      if(!validSandbox&&!onboardingError&&onboarding?.must_onboard&&!onboarding?.onboarding_complete)return location.replace('/apply');
     }
     const response=await fetch('/workspace-core',{cache:'no-store'});
     if(!response.ok)throw new Error('Workspace returned '+response.status);
