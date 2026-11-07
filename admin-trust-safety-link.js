@@ -24,7 +24,7 @@ async function mount(){
   };
   const trust=ensure('data-trust-safety-link','Trust & Safety','/admin/trust-safety','Review authentication, network and device signals');
   const people=ensure('data-people-360-link','People 360','/admin/people','Open a unified participant profile with work, quality, applications, support and security context');
-  if(trust&&people&&trust.previousSibling!==people){control.insertBefore(people,trust)}
+  if(trust&&people&&trust.parentElement===control&&people.parentElement===control&&trust.previousSibling!==people){control.insertBefore(people,trust)}
 }
 const start=()=>{mount();let attempts=0;const interval=setInterval(()=>{attempts++;mount();if((document.querySelector('[data-trust-safety-link]')&&document.querySelector('[data-people-360-link]'))||attempts>=20)clearInterval(interval)},250)};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
