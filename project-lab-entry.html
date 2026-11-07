@@ -14,9 +14,9 @@
     const response=await fetch('/project-lab',{cache:'no-store'});
     if(!response.ok)throw new Error('Project Lab returned '+response.status);
     let html=await response.text();
-    html=html.replace('</head>','<link rel="stylesheet" href="/platform-theme.css?v=1"><link rel="stylesheet" href="/project-ui-polish.css?v=1"><link rel="stylesheet" href="/project-unified-workspace.css?v=1"><link rel="stylesheet" href="/project-control-center.css?v=1"></head>');
-    const addon='<scr'+'ipt src="/project-lab-addon-loader.js?v=20260904-1"></scr'+'ipt><scr'+'ipt src="/platform-theme.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-ui-icons.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-unified-workspace.js?v=1"></scr'+'ipt>';
-    const contentAddon='<scr'+'ipt src="/project-control-center.js?v=1"></scr'+'ipt>';
+    html=html.replace('</head>','<link rel="stylesheet" href="/platform-theme.css?v=1"><link rel="stylesheet" href="/project-ui-polish.css?v=1"><link rel="stylesheet" href="/project-unified-workspace.css?v=1"><link rel="stylesheet" href="/project-control-center.css?v=2"></head>');
+    const addon='<scr'+'ipt src="/project-lab-addon-loader.js?v=20260904-1"></scr'+'ipt><scr'+'ipt src="/platform-theme.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-ui-icons.js?v=1"></scr'+'ipt><scr'+'ipt src="/project-unified-workspace.js?v=2"></scr'+'ipt>';
+    const contentAddon='<scr'+'ipt src="/project-control-center.js?v=2"></scr'+'ipt>';
     html=html.replace('</body>',addon+contentAddon+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){document.body.innerHTML='<div class="boot">Unable to load Project Lab. '+String(error.message||error)+'</div>'}
