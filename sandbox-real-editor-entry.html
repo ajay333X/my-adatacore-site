@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Real Audio · Sandbox Claim</title><style>body{margin:0;background:#f7f8fa;color:#363243;font:14px Inter,system-ui,sans-serif}main{min-height:100vh;display:grid;place-items:center}</style></head><body><main id="boot">Opening real audio in protected test mode…</main><script>
+(async()=>{
+ try{
+  const p=new URLSearchParams(location.search);
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if(!uuid.test(p.get('test_session')||'')||!uuid.test(p.get('item')||''))throw Error('Valid test session and claim are required');
+  const response=await fetch('/transcription-v2',{cache:'no-store'});
+  if(!response.ok)throw Error('Transcription workspace unavailable');
+  let html=await response.text();
+  html=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+  const addons='<scr'+'ipt defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></scr'+'ipt>'+
+    '<scr'+'ipt defer src="/transcription-model.js?v=1"></scr'+'ipt>'+
+    '<scr'+'ipt defer src="/sandbox-real-editor-runtime.js?v=1"></scr'+'ipt>';
+  html=html.replace('</head>','<link rel="stylesheet" href="/sandbox-real-editor.css?v=1">'+addons+'</head>');
+  document.open();document.write(html);document.close();
+ }catch(e){document.getElementById('boot').textContent='Unable to open sandbox audio: '+String(e.message||e)}
+})();
+</script></body></html>
