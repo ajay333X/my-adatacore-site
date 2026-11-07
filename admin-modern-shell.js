@@ -87,6 +87,8 @@ function markLink(link){
  const raw=link.textContent.trim();
  const clean=raw.replace(/^[✦★✧]\s*/,'');
  if(clean!==raw)link.textContent=clean;
+ if(link.dataset.tab==='overview'&&!link.querySelector('.ac-svg'))link.insertAdjacentHTML('afterbegin',ico('overview'));
+
  link.classList.add('ac-nav-item');
 }
 function mountLinks(){
@@ -128,8 +130,8 @@ function applyFilter(){
   }
   g.group.classList.toggle('ac-filter-empty',!!q&&matched===0);
   g.group.dataset.searching=q?'1':'0';
-  if(q&&matched)setOpen(id,true);
-  else if(!q)setOpen(id,viewState.open.has(id));
+  if(q&&matched){g.group.dataset.open='1';g.toggle.setAttribute('aria-expanded','true')}
+  else if(!q){g.group.dataset.open=viewState.open.has(id)?'1':'0';g.toggle.setAttribute('aria-expanded',String(viewState.open.has(id)))}
  }
  for(const link of overview.querySelectorAll('.nav-link'))link.classList.toggle('ac-filter-miss',!!q&&!keyFor(link).includes(q));
  if(!q)updateActive();
