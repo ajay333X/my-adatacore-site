@@ -17,7 +17,7 @@ async function mount(){
   const staff=control.querySelector('[data-tab="staff"]'),accessTab=control.querySelector('[data-tab="access"]');
   const anchor=staff||accessTab;
   const ensure=(attr,label,href,title)=>{
-    if(control.querySelector(`[${attr}]`))return control.querySelector(`[${attr}]`);
+    if(document.querySelector(`.sidebar [${attr}]`))return document.querySelector(`.sidebar [${attr}]`);
     const a=document.createElement('a');a.className='nav-link';a.href=href;a.setAttribute(attr,'1');a.textContent=label;a.title=title;
     if(anchor?.nextSibling)control.insertBefore(a,anchor.nextSibling);else control.appendChild(a);
     return a;
