@@ -31,26 +31,10 @@ async function sandboxTaskOpen(projectId,isReview){
     if(error)throw error;
     activeSession=data.session_id;
   }
-  const {data,error}=await client.rpc('admin_sandbox_session',{p_session_id:activeSession});
+  const {data,error}=await client.rpc('admin_sandbox_real_claim',{p_session_id:activeSession,p_kind:'live'});
   if(error)throw error;
-  const tasks=data?.tasks||[],level=data?.account?.level;
-  let task=null;
-  if(isReview){
-   if(level!=='L2')throw Error('L2 permission required for this project.');
-   task=tasks.find(t=>t.status==='l2_pending');
-   if(!task)throw Error('No test L2 tasks are pending. Submit an L1 test task first.');
-  }else{
-   if(level!=='L1')throw Error('L1 permission required for this project.');
-   task=tasks.find(t=>['l1_ready','l1_draft','changes_requested'].includes(t.status));
-   if(!task){
-    const {data:created,error:createError}=await client.rpc('admin_sandbox_action',{
-     p_session_id:activeSession,p_action:'create_task',p_payload:{title:'Practice Transcription — Project '+projectId,source_text:''}
-    });
-    if(createError)throw createError;
-    task={id:created.task_id};
-   }
-  }
-  location.assign('/admin/test-workspace?session='+encodeURIComponent(activeSession)+'&task='+encodeURIComponent(task.id));
+  if(!data?.claim_id)throw Error('No eligible real task available at this level.');
+  location.assign('/admin/test-editor?test_session='+encodeURIComponent(activeSession)+'&item='+encodeURIComponent(data.claim_id));
  }catch(e){
   const sub=document.getElementById('viewSub');
   if(sub)sub.textContent='TEST MODE · '+String(e.message||e);
