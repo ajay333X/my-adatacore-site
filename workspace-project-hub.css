@@ -10,7 +10,7 @@ html.ac-contributor-simple #view-overview .ac-home-intro{margin:8px 0 19px}
 html.ac-contributor-simple #view-overview .ac-home-intro h2{font-size:21px;font-weight:820;letter-spacing:-.035em;margin:0 0 5px}
 html.ac-contributor-simple #view-overview .ac-home-intro p{font-size:12px;color:var(--muted);margin:0}
 html.ac-contributor-simple .ac-project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
-html.ac-contributor-simple .ac-project-card{display:flex;flex-direction:column;gap:10px;min-height:180px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:20px;transition:transform .2s,border-color .2s,box-shadow .2s;box-shadow:0 2px 9px rgba(24,18,50,.035)}
+html.ac-contributor-simple .ac-project-card{text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:10px;min-height:180px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:20px;transition:transform .2s,border-color .2s,box-shadow .2s;box-shadow:0 2px 9px rgba(24,18,50,.035)}
 html.ac-contributor-simple .ac-project-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--brand) 32%,var(--line));box-shadow:0 14px 28px rgba(24,18,50,.075)}
 html.ac-contributor-simple .ac-project-card .ac-pr-top{display:flex;justify-content:space-between;align-items:center;gap:9px}
 html.ac-contributor-simple .ac-pr-type{display:inline-flex;align-items:center;padding:5px 9px;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:850}
