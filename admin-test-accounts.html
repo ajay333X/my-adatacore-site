@@ -60,7 +60,7 @@ el('setupForm').addEventListener('submit',async event=>{
 });
 el('accountList').addEventListener('click',async event=>{
  const btn=event.target.closest('[data-open]');if(!btn)return;btn.disabled=true;
- const tab=window.open('about:blank','_blank');
+ const tab=window.open('about:blank','_blank');if(tab)tab.opener=null;
  if(tab)tab.document.write('<title>Opening sandbox…</title><p style="font:14px system-ui;padding:30px">Starting a secure sandbox session…</p>');
  try{const r=await call('admin_sandbox_launch',{p_account_id:btn.dataset.open});const url='/admin/test-workspace?session='+encodeURIComponent(r.session_id);if(tab)tab.location.assign(url);else location.assign(url);toast('Test session opened')}
  catch(e){if(tab)tab.close();notice(e.message,true)}
