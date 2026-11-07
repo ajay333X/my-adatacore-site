@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Test Accounts · Adatacore Developer Lab</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="/sandbox-test.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+</head>
+<body>
+<main class="sx-shell">
+<header class="sx-top"><a class="sx-brand" href="/admin"><span class="sx-mark">A</span><span>Adatacore <span class="sx-muted">/ Developer Lab</span></span></a><a class="sx-back" href="/admin/projects">← Back to Admin</a></header>
+<section class="sx-hero"><div><div class="sx-eyebrow">Admin tools / Project 93</div><h1>Test Accounts</h1><p>Create passwordless sandbox identities to test transcription, L1 submissions, L2 review, feedback and diff history without touching live work.</p></div><span class="sx-badge">● Isolated sandbox</span></section>
+<div class="sx-grid three" style="margin-bottom:18px"><div class="sx-kpi"><strong id="countAccounts">—</strong><span>Test identities</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>L2 review pending</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved test tasks</span></div></div>
+<div id="notice" class="sx-note" role="status">Checking admin access and sandbox configuration…</div>
+<section class="sx-panel" style="margin-top:18px"><div class="sx-row sx-between"><div><div class="sx-eyebrow">Configuration</div><h2>Set up your test contributors</h2><p>No emails, passwords, real payouts, or account registrations.</p></div><span class="sx-badge">Project 93 · Private to you</span></div>
+<form id="setupForm" class="sx-stack">
+<div class="sx-grid">
+<div class="sx-field"><label for="dummyOne">Dummy 01 · Contributor name</label><input id="dummyOne" class="sx-input" required maxlength="80" value="Dummy Contributor 01"></div>
+<div class="sx-field"><label for="roleOne">Access level</label><select id="roleOne" class="sx-select"><option value="L1">L1 · Contributor</option><option value="L2">L2 · Reviewer</option></select></div>
+<div class="sx-field"><label for="dummyTwo">Dummy 02 · Reviewer name</label><input id="dummyTwo" class="sx-input" required maxlength="80" value="Dummy Reviewer 02"></div>
+<div class="sx-field"><label for="roleTwo">Access level</label><select id="roleTwo" class="sx-select"><option value="L2" selected>L2 · Reviewer</option><option value="L1">L1 · Contributor</option></select></div>
+</div>
+<div class="sx-row sx-between"><div class="sx-muted" style="font-size:11px">Shared access: disabled · Test data: isolated · Feedback and diff view: enabled</div><button class="sx-btn primary" id="setupBtn" type="submit">Create / Update Test Accounts ↗</button></div>
+</form></section>
+<section class="sx-panel"><div class="sx-row sx-between" style="margin-bottom:17px"><div><div class="sx-eyebrow">Sandbox identities</div><h2>Open contributor dashboards</h2><p>Sessions expire after 45 minutes and require your existing admin login.</p></div><button class="sx-btn" id="reloadBtn" type="button">↻ Refresh</button></div><div class="sx-grid" id="accountList"><div class="sx-note">Loading…</div></div></section>
+<section class="sx-grid">
+<div class="sx-panel"><h2>Review test activity</h2><p>Actions and revisions from both dummies are visible here.</p><div id="eventList" class="sx-stack"></div></div>
+<div class="sx-panel"><h2>Reset test tasks</h2><p>Remove all sandbox tasks for Project 93 and keep your two test accounts. Live production tasks and payouts are never affected.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Delete all sandbox test tasks?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
+</section>
+</main><div id="toast" class="sx-toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const PROJECT=93,URL='https://llmhyezgcnbognmmsnzq.supabase.co',KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const el=id=>document.getElementById(id);
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let state={accounts:[],tasks:[],events:[]};
+function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3200)}
+function notice(message,bad){const e=el('notice');e.textContent=message;e.className='sx-note'+(bad?' sx-error':'')}
+async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw new Error(r.error.message);return r.data}
+function when(value){return value?new Date(value).toLocaleString():'—'}
+async function reload(){
+ const data=await call('admin_sandbox_list',{p_project_id:PROJECT});
+ state=data||state;const as=state.accounts||[],ts=state.tasks||[],ev=state.events||[];
+ el('countAccounts').textContent=as.length;el('countPending').textContent=ts.filter(t=>t.status==='l2_pending').length;el('countDone').textContent=ts.filter(t=>t.status==='approved').length;
+ el('accountList').innerHTML=as.length?as.map(a=>'<div class="sx-account"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main"><div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge">'+safe(a.level)+'</span></div><p>Project 93 · Passwordless internal identity<br>Created '+safe(when(a.created_at))+'</p><button class="sx-btn primary" data-open="'+safe(a.id)+'">Open Test Dashboard ↗</button></div></div>').join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Use the form above to create Dummy 01 and Dummy 02.</div>';
+ el('eventList').innerHTML=ev.length?ev.slice(0,12).map(e=>'<div class="sx-event"><span class="sx-dot"></span><div><strong>'+safe(e.action.replaceAll('_',' '))+'</strong><small>'+safe(when(e.created_at))+' · '+safe(e.task_id?String(e.task_id).slice(0,8):'Admin action')+'</small></div></div>').join(''):'<div class="sx-muted" style="font-size:12px">Test activity will appear here.</div>';
+ notice('Sandbox is ready. All actions stay isolated from production.');
+}
+el('setupForm').addEventListener('submit',async event=>{
+ event.preventDefault();const btn=el('setupBtn');btn.disabled=true;btn.textContent='Configuring…';
+ try{
+ const accounts=[{name:el('dummyOne').value.trim(),role:el('roleOne').value},{name:el('dummyTwo').value.trim(),role:el('roleTwo').value}];
+ if(accounts[0].name===accounts[1].name)throw new Error('Use different display names for each dummy.');
+ await call('admin_sandbox_setup',{p_project_id:PROJECT,p_accounts:accounts});
+ await reload();toast('Test identities configured successfully.');
+ }catch(e){notice(e.message,true)}finally{btn.disabled=false;btn.textContent='Create / Update Test Accounts ↗'}
+});
+el('accountList').addEventListener('click',async event=>{
+ const btn=event.target.closest('[data-open]');if(!btn)return;btn.disabled=true;
+ const tab=window.open('about:blank','_blank');
+ if(tab)tab.document.write('<title>Opening sandbox…</title><p style="font:14px system-ui;padding:30px">Starting a secure sandbox session…</p>');
+ try{const r=await call('admin_sandbox_launch',{p_account_id:btn.dataset.open});const url='/admin/test-workspace?session='+encodeURIComponent(r.session_id);if(tab)tab.location.assign(url);else location.assign(url);toast('Test session opened')}
+ catch(e){if(tab)tab.close();notice(e.message,true)}
+ finally{btn.disabled=false}
+});
+el('reloadBtn').onclick=()=>reload().catch(e=>notice(e.message,true));
+el('resetBtn').onclick=()=>{el('resetConfirm').classList.remove('sx-hidden')};
+el('resetNo').onclick=()=>{el('resetConfirm').classList.add('sx-hidden')};
+el('resetYes').onclick=async()=>{
+ const b=el('resetYes');b.disabled=true;
+ try{const r=await call('admin_sandbox_reset',{p_project_id:PROJECT});el('resetConfirm').classList.add('sx-hidden');await reload();toast('Reset '+r.tasks_deleted+' sandbox task(s).')}
+ catch(e){notice(e.message,true)}finally{b.disabled=false}
+};
+(async()=>{try{const r=await db.auth.getUser();if(!r.data.user){location.replace('/auth');return}await reload()}catch(e){notice('Unable to open sandbox: '+e.message,true)}})();
+})();
+</script>
+</body></html>
