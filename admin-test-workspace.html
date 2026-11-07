@@ -33,7 +33,7 @@ const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshTok
 const session=new URLSearchParams(location.search).get('session')||'';
 const el=id=>document.getElementById(id);
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let data=null,selected=null,busy=false;
+let data=null,selected=/^[0-9a-f-]{36}$/i.test(new URLSearchParams(location.search).get('task')||'')?new URLSearchParams(location.search).get('task'):null,busy=false;
 function note(message,bad){el('notice').textContent=message;el('notice').className='sx-note'+(bad?' sx-error':'')}
 function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3000)}
 async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw new Error(r.error.message);return r.data}
