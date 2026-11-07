@@ -20,16 +20,69 @@ const task=b.dataset.sandboxId;
 if(!/^[0-9a-f-]{36}$/i.test(task||''))return;
 location.assign('/admin/test-workspace?session='+encodeURIComponent(id)+'&task='+encodeURIComponent(task));
 },true);
-async function renderProjects(){
- const {data,error}=await client.rpc('admin_sandbox_workspace',{p_session_id:id});
- if(error){banner.querySelector('div').textContent='TEST MODE · Session expired or access revoked: '+error.message;document.querySelectorAll('.task-open').forEach(b=>b.disabled=true);return}
- const projects=data?.sandbox?.projects||[];
- const home=document.getElementById('view-overview');if(!home)return;
- let el=document.getElementById('sandboxProjects');
- if(!el){el=document.createElement('div');el.id='sandboxProjects';el.className='sandbox-projects';home.prepend(el)}
- el.innerHTML='<div class="section-title"><div><div class="eyebrow">Assigned project access</div><h2>My test projects</h2></div><a href="/admin/test-accounts" class="pill pill-brand">Manage access</a></div><div class="sandbox-project-grid">'+
- (projects.length?projects.map(p=>'<article class="card sandbox-project-card"><div class="task-top"><span class="pill pill-brand">'+safe(p.role)+'</span><span class="pill">Sandbox</span></div><h3>'+safe(p.name)+'</h3><p>Project '+safe(p.id)+' · '+safe(p.type||'Workflow')+' · Access granted by admin</p><button type="button" class="btn btn-secondary sandbox-project-view" data-project="'+safe(p.id)+'">View assigned tasks</button></article>').join(''):'<div class="card empty">No test project access. Ask the project administrator to grant it.</div>')+'</div><div class="sandbox-task-prompt">Practice tasks are isolated. Project assignment and task access are server-validated; non-sandbox actions are unavailable.</div>';
- el.querySelectorAll('.sandbox-project-view').forEach(b=>b.onclick=()=>{const assignments=document.querySelector('[data-view-link="assignments"]');if(assignments)assignments.click();else location.hash='assignments'});
+
+let sandboxAccountId=null,sandboxProjectId=null,opening=false;
+async function sandboxTaskOpen(projectId,isReview){
+ if(opening)return;opening=true;
+ try{
+  let activeSession=id;
+  if(Number(projectId)!==Number(sandboxProjectId)){
+    const {data,error}=await client.rpc('admin_sandbox_launch_project',{p_account_id:sandboxAccountId,p_project_id:Number(projectId)});
+    if(error)throw error;
+    activeSession=data.session_id;
+  }
+  const {data,error}=await client.rpc('admin_sandbox_session',{p_session_id:activeSession});
+  if(error)throw error;
+  const tasks=data?.tasks||[],level=data?.account?.level;
+  let task=null;
+  if(isReview){
+   if(level!=='L2')throw Error('L2 permission required for this project.');
+   task=tasks.find(t=>t.status==='l2_pending');
+   if(!task)throw Error('No test L2 tasks are pending. Submit an L1 test task first.');
+  }else{
+   if(level!=='L1')throw Error('L1 permission required for this project.');
+   task=tasks.find(t=>['l1_ready','l1_draft','changes_requested'].includes(t.status));
+   if(!task){
+    const {data:created,error:createError}=await client.rpc('admin_sandbox_action',{
+     p_session_id:activeSession,p_action:'create_task',p_payload:{title:'Practice Transcription — Project '+projectId,source_text:''}
+    });
+    if(createError)throw createError;
+    task={id:created.task_id};
+   }
+  }
+  location.assign('/admin/test-workspace?session='+encodeURIComponent(activeSession)+'&task='+encodeURIComponent(task.id));
+ }catch(e){
+  const sub=document.getElementById('viewSub');
+  if(sub)sub.textContent='TEST MODE · '+String(e.message||e);
+  alert('Test mode: '+String(e.message||e));
+ }finally{opening=false}
 }
-renderProjects().catch(console.error);
+document.addEventListener('click',e=>{
+ const b=e.target.closest?.('.project-open');
+ if(!b)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const review=b.dataset.txReviewProject,produce=b.dataset.txProject;
+ if(review||produce){sandboxTaskOpen(Number(review||produce),!!review);return}
+ // Block every other production project action for sandbox accounts.
+ const sub=document.getElementById('viewSub');
+ if(sub)sub.textContent='TEST MODE · This project action needs a sandbox adapter.';
+},true);
+async function initializeProjectCards(){
+ const {data,error}=await client.rpc('admin_sandbox_workspace',{p_session_id:id});
+ if(error)throw error;
+ sandboxAccountId=data?.sandbox?.account_id;sandboxProjectId=data?.sandbox?.project_id;
+ const response=await fetch('/workspace-project-groups.js?v=7',{cache:'no-store'});
+ if(!response.ok)throw Error('Project cards could not be loaded');
+ let source=await response.text();
+ const old="db.rpc('tx_my_transcription_projects')";
+ if(!source.includes(old))throw Error('Project card compatibility check failed');
+ source=source.replace(old,"db.rpc('admin_sandbox_project_cards',{p_session_id:'"+id+"'})");
+ const script=document.createElement('script');script.textContent=source;
+ document.body.appendChild(script);
+}
+initializeProjectCards().catch(error=>{
+ const sub=document.getElementById('viewSub');
+ if(sub)sub.textContent='Sandbox project cards unavailable: '+String(error.message||error);
+ console.error(error);
+});
 })();
