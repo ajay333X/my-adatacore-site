@@ -28,7 +28,21 @@ function initElements(){
   section.querySelector('#acProjectContent').addEventListener('click',async e=>{
    const b=e.target.closest('[data-guideline-ack]');
    if(b){b.disabled=true;try{const {error}=await client.rpc('acknowledge_project_guideline',{p_guideline:b.dataset.guidelineAck});if(error)throw error;detail=null;await readProject(current.id);changeTab('instructions')}catch(error){b.disabled=false;alert('Unable to acknowledge guideline: '+error.message)}return}
-   const feedback=e.target.closest('[data-feedback-id]');if(feedback){const item=feedback.dataset.item,review=feedback.dataset.feedbackId;if(isUUID(item)&&Number.isInteger(Number(review))&&Number(review)>0)location.assign('/transcription-v2?item='+encodeURIComponent(item)+'&review='+encodeURIComponent(review))}
+   const feedback=e.target.closest('[data-feedback-id]');
+   if(feedback){
+    const item=feedback.dataset.item,review=feedback.dataset.feedbackId;
+    if(isUUID(item)&&Number.isInteger(Number(review))&&Number(review)>0){location.assign('/transcription-v2?item='+encodeURIComponent(item)+'&review='+encodeURIComponent(review));return}
+    const r=(detail?.feedback||[]).find(x=>String(x.history_id)===String(review));if(!r)return;
+    const next=feedback.nextElementSibling;
+    if(next?.classList.contains('ac-feedback-detail-row')){next.remove();return}
+    hostCloseDetail();
+    const tr=document.createElement('tr');tr.className='ac-feedback-detail-row';
+    const td=document.createElement('td');td.colSpan=4;
+    const box=document.createElement('div');box.className='ac-feedback-note';
+    const title=document.createElement('strong');title.textContent='Review feedback';
+    const p=document.createElement('p');p.textContent=r.feedback||'Review completed without an additional written comment.';
+    box.append(title,p);td.append(box);tr.append(td);feedback.after(tr);
+   }
   });
  }
  return true;
@@ -88,6 +102,7 @@ async function readProject(id){
  renderTab();
  }catch(error){if(seq!==requestSeq)return;$('acProjectContent').innerHTML='<div class="ac-tab-empty">Unable to load project information: '+esc(error.message)+'</div>'}
 }
+function hostCloseDetail(){document.querySelectorAll('.ac-feedback-detail-row').forEach(el=>el.remove())}
 function changeTab(next){
  if(!['instructions','library','feedback','announcements'].includes(next))return;
  tab=next;
