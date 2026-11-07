@@ -41,7 +41,7 @@ function renderProjects(){
  const host=$('acHomeProjectCards');if(!host)return;
  host.className=projects.length?'ac-project-grid':'ac-home-empty';
  host.innerHTML=projects.length?projects.map(p=>
- '<article class="ac-project-card"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span>Project #'+Number(p.id)+'</span><a href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'">View project →</a></div></article>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
+ '<a class="ac-project-card" href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span>Project #'+Number(p.id)+'</span><strong style="color:var(--brand);font-size:11px">View project →</strong></div></a>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
 }
 async function readList(){
  try{
