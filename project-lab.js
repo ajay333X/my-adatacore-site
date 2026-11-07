@@ -20,8 +20,8 @@
   function scopedViews(){
     if(access?.is_super_admin)return null;
     const pm=projectRoles.includes('project_manager'),qa=projectRoles.includes('qa_manager');
-    const views=new Set(['overview','reviews','activity']);
-    if(pm){views.add('people');views.add('assignments')}
+    const views=new Set(['overview','reviews','activity','quality']);
+    if(pm){views.add('people');views.add('assignments');views.add('workspace-tools')}
     if(!pm&&qa){/* QA stays read/review focused. */}
     return views;
   }
