@@ -24,6 +24,10 @@
 <div class="sx-row sx-between"><div class="sx-muted" style="font-size:11px">Shared access: disabled · Test data: isolated · Feedback and diff view: enabled</div><button class="sx-btn primary" id="setupBtn" type="submit">Create / Update Test Accounts ↗</button></div>
 </form></section>
 <section class="sx-panel"><div class="sx-row sx-between" style="margin-bottom:17px"><div><div class="sx-eyebrow">Sandbox identities</div><h2>Open contributor dashboards</h2><p>Sessions expire after 45 minutes and require your existing admin login.</p></div><button class="sx-btn" id="reloadBtn" type="button">↻ Refresh</button></div><div class="sx-grid" id="accountList"><div class="sx-note">Loading…</div></div></section>
+<section class="sx-panel">
+<div class="sx-row sx-between"><div><div class="sx-eyebrow">Access control</div><h2>Project permissions</h2><p>Give each test identity the projects and L1/L2 role it should see. Access changes apply to new sessions.</p></div><span class="sx-badge">Admin-managed</span></div>
+<div id="accessList" class="sx-stack"><div class="sx-note">Loading project permissions…</div></div>
+</section>
 <section class="sx-grid">
 <div class="sx-panel"><h2>Review test activity</h2><p>Actions and revisions from both dummies are visible here.</p><div id="eventList" class="sx-stack"></div></div>
 <div class="sx-panel"><h2>Reset test tasks</h2><p>Remove all sandbox tasks for Project 93 and keep your two test accounts. Live production tasks and payouts are never affected.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Delete all sandbox test tasks?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
@@ -43,12 +47,40 @@ async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw 
 function when(value){return value?new Date(value).toLocaleString():'—'}
 async function reload(){
  const data=await call('admin_sandbox_list',{p_project_id:PROJECT});
+ const projectAccess=await call('admin_sandbox_access_list',{p_project_id:PROJECT});
  state=data||state;const as=state.accounts||[],ts=state.tasks||[],ev=state.events||[];
  el('countAccounts').textContent=as.length;el('countPending').textContent=ts.filter(t=>t.status==='l2_pending').length;el('countDone').textContent=ts.filter(t=>t.status==='approved').length;
- el('accountList').innerHTML=as.length?as.map(a=>'<div class="sx-account"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main"><div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge">'+safe(a.level)+'</span></div><p>Project 93 · Passwordless internal identity<br>Created '+safe(when(a.created_at))+'</p><button class="sx-btn primary" data-open="'+safe(a.id)+'">Open Test Dashboard ↗</button></div></div>').join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Use the form above to create Dummy 01 and Dummy 02.</div>';
+ el('accountList').innerHTML=as.length?as.map(a=>'<div class="sx-account"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main"><div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge">'+safe(a.level)+'</span></div><p>Project 93 · Passwordless internal identity<br>Created '+safe(when(a.created_at))+'</p><div class="sx-row" style="margin-top:9px"><select class="sx-select" data-open-project="'+safe(a.id)+'" style="flex:1;min-width:145px">'+(projectAccess.access||[]).filter(x=>x.account_id===a.id).map(x=>'<option value="'+Number(x.project_id)+'">'+safe(((projectAccess.projects||[]).find(p=>Number(p.id)===Number(x.project_id))||{}).name||('Project '+x.project_id))+' · '+safe(x.level)+'</option>').join('')+'</select><button class="sx-btn primary" data-open="'+safe(a.id)+'" '+(!(projectAccess.access||[]).some(x=>x.account_id===a.id)?'disabled':'')+'>Open Contributor Dashboard ↗</button></div></div></div>').join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Use the form above to create Dummy 01 and Dummy 02.</div>';
+ renderAccess(projectAccess,as);
  el('eventList').innerHTML=ev.length?ev.slice(0,12).map(e=>'<div class="sx-event"><span class="sx-dot"></span><div><strong>'+safe(e.action.replaceAll('_',' '))+'</strong><small>'+safe(when(e.created_at))+' · '+safe(e.task_id?String(e.task_id).slice(0,8):'Admin action')+'</small></div></div>').join(''):'<div class="sx-muted" style="font-size:12px">Test activity will appear here.</div>';
  notice('Sandbox is ready. All actions stay isolated from production.');
 }
+
+function renderAccess(access,accounts){
+ const projects=access.projects||[],permissions=access.access||[];
+ const host=el('accessList');
+ if(!accounts.length){host.innerHTML='<div class="sx-note">Create a dummy account first.</div>';return}
+ const options=projects.map(p=>'<option value="'+Number(p.id)+'">'+safe(p.name)+' (#'+Number(p.id)+')</option>').join('');
+ host.innerHTML=accounts.map(a=>{
+ const granted=permissions.filter(x=>x.account_id===a.id);
+ return '<div class="sx-account" style="display:block"><div class="sx-row sx-between"><strong>'+safe(a.name)+'</strong><span class="sx-badge">'+safe(a.level)+' default</span></div>'+
+ '<div class="sx-row" style="margin:12px 0">'+(granted.length?granted.map(x=>'<span class="sx-badge good">'+safe((projects.find(p=>Number(p.id)===Number(x.project_id))||{}).name||('Project '+x.project_id))+' · '+safe(x.level)+' <button type="button" data-revoke-account="'+safe(a.id)+'" data-revoke-project="'+Number(x.project_id)+'" title="Revoke access" style="border:0;background:none;color:inherit;font-weight:800;cursor:pointer">×</button></span>').join(''):'<span class="sx-muted">No projects granted</span>')+'</div>'+
+ '<div class="sx-row"><select class="sx-select" style="flex:1;min-width:160px" data-access-project="'+safe(a.id)+'">'+options+'</select>'+
+ '<select class="sx-select" style="width:104px" data-access-role="'+safe(a.id)+'"><option value="L1">L1</option><option value="L2">L2</option></select>'+
+ '<button type="button" class="sx-btn" data-grant="'+safe(a.id)+'">Grant access</button></div></div>';
+ }).join('');
+}
+el('accessList').addEventListener('click',async e=>{
+ const grant=e.target.closest('[data-grant]'),revoke=e.target.closest('[data-revoke-account]');
+ if(!grant&&!revoke)return;
+ const account=grant?.dataset.grant||revoke?.dataset.revokeAccount;
+ const project=grant?Number(el('accessList').querySelector('[data-access-project="'+account+'"]')?.value):Number(revoke.dataset.revokeProject);
+ const level=grant?el('accessList').querySelector('[data-access-role="'+account+'"]')?.value:'L1';
+ if(!project){toast('Choose a project first');return}
+ const button=grant||revoke;button.disabled=true;
+ try{await call('admin_sandbox_project_access',{p_account_id:account,p_project_id:project,p_level:level,p_enabled:!!grant});await reload();toast(grant?'Project access granted.':'Project access revoked.')}
+ catch(err){notice(err.message,true)}finally{button.disabled=false}
+});
 el('setupForm').addEventListener('submit',async event=>{
  event.preventDefault();const btn=el('setupBtn');btn.disabled=true;btn.textContent='Configuring…';
  try{
@@ -62,7 +94,7 @@ el('accountList').addEventListener('click',async event=>{
  const btn=event.target.closest('[data-open]');if(!btn)return;btn.disabled=true;
  const tab=window.open('about:blank','_blank');if(tab)tab.opener=null;
  if(tab)tab.document.write('<title>Opening sandbox…</title><p style="font:14px system-ui;padding:30px">Starting a secure sandbox session…</p>');
- try{const r=await call('admin_sandbox_launch',{p_account_id:btn.dataset.open});const url='/admin/test-workspace?session='+encodeURIComponent(r.session_id);if(tab)tab.location.assign(url);else location.assign(url);toast('Test session opened')}
+ try{const selectedProject=Number(el('accountList').querySelector('[data-open-project="'+btn.dataset.open+'"]')?.value);if(!selectedProject)throw new Error('Grant project access before opening a test dashboard.');const r=await call('admin_sandbox_launch_project',{p_account_id:btn.dataset.open,p_project_id:selectedProject});const url='/workspace?test_session='+encodeURIComponent(r.session_id);if(tab)tab.location.assign(url);else location.assign(url);toast('Test session opened')}
  catch(e){if(tab)tab.close();notice(e.message,true)}
  finally{btn.disabled=false}
 });
