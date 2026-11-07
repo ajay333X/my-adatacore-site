@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/live-operations",
+      "destination": "/admin-live-dashboard"
+    },
+    {
       "source": "/admin/test-editor",
       "destination": "/sandbox-real-editor-entry"
     },
