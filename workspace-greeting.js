@@ -37,7 +37,7 @@
     return clean.split(/\s+/)[0];
   };
   const periodForHour=h=>h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<22?'evening':'night';
-  const isOverview=()=>!location.hash||location.hash==='#overview';
+  const isOverview=()=>!new URLSearchParams(location.search).has('project')&&(!location.hash||location.hash==='#overview');
 
   function choose(name){
     const now=new Date(),period=periodForHour(now.getHours()),slot=Math.floor(now.getHours()/3);
