@@ -199,6 +199,7 @@ function showResourceType(existing){
  if(value==='link')root.innerHTML=asField('HTTPS link','<input id="pccUrl" type="url" placeholder="https://…" value="'+esc(existing?.link_url||'')+'">')+asField('Description','<textarea id="pccBody" style="min-height:100px" placeholder="What is this link for?">'+esc(existing?.body||'')+'</textarea>');
  if(value==='folder')root.innerHTML='<div class="ac-pcc-note">Folders organize documents and files. Publish the folder before publishing contributor-visible content inside it.</div>';
  if(value==='file')root.innerHTML=(existing?.storage_path?'<div class="ac-pcc-note">Current uploaded file: '+esc(existing.storage_path.split('/').at(-1))+'</div>':'')+
+  (existing?.mime_type?.startsWith('video/')?asField('Verified video duration (seconds)','<input id="pccVideoDuration" type="number" min="1" max="86400" step="0.01" value="'+esc(existing.video_duration_seconds||'')+'">'):'')+
   '<label class="ac-pcc-upload">Choose or drop files (50 MB each)<input id="pccFiles" type="file" '+(existing?'':'multiple')+'></label>'+
   asField('Notes (optional)','<textarea id="pccBody" style="min-height:90px" placeholder="Description for contributors">'+esc(existing?.body||'')+'</textarea>');
 }
@@ -238,11 +239,28 @@ function openEditor(kind,item){
  setTimeout(()=>$('pccTitle')?.focus(),30);
 }
 function closeEditor(){if(writing)return;$('pccDialog').hidden=true;$('pccSave').hidden=false;document.body.style.overflow='';dialogKind=null;editing=null}
+async function trustedVideoDuration(file){
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file),player=document.createElement('video');
+  let completed=false;
+  const finish=(err,value)=>{if(completed)return;completed=true;clearTimeout(timer);player.removeAttribute('src');player.load();URL.revokeObjectURL(url);if(err)reject(err);else resolve(value)};
+  const timer=setTimeout(()=>finish(Error('Could not read video duration within 15 seconds. Use a supported video file.')),15000);
+  player.preload='metadata';
+  player.onloadedmetadata=()=>{
+   const d=Number(player.duration);
+   if(!Number.isFinite(d)||d<1||d>86400)return finish(Error('Video needs a valid duration from 1 second to 24 hours.'));
+   finish(null,Math.round(d*100)/100);
+  };
+  player.onerror=()=>finish(Error('Could not read video metadata; upload an MP4/WebM with a valid duration.'));
+  player.src=url;
+ });
+}
 async function uploadResourceFiles(files,common){
  let done=0,first=null;
  for(const file of files){
   if(file.size>52428800)throw Error(file.name+' exceeds the 50 MB limit');
   if(!file.size)throw Error(file.name+' is empty');
+  const duration=file.type.startsWith('video/')?await trustedVideoDuration(file):null;
   const path=projectId+'/'+crypto.randomUUID()+'/'+cleanFileName(file.name);
   $('pccDrawerStatus').textContent='Uploading '+file.name+' ('+(done+1)+'/'+files.length+')…';
   const up=await db.storage.from(BUCKET).upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
@@ -253,7 +271,7 @@ async function uploadResourceFiles(files,common){
     p_body:common.body,p_parent_id:common.parent,p_storage_path:path,p_link_url:null,
     p_required_ack:common.ack,p_visibility:common.visibility,p_published:common.published,
     p_existing_id:null,p_sort_order:0
-   });await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:a,p_rule:common.rule,p_mime_type:file.type||null});first=first||a;done++;
+   });await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:a,p_rule:common.rule,p_mime_type:file.type||null});if(duration!==null)await rpc('admin_project_library_set_duration',{p_project_id:projectId,p_item_id:a,p_seconds:duration});first=first||a;done++;
   }catch(e){await db.storage.from(BUCKET).remove([path]).catch(()=>{});throw e}
  }
  return done;
@@ -280,7 +298,7 @@ async function saveEditor(){
     if(files.length>0&&entry)throw Error('Editing an existing file cannot replace its binary. Add a new resource instead.');
     if(files.length>0){if(rule==='watch'&&files.some(x=>!x.type.startsWith('video/')))throw Error('Must watch requires uploaded videos.');await uploadResourceFiles(files,common);}
     else if(entry?.storage_path){
-     await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:'file',p_title:title,p_body:body,p_link_url:null,p_storage_path:entry.storage_path,p_parent_id:parent,p_required_ack:rule==='acknowledge',p_visibility:visibility,p_published:published,p_existing_id:entry.id,p_sort_order:entry.sort_order||0});await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:entry.id,p_rule:rule,p_mime_type:entry.mime_type||null});
+     await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:'file',p_title:title,p_body:body,p_link_url:null,p_storage_path:entry.storage_path,p_parent_id:parent,p_required_ack:rule==='acknowledge',p_visibility:visibility,p_published:published,p_existing_id:entry.id,p_sort_order:entry.sort_order||0});await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:entry.id,p_rule:rule,p_mime_type:entry.mime_type||null});if(entry.mime_type?.startsWith('video/')&&$('pccVideoDuration')?.value){await rpc('admin_project_library_set_duration',{p_project_id:projectId,p_item_id:entry.id,p_seconds:Number($('pccVideoDuration').value)});}
     }else throw Error('Choose a file to upload.');
    }else{
     if(type==='link'&&!/^https?:\/\/\S+$/i.test(url||''))throw Error('Enter an https:// or http:// link.');
