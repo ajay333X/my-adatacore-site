@@ -135,13 +135,13 @@ function renderTab(){
   body+='<div class="ac-project-library-bar"><button type="button" class="btn btn-secondary" data-library-folder="">Library home</button>'+(currentFolder?'<span>'+esc(currentFolder.title)+'</span>':'')+'</div>';
   body+=direct.length?direct.map(g=>{
     const kind=g.kind||'text';
-    const badge=kind==='folder'?'Folder':kind==='file'?'File':kind==='link'?'Link':'Document';
+    const badge=kind==='folder'?'Folder':kind==='file'?(g.completion_rule==='watch'?'Training video':'File'):kind==='link'?'Link':'Document';
     const action=kind==='folder'?'<button type="button" class="btn btn-secondary" data-library-folder="'+esc(g.id)+'">Open folder</button>':
-       kind==='file'?'<button type="button" class="btn btn-secondary" data-library-file="'+esc(g.storage_path)+'">View file</button>':
+       kind==='file'?(g.completion_rule==='watch'?'<button type="button" class="btn btn-primary" data-library-video="'+esc(g.storage_path)+'" data-library-watch-id="'+esc(g.id)+'">'+(g.watch_completed?'Watch again':'Watch required video')+'</button>':'<button type="button" class="btn btn-secondary" data-library-file="'+esc(g.storage_path)+'">View file</button>'):
        kind==='link'&&/^https?:\/\//i.test(g.url||'')?'<a class="btn btn-secondary" target="_blank" rel="noopener noreferrer" href="'+esc(g.url)+'">Open link ↗</a>':'';
     return '<article class="ac-detail-entry ac-project-library-entry"><div class="ac-project-library-top"><h4>'+esc(g.title||'Resource')+'</h4><span class="pill pill-brand">'+badge+'</span></div><time>'+(g.legacy?'Version '+Number(g.version||1)+' · ':'')+date(g.published_at)+'</time>'+
      (g.body?'<p>'+esc(g.body)+'</p>':'')+
-     '<div class="ac-project-library-actions">'+action+(g.required_ack&&!g.acknowledged?'<button type="button" class="btn btn-secondary" data-library-ack="'+esc(g.id)+'">Acknowledge</button>':g.acknowledged?'<span class="pill pill-green">Acknowledged</span>':'')+'</div></article>';
+     '<div class="ac-project-library-actions">'+action+(g.completion_rule==='watch'?(g.watch_completed?'<span class="pill pill-green">Watch complete</span>':'<span class="pill">'+Math.round(Number(g.watched_seconds||0))+' sec watched</span>'):'')+(g.required_ack&&!g.acknowledged?'<button type="button" class="btn btn-secondary" data-library-ack="'+esc(g.id)+'">Acknowledge</button>':g.acknowledged?'<span class="pill pill-green">Acknowledged</span>':'')+'</div></article>';
   }).join(''):empty('No resources in this folder','Project administrators can publish documents, files, folders and links from Project Control Center.');
  }else if(tab==='feedback'){
   const entries=detail.feedback||[];
