@@ -142,7 +142,7 @@ function render(section){
   head.outerHTML=contentHead('Announcements','Publish project-only notices. New posts notify only active members of this project.','＋ New announcement','add-announcement');
   const visible=rows.filter(x=>!search||String(x.title+' '+x.body).toLowerCase().includes(search.toLowerCase()));
   list.innerHTML=visible.length?visible.map(x=>
-  '<article class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(x.title)+'</strong><div class="ac-pcc-detail">'+fmt(x.published_at)+' · '+esc(x.severity)+' · '+Number(x.acks||0)+' acknowledged'+(x.expires_at&&Date.parse(x.expires_at)<=Date.now()?' · Expired':'')+'</div><p>'+esc(x.body)+'</p></div>'+actions('announcement',x)+'</article>').join(''):'<div class="ac-pcc-empty">No announcements yet for this project.</div>';
+  '<article class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(x.title)+'</strong><div class="ac-pcc-detail">'+fmt(x.published_at)+' · '+esc(x.severity)+' · '+(x.published?'Published':'Draft')+' · '+Number(x.acks||0)+' acknowledged'+(x.expires_at&&Date.parse(x.expires_at)<=Date.now()?' · Expired':'')+'</div><p>'+esc(x.body)+'</p></div>'+actions('announcement',x)+'</article>').join(''):'<div class="ac-pcc-empty">No announcements yet for this project.</div>';
  }else{
   head.outerHTML=contentHead('Library','Create folders, write documents, add links, and upload private files. Only published contributor-visible entries appear on the contributor dashboard.','＋ Add to library','add-library');
   const children=rows.filter(x=>(x.parent_id||'')===folder).filter(x=>!search||String(x.title+' '+x.body).toLowerCase().includes(search.toLowerCase()));
@@ -151,7 +151,7 @@ function render(section){
    (folder?'<span class="ac-pcc-pill">'+esc(folders.find(x=>x.id===folder)?.title||'Folder')+'</span>':'')+
    '</div><span class="ac-pcc-hint">'+rows.length+' resources in this project</span></div>';
   list.innerHTML=nav+(children.length?children.map(x=>
-  '<article class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(x.kind==='folder'?'▣ ':x.kind==='file'?'▤ ':x.kind==='link'?'↗ ':'▤ ')+esc(x.title)+'</strong><div class="ac-pcc-detail">'+esc(x.kind.toUpperCase())+' · '+(x.published?'Published':'Draft')+' · '+esc(x.visibility)+' · '+fmt(x.updated_at)+'</div><p>'+esc(x.body||x.link_url||'')+'</p></div><div class="ac-pcc-controls">'+
+  '<article class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(x.kind==='folder'?'▣ ':x.kind==='file'?'▤ ':x.kind==='link'?'↗ ':'▤ ')+esc(x.title)+'</strong><div class="ac-pcc-detail">'+esc(x.kind.toUpperCase())+' · '+(x.completion_rule==='watch'?'Must watch':x.completion_rule==='acknowledge'?'Must acknowledge':'Optional')+' · '+(x.published?'Published':'Draft')+' · '+esc(x.visibility)+' · '+fmt(x.updated_at)+'</div><p>'+esc(x.body||x.link_url||'')+'</p></div><div class="ac-pcc-controls">'+
    (x.kind==='folder'?'<button class="btn btn-primary" type="button" data-pcc-action="open-folder" data-id="'+esc(x.id)+'">Open</button>':
     x.kind==='file'?'<button class="btn btn-secondary" type="button" data-pcc-action="open-file" data-id="'+esc(x.id)+'">View file</button>':
     x.kind==='link'?'<button class="btn btn-secondary" type="button" data-pcc-action="open-link" data-id="'+esc(x.id)+'">Open link</button>':'')+
@@ -171,14 +171,14 @@ function editorHtml(kind,item){
   asField('Priority','<select id="pccSeverity">'+['info','important','critical'].map(v=>selectOpt(v,v,x.severity||'info')).join('')+'</select>')+
   asField('Expires at (optional)','<input type="datetime-local" id="pccExpires">')+'</div>'+
   '<label class="ac-pcc-switch"><input id="pccAck" type="checkbox" '+(x.requires_ack?'checked':'')+'> Require acknowledgement</label>'+
-  '<div class="ac-pcc-note">Publishing a new announcement notifies only active contributors with access to this project. Editing an existing announcement updates its project content without sending a duplicate notification.</div>';
+  '<div class="ac-pcc-grid">'+asField('Publication','<select id="pccPublished">'+selectOpt('true','Publish to this project',String(x.published??true))+selectOpt('false','Save draft (private)',String(x.published??true))+'</select>')+'</div><div class="ac-pcc-note">Drafts are private. Publishing notifies active contributors of this project once.</div>';
  const kindInput=asField('Resource type','<select id="pccKind" '+(item?'disabled':'')+'>'+['text','link','file','folder'].map(v=>selectOpt(v,v[0].toUpperCase()+v.slice(1),x.kind||'text')).join('')+'</select>');
  return kindInput+asField('Resource name','<input id="pccTitle" maxlength="220" placeholder="Style guide / Training video / Reference document" value="'+esc(x.title||'')+'">')+
   '<div id="pccResourceBody"></div>'+
   '<div class="ac-pcc-grid">'+asField('Folder','<select id="pccParent"><option value="">Library home</option>'+ (snap?.library||[]).filter(z=>z.kind==='folder'&&z.id!==x.id).map(z=>selectOpt(z.id,z.title,x.parent_id||'')).join('')+'</select>')+
   asField('Visible to','<select id="pccVisibility">'+selectOpt('contributors','Contributors and admins',x.visibility||'contributors')+selectOpt('admins','Admins only',x.visibility||'contributors')+'</select>')+'</div>'+
   '<div class="ac-pcc-grid">'+asField('Publication','<select id="pccPublished">'+selectOpt('true','Published',String(x.published??true))+selectOpt('false','Draft / hidden',String(x.published??true))+'</select>')+
-  asField('Contributor action','<label class="ac-pcc-switch"><input id="pccAck" type="checkbox" '+(x.required_ack?'checked':'')+'> Must acknowledge</label>')+'</div>'+
+  asField('Completion requirement','<select id="pccCompletion">'+selectOpt('none','Nothing required',x.completion_rule|| (x.required_ack?'acknowledge':'none'))+selectOpt('acknowledge','Must read and acknowledge',x.completion_rule|| (x.required_ack?'acknowledge':'none'))+selectOpt('watch','Must watch (uploaded video)',x.completion_rule||'none')+'</select>')+'</div>'+
   '<p class="ac-pcc-hint">Files are private. Uploads are limited to 50 MB each. You can upload multiple files in one operation. Resources are never shared with another project automatically.</p>';
 }
 function bodyEditor(value){
@@ -224,7 +224,7 @@ async function uploadResourceFiles(files,common){
     p_body:common.body,p_parent_id:common.parent,p_storage_path:path,p_link_url:null,
     p_required_ack:common.ack,p_visibility:common.visibility,p_published:common.published,
     p_existing_id:null,p_sort_order:0
-   });first=first||a;done++;
+   });await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:a,p_rule:common.rule,p_mime_type:file.type||null});first=first||a;done++;
   }catch(e){await db.storage.from(BUCKET).remove([path]).catch(()=>{});throw e}
  }
  return done;
@@ -242,21 +242,21 @@ async function saveEditor(){
   }else if(kind==='announcements'){
    if(!body.trim())throw Error('Write the announcement before saving.');
    const expiry=$('pccExpires')?.value?new Date($('pccExpires').value).toISOString():null;
-   await rpc('admin_project_content_save_announcement',{p_project_id:projectId,p_title:title,p_body:body,p_severity:$('pccSeverity').value,p_requires_ack:ack,p_expires_at:expiry,p_existing_id:entry?.id||null});
+   await rpc('admin_project_announcement_publish',{p_project_id:projectId,p_title:title,p_body:body,p_severity:$('pccSeverity').value,p_requires_ack:ack,p_expires_at:expiry,p_existing_id:entry?.id||null,p_publish:published});
   }else if(kind==='library'){
    const type=$('pccKind').value,visibility=$('pccVisibility').value,parent=$('pccParent').value||null,url=$('pccUrl')?.value.trim()||null;
-   const common={title,body,ack,published,parent,visibility};
+   const rule=$('pccCompletion')?.value||'none';if(rule==='watch'&&type!=='file')throw Error('Must watch applies only to uploaded video.');const common={title,body,ack:rule==='acknowledge',rule,published,parent,visibility};
    if(type==='file'){
     const files=Array.from($('pccFiles')?.files||[]);
     if(files.length>0&&entry)throw Error('Editing an existing file cannot replace its binary. Add a new resource instead.');
-    if(files.length>0)await uploadResourceFiles(files,common);
+    if(files.length>0){if(rule==='watch'&&files.some(x=>!x.type.startsWith('video/')))throw Error('Must watch requires uploaded videos.');await uploadResourceFiles(files,common);}
     else if(entry?.storage_path){
-     await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:'file',p_title:title,p_body:body,p_link_url:null,p_storage_path:entry.storage_path,p_parent_id:parent,p_required_ack:ack,p_visibility:visibility,p_published:published,p_existing_id:entry.id,p_sort_order:entry.sort_order||0});
+     await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:'file',p_title:title,p_body:body,p_link_url:null,p_storage_path:entry.storage_path,p_parent_id:parent,p_required_ack:rule==='acknowledge',p_visibility:visibility,p_published:published,p_existing_id:entry.id,p_sort_order:entry.sort_order||0});await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:entry.id,p_rule:rule,p_mime_type:entry.mime_type||null});
     }else throw Error('Choose a file to upload.');
    }else{
     if(type==='link'&&!/^https?:\/\/\S+$/i.test(url||''))throw Error('Enter an https:// or http:// link.');
-    await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:type,p_title:title,p_body:type==='folder'?'':body,
-     p_link_url:type==='link'?url:null,p_storage_path:null,p_parent_id:parent,p_required_ack:ack,p_visibility:visibility,p_published:published,p_existing_id:entry?.id||null,p_sort_order:entry?.sort_order||0});
+    const saved=await rpc('admin_project_content_save_library',{p_project_id:projectId,p_kind:type,p_title:title,p_body:type==='folder'?'':body,
+     p_link_url:type==='link'?url:null,p_storage_path:null,p_parent_id:parent,p_required_ack:ack,p_visibility:visibility,p_published:published,p_existing_id:entry?.id||null,p_sort_order:entry?.sort_order||0});await rpc('admin_project_library_requirement',{p_project_id:projectId,p_item_id:saved,p_rule:rule,p_mime_type:null});
    }
   }
   writing=false;closeEditor();await refresh();message('Saved successfully. Only this project was updated.');
