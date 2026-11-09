@@ -219,7 +219,8 @@ async function showCompletion(kind,id){
   $('pccDrawerHeading').textContent='Completion report';
   $('pccDrawerDesc').textContent=(snap?.project?.name||'Project')+' · '+data.completed+' of '+data.total+' complete';
   $('pccDrawerBody').innerHTML='<div class="ac-pcc-note"><strong>'+Number(data.completed)+' of '+Number(data.total)+' complete</strong><p>Current active project members.</p></div><h3>Pending contributors ('+Number((data.pending||[]).length)+')</h3>'+
-  ((data.pending||[]).length?(data.pending||[]).map(u=>'<div class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(u.display_name||'Contributor')+'</strong><p>'+esc(u.email||'')+'</p></div><span class="ac-pcc-pill muted">Pending</span></div>').join(''):'<div class="ac-pcc-note">No pending contributors.</div>');
+  ((data.pending||[]).length?(data.pending||[]).map(u=>'<div class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(u.display_name||'Contributor')+'</strong><p>'+esc(u.email||'')+'</p></div><span class="ac-pcc-pill muted">Pending</span></div>').join(''):'<div class="ac-pcc-note">No pending contributors.</div>')+
+  '<h3>Completed ('+Number((data.completed_members||[]).length)+')</h3>'+((data.completed_members||[]).length?(data.completed_members||[]).map(u=>'<div class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(u.display_name||'Contributor')+'</strong><p>'+esc(u.email||'')+'</p></div><span class="ac-pcc-pill">Completed</span></div>').join(''):'<div class="ac-pcc-note">Nobody has completed this requirement yet.</div>');
   $('pccSave').hidden=true;document.body.style.overflow='hidden';
  }catch(e){error(e)}
 }
