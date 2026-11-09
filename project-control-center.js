@@ -79,6 +79,8 @@ function ensureUi(){
   if(type==='edit-library')openEditor('library',snap?.library.find(x=>x.id===id));
   if(type==='archive-announcement'||type==='archive-library')await archive(type==='archive-library'?'library':'announcement',id);
   if(type==='open-file')await openFile(id);
+  if(type==='completion')await showCompletion(b.dataset.kind,id);
+  if(type==='preview')showPreview(b.dataset.kind,id);
   if(type==='open-link'){const item=snap?.library.find(x=>x.id===id);if(item?.link_url&&/^https?:\/\//i.test(item.link_url))window.open(item.link_url,'_blank','noopener,noreferrer')}
   if(type==='open-folder'){folder=id;render('library')}
   if(type==='all-folders'){folder='';render('library')}
@@ -125,8 +127,15 @@ function contentHead(section,description,buttonText,buttonAction){
  return '<div class="ac-pcc-heading"><div><div class="eyebrow">Project #'+projectId+' / Content</div><h1>'+section+'</h1><p>'+description+'</p></div>'+
   (canEdit()?'<div class="ac-pcc-actions"><button class="btn btn-secondary" type="button" data-pcc-action="'+buttonAction+'">'+buttonText+'</button></div>':'')+'</div>';
 }
-const actions=(kind,item)=>canEdit()?'<div class="ac-pcc-controls"><button class="btn btn-secondary" type="button" data-pcc-action="edit-'+kind+'" data-id="'+esc(item.id)+'">Edit</button>'+
-  (kind==='library'||kind==='announcement'?'<button class="btn btn-secondary" type="button" data-pcc-action="archive-'+kind+'" data-id="'+esc(item.id)+'">'+(kind==='announcement'?'Expire':'Remove')+'</button>':'')+'</div>':'';
+const actions=(kind,item)=>{
+ let html='<div class="ac-pcc-controls"><button class="btn btn-secondary" type="button" data-pcc-action="preview" data-kind="'+kind+'" data-id="'+esc(item.id)+'">Preview</button>';
+ if((kind==='announcement'&&item.requires_ack)||(kind==='library'&&item.completion_rule&&item.completion_rule!=='none'))html+='<button class="btn btn-secondary" type="button" data-pcc-action="completion" data-kind="'+kind+'" data-id="'+esc(item.id)+'">Completion</button>';
+ if(canEdit()){
+  html+='<button class="btn btn-secondary" type="button" data-pcc-action="edit-'+kind+'" data-id="'+esc(item.id)+'">Edit</button>';
+  if(kind==='library'||kind==='announcement')html+='<button class="btn btn-secondary" type="button" data-pcc-action="archive-'+kind+'" data-id="'+esc(item.id)+'">'+(kind==='announcement'?'Expire':'Remove')+'</button>';
+ }
+ return html+'</div>';
+};
 function render(section){
  const id='view-ac-'+section,view=$(id);if(!view)return;
  const list=view.querySelector('.ac-pcc-list'),head=view.querySelector('.ac-pcc-heading');
@@ -193,9 +202,29 @@ function showResourceType(existing){
   '<label class="ac-pcc-upload">Choose or drop files (50 MB each)<input id="pccFiles" type="file" '+(existing?'':'multiple')+'></label>'+
   asField('Notes (optional)','<textarea id="pccBody" style="min-height:90px" placeholder="Description for contributors">'+esc(existing?.body||'')+'</textarea>');
 }
+function showPreview(kind,id){
+ const item=kind==='instruction'?snap?.guidelines.find(x=>x.id===id):kind==='announcement'?snap?.announcements.find(x=>x.id===id):snap?.library.find(x=>x.id===id);
+ if(!item)return;
+ const d=$('pccDialog');dialogKind='preview';editing=null;d.hidden=false;
+ $('pccDrawerHeading').textContent='Contributor preview';
+ $('pccDrawerDesc').textContent=(snap?.project?.name||'Project')+' · '+(item.published||item.status==='published'?'Published':'Not yet published');
+ $('pccDrawerBody').innerHTML='<div class="ac-pcc-preview"><strong>'+esc(item.title||'Resource')+'</strong><hr style="border:0;border-top:1px solid var(--line);margin:15px 0"><div style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(item.body||item.link_url||'')+'</div></div><p class="ac-pcc-hint">Preview only. No notifications are sent.</p>';
+ $('pccSave').hidden=true;document.body.style.overflow='hidden';
+}
+async function showCompletion(kind,id){
+ try{
+  const data=await rpc('admin_project_content_completion',{p_project_id:projectId,p_item_id:id,p_kind:kind});
+  const d=$('pccDialog');dialogKind='completion';editing=null;d.hidden=false;
+  $('pccDrawerHeading').textContent='Completion report';
+  $('pccDrawerDesc').textContent=(snap?.project?.name||'Project')+' · '+data.completed+' of '+data.total+' complete';
+  $('pccDrawerBody').innerHTML='<div class="ac-pcc-note"><strong>'+Number(data.completed)+' of '+Number(data.total)+' complete</strong><p>Current active project members.</p></div><h3>Pending contributors ('+Number((data.pending||[]).length)+')</h3>'+
+  ((data.pending||[]).length?(data.pending||[]).map(u=>'<div class="ac-pcc-item"><div class="ac-pcc-copy"><strong>'+esc(u.display_name||'Contributor')+'</strong><p>'+esc(u.email||'')+'</p></div><span class="ac-pcc-pill muted">Pending</span></div>').join(''):'<div class="ac-pcc-note">No pending contributors.</div>');
+  $('pccSave').hidden=true;document.body.style.overflow='hidden';
+ }catch(e){error(e)}
+}
 function openEditor(kind,item){
  if(!canEdit())return message('Project manager permission is required to publish content.',true);
- dialogKind=kind;editing=item||null;
+ dialogKind=kind;editing=item||null;$('pccSave').hidden=false;
  const d=$('pccDialog');d.hidden=false;
  $('pccDrawerHeading').textContent=(item?'Edit ':'Add ')+(kind==='instructions'?'instructions':kind==='announcements'?'announcement':'library resource');
  $('pccDrawerDesc').textContent='Project #'+projectId+' · '+(snap?.project?.name||'');
@@ -208,7 +237,7 @@ function openEditor(kind,item){
  document.body.style.overflow='hidden';
  setTimeout(()=>$('pccTitle')?.focus(),30);
 }
-function closeEditor(){if(writing)return;$('pccDialog').hidden=true;document.body.style.overflow='';dialogKind=null;editing=null}
+function closeEditor(){if(writing)return;$('pccDialog').hidden=true;$('pccSave').hidden=false;document.body.style.overflow='';dialogKind=null;editing=null}
 async function uploadResourceFiles(files,common){
  let done=0,first=null;
  for(const file of files){
