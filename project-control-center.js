@@ -164,7 +164,7 @@ function render(section){
    (x.kind==='folder'?'<button class="btn btn-primary" type="button" data-pcc-action="open-folder" data-id="'+esc(x.id)+'">Open</button>':
     x.kind==='file'?'<button class="btn btn-secondary" type="button" data-pcc-action="open-file" data-id="'+esc(x.id)+'">View file</button>':
     x.kind==='link'?'<button class="btn btn-secondary" type="button" data-pcc-action="open-link" data-id="'+esc(x.id)+'">Open link</button>':'')+
-    (canEdit()?'<button class="btn btn-secondary" type="button" data-pcc-action="edit-library" data-id="'+esc(x.id)+'">Edit</button><button class="btn btn-secondary" type="button" data-pcc-action="archive-library" data-id="'+esc(x.id)+'">Remove</button>':'')+
+    '<button class="btn btn-secondary" type="button" data-pcc-action="preview" data-kind="library" data-id="'+esc(x.id)+'">Preview</button>'+((x.completion_rule||'none')!=='none'?'<button class="btn btn-secondary" type="button" data-pcc-action="completion" data-kind="library" data-id="'+esc(x.id)+'">Completion</button>':'')+(canEdit()?'<button class="btn btn-secondary" type="button" data-pcc-action="edit-library" data-id="'+esc(x.id)+'">Edit</button><button class="btn btn-secondary" type="button" data-pcc-action="archive-library" data-id="'+esc(x.id)+'">Remove</button>':'')+
     '</div></article>').join(''):'<div class="ac-pcc-empty">No library items in this folder yet.</div>');
  }
 }
