@@ -14,7 +14,7 @@ const request=async(name,args)=>{
  if(!db)throw Error('Secure review service is not available');
  const {data,error}=await db.rpc(name,args);if(error)throw Error(error.message);return data;
 };
-let detail=null,opening=false,lastReviewId=null,autoRequested=false;
+let detail=null,aiInfo=null,aiError='',opening=false,lastReviewId=null,autoRequested=false;
 window.txV2ReviewRatings=()=>{
  const controls=[...$('v2ReviewRatings').querySelectorAll('[data-review-rating]')],ratings={};
  if(controls.length!==5)throw Error('Quality ratings are not loaded. Please refresh.');
@@ -37,7 +37,9 @@ function updateMode(){
  open.hidden=!Boolean(s.mode);
  open.textContent=allow?'✎ Feedback':'✉ View feedback';
  $('v2ReviewDiffOpen').hidden=false;
- $('v2ReviewDiffOpen').textContent=isReviewer?'⇄ Diff view · L1 vs L2':'⇄ Diff view';
+ $('v2ReviewDiffOpen').textContent=isReviewer?'⇄ Diff · L1 vs L2':'⇄ Compare AI edits';
+ const currentLabel=basis.querySelector('option[value="current"]');
+ if(currentLabel)currentLabel.textContent=isReviewer?'L1 submission → current review':'AI original → current transcript';
  const workbar=$('v2cbWorkbar')?.querySelector('.v2cb-workbar-left strong');
  if(workbar)workbar.textContent=isReviewer?'L2 quality review':'Transcription workspace';
  const note=$('reviewDescription');
@@ -129,15 +131,24 @@ function draw(){
  if(!detail)return;
  const r=selectedReview(),s=snapshot(),current=s?.segments||[];
  const useRecorded=basis.value==='review'&&Boolean(r);
- const original=useRecorded?(r.before_segments||detail.original_segments):detail.original_segments;
+ const useAI=!useRecorded&&(basis.value==='ai'||!reviewer());
+ const aiOriginal=Array.isArray(aiInfo?.draft?.segments)?aiInfo.draft.segments:null;
+ const original=useRecorded?(r.before_segments||detail.original_segments):
+  useAI?aiOriginal:detail.original_segments;
  const after=useRecorded?r.after_segments:current;
- const diff=segmentsDiff(original,after);
+ const diff=original?segmentsDiff(original,after):[];
  const changed=diff.filter(x=>x.changed);
  $('v2ReviewDetailSub').textContent=
-  (useRecorded?'L1 submission → recorded L2 review':'L1 submission → current editor')+
+  (useRecorded?'L1 submission → recorded L2 review':useAI?'AI original → your current transcript':'L1 submission → current editor')+
   ' · '+changed.length+' changed segment'+(changed.length===1?'':'s')+' of '+diff.length;
  scoreFeedback(r);
  rows.replaceChildren();
+ if(!original){
+  rows.append(create('p','v2review-no-diff',aiError
+   ?'AI reference could not be loaded: '+aiError
+   :'No saved AI-original transcript is available for this audio. Your edits are unchanged; comparison requires an AI reference.'));
+  return;
+ }
  const summary=create('div','v2review-diff-summary');
  summary.append(create('span','',changed.length+' changed'),create('span','',diff.length-changed.length+' unchanged'));
  rows.append(summary);
@@ -151,8 +162,8 @@ function draw(){
     create('span','',time(row.start)));
   section.append(header);
   const cols=create('div','v2review-columns');
-  cols.append(buildSide(row.old,row.now,'L1 submitted',true),
-    buildSide(row.now,row.old,useRecorded?'L2 reviewed':'Current transcript',false));
+  cols.append(buildSide(row.old,row.now,useAI?'Original AI transcript':'L1 submitted',true),
+    buildSide(row.now,row.old,useRecorded?'L2 reviewed':useAI?'Your current transcript':'Current transcript',false));
   section.append(cols);rows.append(section);shown++;
  }
  if(!shown)rows.append(create('div','v2review-no-diff','No differences were found between these versions.'));
@@ -172,7 +183,18 @@ async function openDiff(preferred){
  if(opening)return;opening=true;
  $('v2ReviewDetailSub').textContent='Loading authenticated review history…';
  try{
-  detail=await request('tx_review_detail',{p_item:itemId});
+  // Independent read-only baselines. L1 is allowed to compare edits made
+  // against the saved AI source even before any L2 review exists.
+  const [reviewResult,aiResult]=await Promise.allSettled([
+   request('tx_review_detail',{p_item:itemId}),
+   request('tx_ai_item',{p_item:itemId})
+  ]);
+  if(reviewResult.status==='rejected'&&aiResult.status==='rejected')
+   throw Error('Neither review history nor the AI source could be read.');
+  detail=reviewResult.status==='fulfilled'?reviewResult.value:{original_segments:[],reviews:[]};
+  aiInfo=aiResult.status==='fulfilled'?aiResult.value:null;
+  aiError=aiResult.status==='rejected'?String(aiResult.reason?.message||aiResult.reason):'';
+
   select.replaceChildren();
   const reviews=Array.isArray(detail?.reviews)?detail.reviews:[];
   if(!reviews.length)select.append(create('option','','No reviews submitted yet'));
@@ -184,8 +206,15 @@ async function openDiff(preferred){
   const requestId=Number(preferred)||Number(new URLSearchParams(location.search).get('review'));
   const pick=reviews.find(r=>Number(r.history_id)===requestId)||reviews[0]||null;
   if(pick)select.value=String(pick.history_id);
-  basis.value=pick&&!reviewer()?'review':preferred?'review':'current';
+  const aiAvailable=Array.isArray(aiInfo?.draft?.segments);
+  let aiOption=basis.querySelector('option[value="ai"]');
+  if(!aiOption){aiOption=create('option','','AI original → current transcript');aiOption.value='ai';basis.append(aiOption)}
+  aiOption.hidden=!aiAvailable;
+  aiOption.disabled=!aiAvailable;
+  basis.value=preferred&&pick?'review':(!reviewer()?'current':'current');
   $('v2DiffBasis').querySelector('option[value="review"]').disabled=!pick;
+  // L1's default is their own unsaved/saved corrections relative to AI.
+  // A previously-reviewed L1 task may still choose recorded L1/L2 changes.
   draw();
   if(!modal.open)modal.showModal();
   updateMode();
