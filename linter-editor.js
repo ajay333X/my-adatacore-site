@@ -273,21 +273,21 @@ function show(authoritative){
 }
 function mount(){
  if(badge)return;
- const bar=document.querySelector('.segment-card .player-bar'),save=$('save');if(!bar||!save)return;
- badge=document.createElement('button');badge.type='button';badge.id='acLintCount';badge.setAttribute('aria-controls','acLintPanel');
- badge.innerHTML='<span class="ac-dot"></span><span class="ac-label">Loading linter…</span>';save.before(badge);
- panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Project linter issues');panel.hidden=true;bar.after(panel);
- badge.addEventListener('click',()=>{opened=!opened;paintPanel();paintBadge();if(opened)panel.scrollIntoView({block:'nearest',behavior:'smooth'})});
+ const bar=document.querySelector('.segment-card .player-bar'),existing=$('issues');
+ if(!bar||!existing)return;
+ badge=existing;badge.setAttribute('aria-controls','acLintPanel');
+ panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Transcript validation issues');panel.hidden=true;bar.after(panel);
+ // Intercept the old structural-only handler: one canonical error button now shows every issue.
+ badge.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();opened=!opened;paintPanel();paintBadge();if(opened)panel.scrollIntoView({block:'nearest',behavior:'smooth'})},true);
  panel.addEventListener('click',onPanelClick);rows.addEventListener('input',schedule);
  new MutationObserver(()=>{schedulePaint();if(!runtime)schedule()}).observe(rows,{childList:true});
  if($('v2CaptionFlow'))new MutationObserver(schedulePaint).observe($('v2CaptionFlow'),{childList:true,subtree:true,characterData:true});
  if($('v2SlideText'))new MutationObserver(schedulePaint).observe($('v2SlideText'),{childList:true,subtree:true,characterData:true});
  window.addEventListener('tx:linter-change',schedule);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&snapshot?.projectId)load()});
- document.addEventListener('click',e=>{if(e.target.closest?.('#v2CheckQuality,#submit'))setTimeout(appendPreflight,0)},true);
  paintBadge();
  let attempts=0;const interval=setInterval(()=>{const current=window.txLinterCurrent?.();if(current?.projectId){clearInterval(interval);load()}else if(++attempts>=120){clearInterval(interval);loadError='Task data not loaded';paintBadge()}},100);
 }
-window.AdatacoreLint={show,mount,refresh:load,issues:()=>items.slice()};
+window.AdatacoreLint={show,mount,refresh:load,recheck:calculate,issues:()=>items.slice(),allIssues:getAllIssues,updateNative,open:()=>{calculate();opened=true;paintPanel();paintBadge();panel?.scrollIntoView({block:'nearest',behavior:'smooth'})},state:()=>({configured:!!runtime?.enabled,loading:pending,error:loadError,issues:getAllIssues(),projectIssues:items.slice()})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
