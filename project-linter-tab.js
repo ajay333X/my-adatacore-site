@@ -1,7 +1,7 @@
 (()=>{'use strict';
 if(window.__adatacoreProjectLinterTab)return;window.__adatacoreProjectLinterTab=true;
 const project=Number(new URLSearchParams(location.search).get('project'));if(!project)return;
-const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','&quot;':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',{auth:{persistSession:true,autoRefreshToken:true}});
 let snap=null,view=null,tab=null,pending=false;
 const canView=()=>{const a=window.__adatacoreProjectAccess;return !!a?.allowed&&(a.is_super_admin||a.project_roles?.some(r=>r==='project_manager'||r==='qa_manager'))};
