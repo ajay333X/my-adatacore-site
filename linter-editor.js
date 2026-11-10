@@ -206,7 +206,7 @@ function rangeFor(node,start,end){
 }
 function schedulePaint(){if(painting)return;painting=true;requestAnimationFrame(()=>{painting=false;paintMarks()})}
 function paintMarks(){
- const byId=new Map();for(const x of items){if(!byId.has(x.id))byId.set(x.id,[]);byId.get(x.id).push(x)}
+ const byId=new Map();for(const x of getAllIssues()){if(!byId.has(x.id))byId.set(x.id,[]);byId.get(x.id).push(x)}
  for(const row of rows.querySelectorAll('tr[data-segment]')){
   const own=byId.get(row.dataset.segment)||[],bad=own.some(x=>x.severity==='block'),field=row.querySelector('textarea[data-field="transcript"]');
   row.classList.toggle('ac-lint-row-error',bad);row.classList.toggle('ac-lint-row-warning',!bad&&own.length>0);
@@ -295,7 +295,7 @@ function mount(){
  if($('v2SlideText'))new MutationObserver(schedulePaint).observe($('v2SlideText'),{childList:true,subtree:true,characterData:true});
  window.addEventListener('tx:linter-change',schedule);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&snapshot?.projectId)load()});
- paintBadge();
+ updateNative(window.txLinterNative?.()||[]);
  let attempts=0;const interval=setInterval(()=>{const current=window.txLinterCurrent?.();if(current?.projectId){clearInterval(interval);load()}else if(++attempts>=120){clearInterval(interval);loadError='Task data not loaded';paintBadge()}},100);
 }
 window.AdatacoreLint={show,mount,refresh:load,recheck:calculate,issues:()=>items.slice(),allIssues:getAllIssues,updateNative,open:()=>{calculate();opened=true;paintPanel();paintBadge();panel?.scrollIntoView({block:'nearest',behavior:'smooth'})},state:()=>({configured:!!runtime?.enabled,loading:pending,error:loadError,issues:getAllIssues(),projectIssues:items.slice()})};
