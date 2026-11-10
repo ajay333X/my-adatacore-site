@@ -350,7 +350,24 @@ function audit(){
   const coverage=rangesLength(filled.map(s=>[clamp(s.start,0,totalTime),clamp(s.end,0,totalTime)]))/totalTime;
   if(coverage<.95)warnings.push({label:'Timestamp coverage is '+Math.round(coverage*100)+'%. Check untranscribed portions.',id:null});
  }
- return{errors,warnings};
+ // Project-specific linter checks are part of the SAME pre-submission gate.
+ window.AdatacoreLint?.recheck?.();
+ const lintState=window.AdatacoreLint?.state?.();
+ const projectErrors=[],projectWarnings=[];
+ if(lintState?.error){
+  const entry={label:'Unable to check project linter rules: '+lintState.error+'. Reload the workspace.',id:null,source:'linter'};
+  projectErrors.push(entry);errors.push(entry);
+ }else if(lintState?.loading&&!lintState?.configured){
+  const entry={label:'Project linter rules are still loading. Try the quality check again.',id:null,source:'linter'};
+  projectErrors.push(entry);errors.push(entry);
+ }else{
+  for(const issue of lintState?.projectIssues||[]){
+   const entry={label:'Line '+issue.segment+': '+issue.message,id:issue.id,source:'linter',severity:issue.severity};
+   if(issue.severity==='block'){projectErrors.push(entry);errors.push(entry)}
+   else{projectWarnings.push(entry);warnings.push(entry)}
+  }
+ }
+ return{errors,warnings,projectErrors,projectWarnings};
 }
 function jump(id){
  $('v2PreflightDialog')?.close();
@@ -394,13 +411,15 @@ function showPreflight(){
    section.append(line);
   });list.append(section);
  };
- block('Please fix before submitting',result.errors,'v2-check-errors');
- block('Review against the audio and project guidelines',result.warnings,'v2-check-warnings');
+ block('Project linter · blocking errors',result.projectErrors,'v2-check-errors');
+ block('Other transcript errors',result.errors.filter(x=>x.source!=='linter'),'v2-check-errors');
+ block('Project linter · suggestions',result.projectWarnings,'v2-check-warnings');
+ block('Review against the audio and project guidelines',result.warnings.filter(x=>x.source!=='linter'),'v2-check-warnings');
  if(!result.errors.length&&!result.warnings.length){
   const clean=document.createElement('p');clean.textContent='All segments have text and valid timing. Please make your final audio accuracy check before submission.';list.append(clean);
  }
  confirm.disabled=result.errors.length>0||!submit||submit.disabled;
- confirm.textContent=result.errors.length?'Fix errors to continue':'Continue to submit →';
+ confirm.textContent=result.projectErrors.length?'Fix project linter errors first':result.errors.length?'Fix errors to continue':'Continue to submit →';
  if(!preflight.open)preflight.showModal();
 }
 check.addEventListener('click',showPreflight);
