@@ -71,17 +71,40 @@ function markedWords(el,other,sameSide,asRemove){
 }
 function segmentsDiff(before,after){
  const original=Array.isArray(before)?before:[],revised=Array.isArray(after)?after:[];
- const a=new Map(original.map((s,i)=>[String(s.id||'old-'+i),s]));
- const b=new Map(revised.map((s,i)=>[String(s.id||'new-'+i),s]));
- const ids=[...new Set([...a.keys(),...b.keys()])];
- const result=ids.map(id=>{
-  const old=a.get(id)||null,now=b.get(id)||null;
+ const remaining=new Map(revised.map((s,i)=>[i,s]));
+ const pairs=[];
+ for(let i=0;i<original.length;i++){
+  const old=original[i];
+  let chosen=[...remaining.entries()].find(([,s])=>String(s.id||'')===String(old.id||'')&&old.id!=null);
+  if(!chosen){
+   // Imported AI drafts and manually re-created segments may have different IDs.
+   // Match by overlapping time only when there is a close, unambiguous candidate.
+   let best=null,bestScore=-Infinity;
+   for(const [j,s] of remaining){
+    const a=Number(old.start_ms),b=Number(old.end_ms),
+     c=Number(s.start_ms),d=Number(s.end_ms);
+    if(![a,b,c,d].every(Number.isFinite))continue;
+    const overlap=Math.max(0,Math.min(b,d)-Math.max(a,c));
+    const extent=Math.max(1,Math.max(b,d)-Math.min(a,c));
+    const proximity=Math.abs(a-c);
+    if(overlap/extent<.32&&proximity>800)continue;
+    const ranking=overlap/extent-proximity/50000;
+    if(ranking>bestScore){bestScore=ranking;best=[j,s]}
+   }
+   chosen=best;
+  }
+  if(chosen){remaining.delete(chosen[0]);pairs.push([old,chosen[1]])}
+  else pairs.push([old,null]);
+ }
+ for(const now of remaining.values())pairs.push([null,now]);
+ const result=pairs.map(([old,now],i)=>{
   const changed=!old||!now||String(old.transcript||'')!==String(now.transcript||'')||
    Number(old.start_ms)!==Number(now.start_ms)||Number(old.end_ms)!==Number(now.end_ms)||
    String(old.speaker_id)!==String(now.speaker_id);
-  return {id,old,now,changed,start:Math.min(Number(old?.start_ms??Infinity),Number(now?.start_ms??Infinity))};
+  return {id:String(now?.id||old?.id||'segment-'+i),old,now,changed,
+   start:Math.min(Number(old?.start_ms??Infinity),Number(now?.start_ms??Infinity))};
  });
- result.sort((x,y)=>x.start-y.start||x.id.localeCompare(y.id));
+ result.sort((a,b)=>a.start-b.start||a.id.localeCompare(b.id));
  return result;
 }
 function time(ms){const x=Math.max(0,Number(ms)||0);return String(Math.floor(x/60000)).padStart(2,'0')+':'+String(Math.floor(x%60000/1000)).padStart(2,'0')}
@@ -100,7 +123,7 @@ function selectedReview(){
 function scoreFeedback(r){
  score.replaceChildren();feedback.replaceChildren();
  if(!r){
-  score.append(create('span','v2review-note','Current draft comparison · No review decision selected.'));
+  score.append(create('span','v2review-note',reviewer()?'Compare the submitted L1 transcript with your current review edits.':'Read-only comparison of the AI source and the changes you have made to the transcript.'));
   return;
  }
  const state=r.decision==='approve'?'Approved':'Changes requested';
