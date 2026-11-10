@@ -8,7 +8,32 @@ function mount(){
  const btn=document.createElement('button');btn.type='button';btn.id='runProjectLinter';btn.textContent='Project linter';btn.title='Check your latest saved transcript against the rules attached to this project';bar.insertBefore(btn,document.getElementById('save'));
  panel=document.createElement('section');panel.id='projectLintResults';panel.hidden=true;panel.setAttribute('role','status');panel.setAttribute('aria-live','polite');panel.style.cssText='margin:12px 14px;border:1px solid #e6d3a6;border-radius:10px;padding:14px;background:#fffbf0;color:#372d20;font-size:12px;line-height:1.5';
  bar.after(panel);
- btn.addEventListener('click',async()=>{btn.disabled=true;btn.textContent='Checking…';try{const r=await db.rpc('linter_check_item',{p_item:item});if(r.error)throw Error(r.error.message);show(r.data||[])}catch(e){show([{severity:'warn',code:'CHECK_FAILED',segment:'—',message:e.message}])}finally{btn.disabled=false;btn.textContent='Project linter'}});
+ btn.addEventListener('click',async()=>{
+ btn.disabled=true;btn.textContent='Checking…';
+ try{
+  const current=window.txLinterCurrent?.(),issues=[];
+  if(current?.projectId&&Array.isArray(current.segments)){
+   const batches=[];let chunk=[],bytes=0,start=0;
+   for(let i=0;i<current.segments.length;i++){
+    const segment=current.segments[i],n=String(segment.transcript||'').length;
+    if(chunk.length&&(chunk.length>=60||bytes+n>115000)){batches.push({start,segments:chunk});start=i;chunk=[];bytes=0;}
+    chunk.push(segment);bytes+=n;
+   }
+   if(chunk.length)batches.push({start,segments:chunk});
+   for(const batch of batches){
+    const r=await db.rpc('linter_validate_texts',{p_project:current.projectId,p_segments:batch.segments});
+    if(r.error)throw Error(r.error.message);
+    for(const x of r.data||[])issues.push({...x,segment:Number(x.segment||0)+batch.start});
+   }
+  }else{
+   const r=await db.rpc('linter_check_item',{p_item:item});
+   if(r.error)throw Error(r.error.message);
+   issues.push(...r.data||[]);
+  }
+  show(issues);
+ }catch(e){show([{severity:'warn',code:'CHECK_FAILED',segment:'—',message:e.message}])}
+ finally{btn.disabled=false;btn.textContent='Project linter'}
+});
 }
 function show(issues){
  if(!panel)mount();if(!panel)return;
