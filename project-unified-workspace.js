@@ -117,13 +117,24 @@ function mount(){
 async function boot(){
  for(let i=0;i<60;i++){if(mount())break;await new Promise(r=>setTimeout(r,150))}
  if(!document.getElementById('unifiedContextNav'))return;
- const res=await db.rpc('admin_live_operations_dashboard',{p_project_id:null,p_days:7});
- if(res.error)return;
- const list=(res.data?.projects||[]);
  const select=$('unifiedProjectSelect');
- if(select){select.innerHTML=list.map(x=>'<option value="'+Number(x.id)+'">'+esc(x.name)+' (#'+Number(x.id)+')</option>').join('');select.value=String(projectId);}
- renderTools(list.find(p=>Number(p.id)===projectId)||{type:document.getElementById('setType')?.value});toolsView.dataset.rendered='1';
- await loadQuality();
+ renderTools({type:document.getElementById('setType')?.value});toolsView.dataset.rendered='1';
+ // Project names are useful for switching projects, but should not block the first paint.
+ let projectListRequested=false;
+ const populateProjects=async()=>{
+  if(projectListRequested)return;projectListRequested=true;
+  try{
+   const res=await db.rpc('admin_live_operations_dashboard',{p_project_id:null,p_days:7});
+   if(res.error)throw res.error;
+   const list=res.data?.projects||[];
+   if(select){select.innerHTML=list.map(x=>'<option value="'+Number(x.id)+'">'+esc(x.name)+' (#'+Number(x.id)+')</option>').join('');select.value=String(projectId)}
+   const current=list.find(p=>Number(p.id)===projectId);
+   if(current&&toolsView.dataset.rendered==='1')renderTools(current);
+  }catch(e){console.warn('Project switcher list unavailable:',e.message);projectListRequested=false}
+ };
+ if(select){select.addEventListener('focus',populateProjects);select.addEventListener('pointerdown',populateProjects)}
+ if('requestIdleCallback' in window)requestIdleCallback(populateProjects,{timeout:4500});
+ else setTimeout(populateProjects,2000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('view-quality')?.classList.contains('active'))loadQuality()});
 }
 boot().catch(console.error);
