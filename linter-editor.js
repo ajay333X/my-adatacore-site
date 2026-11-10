@@ -174,6 +174,11 @@ function jump(x){
  const selector='tr[data-segment="'+CSS.escape(x.id)+'"]';
  let row=rows.querySelector(selector);
  if(!row){for(const id of ['speakerFilter','textSearch']){const input=$(id);if(input&&input.value){input.value='';input.dispatchEvent(new Event(id==='textSearch'?'input':'change',{bubbles:true}))}}row=rows.querySelector(selector)}
+ if(document.body.classList.contains('v2-slideshow')){
+  window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id:x.id}}));
+  $('v2SlideStage')?.scrollIntoView({block:'center',behavior:'smooth'});
+  return;
+ }
  const flow=$('v2CaptionFlow'),piece=flow?.querySelector('[data-edit-segment="'+CSS.escape(x.id)+'"]');
  if(piece&&!piece.isContentEditable)piece.click();
  const field=row?.querySelector('textarea[data-field="transcript"]');
@@ -226,6 +231,11 @@ function paintMarks(){
   if(!segment||segment.transcript!==actual)segment=snapshot.segments.find(x=>x.transcript===actual);
   if(segment){
    const own=byId.get(segment.id)||[];
+   const hasBlock=own.some(x=>x.severity==='block');
+   for(const element of [$('v2SlideStage'),$('v2SlideCount')]){
+    element?.classList.toggle('ac-lint-segment-error',hasBlock);
+    element?.classList.toggle('ac-lint-segment-warning',!hasBlock&&own.length>0);
+   }
    for(const issue of own.slice(0,25)){
     const r=rangeFor(slide,issue.start,issue.end);if(r)(issue.severity==='block'?errors:warnings).push(r);
    }
