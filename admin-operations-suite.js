@@ -38,6 +38,14 @@ function openCommand(){const c=document.getElementById('opsCommand');c?.classLis
 async function searchGlobal(q){const box=document.getElementById('opsCommandResults');if(!box)return;if(String(q).trim().length<2){box.innerHTML='<div class="ops-suite-empty">Type at least 2 characters.</div>';return}try{const data=await rpc('admin_global_search',{p_query:String(q).trim(),p_limit:16}),rows=Array.isArray(data)?data:(data?.results||[]);box.innerHTML=rows.length?rows.map((r,i)=>`<button class="ops-command-result" data-result-index="${i}"><strong>${esc(r.label||r.title||r.name||r.email||r.public_task_id||r.id||'Result')}</strong><small>${esc(r.type||r.kind||'')} ${esc(r.detail||r.subtitle||'')}</small></button>`).join(''):'<div class="ops-suite-empty">No matches.</div>';box.onclick=e=>{const b=e.target.closest('[data-result-index]');if(!b)return;const r=rows[Number(b.dataset.resultIndex)];const link=r?.link||r?.url;if(link)location.href=link;else if(r?.user_id)showPreviewFor(r.user_id);else if(r?.id&&/project/i.test(r?.type||''))location.href=`/admin/project-lab?project=${encodeURIComponent(r.id)}`}}catch(err){box.innerHTML=`<div class="ops-suite-empty">Search failed: ${esc(err.message)}</div>`}}
 async function showPreviewFor(id){try{showPreview(await rpc('admin_preview_contributor_workspace',{p_user_id:id}));document.getElementById('opsCommand')?.classList.remove('show')}catch(err){alert(err.message)}}
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommand()}if(e.key==='Escape'){document.getElementById('opsCommand')?.classList.remove('show');document.getElementById('opsPreview')?.classList.remove('show')}});
-function start(){if(!mount())return false;loadAll();const hash=location.hash.replace('#','');if(hash==='operations-center')setTimeout(()=>window.adatacoreAdminShowTab?.('operations-center'),0);return true}
+function start(){if(!mount())return false;
+ const panel=document.getElementById('operations-center');let ready=false;
+ const run=()=>{if(ready||!panel?.classList.contains('active'))return;ready=true;observer.disconnect();loadAll()};
+ const observer=new MutationObserver(run);
+ if(panel)observer.observe(panel,{attributes:true,attributeFilter:['class']});
+ run();
+ const hash=location.hash.replace('#','');
+ if(hash==='operations-center')setTimeout(()=>window.adatacoreAdminShowTab?.('operations-center'),0);
+ return true}
 if(!start()){const mo=new MutationObserver(()=>{if(start())mo.disconnect()});mo.observe(document.documentElement,{childList:true,subtree:true})}
 })();
