@@ -172,5 +172,12 @@
     if(msg)msg.textContent=next?'Role enabled.':'Role disabled.';await load();
   }
 
-  mount();load();
+  mount();
+  // The roles/assignment snapshots are not needed on the Admin overview.
+  {const panel=document.getElementById('access');let ready=false;
+   const run=()=>{if(ready||!panel?.classList.contains('active'))return;ready=true;observer.disconnect();load()};
+   const observer=new MutationObserver(run);
+   if(panel)observer.observe(panel,{attributes:true,attributeFilter:['class']});
+   run();
+  }
 })();
