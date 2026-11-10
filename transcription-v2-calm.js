@@ -1,42 +1,61 @@
 (()=>{
 'use strict';
-// Presentation only. Existing IDs, event handlers, audio transport and task
-// submission remain in their original modules.
+// Compact transcription presentation only. These nodes remain in the DOM so
+// data loading, autosave, permissions and submission logic remain unchanged.
 const root=document.body;
 if(!root?.classList.contains('tx-v2-editor')||root.dataset.calmUiMounted)return;
-root.dataset.calmUiMounted='1';root.classList.add('txr-polished');
-const ai=document.querySelector('.v2-ai-bar');
-if(ai&&!ai.closest('.txr-source')){
- const details=document.createElement('details');
- details.className='txr-source';
- details.id='txrOriginalSource';
- const summary=document.createElement('summary');
- summary.textContent='Original AI script';
- summary.title='View the read-only AI source used as the starting point for transcription';
- const note=document.createElement('span');
- note.style.cssText='font-size:10px;font-weight:500;color:#94a2af;margin-left:2px';
- note.textContent='Read-only source';
- summary.append(note);
- ai.before(details);
- details.append(summary,ai);
+root.dataset.calmUiMounted='2';
+root.classList.add('txr-polished','txr-focused-workspace');
+
+// The project and save status already live in the global header. Avoid
+// duplicating them in a second WORKSPACE / TRANSCRIPTION hero and QA banner.
+const intro=document.querySelector('.v2-editor-intro');
+if(intro)intro.setAttribute('aria-hidden','true');
+
+// Instructions remain available through the real project Guidelines button.
+const duplicatedInstructions=document.getElementById('v2cbTaskInstructions');
+if(duplicatedInstructions){
+ duplicatedInstructions.open=false;
+ duplicatedInstructions.setAttribute('aria-hidden','true');
 }
-const instructions=document.querySelector('#v2cbTaskInstructions>summary');
-if(instructions){
- // Keep the original instructions content and click behavior.
- for(const node of instructions.childNodes){
-  if(node.nodeType===Node.TEXT_NODE&&node.textContent.includes('Task instructions')){
-   node.textContent=node.textContent.replace('Task instructions','Script context & instructions');
-   break;
-  }
+
+// Preserve the AI reference button, whose own handler loads the actual AI
+// original, in the editor's existing More tools popup. Hide only the
+// redundant always-visible AI status panel.
+const extras=document.querySelector('.editor-tools .v2-extra-menu');
+const originalButton=document.getElementById('aiOriginal');
+if(extras&&originalButton&&!extras.contains(originalButton)){
+ extras.appendChild(originalButton);
+}
+const aiBar=document.querySelector('.v2-ai-bar');
+if(aiBar)aiBar.setAttribute('aria-hidden','true');
+
+// Bring meaningful actions into the audio header and remove the otherwise
+// empty standalone "workspace tools" band.
+const waveform=document.querySelector('.v2-wave-card');
+const head=waveform?.querySelector('.v2-pane-head');
+const actions=document.querySelector('#v2cbWorkbar .v2cb-workbar-actions');
+if(head&&actions){
+ actions.classList.add('txr-timeline-actions');
+ // These shortcuts remain usable from More tools, not the primary toolbar.
+ if(extras){
+  ['v2cbReplay3','v2cbBookmark','v2cbCommandOpen'].forEach(id=>{
+   const element=document.getElementById(id);
+   if(element&&!extras.contains(element))extras.appendChild(element);
+  });
  }
+ actions.setAttribute('aria-label','Audio timeline actions');
+ head.append(actions);
 }
-const diff=document.getElementById('v2ReviewDiffOpen');
-if(diff){
- diff.title='See exactly what changed in the transcription. L1: AI source vs your edits; L2: submitted L1 vs reviewer edits.';
- diff.setAttribute('aria-haspopup','dialog');
-}
-const card=document.querySelector('.v2-wave-card');
-if(card)card.setAttribute('data-layout','audio-timeline');
+const workbar=document.getElementById('v2cbWorkbar');
+if(workbar)workbar.setAttribute('aria-hidden','true');
+
+if(waveform)waveform.setAttribute('data-layout','audio-timeline');
 const transcript=document.querySelector('.v2-transcript-card');
 if(transcript)transcript.setAttribute('data-layout','transcript-editor');
+const diff=document.getElementById('v2ReviewDiffOpen');
+if(diff){
+ diff.title='Compare your transcript against the AI source, or L1 against L2 review.';
+ diff.setAttribute('aria-haspopup','dialog');
+}
 })();
