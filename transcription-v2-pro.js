@@ -354,20 +354,21 @@ function audit(){
  window.AdatacoreLint?.recheck?.();
  const lintState=window.AdatacoreLint?.state?.();
  const projectErrors=[],projectWarnings=[];
+ const reviewer=Boolean(window.txLinterCurrent?.()?.reviewer);
  if(lintState?.error){
   const entry={label:'Unable to check project linter rules: '+lintState.error+'. Reload the workspace.',id:null,source:'linter'};
-  projectErrors.push(entry);errors.push(entry);
+  projectErrors.push(entry);if(!reviewer)errors.push(entry);
  }else if(lintState?.loading&&!lintState?.configured){
   const entry={label:'Project linter rules are still loading. Try the quality check again.',id:null,source:'linter'};
-  projectErrors.push(entry);errors.push(entry);
+  projectErrors.push(entry);if(!reviewer)errors.push(entry);
  }else{
   for(const issue of lintState?.projectIssues||[]){
    const entry={label:'Line '+issue.segment+': '+issue.message,id:issue.id,source:'linter',severity:issue.severity};
-   if(issue.severity==='block'){projectErrors.push(entry);errors.push(entry)}
+   if(issue.severity==='block'){projectErrors.push(entry);if(!reviewer)errors.push(entry)}
    else{projectWarnings.push(entry);warnings.push(entry)}
   }
  }
- return{errors,warnings,projectErrors,projectWarnings};
+ return{errors,warnings,projectErrors,projectWarnings,reviewer};
 }
 function jump(id){
  $('v2PreflightDialog')?.close();
@@ -411,6 +412,7 @@ function showPreflight(){
    section.append(line);
   });list.append(section);
  };
+ if(result.reviewer&&result.projectErrors.length){const warning=document.createElement('p');warning.className='v2-check-summary';warning.textContent='Review may be returned for corrections, but approval will be blocked until project linter errors are fixed.';list.append(warning)}
  block('Project linter · blocking errors',result.projectErrors,'v2-check-errors');
  block('Other transcript errors',result.errors.filter(x=>x.source!=='linter'),'v2-check-errors');
  block('Project linter · suggestions',result.projectWarnings,'v2-check-warnings');
@@ -419,7 +421,7 @@ function showPreflight(){
   const clean=document.createElement('p');clean.textContent='All segments have text and valid timing. Please make your final audio accuracy check before submission.';list.append(clean);
  }
  confirm.disabled=result.errors.length>0||!submit||submit.disabled;
- confirm.textContent=result.projectErrors.length?'Fix project linter errors first':result.errors.length?'Fix errors to continue':'Continue to submit →';
+ confirm.textContent=result.projectErrors.length&&!result.reviewer?'Fix project linter errors first':result.errors.length?'Fix errors to continue':'Continue to submit →';
  if(!preflight.open)preflight.showModal();
 }
 check.addEventListener('click',showPreflight);
