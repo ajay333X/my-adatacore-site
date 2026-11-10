@@ -1,5 +1,5 @@
 (()=>{'use strict';
-let txProjects=[],claiming=false;
+let txProjects=[],claiming=false,txRefreshing=false,lastTxSnapshot='';
 const originalRender=typeof render==='function'?render:null;
 const html=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const langName=v=>({hi:'Hindi',en:'English',mr:'Marathi',bn:'Bengali',ta:'Tamil',te:'Telugu',gu:'Gujarati',kn:'Kannada',ml:'Malayalam',pa:'Punjabi',ur:'Urdu'})[v]||String(v||'').toUpperCase();
@@ -59,7 +59,7 @@ if(g.kind==='transcription'){const status=g.activeItem?(!g.canClaim?'Finish exis
 const t=g.next,sub=g.count===1?`1 task available`:`${g.count} tasks available`;return `<article class="card card-hover task-card"><div class="task-top"><span class="pill ${g.layer==='L1'?'pill-brand':''}">${html(g.layer)}</span><span class="pill pill-green"><span class="status-dot"></span>Ready</span></div><h3>${html(g.title)}</h3><div class="task-public-id">${html(sub)}</div><div class="task-actions"><span><span class="muted" style="font-size:11px">Rate</span><br><span class="money">$${money(g.price)} / task</span></span><button class="btn btn-primary project-open" data-task="${Number(t.id)}" data-transcription="${html(t.transcription_item_id||'')}" data-transcription-project="${Number(t.transcription_project_id||0)}" data-layer="${html(t.layer||'L1')}" data-title="${encodeURIComponent(t.title||'')}">${g.layer==='L1'?'Start task':'Review task'} →</button></div></article>`}
 function repaint(){const groups=allGroups(),total=groups.reduce((n,g)=>n+(g.kind==='transcription-review'?(g.activeReview?1:0):g.count),0);const active=document.getElementById('activeCount'),ready=document.getElementById('readyCount'),list=document.getElementById('readyTasks'),overview=document.getElementById('overviewTasks');if(active){active.textContent=groups.length;active.parentElement?.querySelector('.stat-foot')&&(active.parentElement.querySelector('.stat-foot').textContent=groups.length===1?`1 project · ${total} task${total===1?'':'s'} available`:`${groups.length} projects · ${total} tasks available`)}if(ready)ready.textContent=groups.length?`${groups.length} project${groups.length===1?'':'s'} · ${total} task${total===1?'':'s'}`:'0 ready';const empty='<div class="card empty" style="grid-column:1/-1">No active assignments right now.</div>';if(list)list.innerHTML=groups.length?groups.map(card).join(''):empty;if(overview)overview.innerHTML=groups.length?groups.slice(0,2).map(card).join(''):'<div class="card empty" style="grid-column:1/-1">No work is waiting for you right now.</div>'}
 if(originalRender){render=function(){originalRender();repaint()}}
-async function refreshTx(){try{const {data,error}=await db.rpc('tx_my_transcription_projects');if(error)throw error;txProjects=Array.isArray(data)?data:[];repaint()}catch(e){console.warn('Transcription project summary unavailable:',e.message)}}
+async function refreshTx(){if(txRefreshing)return;txRefreshing=true;try{const {data,error}=await db.rpc('tx_my_transcription_projects');if(error)throw error;const next=Array.isArray(data)?data:[];const signature=JSON.stringify(next);if(signature===lastTxSnapshot)return;lastTxSnapshot=signature;txProjects=next;repaint()}catch(e){console.warn('Transcription project summary unavailable:',e.message)}finally{txRefreshing=false}}
 document.addEventListener('click',async e=>{const b=e.target.closest('.project-open');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(b.dataset.txReviewProject){
  if(claiming)return;
  claiming=true;b.disabled=true;
@@ -85,5 +85,5 @@ if(b.dataset.txProject){if(claiming)return;claiming=true;b.disabled=true;const o
 refreshTx();
 window.addEventListener('focus',refreshTx);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshTx()});
-setInterval(()=>{if(!document.hidden)refreshTx()},15000);
+setInterval(()=>{if(!document.hidden)refreshTx()},45000);
 })();
