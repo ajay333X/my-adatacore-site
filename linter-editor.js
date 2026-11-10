@@ -8,7 +8,7 @@ const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_pu
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const markPattern=/<[^>]+>|\{[^}]*\}|\[[^\]]+\]/gu;
-let runtime=null,items=[],snapshot=null,badge=null,panel=null,opened=false,pending=false,loadError='',t=null,painting=false;
+let runtime=null,items=[],nativeIssues=[],snapshot=null,badge=null,panel=null,opened=false,pending=false,loadError='',t=null,painting=false;
 const style=document.createElement('style');
 style.textContent=[
 '#acLintCount{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:8px 11px;min-height:35px;font:700 12px Inter,system-ui,sans-serif;border-radius:8px;border:1px solid #dfe3ea;background:#f5f7fa;color:#566277}',
@@ -126,13 +126,31 @@ async function load(){
  }catch(e){loadError=e.message;runtime=null}
  finally{pending=false;paintBadge();if(opened)paintPanel();if(runtime)calculate()}
 }
+function getAllIssues(){return items.concat(nativeIssues)}
+function updateNative(lintRows){
+ nativeIssues=[];
+ const current=window.txLinterCurrent?.();
+ const order=new Map((current?.segments||[]).map((x,i)=>[x.id,i]));
+ for(const x of Array.isArray(lintRows)?lintRows:[]){
+  const segment=(order.get(x.id)??0)+1;
+  for(const message of x.errors||[])nativeIssues.push({id:x.id,segment,code:'STRUCTURAL',severity:'block',label:'Transcript validation',message,start:-1,end:-1,expected:'',fix:null});
+  for(const message of x.warnings||[])nativeIssues.push({id:x.id,segment,code:'STRUCTURAL',severity:'warn',label:'Transcript validation',message,start:-1,end:-1,expected:'',fix:null});
+ }
+ paintBadge();if(opened)paintPanel();schedulePaint();
+}
 function paintBadge(){
  if(!badge)return;
- const errors=items.filter(i=>i.severity==='block').length,warnings=items.length-errors;
- badge.className=errors?'ac-lint-bad':warnings?'ac-lint-warn':runtime?.enabled?'ac-lint-good':'';
- badge.querySelector('.ac-label').textContent=loadError?'Linter unavailable':pending&&!runtime?'Loading linter…':!runtime?.enabled?'Project linter off':errors?errors+' error'+(errors===1?'':'s')+(warnings?' · '+warnings+' warnings':''):warnings?warnings+' warning'+(warnings===1?'':'s'):'No issues';
- badge.title=loadError||(!runtime?.enabled?'No linter attached to this project':'Show project linter results');
+ const all=getAllIssues(),errors=all.filter(x=>x.severity==='block').length,warnings=all.length-errors;
+ badge.classList.toggle('ac-lint-blocked',errors>0);
+ badge.classList.toggle('ac-lint-warning',!errors&&warnings>0);
+ badge.classList.toggle('ac-lint-unavailable',!errors&&!warnings&&(!runtime||!!loadError));
+ badge.classList.toggle('ac-lint-clean',!errors&&!warnings&&!!runtime&&!loadError);
+ badge.textContent=errors?errors+' error'+(errors===1?'':'s')+(warnings?' · '+warnings+' warning'+(warnings===1?'':'s'):''):
+ warnings?warnings+' warning'+(warnings===1?'':'s'):loadError?'Linter unavailable':!runtime?'Checking linters…':!runtime.enabled?'Project linter off':'No issues';
+ badge.title=errors?'Fix '+errors+' blocking error(s) before submitting. Click for locations.':
+ warnings?'Check '+warnings+' warning(s). Click for details.':loadError?loadError:'Show linter status and any transcript issues';
  badge.setAttribute('aria-expanded',String(opened));
+ badge.setAttribute('aria-label',badge.textContent+'; open validation details');
 }
 function paintPanel(){
  if(!panel)return;panel.hidden=!opened;if(!opened)return;
