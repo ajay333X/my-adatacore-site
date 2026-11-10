@@ -3348,4 +3348,96 @@ body.tx-v2-editor.txr-polished :is(button,a,input,textarea,select,summary):focus
  body.tx-v2-editor.txr-polished *{animation:none!important;transition:none!important}
 }
 
+
+/* Compact, task-first layout — removes duplicate introductory copy. */
+body.tx-v2-editor.txr-polished.txr-focused-workspace .editor-intro.v2-editor-intro,
+body.tx-v2-editor.txr-polished.txr-focused-workspace #v2cbTaskInstructions,
+body.tx-v2-editor.txr-polished.txr-focused-workspace .ai-editor-bar.v2-ai-bar,
+body.tx-v2-editor.txr-polished.txr-focused-workspace details.txr-source,
+body.tx-v2-editor.txr-polished.txr-focused-workspace #v2cbWorkbar{
+ display:none!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .editor-page.v2-workspace{
+ padding-top:8px!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card{
+ margin-bottom:8px!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head{
+ min-height:43px!important;
+ padding:7px 12px!important;
+ gap:12px!important;
+ border-bottom:1px solid #e4eaf1!important;
+ flex-wrap:wrap!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-index,
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head p,
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-metric-label{
+ display:none!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head h2{
+ font-size:12px!important;line-height:1.3!important;letter-spacing:0!important;
+ color:#31475d!important;margin:0!important;font-weight:800!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head>div:first-child{
+ flex:0 0 auto;min-width:120px;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-metrics{
+ display:flex!important;align-items:center!important;gap:7px!important;
+ order:3;flex:0 0 auto;margin:0!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card #v2AudioLength{
+ font-size:11px!important;color:#586e83!important;font-variant-numeric:tabular-nums;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card #v2cbPlayIndicator{
+ font-size:9px!important;padding:4px 6px!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions{
+ order:2;display:flex!important;align-items:center!important;
+ justify-content:flex-end!important;flex:1 1 340px;
+ flex-wrap:wrap!important;gap:6px!important;margin-left:auto!important;
+ padding:0!important;min-width:0;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ padding:6px 9px!important;min-height:28px!important;height:29px!important;
+ font-size:10px!important;font-weight:700!important;color:#586e83!important;
+ background:white!important;border:1px solid #dce5ee!important;border-radius:6px!important;
+ box-shadow:none!important;letter-spacing:0!important;white-space:nowrap;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions button:hover{
+ color:#215f95!important;background:#edf6fc!important;border-color:#bfd7e8!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions #v2ReviewDiffOpen{
+ color:#1b6199!important;background:#e9f4fc!important;border-color:#bcd9eb!important;
+ font-weight:800!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions #v2ReviewFeedbackOpen{
+ color:#395d7c!important;background:#f4f7fa!important;border-color:#dbe5ee!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions #v2cbConnection{
+ display:none!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .editor-tools{
+ padding:7px 12px!important;gap:8px!important;
+}
+body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2cb-listen-gate{
+ padding:7px 12px!important;
+}
+@media (max-width:800px){
+ body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head{
+  padding:8px 10px!important;gap:8px!important;
+ }
+ body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-head>div:first-child{
+  min-width:0;flex:1 1 45%;
+ }
+ body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .v2-pane-metrics{
+  order:1;margin-left:auto!important;
+ }
+ body.tx-v2-editor.txr-polished.txr-focused-workspace .v2-wave-card .txr-timeline-actions{
+  order:3;flex:1 1 100%;justify-content:flex-start!important;overflow-x:auto;
+  flex-wrap:nowrap!important;padding:0 0 2px!important;
+ }
+}
+
 /* END transcription-v2-calm.css */
