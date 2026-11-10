@@ -3489,6 +3489,11 @@ body.tx-v2-editor.txr-polished .txr-change-metric{
  font-size:10px!important;color:#758495!important;white-space:nowrap!important;
 }
 body.tx-v2-editor.txr-polished .txr-change-metric strong{font-size:10px!important;color:#31455b!important;font-weight:820!important}
+body.tx-v2-editor.txr-polished .txr-change-colored{gap:6px!important}
+body.tx-v2-editor.txr-polished .txr-change-colored :is(.txr-count-s,.txr-count-a,.txr-count-r){font-variant-numeric:tabular-nums;font-weight:800!important}
+body.tx-v2-editor.txr-polished .txr-count-s{color:#bf740f!important}
+body.tx-v2-editor.txr-polished .txr-count-a{color:#158653!important}
+body.tx-v2-editor.txr-polished .txr-count-r{color:#c9474f!important}
 body.tx-v2-editor.txr-polished .txr-change-legend{
  display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;
  flex-wrap:wrap!important;gap:8px 12px!important;margin-left:auto!important;
