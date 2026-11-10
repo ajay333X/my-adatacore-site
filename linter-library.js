@@ -87,7 +87,7 @@ async function test(){
    issues.map(x=>'<div class="result '+(x.severity==='warn'?'warn':'')+'"><strong>'+(x.severity==='block'?'BLOCK':'WARNING')+' · '+esc(x.code)+'</strong>'+esc(x.message)+'</div>').join('');
  }catch(e){$('testResults').textContent=e.message}finally{$('testButton').disabled=false}
 }
-$('projectPicker').addEventListener('change',async e=>{projectId=Number(e.target.value)||null;const url=new URL(location.href);if(projectId)url.searchParams.set('project',projectId);else url.searchParams.delete('project');history.replaceState(null,'',url);$('testResults').innerHTML='';try{await reload()}catch(e){messageErr(e)}});
+$('projectPicker').addEventListener('change',async e=>{projectId=Number(e.target.value)||null;const url=new window.URL(location.href);if(projectId)url.searchParams.set('project',projectId);else url.searchParams.delete('project');history.replaceState(null,'',url);$('testResults').innerHTML='';try{await reload()}catch(e){messageErr(e)}});
 $('newLinter').onclick=()=>openEditor(null);
 $('closeEditor').onclick=$('cancelEditor').onclick=closeEditor;
 $('linterForm').addEventListener('submit',saveEditor);
