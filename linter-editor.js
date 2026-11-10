@@ -28,7 +28,7 @@ style.textContent=[
 ].join('\n');
 document.head.append(style);
 function mask(s){return s.replace(markPattern,m=>'¤'.repeat(m.length))}
-function plain(s){let out='',offset=[];for(let i=0;i<s.length;){markPattern.lastIndex=i;const m=markPattern.exec(s);if(m&&m.index===i){i+=m[0].length;continue}out+=s[i];offset.push(i);i++}return{out,offset}}
+function plain(s){const chars=[],offset=[];let last=0;markPattern.lastIndex=0;for(const m of s.matchAll(markPattern)){for(let j=last;j<m.index;j++){chars.push(s[j]);offset.push(j)}last=m.index+m[0].length}for(let j=last;j<s.length;j++){chars.push(s[j]);offset.push(j)}return{out:chars.join(''),offset}}
 function effectiveRules(){
  const map=new Map();for(const r of runtime?.rules||[]){if(!r.enabled)continue;const k=r.id||r.code;if(!map.has(k)||(r.severity==='block'&&map.get(k).severity!=='block'))map.set(k,r)}
  return [...map.values()];
