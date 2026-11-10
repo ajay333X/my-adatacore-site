@@ -15,7 +15,7 @@
   async function readDigest(){if(!projectId||!syncDb)return '';const {data,error}=await syncDb.rpc(readRpc(),{p_project_id:projectId});if(error)return '';return digest(data)}
 
   async function initializeBaseline(){for(let attempt=0;attempt<80;attempt++){const title=document.getElementById('topTitle')?.textContent||'';if(title&&title!=='Project Lab')break;await sleep(100)}baselineSettings=settingsSnapshot();lastDigest=await readDigest();initialReady=true}
-  async function checkForExternalChanges(force=false){if(!initialReady||checking||document.hidden||settingsDirty())return;const now=Date.now();if(!force&&now-lastCheckAt<5000)return;checking=true;lastCheckAt=now;try{const next=await readDigest();if(next&&lastDigest&&next!==lastDigest){location.reload();return}if(next)lastDigest=next}finally{checking=false}}
+  async function checkForExternalChanges(force=false){if(!initialReady||checking||document.hidden||settingsDirty())return;const now=Date.now();if(now-lastCheckAt<(force?25000:120000))return;checking=true;lastCheckAt=now;try{const next=await readDigest();if(next&&lastDigest&&next!==lastDigest){location.reload();return}if(next)lastDigest=next}finally{checking=false}}
 
   function scopedViews(){
     if(access?.is_super_admin)return null;
@@ -66,6 +66,6 @@
 
   window.addEventListener('focus',()=>checkForExternalChanges(true));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkForExternalChanges(true)});
-  setInterval(()=>checkForExternalChanges(false),30000);
+  setInterval(()=>checkForExternalChanges(false),120000);
   boot();
 })();
