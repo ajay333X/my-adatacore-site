@@ -154,15 +154,17 @@ function paintBadge(){
 }
 function paintPanel(){
  if(!panel)return;panel.hidden=!opened;if(!opened)return;
- const title=runtime?.enabled?'Project Linter · '+items.length+' issues':'Project Linter is not configured';
- let html='<div class="ac-lint-top"><div><strong>'+esc(title)+'</strong><small>'+esc((runtime?.profiles||[]).map(p=>p.name).join(' · ')||'Project-level validation')+'</small></div><button data-ac-act="close" type="button">Close ✕</button></div>';
- if(loadError)html+='<div class="ac-lint-empty" role="alert">'+esc(loadError)+'</div>';
- else if(!runtime?.enabled)html+='<div class="ac-lint-empty">No linter is attached to this project. Activate a profile under <a href="/admin/project-lab?project='+Number(snapshot?.projectId||runtime?.project_id||0)+'#ac-linters">Project Lab → Linters</a> to start live text checks. Existing structural validation remains active.</div>';
- else if(!items.length)html+='<div class="ac-lint-empty">✓ All '+effectiveRules().length+' active project rules pass. Continue reviewing the audio and word accuracy.</div>';
- else {
+ const all=getAllIssues(),errors=all.filter(x=>x.severity==='block').length,warnings=all.length-errors;
+ const title=errors?'Fix '+errors+' blocking error'+(errors===1?'':'s'):'Validation results';
+ let html='<div class="ac-lint-top"><div><strong>'+esc(title)+'</strong><small>'+esc((runtime?.profiles||[]).map(p=>p.name).join(' · ')||'Transcript structure and project checks')+'</small></div><button data-ac-act="close" type="button">Close ✕</button></div>';
+ if(errors)html+='<div class="ac-lint-row-summary" role="alert">Submission blocked · Fix the errors highlighted in the transcript to continue.</div>';
+ if(loadError)html+='<div class="ac-lint-empty" role="alert">Project linter unavailable: '+esc(loadError)+'. Structural checks remain available.</div>';
+ else if(!runtime?.enabled)html+='<div class="ac-lint-empty">No project linter attached. To activate custom checks, visit <a href="/admin/project-lab?project='+Number(snapshot?.projectId||0)+'#ac-linters">Project Lab → Linters</a>.</div>';
+ if(!all.length)html+='<div class="ac-lint-empty">'+(!runtime?'Loading checks…':runtime.enabled?'✓ All '+effectiveRules().length+' active project rules pass.':'No structural errors detected.')+'</div>';
+ else{
   html+='<div class="ac-lint-scroll">';
-  html+=items.slice(0,80).map((x,i)=>'<div class="ac-lint-issue"><div><span class="'+(x.severity==='warn'?'warn':'')+'">'+(x.severity==='block'?'ERROR':'WARNING')+' · Line '+x.segment+'</span><p>'+esc(x.message)+'</p>'+(x.expected?'<small>Found: '+esc(x.expected.slice(0,80))+'</small>':'')+'</div><div class="ac-lint-actions"><button data-ac-act="jump" data-index="'+i+'" type="button">Go to line</button>'+(x.fix!==null&&x.start>=0?'<button data-ac-act="fix" data-index="'+i+'" type="button">'+(x.code==='DOUBLE_SPACE'?'Use single spaces':x.code==='SPELLING_REPLACEMENT'?'Apply suggestion':'Fix')+'</button>':'')+'</div></div>').join('');
-  if(items.length>80)html+='<div class="ac-lint-empty">Showing first 80 of '+items.length+' issues.</div>';
+  html+=all.slice(0,80).map((x,i)=>'<div class="ac-lint-issue"><div><span class="'+(x.severity==='warn'?'warn':'')+'">'+(x.severity==='block'?'ERROR':'WARNING')+' · Line '+x.segment+'</span><p>'+esc(x.message)+'</p><small>'+esc(x.label||x.code)+(x.expected?' · Found: '+esc(x.expected.slice(0,60)):'')+'</small></div><div class="ac-lint-actions"><button data-ac-act="jump" data-index="'+i+'" type="button">Go to line</button>'+(x.fix!==null&&x.start>=0?'<button data-ac-act="fix" data-index="'+i+'" type="button">'+(x.code==='DOUBLE_SPACE'?'Use single spaces':x.code==='SPELLING_REPLACEMENT'?'Apply suggestion':'Fix spacing')+'</button>':'')+'</div></div>').join('');
+  if(all.length>80)html+='<div class="ac-lint-empty">Showing the first 80 of '+all.length+' issues.</div>';
   html+='</div>';
  }
  panel.innerHTML=html;
@@ -181,7 +183,7 @@ function jump(x){
 function onPanelClick(e){
  const btn=e.target.closest('[data-ac-act]');if(!btn)return;
  if(btn.dataset.acAct==='close'){opened=false;paintPanel();paintBadge();return}
- const x=items[Number(btn.dataset.index)];if(!x)return;
+ const x=getAllIssues()[Number(btn.dataset.index)];if(!x)return;
  if(btn.dataset.acAct==='jump')jump(x);
  else if(btn.dataset.acAct==='fix'&&x.fix!==null){
   if(x.code==='SPELLING_REPLACEMENT'&&!confirm('Apply this suggested spelling? Verify the word against audio first.'))return;
