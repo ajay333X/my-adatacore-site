@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/linters",
+      "destination": "/linter-library"
+    },
+    {
       "source": "/admin/live-operations",
       "destination": "/admin-live-dashboard"
     },
