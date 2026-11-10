@@ -79,7 +79,7 @@ function pair(before,after){
  rows.sort((a,b)=>Number(a.now?.start_ms??a.old?.start_ms??0)-Number(b.now?.start_ms??b.old?.start_ms??0));
  return rows;
 }
-const toggle=node('button','txr-change-toggle','Make Changes?');
+const toggle=node('button','txr-change-toggle','⇄ View Changes');
 toggle.type='button';toggle.id='txrMakeChangesButton';toggle.setAttribute('aria-pressed','false');
 toggle.title='Highlight substitutions, additions and removals against L0 or L1';
 actions.prepend(toggle);
@@ -197,6 +197,7 @@ async function enable(on){
  state.on=Boolean(on);
  root.classList.toggle('txr-change-mode',state.on);
  toggle.setAttribute('aria-pressed',String(state.on));
+ toggle.textContent=state.on?'Hide Changes':'⇄ View Changes';
  bar.hidden=!state.on;preview.hidden=!state.on;
  if(!state.on)return;
  options();
