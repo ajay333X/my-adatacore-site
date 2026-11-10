@@ -152,12 +152,19 @@ function render(){
  lines.replaceChildren(fragment);
  const total=stats.word.S+stats.word.A+stats.word.R,pct=Math.min(999,Math.round(total/Math.max(1,originals)*1000)/10);
  const addMetric=(label,value)=>{const e=node('span','txr-change-metric');e.append(node('span','',label+' '),node('strong','',value));return e};
+ const addCounts=(label,amounts)=>{
+  const e=node('span','txr-change-metric txr-change-colored');e.append(node('span','',label+' '));
+  for(const key of ['S','A','R']){
+   const short=node('span','txr-count-'+key.toLowerCase(),key+' '+amounts[key]);e.append(short);
+  }
+  return e;
+ };
  metrics.replaceChildren(
   addMetric('Avg shift',Math.round(shift/Math.max(1,shiftCount))+'ms'),
   addMetric('Word diff',pct.toFixed(1)+'%'),
-  addMetric('Words','S '+stats.word.S+' / A '+stats.word.A+' / R '+stats.word.R),
-  addMetric('Tags','S '+stats.tag.S+' / A '+stats.tag.A+' / R '+stats.tag.R),
-  addMetric('Punctuation','S '+stats.punct.S+' / A '+stats.punct.A+' / R '+stats.punct.R)
+  addCounts('Words',stats.word),
+  addCounts('Tags',stats.tag),
+  addCounts('Punctuation',stats.punct)
  );
  note.textContent=changedLines+' of '+matched.length+' lines changed · Current transcript compared with '+(select.selectedOptions[0]?.textContent||'original');
  state.rendered=JSON.stringify(changed.map(s=>[s.id,s.start_ms,s.end_ms,s.transcript]))+'|'+state.base;
