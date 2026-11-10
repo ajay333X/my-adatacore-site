@@ -51,3 +51,13 @@ The profile and assignment tables use RLS and are not directly exposed for brows
 ## Deployment notes
 
 The schema was applied directly using Supabase's migration capability. The feature code is on `feature/shared-linter-library-20261110` before release. Any additional rule implementation must update both `linter_rule_catalog` and `linter_evaluate`, then add regression tests to prevent false positives.
+
+## Linter playground and custom rules (2026-11-10)
+
+- The **Linter playground** now works without any project selected: choose a library profile and run a sample. If a project is selected, the **Project # — attached rules** option previews its active assignments, explicitly reporting when no rules are attached.
+- The **Test this linter** action on each profile opens its preview, without any attachment or task submission.
+- **Edit linter** now supports up to **40** rules total. Alongside built-in checks, admins can create named custom rules: prohibited literal text, prohibited term lists, suggested spelling replacements, text required in each segment, and per-segment character limits. Custom rules have per-rule Block/Warn severity and optional case matching.
+- The modal includes **Test draft rules** which previews the current unsaved settings, so admins can avoid unexpectedly blocking tasks.
+- The transcription editor **Project linter** action now uses in-memory text (including unsaved edits) rather than always checking the previously saved transcript; the existing server submission trigger remains the final authority after draft save.
+- Project attach/detach, profile save, custom rule preview and role authorization have been checked in rollback-only transactions. These tests leave project assignments and task data unchanged.
+- Custom literal matching is substring-based: do not use very short Hindi particles as blockers unless their matches are unambiguous. Spelling suggestions should normally be warnings, with audio verification by reviewers.
