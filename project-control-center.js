@@ -106,7 +106,7 @@ function go(id){
  if(viewName.startsWith('ac-')){
   document.querySelectorAll('.lab-view').forEach(x=>x.classList.toggle('active',x.id==='view-'+viewName));
   document.querySelectorAll('.lab-nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===viewName));
-  render(id);
+  if(!snap)refresh();else render(id);
   try{history.replaceState(null,'',location.pathname+location.search+'#'+viewName)}catch(_){}
  }else{
   const b=document.querySelector('.lab-nav [data-view="'+viewName+'"]');
@@ -343,8 +343,14 @@ async function boot(){
  if(h==='ac-library')active='library';
  if(h==='ac-instructions')active='instructions';
  if(h==='ac-announcements')active='announcements';
- await refresh();
- if(active==='instructions'||active==='library'||active==='announcements')go(active);else syncTabs(active);
+ // Avoid fetching the entire content library while merely opening project Overview/Settings.
+ if(['instructions','library','announcements'].includes(active)){await refresh();go(active)}
+ else{
+  syncTabs(active);
+  const title=document.getElementById('topTitle')?.textContent;
+  if(title&&title!=='Project Lab')$('pccName').textContent=title;
+  $('pccMeta').textContent='Project #'+projectId+' · Content is loaded when opened';
+ }
  document.addEventListener('click',e=>{
   const b=e.target.closest('.lab-nav [data-view]');
   if(!b)return;const t=tabs.find(x=>x[2]===b.dataset.view);if(t){active=t[0];syncTabs(active);if(t[2].startsWith('ac-'))render(active)}
