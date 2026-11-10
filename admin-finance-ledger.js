@@ -120,5 +120,12 @@
     mountLedger();const {data,error}=await client.rpc('admin_balance_ledger',{p_user_id:null,p_limit:300});if(error){const body=document.getElementById('ledgerRows');if(body)body.innerHTML=`<tr><td colspan="6" class="empty">${esc(error.message)}</td></tr>`;return}ledgerRows=Array.isArray(data)?data:[];renderLedger();
   }
 
-  mountProjectFinance();mountLedger();loadFinance();loadLedger();
+  mountProjectFinance();mountLedger();
+  // Defer the two finance RPCs until Payments is actually visible.
+  {const panel=document.getElementById('payments');let ready=false;
+   const run=()=>{if(ready||!panel?.classList.contains('active'))return;ready=true;observer.disconnect();loadFinance();loadLedger()};
+   const observer=new MutationObserver(run);
+   if(panel)observer.observe(panel,{attributes:true,attributeFilter:['class']});
+   run();
+  }
 })();
