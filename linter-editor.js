@@ -8,7 +8,7 @@ const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_pu
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const markPattern=/<[^>]+>|\{[^}]*\}|\[[^\]]+\]/gu;
-let runtime=null,items=[],snapshot=null,badge=null,panel=null,opened=false,pending=false,loadError='',t=null,painting=false;
+let runtime=null,items=[],nativeIssues=[],snapshot=null,badge=null,panel=null,opened=false,pending=false,loadError='',t=null,painting=false;
 const style=document.createElement('style');
 style.textContent=[
 '#acLintCount{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:8px 11px;min-height:35px;font:700 12px Inter,system-ui,sans-serif;border-radius:8px;border:1px solid #dfe3ea;background:#f5f7fa;color:#566277}',
@@ -25,6 +25,20 @@ style.textContent=[
 '.v2-caption-piece.ac-lint-has-error{outline:1px solid rgba(221,70,83,.27)}.v2-caption-piece.ac-lint-has-warning{outline:1px solid rgba(212,155,39,.26)}',
 '::highlight(ac-lint-error){text-decoration:underline wavy #d7354b;text-decoration-thickness:1.5px;background-color:rgba(221,53,75,.12)}::highlight(ac-lint-warning){text-decoration:underline dotted #d9a02d;background-color:rgba(230,174,57,.12)}',
 '@media(max-width:740px){#acLintPanel{margin:8px}.ac-lint-issue{flex-direction:column}.ac-lint-actions{width:100%}#acLintCount{font-size:11px}}'
+,
+'body.tx-v2-editor .v2-submit-actions #issues.ac-lint-blocked,body.tx-v2-editor.txr-polished .v2-submit-actions #issues.ac-lint-blocked,.player-bar #issues.ac-lint-blocked{background:#fff0f2!important;color:#b62238!important;border:1px solid #efaebb!important;font-weight:800!important;box-shadow:0 0 0 1px #fce0e5 inset!important}',
+'body.tx-v2-editor .v2-submit-actions #issues.ac-lint-warning,body.tx-v2-editor.txr-polished .v2-submit-actions #issues.ac-lint-warning,.player-bar #issues.ac-lint-warning{background:#fff8e5!important;color:#996b15!important;border:1px solid #ebd7a2!important;font-weight:800!important}',
+'body.tx-v2-editor .v2-submit-actions #issues.ac-lint-unavailable,.player-bar #issues.ac-lint-unavailable{background:#f1f4f8!important;color:#596475!important;border-color:#d6dde7!important}',
+'body.tx-v2-editor .v2-submit-actions #issues.ac-lint-clean,.player-bar #issues.ac-lint-clean{background:#eaf8f0!important;color:#17754f!important;border-color:#bee3cb!important}',
+'#issues.ac-lint-blocked::before,#issues.ac-lint-warning::before,#issues.ac-lint-clean::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;vertical-align:middle;margin-right:6px}',
+'#acLintPanel .ac-lint-row-summary{padding:10px 16px;background:#fff0f2;color:#a62237;border-bottom:1px solid #f0c3cb;font-size:12px;font-weight:750}',
+'#segmentRows tr.ac-lint-row-error{box-shadow:inset 3px 0 0 #e33b50!important;background:#fff7f7!important}#segmentRows tr.ac-lint-row-warning{box-shadow:inset 3px 0 0 #dba135!important;background:#fffdf4!important}',
+'#segmentRows tr.ac-lint-row-error .lint-dot{background:#e33b50!important}#segmentRows tr.ac-lint-row-warning .lint-dot{background:#dba135!important}',
+'body.tx-v2-editor .v2-caption-piece.ac-lint-has-error{border-bottom:2px solid #df3549!important;background:rgba(231,58,76,.08)!important}body.tx-v2-editor .v2-caption-piece.ac-lint-has-warning{border-bottom:2px dotted #d7a23c!important;background:rgba(224,174,59,.07)!important}',
+'.v2-caption-piece.ac-lint-has-error::after{content:"●";display:inline;color:#df3549;margin-left:3px;font-size:10px}.v2-caption-piece.ac-lint-has-warning::after{content:"●";display:inline;color:#d3a137;margin-left:3px;font-size:10px}',
+'body.tx-v2-editor #v2SlideStage.ac-lint-segment-error{border:1px solid #e7a3ad!important;box-shadow:inset 3px 0 0 #dc364b!important;background:#fff8f9!important}body.tx-v2-editor #v2SlideStage.ac-lint-segment-warning{border:1px solid #e4cc98!important;box-shadow:inset 3px 0 0 #d6a13b!important}',
+'body.tx-v2-editor #v2SlideCount.ac-lint-segment-error::after{content:" ●";color:#e0344d;font-size:12px}body.tx-v2-editor #v2SlideCount.ac-lint-segment-warning::after{content:" ●";color:#d2a13a;font-size:12px}',
+'body.tx-v2-editor .ac-lint-slide-note[hidden]{display:none!important}'
 ].join('\n');
 document.head.append(style);
 function mask(s){return s.replace(markPattern,m=>'¤'.repeat(m.length))}
@@ -112,25 +126,45 @@ async function load(){
  }catch(e){loadError=e.message;runtime=null}
  finally{pending=false;paintBadge();if(opened)paintPanel();if(runtime)calculate()}
 }
+function getAllIssues(){return items.concat(nativeIssues)}
+function updateNative(lintRows){
+ nativeIssues=[];
+ const current=window.txLinterCurrent?.();
+ const order=new Map((current?.segments||[]).map((x,i)=>[x.id,i]));
+ for(const x of Array.isArray(lintRows)?lintRows:[]){
+  const segment=(order.get(x.id)??0)+1;
+  for(const message of x.errors||[])nativeIssues.push({id:x.id,segment,code:'STRUCTURAL',severity:'block',label:'Transcript validation',message,start:-1,end:-1,expected:'',fix:null});
+  for(const message of x.warnings||[])nativeIssues.push({id:x.id,segment,code:'STRUCTURAL',severity:'warn',label:'Transcript validation',message,start:-1,end:-1,expected:'',fix:null});
+ }
+ paintBadge();if(opened)paintPanel();schedulePaint();
+}
 function paintBadge(){
  if(!badge)return;
- const errors=items.filter(i=>i.severity==='block').length,warnings=items.length-errors;
- badge.className=errors?'ac-lint-bad':warnings?'ac-lint-warn':runtime?.enabled?'ac-lint-good':'';
- badge.querySelector('.ac-label').textContent=loadError?'Linter unavailable':pending&&!runtime?'Loading linter…':!runtime?.enabled?'Project linter off':errors?errors+' error'+(errors===1?'':'s')+(warnings?' · '+warnings+' warnings':''):warnings?warnings+' warning'+(warnings===1?'':'s'):'No issues';
- badge.title=loadError||(!runtime?.enabled?'No linter attached to this project':'Show project linter results');
+ const all=getAllIssues(),errors=all.filter(x=>x.severity==='block').length,warnings=all.length-errors;
+ badge.classList.toggle('ac-lint-blocked',errors>0);
+ badge.classList.toggle('ac-lint-warning',!errors&&warnings>0);
+ badge.classList.toggle('ac-lint-unavailable',!errors&&!warnings&&(!runtime||!!loadError));
+ badge.classList.toggle('ac-lint-clean',!errors&&!warnings&&!!runtime&&!loadError);
+ badge.textContent=errors?errors+' error'+(errors===1?'':'s')+(warnings?' · '+warnings+' warning'+(warnings===1?'':'s'):''):
+ warnings?warnings+' warning'+(warnings===1?'':'s'):loadError?'Linter unavailable':!runtime?'Checking linters…':!runtime.enabled?'Project linter off':'No issues';
+ badge.title=errors?'Fix '+errors+' blocking error(s) before submitting. Click for locations.':
+ warnings?'Check '+warnings+' warning(s). Click for details.':loadError?loadError:'Show linter status and any transcript issues';
  badge.setAttribute('aria-expanded',String(opened));
+ badge.setAttribute('aria-label',badge.textContent+'; open validation details');
 }
 function paintPanel(){
  if(!panel)return;panel.hidden=!opened;if(!opened)return;
- const title=runtime?.enabled?'Project Linter · '+items.length+' issues':'Project Linter is not configured';
- let html='<div class="ac-lint-top"><div><strong>'+esc(title)+'</strong><small>'+esc((runtime?.profiles||[]).map(p=>p.name).join(' · ')||'Project-level validation')+'</small></div><button data-ac-act="close" type="button">Close ✕</button></div>';
- if(loadError)html+='<div class="ac-lint-empty" role="alert">'+esc(loadError)+'</div>';
- else if(!runtime?.enabled)html+='<div class="ac-lint-empty">No linter is attached to this project. Activate a profile under <a href="/admin/project-lab?project='+Number(snapshot?.projectId||runtime?.project_id||0)+'#ac-linters">Project Lab → Linters</a> to start live text checks. Existing structural validation remains active.</div>';
- else if(!items.length)html+='<div class="ac-lint-empty">✓ All '+effectiveRules().length+' active project rules pass. Continue reviewing the audio and word accuracy.</div>';
- else {
+ const all=getAllIssues(),errors=all.filter(x=>x.severity==='block').length,warnings=all.length-errors;
+ const title=errors?'Fix '+errors+' blocking error'+(errors===1?'':'s'):'Validation results';
+ let html='<div class="ac-lint-top"><div><strong>'+esc(title)+'</strong><small>'+esc((runtime?.profiles||[]).map(p=>p.name).join(' · ')||'Transcript structure and project checks')+'</small></div><button data-ac-act="close" type="button">Close ✕</button></div>';
+ if(errors)html+='<div class="ac-lint-row-summary" role="alert">Submission blocked · Fix the errors highlighted in the transcript to continue.</div>';
+ if(loadError)html+='<div class="ac-lint-empty" role="alert">Project linter unavailable: '+esc(loadError)+'. Structural checks remain available.</div>';
+ else if(!runtime?.enabled)html+='<div class="ac-lint-empty">No project linter attached. To activate custom checks, visit <a href="/admin/project-lab?project='+Number(snapshot?.projectId||0)+'#ac-linters">Project Lab → Linters</a>.</div>';
+ if(!all.length)html+='<div class="ac-lint-empty">'+(!runtime?'Loading checks…':runtime.enabled?'✓ All '+effectiveRules().length+' active project rules pass.':'No structural errors detected.')+'</div>';
+ else{
   html+='<div class="ac-lint-scroll">';
-  html+=items.slice(0,80).map((x,i)=>'<div class="ac-lint-issue"><div><span class="'+(x.severity==='warn'?'warn':'')+'">'+(x.severity==='block'?'ERROR':'WARNING')+' · Line '+x.segment+'</span><p>'+esc(x.message)+'</p>'+(x.expected?'<small>Found: '+esc(x.expected.slice(0,80))+'</small>':'')+'</div><div class="ac-lint-actions"><button data-ac-act="jump" data-index="'+i+'" type="button">Go to line</button>'+(x.fix!==null&&x.start>=0?'<button data-ac-act="fix" data-index="'+i+'" type="button">'+(x.code==='DOUBLE_SPACE'?'Use single spaces':x.code==='SPELLING_REPLACEMENT'?'Apply suggestion':'Fix')+'</button>':'')+'</div></div>').join('');
-  if(items.length>80)html+='<div class="ac-lint-empty">Showing first 80 of '+items.length+' issues.</div>';
+  html+=all.slice(0,80).map((x,i)=>'<div class="ac-lint-issue"><div><span class="'+(x.severity==='warn'?'warn':'')+'">'+(x.severity==='block'?'ERROR':'WARNING')+' · Line '+x.segment+'</span><p>'+esc(x.message)+'</p><small>'+esc(x.label||x.code)+(x.expected?' · Found: '+esc(x.expected.slice(0,60)):'')+'</small></div><div class="ac-lint-actions"><button data-ac-act="jump" data-index="'+i+'" type="button">Go to line</button>'+(x.fix!==null&&x.start>=0?'<button data-ac-act="fix" data-index="'+i+'" type="button">'+(x.code==='DOUBLE_SPACE'?'Use single spaces':x.code==='SPELLING_REPLACEMENT'?'Apply suggestion':'Fix spacing')+'</button>':'')+'</div></div>').join('');
+  if(all.length>80)html+='<div class="ac-lint-empty">Showing the first 80 of '+all.length+' issues.</div>';
   html+='</div>';
  }
  panel.innerHTML=html;
@@ -140,6 +174,11 @@ function jump(x){
  const selector='tr[data-segment="'+CSS.escape(x.id)+'"]';
  let row=rows.querySelector(selector);
  if(!row){for(const id of ['speakerFilter','textSearch']){const input=$(id);if(input&&input.value){input.value='';input.dispatchEvent(new Event(id==='textSearch'?'input':'change',{bubbles:true}))}}row=rows.querySelector(selector)}
+ if(document.body.classList.contains('v2-slideshow')){
+  window.dispatchEvent(new CustomEvent('v2:goto-caption',{detail:{id:x.id}}));
+  $('v2SlideStage')?.scrollIntoView({block:'center',behavior:'smooth'});
+  return;
+ }
  const flow=$('v2CaptionFlow'),piece=flow?.querySelector('[data-edit-segment="'+CSS.escape(x.id)+'"]');
  if(piece&&!piece.isContentEditable)piece.click();
  const field=row?.querySelector('textarea[data-field="transcript"]');
@@ -149,7 +188,7 @@ function jump(x){
 function onPanelClick(e){
  const btn=e.target.closest('[data-ac-act]');if(!btn)return;
  if(btn.dataset.acAct==='close'){opened=false;paintPanel();paintBadge();return}
- const x=items[Number(btn.dataset.index)];if(!x)return;
+ const x=getAllIssues()[Number(btn.dataset.index)];if(!x)return;
  if(btn.dataset.acAct==='jump')jump(x);
  else if(btn.dataset.acAct==='fix'&&x.fix!==null){
   if(x.code==='SPELLING_REPLACEMENT'&&!confirm('Apply this suggested spelling? Verify the word against audio first.'))return;
@@ -167,7 +206,7 @@ function rangeFor(node,start,end){
 }
 function schedulePaint(){if(painting)return;painting=true;requestAnimationFrame(()=>{painting=false;paintMarks()})}
 function paintMarks(){
- const byId=new Map();for(const x of items){if(!byId.has(x.id))byId.set(x.id,[]);byId.get(x.id).push(x)}
+ const byId=new Map();for(const x of getAllIssues()){if(!byId.has(x.id))byId.set(x.id,[]);byId.get(x.id).push(x)}
  for(const row of rows.querySelectorAll('tr[data-segment]')){
   const own=byId.get(row.dataset.segment)||[],bad=own.some(x=>x.severity==='block'),field=row.querySelector('textarea[data-field="transcript"]');
   row.classList.toggle('ac-lint-row-error',bad);row.classList.toggle('ac-lint-row-warning',!bad&&own.length>0);
@@ -192,6 +231,11 @@ function paintMarks(){
   if(!segment||segment.transcript!==actual)segment=snapshot.segments.find(x=>x.transcript===actual);
   if(segment){
    const own=byId.get(segment.id)||[];
+   const hasBlock=own.some(x=>x.severity==='block');
+   for(const element of [$('v2SlideStage'),$('v2SlideCount')]){
+    element?.classList.toggle('ac-lint-segment-error',hasBlock);
+    element?.classList.toggle('ac-lint-segment-warning',!hasBlock&&own.length>0);
+   }
    for(const issue of own.slice(0,25)){
     const r=rangeFor(slide,issue.start,issue.end);if(r)(issue.severity==='block'?errors:warnings).push(r);
    }
@@ -239,21 +283,21 @@ function show(authoritative){
 }
 function mount(){
  if(badge)return;
- const bar=document.querySelector('.segment-card .player-bar'),save=$('save');if(!bar||!save)return;
- badge=document.createElement('button');badge.type='button';badge.id='acLintCount';badge.setAttribute('aria-controls','acLintPanel');
- badge.innerHTML='<span class="ac-dot"></span><span class="ac-label">Loading linter…</span>';save.before(badge);
- panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Project linter issues');panel.hidden=true;bar.after(panel);
- badge.addEventListener('click',()=>{opened=!opened;paintPanel();paintBadge();if(opened)panel.scrollIntoView({block:'nearest',behavior:'smooth'})});
+ const bar=document.querySelector('.segment-card .player-bar'),existing=$('issues');
+ if(!bar||!existing)return;
+ badge=existing;badge.setAttribute('aria-controls','acLintPanel');
+ panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Transcript validation issues');panel.hidden=true;bar.after(panel);
+ // Intercept the old structural-only handler: one canonical error button now shows every issue.
+ badge.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();opened=!opened;paintPanel();paintBadge();if(opened)panel.scrollIntoView({block:'nearest',behavior:'smooth'})},true);
  panel.addEventListener('click',onPanelClick);rows.addEventListener('input',schedule);
  new MutationObserver(()=>{schedulePaint();if(!runtime)schedule()}).observe(rows,{childList:true});
  if($('v2CaptionFlow'))new MutationObserver(schedulePaint).observe($('v2CaptionFlow'),{childList:true,subtree:true,characterData:true});
  if($('v2SlideText'))new MutationObserver(schedulePaint).observe($('v2SlideText'),{childList:true,subtree:true,characterData:true});
  window.addEventListener('tx:linter-change',schedule);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&snapshot?.projectId)load()});
- document.addEventListener('click',e=>{if(e.target.closest?.('#v2CheckQuality,#submit'))setTimeout(appendPreflight,0)},true);
- paintBadge();
+ updateNative(window.txLinterNative?.()||[]);
  let attempts=0;const interval=setInterval(()=>{const current=window.txLinterCurrent?.();if(current?.projectId){clearInterval(interval);load()}else if(++attempts>=120){clearInterval(interval);loadError='Task data not loaded';paintBadge()}},100);
 }
-window.AdatacoreLint={show,mount,refresh:load,issues:()=>items.slice()};
+window.AdatacoreLint={show,mount,refresh:load,recheck:calculate,issues:()=>items.slice(),allIssues:getAllIssues,updateNative,open:()=>{calculate();opened=true;paintPanel();paintBadge();panel?.scrollIntoView({block:'nearest',behavior:'smooth'})},state:()=>({configured:!!runtime?.enabled,loading:pending,error:loadError,issues:getAllIssues(),projectIssues:items.slice()})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
