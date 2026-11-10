@@ -61,3 +61,13 @@ The schema was applied directly using Supabase's migration capability. The featu
 - The transcription editor **Project linter** action now uses in-memory text (including unsaved edits) rather than always checking the previously saved transcript; the existing server submission trigger remains the final authority after draft save.
 - Project attach/detach, profile save, custom rule preview and role authorization have been checked in rollback-only transactions. These tests leave project assignments and task data unchanged.
 - Custom literal matching is substring-based: do not use very short Hindi particles as blockers unless their matches are unambiguous. Spelling suggestions should normally be warnings, with audio verification by reviewers.
+
+## Inline project linter — Transcription / Transcription V.2
+
+The linter now loads active assignments using the authorized `linter_project_runtime(p_item)` endpoint. Only task owners, authorized reviewers and admins can retrieve the project profile configuration for that task. No profiles are automatically attached by opening the editor.
+
+The editor validates text locally as users edit, without making per-keystroke database requests. A dedicated project-linter status badge beside Save opens a compact error panel, with **line navigation**, **red/warning highlights**, and individual **safe spacing fixes** that use the normal editor's Undo and autosave paths. The follow-along caption and expanded paragraph views show affected words, while a table-line hint remains available during segment editing. Spelling suggestions require explicit confirmation, not automatic text changes.
+
+Existing structural validation remains separate. The project-level linter is authoritative at the database on transcription submission and review approval; warning rules never block, and review return actions remain possible. The V.2 preflight dialog lists project issues and disables contributor submission continuation for blocking rules. A failure to load the project linter is disclosed in the badge, rather than falsely reporting zero errors. The script uses debounced local checks, limited highlighted ranges and an optimized offset map to keep typing responsive.
+
+Regression tests include missing post-punctuation spaces, double spaces, extra pre-punctuation spaces, repeated punctuation, PRO and foreign-language tags, ellipsis, and spelling suggestions. Project 93 currently has two attached Hindi profiles; other projects remain independently configured.
