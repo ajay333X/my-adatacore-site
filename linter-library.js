@@ -64,7 +64,7 @@ function render(){
  renderTestChoices();
 }
 function renderTestChoices(){
- const select=$('testScope'),before=select.value||testChoice;
+ const select=$('testScope'),before=testChoice||select.value;
  select.innerHTML=(projectId?'<option value="project">Project #'+projectId+' — attached rules ('+snap.assignments.length+')</option>':'')+
     snap.profiles.map(p=>'<option value="profile:'+p.id+'">Library preview · '+esc(p.name)+'</option>').join('');
  let preferred=before;
