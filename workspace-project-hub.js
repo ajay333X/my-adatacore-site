@@ -53,7 +53,7 @@ function initElements(){
    const feedback=e.target.closest('[data-feedback-id]');
    if(feedback){
     const item=feedback.dataset.item,review=feedback.dataset.feedbackId;
-    if(isUUID(item)&&Number.isInteger(Number(review))&&Number(review)>0){location.assign('/transcription-v2?item='+encodeURIComponent(item)+'&review='+encodeURIComponent(review));return}
+    if(isUUID(item)&&Number.isInteger(Number(review))&&Number(review)>0){location.assign('/transcription-v2?item='+encodeURIComponent(item)+'&review='+encodeURIComponent(review)+'&launch=workspace');return}
     const r=(detail?.feedback||[]).find(x=>String(x.history_id)===String(review));if(!r)return;
     const next=feedback.nextElementSibling;
     if(next?.classList.contains('ac-feedback-detail-row')){next.remove();return}
@@ -76,7 +76,7 @@ function setHeader(name,sub){
 
 function projectTaskRoute(id,itemId){
  const route=Number(id)===93?'/transcription-v2':'/transcription';
- location.assign(route+'?item='+encodeURIComponent(itemId));
+ location.assign(route+'?item='+encodeURIComponent(itemId)+'&launch=workspace');
 }
 function projectWorkAction(info){
  const activeReview=Boolean(info.active_review_item_id),activeL1=Boolean(info.active_item_id);
