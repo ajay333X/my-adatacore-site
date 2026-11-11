@@ -10,6 +10,7 @@ const el={key:$('txArchiveTaskKey'),inspect:$('txArchiveInspect'),preview:$('txA
  list:$('txArchiveList'),count:$('txArchiveCount'),refresh:$('txArchiveRefresh')};
 let projectId=Number(new URLSearchParams(location.search).get('project'))||0;
 let projectName='',inspected=null,inspecting=false,archiving=false,listing=false,listSequence=0;
+let deepLinkTask=new URLSearchParams(location.search).get('task')||'';
 const make=(tag,className,text)=>{
  const n=document.createElement(tag);
  if(className)n.className=className;
@@ -100,7 +101,9 @@ async function inspectTask(key){
 function renderArchiveList(records){
  el.list.replaceChildren();
  const data=Array.isArray(records)?records:[];
- el.count.textContent=String(data.length);
+ el.count.textContent=data.length===100?'100+':String(data.length);
+ const countBadge=$('txArchiveTabCount');
+ if(countBadge){countBadge.textContent=data.length===100?'100+':String(data.length);countBadge.title='Archived tasks in this project (up to 100 recent records)';}
  if(!data.length){
   el.list.append(make('p','txarchive-placeholder','No archived tasks for this project yet.'));
   return;
@@ -129,17 +132,22 @@ function renderArchiveList(records){
  el.list.append(frag);
 }
 async function refreshList(){
- if(!projectId||listing)return;
- const request=++listSequence;
+ if(!projectId)return;
+ const request=++listSequence,requestedProject=projectId;
  listing=true;el.refresh.disabled=true;el.refresh.textContent='Refreshing…';
  try{
-  const records=await rpc('admin_list_archived_tasks',{p_project:projectId,p_limit:75});
-  if(request===listSequence)renderArchiveList(records);
+  const records=await rpc('admin_list_archived_tasks',{p_project:requestedProject,p_limit:100});
+  if(request!==listSequence||requestedProject!==projectId)return;
+  renderArchiveList(records);
  }catch(error){
+  if(request!==listSequence||requestedProject!==projectId)return;
   el.list.replaceChildren(make('p','txarchive-placeholder','Unable to load archived tasks: '+error.message));
   el.count.textContent='—';
+  const countBadge=$('txArchiveTabCount');if(countBadge)countBadge.textContent='—';
   show('Archive history unavailable: '+error.message,true);
- }finally{listing=false;el.refresh.disabled=false;el.refresh.textContent='↻ Refresh archive'}
+ }finally{
+  if(request===listSequence){listing=false;el.refresh.disabled=false;el.refresh.textContent='↻ Refresh archive'}
+ }
 }
 async function archiveTask(){
  const t=inspected?.task;
@@ -182,11 +190,21 @@ document.addEventListener('txv2:data',e=>{
  if(!id)return;
  if(projectId!==id){
   projectId=id;inspected=null;el.reason.value='';renderPreview();
-  el.list.replaceChildren(make('p','txarchive-placeholder','Project changed. Open Task Archive to load its history.'));
-  el.count.textContent='—';listSequence++;
+  el.list.replaceChildren(make('p','txarchive-placeholder','Loading archived tasks for this project…'));
+  el.count.textContent='—';const badge=$('txArchiveTabCount');if(badge)badge.textContent='—';
+  listSequence++;
  }
  projectName=String(e.detail?.projectName||'').trim();
- if(active())void refreshList();
+ // Keep archive records easy to locate even after switching projects.
+ void refreshList();
+ if(active()&&deepLinkTask){
+  const key=deepLinkTask;deepLinkTask='';
+  el.key.value=key;void inspectTask(key);
+ }
 });
-if(active()&&projectId)void refreshList();
+if(projectId)void refreshList();
+if(active()&&deepLinkTask){
+ const key=deepLinkTask;deepLinkTask='';
+ el.key.value=key;void inspectTask(key);
+}
 })();
