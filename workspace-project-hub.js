@@ -10,6 +10,7 @@ const projectLink=id=>'/workspace?project='+encodeURIComponent(id);
 const isUUID=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s||''));
 let projects=[],current=null,detail=null,tab='instructions',requestSeq=0,originalHomeTitle=null;
 let libraryFolder='';
+let workSeq=0,workBusy=false,workStatus=null;
 const sandboxSession=new URLSearchParams(location.search).get('test_session')||'';
 const isSandbox=isUUID(sandboxSession);
 function initElements(){
@@ -22,10 +23,22 @@ function initElements(){
  }
  if(!$('view-project')){
   const section=document.createElement('section');section.id='view-project';section.className='workspace-view';
-  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
+  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><section id="acProjectWork" class="ac-project-work" aria-label="Project task controls" aria-live="polite"><div class="ac-project-work-loading">Checking available tasks…</div></section><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
   main.appendChild(section);
   section.querySelector('#acProjectBack').addEventListener('click',e=>{e.preventDefault();closeProject()});
   section.querySelector('#acProjectTabs').addEventListener('click',e=>{const b=e.target.closest('[data-project-tab]');if(!b)return;changeTab(b.dataset.projectTab)});
+  section.addEventListener('click',e=>{
+    if(e.target.closest('[data-ac-open-assignments]')){
+      e.preventDefault();
+      const link=document.querySelector('[data-view-link="assignments"]');
+      if(link){closeProject();link.click()}else location.assign('/workspace#assignments');
+      return;
+    }
+    const refresh=e.target.closest('[data-ac-work-refresh]');
+    if(refresh){void readProjectWork(current?.id);return}
+    const start=e.target.closest('[data-ac-task-start]');
+    if(start){void startProjectWork(start)}
+  });
   section.querySelector('#acProjectContent').addEventListener('click',async e=>{
    const b=e.target.closest('[data-guideline-ack]');
    if(b){b.disabled=true;try{const {error}=await client.rpc('acknowledge_project_guideline',{p_guideline:b.dataset.guidelineAck});if(error)throw error;detail=null;await readProject(current.id);changeTab('instructions')}catch(error){b.disabled=false;alert('Unable to acknowledge guideline: '+error.message)}return}
@@ -60,6 +73,81 @@ function setHeader(name,sub){
  const h=$('viewHeading'),s=$('viewSub'),eye=$('viewEyebrow');
  if(h)h.textContent=name;if(s)s.textContent=sub;if(eye)eye.textContent=current?'Project workspace':'Contributor workspace';
 }
+
+function projectTaskRoute(id,itemId){
+ const route=Number(id)===93?'/transcription-v2':'/transcription';
+ location.assign(route+'?item='+encodeURIComponent(itemId));
+}
+function projectWorkAction(info){
+ const activeReview=Boolean(info.active_review_item_id),activeL1=Boolean(info.active_item_id);
+ const reviews=Number(info.review_queue_available||0),l1Queue=Number(info.queue_available||0);
+ const remaining=Number(info.remaining||0);
+ const manuallyAssigned=info.manual_assignment_only===true;
+ const fallback=info.fallback_l1_available===true;
+ const canL1=info.can_claim_l1===true;
+ if(activeReview)return {kind:'l2',label:'Continue L2 review',note:'Your review is already assigned and ready to continue.',ready:true};
+ if(activeL1)return {kind:'l1',label:'Continue L1 transcription',note:'Finish the transcription you have already started.',ready:true};
+ if(info.can_review_l2===true&&reviews>0)return {kind:'l2',label:'Start L2 review',note:reviews+' eligible transcript'+(reviews===1?'':'s')+' awaiting your review.',ready:true};
+ if(manuallyAssigned)return {kind:'none',label:'Admin assignment required',note:'This project is managed through manual assignment.',ready:false};
+ if(canL1&&l1Queue>0&&remaining>0)return {kind:'l1',label:fallback?'Start L1 task · L2 fallback':'Start L1 task',
+  note:fallback?'No eligible L2 reviews right now. You can temporarily work on L1 audio while keeping your L2 status.':'Ready to start a transcription task.',ready:true};
+ if(info.can_review_l2===true&&reviews===0&&l1Queue>0&&!canL1)return {kind:'none',label:'No tasks available',note:'No eligible L2 reviews at the moment. Your L1 allowance or project requirements may be exhausted.',ready:false};
+ if(l1Queue===0)return {kind:'none',label:'No tasks available',note:'There is no ready audio in the L1 queue right now.',ready:false};
+ return {kind:'none',label:'No tasks available',note:'Check your task allowance or review the instructions for this project.',ready:false};
+}
+function showProjectWork(info,error){
+ const host=$('acProjectWork');if(!host||!current)return;
+ if(current.type!=='transcription'){
+  host.innerHTML='<div class="ac-project-work-main"><div><span class="ac-project-work-kicker">PROJECT WORK</span><strong>Ready to work?</strong><p>Open Assignments to start a task from this project.</p></div><a class="btn btn-primary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
+ }
+ if(error){host.innerHTML='<div class="ac-project-work-main"><div><span class="ac-project-work-kicker">PROJECT WORK</span><strong>Unable to check tasks</strong><p>'+esc(error)+'</p></div><button type="button" class="btn btn-secondary" data-ac-work-refresh>Retry</button></div>';return}
+ if(!info){host.innerHTML='<div class="ac-project-work-loading">Checking available tasks…</div>';return}
+ const action=projectWorkAction(info);
+ workStatus=info;
+ const level=info.can_review_l2===true?'L2 reviewer':'L1 contributor';
+ const l2=Number(info.review_queue_available||0),l1=Number(info.queue_available||0);
+ host.innerHTML='<div class="ac-project-work-main"><div class="ac-project-work-info"><span class="ac-project-work-kicker">WORK ON THIS PROJECT <span class="ac-project-work-level">'+esc(level)+'</span></span><strong>'+esc(action.ready?'Work is available':action.label)+'</strong><p>'+esc(action.note)+'</p><div class="ac-project-work-queues"><span>L2 reviews <b>'+l2+'</b></span><span>L1 audio <b>'+l1+'</b></span>'+(info.fallback_l1_available?'<span class="ac-project-work-fallback">L1 fallback active</span>':'')+'</div></div><div class="ac-project-work-actions"><button class="btn btn-primary" type="button" data-ac-task-start="'+esc(action.kind)+'" '+(!action.ready||workBusy?'disabled':'')+'>'+esc(action.label)+(action.ready?' →':'')+'</button><button class="btn btn-secondary" type="button" data-ac-work-refresh aria-label="Refresh project task availability">Refresh</button></div></div>';
+}
+async function readProjectWork(id){
+ const seq=++workSeq;
+ if(!current||Number(current.id)!==Number(id))return;
+ showProjectWork(null);
+ if(isSandbox){
+  $('acProjectWork').innerHTML='<div class="ac-project-work-main"><div><strong>Practice workspace</strong><p>Use Assignments to open practice tasks.</p></div><a class="btn btn-secondary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
+ }
+ if(current.type!=='transcription'){showProjectWork({});return}
+ try{
+  const {data,error}=await client.rpc('tx_my_transcription_projects');
+  if(error)throw error;
+  if(seq!==workSeq||Number(current?.id)!==Number(id))return;
+  const entry=(Array.isArray(data)?data:[]).find(p=>Number(p.project_id)===Number(id));
+  if(!entry){showProjectWork(null,'You do not currently have an active transcription assignment for this project.');return}
+  showProjectWork(entry);
+ }catch(error){if(seq!==workSeq)return;showProjectWork(null,error.message||'Unable to fetch task availability.')}
+}
+async function startProjectWork(button){
+ if(workBusy||!workStatus||!current)return;
+ const action=projectWorkAction(workStatus);
+ if(!action.ready||action.kind==='none'||button.dataset.acTaskStart!==action.kind)return;
+ workBusy=true;const projectId=Number(current.id),original=button.textContent;
+ button.disabled=true;button.textContent='Opening task…';
+ try{
+  const rpc=action.kind==='l2'?'tx_claim_review_next':'tx_claim_next';
+  const {data,error}=await client.rpc(rpc,{p_project_id:projectId});
+  if(error)throw error;
+  if(!data?.item_id)throw Error('No eligible task is available right now.');
+  projectTaskRoute(projectId,data.item_id);
+ }catch(error){
+  const msg=String(error.message||error);
+  const host=$('acProjectWork');
+  if(host){const notice=document.createElement('p');notice.className='ac-project-work-error';notice.textContent=msg;host.append(notice)}
+  await readProjectWork(projectId);
+  const refreshed=$('acProjectWork');if(refreshed){
+    const notice=document.createElement('p');notice.className='ac-project-work-error';
+    notice.textContent=msg;refreshed.append(notice);
+  }
+ }finally{workBusy=false;if(button.isConnected){button.disabled=false;button.textContent=original}}
+}
 function renderProjects(){
  const host=$('acHomeProjectCards');if(!host)return;
  host.className=projects.length?'ac-project-grid':'ac-home-empty';
@@ -79,7 +167,7 @@ async function readList(){
 function returnOverview(){
  document.querySelectorAll('.workspace-view').forEach(v=>v.classList.toggle('active',v.id==='view-overview'));
  document.querySelectorAll('[data-view-link]').forEach(x=>x.classList.toggle('active',x.dataset.viewLink==='overview'));
- current=null;detail=null;tab='instructions';
+ current=null;detail=null;tab='instructions';workSeq++;workStatus=null;
  setHeader('Overview','Your assigned projects and available work.');
 }
 function closeProject(){
@@ -99,6 +187,7 @@ function openProject(id,updateUrl=true){
  changeTab('instructions');
  if(updateUrl){const u=new URL(location.href);u.searchParams.set('project',String(project.id));u.hash='';history.pushState({project:project.id},'',u.pathname+u.search)}
  readProject(project.id);
+ readProjectWork(project.id);
  window.scrollTo({top:0,behavior:'smooth'});
 }
 async function readProject(id){
@@ -157,6 +246,7 @@ document.addEventListener('click',e=>{
  if(current&&e.target.closest('[data-view-link]')){const a=e.target.closest('[data-view-link]');if(a.dataset.viewLink!=='overview'){current=null;detail=null;const u=new URL(location.href);u.searchParams.delete('project');history.replaceState({workspaceView:a.dataset.viewLink},'',u.pathname+u.search+u.hash)}else{e.preventDefault();e.stopImmediatePropagation();closeProject()}}
 },true);
 document.addEventListener('keydown',e=>{const row=e.target.closest?.('[data-feedback-id]');if(row&&(e.key==='Enter'||e.key===' ')){e.preventDefault();row.click()}});
+window.addEventListener('focus',()=>{if(current&&current.type==='transcription'&&!workBusy)void readProjectWork(current.id)});
 window.addEventListener('popstate',()=>{const p=Number(new URLSearchParams(location.search).get('project')||0);if(p&&projects.some(x=>Number(x.id)===p))openProject(p,false);else if(current)returnOverview()});
 function boot(){if(!initElements())return;readList()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
