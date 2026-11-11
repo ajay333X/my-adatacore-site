@@ -3,7 +3,7 @@
   const isPublicTaskId=value=>/^[A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9][A-HJ-NP-Z][2-9]$/.test(cleanTaskKey(value));
   const legacyNumericTask=value=>/^\d+$/.test(cleanTaskKey(value));
   const taskKey=value=>isPublicTaskId(value)||legacyNumericTask(value)?cleanTaskKey(value):null;
-  const statusClass=status=>['approved','completed','submitted'].includes(String(status||'').toLowerCase())?'pill-green':['rejected','blocked'].includes(String(status||'').toLowerCase())?'pill-red':'pill-brand';
+  const statusClass=status=>String(status||'').toLowerCase()==='archived'?'pill-gray':['approved','completed','submitted'].includes(String(status||'').toLowerCase())?'pill-green':['rejected','blocked'].includes(String(status||'').toLowerCase())?'pill-red':'pill-brand';
   const safeMoney=v=>typeof fmtMoney==='function'?fmtMoney(v):'$'+Number(v||0).toFixed(2);
   const safeDate=v=>typeof fmtDate==='function'?fmtDate(v):(v?new Date(v).toLocaleString():'—');
   const publicId=(obj,fallback='—')=>obj?.public_task_id||fallback;
@@ -20,6 +20,18 @@
     .task-rubric-rating{font-weight:800;text-transform:capitalize}
     .task-rubric-rating.good{color:#25a776}.task-rubric-rating.ok{color:#c88722}.task-rubric-rating.bad{color:#d84a63}
     .task-note{font-size:11px;color:var(--muted);line-height:1.6}
+    .task-archive-card{border:1px solid var(--line);border-radius:13px;padding:19px;margin:16px 0;background:var(--panel)}
+    .task-archive-card h3{margin:0 0 5px;font-size:16px;font-weight:800}
+    .task-archive-card p{margin:0 0 13px;font-size:11px;line-height:1.6;color:var(--muted)}
+    .task-archive-card .task-archive-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .task-archive-row .input{min-width:210px;flex:1;max-width:440px}
+    .btn.task-archive-danger{border:1px solid #e6b8bd!important;background:#fff3f4!important;color:#ab3c48!important;font-weight:800}
+    .btn.task-archive-danger:hover{border-color:#d47580!important;background:#ffe5e8!important}
+    .task-archive-card .task-archive-status{font-size:11px;line-height:1.5;color:var(--muted);min-height:16px;margin-top:10px}
+    .task-archive-card .task-archive-status.success{color:#238453}
+    .task-archive-card .task-archive-status.error{color:#c14249}
+    .task-archive-explanation{background:var(--panel2);border:1px solid var(--line);padding:11px 13px;border-radius:8px;margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.6}
+    .task-archive-explanation strong{color:var(--text)}
   `;
   document.head.appendChild(style);
 
@@ -86,9 +98,9 @@
           <div class="snapshot-name"><span class="task-public-id">${esc(currentPublic)}</span> · ${esc(t.layer||'—')}</div>
           <div class="snapshot-meta">${esc(t.project||'Project')} · assigned ${safeDate(t.assigned_at)}</div>
           <div class="snapshot-badges"><span class="pill ${statusClass(t.status)}">${esc(t.status||'unknown')}</span><span class="pill pill-gray">${esc(t.layer||'—')}</span><span class="pill pill-gray">Rate ${safeMoney(t.rate)}</span></div>
-          <div class="task-chain">${chain.join('')}</div>
+          <div class="task-chain">${chain.join('')}</div>${t.archived_at?`<div class="task-archive-explanation"><strong>Archived:</strong> ${safeDate(t.archived_at)} · Previous state: ${esc(t.archive_previous_status||'—')}<br><strong>Reason:</strong> ${esc(t.archive_reason||'Administrative archive')}<br>Existing submissions and payments remain unchanged.</div>`:''}
         </div>
-        <div class="snapshot-actions">${rec?.audio_path?'<button class="btn btn-secondary" data-play-task-audio="1">Play audio</button>':''}${r?.id?'<a class="btn btn-secondary" href="/admin/reviews">L2 review results</a>':''}</div>
+        <div class="snapshot-actions">${rec?.audio_path?'<button class="btn btn-secondary" data-play-task-audio="1">Play audio</button>':''}${r?.id?'<a class="btn btn-secondary" href="/admin/reviews">L2 review results</a>':''}${t.status==='archived'?'<span class="pill pill-gray">Archived</span>':`<button class="btn task-archive-danger" type="button" data-archive-task="${esc(currentPublic)}">Archive task</button>`}</div>
       </div>
       <div class="snapshot-stats">
         <div class="card snapshot-stat"><div class="stat-label">Current Task ID</div><strong class="task-public-id">${esc(currentPublic)}</strong><div class="stat-foot">${esc(t.layer||'—')} · ${esc(t.status||'—')}</div></div>
@@ -109,7 +121,66 @@
         <section class="card snapshot-card snapshot-section-full"><h3>Task lifecycle</h3><div class="snapshot-table-wrap"><table class="snapshot-table"><thead><tr><th>Event</th><th>Time</th></tr></thead><tbody>${timelineHtml}</tbody></table></div></section>
       </div>`;
     snapshotEl.dataset.taskAudio=rec?.audio_path||'';
+    snapshotEl.dataset.currentTaskKey=currentPublic;
   }
+
+  async function archiveTask(key,button){
+    key=taskKey(key);
+    if(!key){window.alert('Enter a valid alphanumeric Task ID or numeric task number.');return}
+    const original=button?.textContent;
+    if(button){button.disabled=true;button.textContent='Checking task…'}
+    const statusElement=document.getElementById('adminTaskArchiveStatus');
+    const say=(message,failed=false)=>{
+      if(statusElement){statusElement.textContent=message;statusElement.className='task-archive-status '+(failed?'error':'success')}
+    };
+    try{
+      const {data:info,error:lookupError}=await db.rpc('admin_get_task_snapshot_by_key',{p_task_key:key});
+      if(lookupError)throw lookupError;
+      if(!info?.task){throw Error('No task was found with this ID.')}
+      const t=info.task,publicKey=t.public_task_id||key;
+      if(t.status==='archived'){say('Task '+publicKey+' is already archived.');if(snapshotEl.classList.contains('visible')&&snapshotEl.dataset.currentTaskKey===publicKey)await lookupTask(publicKey);return}
+      const okay=window.confirm('Archive task '+publicKey+'?\n\nProject: '+(t.project||'—')+'\nLevel: '+(t.layer||'—')+'\nCurrent status: '+(t.status||'—')+'\n\nThe task and any linked transcription audio will be removed from active queues. Existing submissions, feedback and payments will be preserved.');
+      if(!okay){say('Archive cancelled.');return}
+      const reason=window.prompt('Reason for archiving task '+publicKey+' (recorded in audit history):','Task is stuck or cannot be submitted');
+      if(reason===null){say('Archive cancelled.');return}
+      if(!reason.trim()){throw Error('Please enter a short archive reason.')}
+      if(button)button.textContent='Archiving…';
+      const {data,error}=await db.rpc('admin_archive_task_by_key',{p_task_key:publicKey,p_reason:reason.trim().slice(0,500)});
+      if(error)throw error;
+      say('Archived '+(data.public_task_id||publicKey)+'. Existing submissions preserved. Linked audio removed from the active queue.');
+      if(snapshotEl.classList.contains('visible')&&snapshotEl.dataset.currentTaskKey===publicKey)await lookupTask(publicKey);
+    }catch(error){
+      const msg=error?.message||String(error);
+      say('Archive failed: '+msg,true);
+      window.alert('Archive failed: '+msg);
+    }finally{if(button&&button.isConnected){button.disabled=false;button.textContent=original}}
+  }
+
+  function mountTaskArchivePanel(){
+    const panel=document.getElementById('tasks');
+    if(!panel||document.getElementById('adminTaskArchivePanel'))return;
+    const section=document.createElement('section');
+    section.id='adminTaskArchivePanel';section.className='task-archive-card';
+    section.innerHTML=`<h3>Archive task</h3><p>Archive any assigned, in-progress, submitted or reviewed task by its exact ID. The task leaves active queues; submission history, feedback and payment records are kept.</p>
+      <div class="task-archive-row">
+        <input id="adminTaskArchiveKey" class="input" type="text" placeholder="Enter Task ID (e.g. P5A6K7K9J4A8K8)" aria-label="Task ID to archive" autocomplete="off" spellcheck="false">
+        <button id="adminTaskArchiveInspect" class="btn btn-secondary" type="button">Inspect</button>
+        <button id="adminTaskArchiveSubmit" class="btn task-archive-danger" type="button">Archive task</button>
+      </div><div id="adminTaskArchiveStatus" class="task-archive-status" role="status" aria-live="polite"></div>`;
+    panel.append(section);
+    const input=section.querySelector('#adminTaskArchiveKey');
+    const button=section.querySelector('#adminTaskArchiveSubmit');
+    button.addEventListener('click',()=>archiveTask(input.value,button));
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();archiveTask(input.value,button)}});
+    section.querySelector('#adminTaskArchiveInspect').addEventListener('click',()=>{
+      const key=taskKey(input.value);
+      if(!key){window.alert('Enter a valid Task ID.');return}
+      if(typeof openParticipantFinder==='function')openParticipantFinder();
+      if(typeof finderInput!=='undefined')finderInput.value=key;
+      lookupTask(key);
+    });
+  }
+  mountTaskArchivePanel();
 
   finderInput.addEventListener('input',()=>setTimeout(addTaskCandidate,0));
   finderResults.addEventListener('click',e=>{
@@ -124,6 +195,8 @@
   snapshotEl.addEventListener('click',e=>{
     const link=e.target.closest('[data-open-task]');
     if(link){e.preventDefault();lookupTask(link.dataset.openTask);return}
+    const archive=e.target.closest('[data-archive-task]');
+    if(archive){e.preventDefault();archiveTask(archive.dataset.archiveTask,archive);return}
     const play=e.target.closest('[data-play-task-audio]');
     if(play){e.preventDefault();const path=snapshotEl.dataset.taskAudio;if(path)playRecording(path);}
   });
