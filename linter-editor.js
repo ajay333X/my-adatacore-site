@@ -39,9 +39,10 @@ style.textContent=[
 'body.tx-v2-editor #v2SlideStage.ac-lint-segment-error{border:1px solid #e7a3ad!important;box-shadow:inset 3px 0 0 #dc364b!important;background:#fff8f9!important}body.tx-v2-editor #v2SlideStage.ac-lint-segment-warning{border:1px solid #e4cc98!important;box-shadow:inset 3px 0 0 #d6a13b!important}',
 'body.tx-v2-editor #v2SlideCount.ac-lint-segment-error::after{content:" ●";color:#e0344d;font-size:12px}body.tx-v2-editor #v2SlideCount.ac-lint-segment-warning::after{content:" ●";color:#d2a13a;font-size:12px}',
 'body.tx-v2-editor .ac-lint-slide-note[hidden]{display:none!important}'
-,'#acLintInlineSlot[hidden]{display:none!important}',
+,'body.tx-v2-editor #acLintInlineSlot[hidden]{display:none!important}',
 'body.tx-v2-editor #acLintInlineSlot{position:relative!important;display:block!important;float:none!important;clear:both!important;width:100%!important;box-sizing:border-box!important;inset:auto!important;transform:none!important;z-index:auto!important;overflow:visible!important;padding:0 12px 12px;margin:0!important;flex:0 0 100%;grid-column:1/-1}',
-'body.tx-v2-editor #acLintInlineSlot #acLintPanel{position:relative!important;display:block!important;inset:auto!important;transform:none!important;float:none!important;z-index:auto!important;width:100%;box-sizing:border-box;margin:10px 0 0!important;max-height:none!important;overflow:hidden}',
+'body.tx-v2-editor #acLintInlineSlot #acLintPanel{position:relative!important;inset:auto!important;transform:none!important;float:none!important;z-index:auto!important;width:100%;box-sizing:border-box;margin:10px 0 0!important;max-height:none!important;overflow:hidden}',
+'body.tx-v2-editor #acLintInlineSlot #acLintPanel[hidden]{display:none!important}',
 '#issues[aria-controls="acLintPanel"]::after{content:"⌄";display:inline-block;margin-left:4px;transition:transform .15s ease}',
 '#issues[aria-controls="acLintPanel"][aria-expanded="true"]::after{transform:rotate(180deg)}',
 '#issues.ac-lint-attention{box-shadow:0 0 0 3px rgba(218,55,73,.18)!important}'
