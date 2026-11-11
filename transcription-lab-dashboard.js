@@ -44,7 +44,15 @@
       view.classList.toggle('active',active);
       view.hidden=!active;
     });
-    if(remember){try{sessionStorage.setItem('adatacore-txlab-view',wanted)}catch(_){ }}
+    if(remember){
+      try{
+        sessionStorage.setItem('adatacore-txlab-view',wanted);
+        const url=new URL(location.href);
+        if(wanted==='archives')url.searchParams.set('view','archives');
+        else{url.searchParams.delete('view');url.searchParams.delete('task')}
+        history.replaceState(history.state,'',url.pathname+url.search);
+      }catch(_){}
+    }
     if(wanted==='queue')setTimeout(()=>window.dispatchEvent(new Event('resize')),40);
     if(wanted==='overview')scheduleRefresh(30);
   }
@@ -65,7 +73,11 @@
   }));
   document.querySelectorAll('[data-tx-open]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.txOpen)));
 
-  const initial=(()=>{try{return sessionStorage.getItem('adatacore-txlab-view')||'overview'}catch(_){return 'overview'}})();
+  const initial=(()=>{
+    const requested=new URLSearchParams(location.search).get('view');
+    if(requested&&['overview','queue','queues','archives','intake','qa','people','reports','rules'].includes(requested))return requested;
+    try{return sessionStorage.getItem('adatacore-txlab-view')||'overview'}catch(_){return 'overview'}
+  })();
   setTab(initial,false);
 
   async function rpc(name,args){
