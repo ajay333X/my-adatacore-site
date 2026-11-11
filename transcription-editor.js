@@ -83,7 +83,7 @@ async function init(){if(!itemId||!/^[0-9a-f-]{36}$/i.test(itemId))throw Error('
  // An admin inspecting the contributor experience must see contributor
  // navigation, without changing any database-authorized editing rights.
  const launch=new URLSearchParams(location.search).get('launch');
- const fromAdminLab=launch==='admin-lab'&&data.mode==='admin';
+ const fromAdminLab=data.mode==='admin'&&(launch==='admin-lab'||(!document.body.classList.contains('tx-v2-editor')&&launch!=='workspace'));
  if(link){
   link.href=fromAdminLab
    ?(document.body.classList.contains('tx-v2-editor')?'/admin/transcription-v2':'/admin/transcription')+'?project='+encodeURIComponent(data.project.id)
