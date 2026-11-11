@@ -68,7 +68,7 @@ table.addEventListener('click',async e=>{
   label($('v2CaptionsTitle'),'Saved captions');label($('v2CaptionsSubheading'),'Loading transcript…');
   label($('v2CaptionsRows'),'Loading caption lines…');
   $('v2CaptionExport').disabled=true;
-  $('v2CaptionOpenEditor').href='/transcription-v2?item='+encodeURIComponent(id);
+  $('v2CaptionOpenEditor').href='/transcription-v2?item='+encodeURIComponent(id)+'&launch=admin-lab';
   if(!dialog.open)dialog.showModal();
   try{
     const result=await rpc('tx_v2_caption_detail',{p_item_id:id});if(active!==id||!dialog.open)return;
@@ -82,7 +82,7 @@ table.addEventListener('click',async e=>{
       const line=document.createElement('div');line.className='v2-caption-line';
       const time=document.createElement('span');time.className='v2-caption-time';time.textContent=String(i+1).padStart(2,'0')+' · '+mtime(s.start_ms)+' – '+mtime(s.end_ms);
       const caption=document.createElement('p');caption.className='v2-caption-text';caption.textContent=String(s.text||'');
-      const jump=document.createElement('a');jump.className='v2-caption-jump';jump.textContent='Open at time ↗';jump.href='/transcription-v2?item='+encodeURIComponent(id)+'&t='+Math.round(Number(s.start_ms)||0);
+      const jump=document.createElement('a');jump.className='v2-caption-jump';jump.textContent='Open at time ↗';jump.href='/transcription-v2?item='+encodeURIComponent(id)+'&launch=admin-lab'+'&t='+Math.round(Number(s.start_ms)||0);
       line.append(time,caption,jump);fragment.append(line);
     });
     target.append(fragment);$('v2CaptionExport').disabled=false;
