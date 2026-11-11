@@ -7,17 +7,25 @@ async function openTask(button){
   const layer=String(button.dataset.layer||'L1');
   const title=String(button.dataset.title||'');
   const isTranscription=Boolean(transcription)||/transcription/i.test(title);
-  // Generic task links previously opened the voice-audit page for L2
-  // transcription tasks. Resolve the real audio item before navigation.
-  if(id&&isTranscription){
-    if(!window.supabase?.createClient)throw Error('Task service unavailable. Please reload.');
-    const db=window.supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
-    const {data,error}=await db.rpc('tx_resolve_assigned_task',{p_task_id:id});
-    if(error)throw Error(error.message||'Could not check task assignment.');
-    if(data?.archived)throw Error('This task has been archived by an administrator. It is no longer available for review or submission.');
-    if(data?.kind==='transcription'){
-      window.location.assign((data.editor_route||'/transcription')+'?item='+encodeURIComponent(data.audio_item_id));
-      return;
+  // Review cards do not always carry a transcription label or audio UUID.
+  // Resolve all L2 task IDs before choosing voice review versus transcription.
+  if(id&&(layer==='L2'||isTranscription)){
+    if(!window.supabase?.createClient){
+      if(isTranscription)throw Error('Task service unavailable. Please reload.');
+    }else{
+      const db=window.supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
+      const {data,error}=await db.rpc('tx_resolve_assigned_task',{p_task_id:id});
+      if(error){
+        if(isTranscription)throw Error(error.message||'Could not check task assignment.');
+        // Generic voice assignments retain the existing review route.
+        console.warn('Review task lookup unavailable:',error.message);
+      }else{
+        if(data?.archived)throw Error('This task has been archived by an administrator. It is no longer available for review or submission.');
+        if(data?.kind==='transcription'){
+          window.location.assign((data.editor_route||'/transcription')+'?item='+encodeURIComponent(data.audio_item_id));
+          return;
+        }
+      }
     }
   }
   if(transcription){
