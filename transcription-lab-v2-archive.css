@@ -1,0 +1,91 @@
+/* Dedicated Transcription Lab task archive: project-scoped operational UI */
+body.tx-v2 .txarchive-view{
+ color:var(--text,#1e293b);min-height:500px
+}
+body.tx-v2 .txarchive-head{
+ display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+ padding:12px 4px 20px;border-bottom:1px solid var(--line,#dde4ee);margin-bottom:18px
+}
+body.tx-v2 .txarchive-head h2{font-size:22px;line-height:1.18;letter-spacing:-.03em;margin:5px 0 7px;font-weight:800}
+body.tx-v2 .txarchive-head p{max-width:730px;line-height:1.65;color:var(--muted,#64748b);font-size:12px;margin:0}
+body.tx-v2 .txarchive-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:#527da3}
+body.tx-v2 .txarchive-grid{display:grid;grid-template-columns:minmax(350px,1fr) minmax(300px,.95fr);gap:16px;align-items:start}
+body.tx-v2 .txarchive-card{
+ border:1px solid var(--line,#dbe4ee);border-radius:12px;background:var(--panel,#fff);
+ padding:21px 22px;min-width:0;box-shadow:0 2px 13px #1a365208
+}
+body.tx-v2 .txarchive-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+body.tx-v2 .txarchive-card-head h3{margin:0;font-size:15px;font-weight:800;letter-spacing:-.02em}
+body.tx-v2 .txarchive-step,
+body.tx-v2 .txarchive-count{border-radius:6px;background:#f0f5fb;color:#477497;padding:6px 8px;font-size:10px;font-weight:800;white-space:nowrap}
+body.tx-v2 .txarchive-count{font-variant-numeric:tabular-nums}
+body.tx-v2 .txarchive-help{font-size:11px;line-height:1.6;color:var(--muted,#78869a);margin:0 0 15px}
+body.tx-v2 .txarchive-label{display:block;font-size:11px;font-weight:800;margin:13px 0 7px;color:var(--text,#30455a)}
+body.tx-v2 .txarchive-key-row{display:flex;gap:8px;flex-wrap:wrap}
+body.tx-v2 .txarchive-key-row input{
+ flex:1 1 205px;min-width:0;background:var(--panel,#fff);color:var(--text,#1b3046);
+ padding:12px 13px;font-size:12px;font-weight:700;border:1px solid var(--line,#dce5ee);
+ border-radius:8px;outline:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em
+}
+body.tx-v2 .txarchive-card textarea{
+ width:100%;min-height:92px;resize:vertical;background:var(--panel,#fff);color:var(--text,#263448);
+ border:1px solid var(--line,#dce5ee);border-radius:8px;padding:12px 13px;font:12px/1.6 inherit;outline:none
+}
+body.tx-v2 .txarchive-key-row input:focus,
+body.tx-v2 .txarchive-card textarea:focus{border-color:#4e91bd;box-shadow:0 0 0 3px #4e91bd1a}
+body.tx-v2 .txarchive-primary,
+body.tx-v2 .txarchive-secondary,
+body.tx-v2 .txarchive-danger{
+ min-height:37px;padding:9px 13px;border-radius:8px;border:1px solid var(--line,#d6e2ee);
+ font-size:11px;font-weight:800;cursor:pointer;transition:background .15s ease,border .15s ease;
+ white-space:nowrap
+}
+body.tx-v2 .txarchive-primary{background:#264e70;border-color:#264e70;color:#fff}
+body.tx-v2 .txarchive-primary:hover{background:#336a91}
+body.tx-v2 .txarchive-secondary{background:var(--panel,#fff);color:var(--text,#35516a)}
+body.tx-v2 .txarchive-secondary:hover{background:var(--panel2,#f3f8fc)}
+body.tx-v2 .txarchive-danger{background:#b1444c;border-color:#b1444c;color:white}
+body.tx-v2 .txarchive-danger:hover:not(:disabled){background:#943741}
+body.tx-v2 .txarchive-primary:disabled,
+body.tx-v2 .txarchive-danger:disabled,
+body.tx-v2 .txarchive-secondary:disabled{cursor:not-allowed;opacity:.45}
+body.tx-v2 .txarchive-preview{
+ min-height:75px;border:1px solid var(--line,#e0e7ed);border-radius:9px;
+ background:var(--panel2,#f9fbfd);padding:13px 14px;margin:13px 0 0
+}
+body.tx-v2 .txarchive-placeholder{margin:0;color:var(--muted,#8291a2);font-size:11px;line-height:1.7}
+body.tx-v2 .txarchive-preview-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+body.tx-v2 .txarchive-task-id{font:800 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere;color:var(--text,#1f3951)}
+body.tx-v2 .txarchive-badge{display:inline-flex;align-items:center;border-radius:6px;padding:4px 7px;font-size:10px;font-weight:800;border:1px solid #c9d9e7;background:#edf4f9;color:#447091}
+body.tx-v2 .txarchive-badge.archived{background:#f0f1f4;border-color:#d6dce5;color:#5f6a7a}
+body.tx-v2 .txarchive-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:12px}
+body.tx-v2 .txarchive-preview-field{min-width:0}
+body.tx-v2 .txarchive-preview-field span{display:block;color:var(--muted,#76899b);font-size:10px;margin-bottom:3px}
+body.tx-v2 .txarchive-preview-field strong{display:block;font-size:11px;color:var(--text,#23374b);font-weight:750;overflow-wrap:anywhere}
+body.tx-v2 .txarchive-warning{
+ background:#fff8ed;color:#95632a;border:1px solid #f1dfbd;padding:9px 11px;
+ border-radius:8px;font-size:11px;line-height:1.5;margin-top:11px
+}
+body.tx-v2 .txarchive-divider{height:1px;background:var(--line,#e0e7ef);margin:19px 0}
+body.tx-v2 .txarchive-actions{margin-top:13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+body.tx-v2 .txarchive-actions .txarchive-help{margin:0;flex:1 1 160px;font-size:10px}
+body.tx-v2 .txarchive-message{font-size:11px;min-height:1em;margin:9px 0 0;line-height:1.55;color:var(--muted,#748396)}
+body.tx-v2 .txarchive-message.success{color:#27815a}
+body.tx-v2 .txarchive-message.error{color:#b34551}
+body.tx-v2 .txarchive-list{max-height:590px;overflow:auto;padding-right:3px}
+body.tx-v2 .txarchive-entry{
+ padding:13px 12px;border:1px solid var(--line,#e0e7ee);border-radius:8px;
+ background:var(--panel,#fff);margin:0 0 8px
+}
+body.tx-v2 .txarchive-entry-top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+body.tx-v2 .txarchive-entry-title{font-size:11px;font-weight:800;color:var(--text,#26374a);overflow-wrap:anywhere}
+body.tx-v2 .txarchive-entry-meta{color:var(--muted,#8292a1);font-size:10px;line-height:1.6;margin-top:6px}
+body.tx-v2 .txarchive-entry-reason{color:var(--text,#4d6177);font-size:11px;line-height:1.5;margin-top:5px;overflow-wrap:anywhere}
+body.tx-v2 :is(.txarchive-primary,.txarchive-secondary,.txarchive-danger):focus-visible{outline:2px solid #4889bd;outline-offset:2px}
+@media(max-width:1050px){body.tx-v2 .txarchive-grid{grid-template-columns:1fr}}
+@media(max-width:620px){
+ body.tx-v2 .txarchive-head{padding:10px 0 14px}
+ body.tx-v2 .txarchive-card{padding:15px}
+ body.tx-v2 .txarchive-key-row>*{flex:1 1 100%}
+ body.tx-v2 .txarchive-preview-grid{grid-template-columns:1fr}
+}
