@@ -14,7 +14,7 @@
     const params=new URLSearchParams(location.search),impersonation=params.get('impersonation')||'';
     const validImpersonation=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(impersonation);
     if(impersonation&&!validImpersonation)throw new Error('Invalid contributor-view session');
-    const response=await fetch('/review-secure?ui=task-id-v1',{cache:'no-store'});
+    const response=await fetch('/review-secure?ui=task-id-transcription-route-v2',{cache:'no-store'});
     if(!response.ok)throw new Error('Review workspace returned '+response.status);
     let html=await response.text();
     html=html.replace('</head>','<link rel="stylesheet" href="/platform-theme.css?v=1"></head>');
