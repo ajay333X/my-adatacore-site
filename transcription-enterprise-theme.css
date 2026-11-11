@@ -289,3 +289,352 @@ body.tx-v2-editor.ac-enterprise-mode :is(button,select,input,textarea):focus-vis
   body.tx-v2-editor.ac-enterprise-mode *,
   body.tx-v2-editor #acAppearanceSwitch *{transition-duration:0s!important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ENTERPRISE STUDIO / v2 — distinct from Classic, entirely reversible.
+   Visual treatment only. The source of truth remains transcription-editor.
+   Deliberately avoid widths/heights for canvas hit targets, tag severity,
+   playback range geometry, interactive hidden states, and DOM reparenting.
+   ═══════════════════════════════════════════════════════════════════════ */
+body.tx-v2-editor.ac-enterprise-mode {
+ --ac-studio-ink:#17263d;
+ --ac-studio-midnight:#101d30;
+ --ac-studio-surface:#ffffff;
+ --ac-studio-border:#cbd8e7;
+ --ac-studio-canvas:#eaf0f7;
+ --ac-studio-accent:#4f8bd6;
+ --ac-studio-aqua:#47c5b2;
+ --ac-studio-shadow:0 16px 48px rgba(15,36,68,.09),0 2px 9px rgba(15,36,68,.04);
+ background:var(--ac-studio-canvas)!important;
+ color:var(--ac-studio-ink)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header {
+ background:linear-gradient(112deg,#09172a 0%,#152741 55%,#193753 100%)!important;
+ color:#edf5ff!important;
+ border-bottom:1px solid #365472!important;
+ box-shadow:0 12px 28px rgba(9,24,45,.18)!important;
+ min-height:72px!important;
+ padding:11px clamp(18px,2.4vw,40px)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header .v2-header-divider{
+ background:rgba(214,232,247,.25)!important;opacity:1!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header .v2-brand-mark{
+ background:linear-gradient(145deg,#7cd8df,#4775de)!important;
+ color:#0a2342!important;border-radius:12px!important;
+ box-shadow:0 6px 18px rgba(8,12,27,.22)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header .v2-brand-type,
+body.tx-v2-editor.ac-enterprise-mode .tx-header .v2-brand-type span{
+ color:#eff6ff!important;
+ letter-spacing:.055em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-app-context #breadcrumb{
+ color:#abc3da!important;font-size:10.5px!important;
+ letter-spacing:.055em!important;font-weight:650!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-app-context #projectTitle{
+ color:#ffffff!important;font-size:15px!important;font-weight:810!important;
+ letter-spacing:-.025em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header .header-actions{
+ gap:8px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header .header-actions > :is(button,a):not(#backLink):not(.ac-appearance-option){
+ background:rgba(228,243,255,.095)!important;
+ border:1px solid rgba(210,229,247,.24)!important;
+ color:#dceaff!important;border-radius:9px!important;
+ min-height:34px!important;box-shadow:none!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header .header-actions > :is(button,a):not(#backLink):hover{
+ background:rgba(224,241,255,.18)!important;
+ border-color:rgba(210,229,247,.46)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header #backLink{
+ background:#e5f5ff!important;color:#123c5d!important;
+ border:1px solid #d2e8f6!important;
+ border-radius:9px!important;
+ font-weight:800!important;min-height:36px!important;
+ box-shadow:0 3px 9px rgba(5,14,26,.16)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header #backLink:hover{
+ background:#fff!important;color:#0c2e4e!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .tx-header #saveState{
+ color:#b5edda!important;font-size:11px!important;
+ background:rgba(27,141,108,.18)!important;
+ border:1px solid rgba(99,216,175,.33)!important;
+ border-radius:7px!important;
+ padding:7px 10px!important;line-height:1.3!important;
+}
+/* Appearance switch is now an integrated studio surface, not a white pill. */
+body.tx-v2-editor.ac-enterprise-mode #acAppearanceSwitch{
+ background:rgba(6,19,36,.38)!important;
+ border:1px solid #405a77!important;
+ border-radius:10px!important;
+ box-shadow:inset 0 1px 2px rgba(0,0,0,.17)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #acAppearanceSwitch .ac-appearance-option{
+ color:#aec6db!important;background:transparent!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #acAppearanceSwitch .ac-appearance-option:hover:not([aria-pressed="true"]){
+ background:rgba(220,237,254,.10)!important;color:#ffffff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #acAppearanceSwitch .ac-appearance-option[aria-pressed="true"]{
+ color:#0e324f!important;background:#d7f0f4!important;
+ font-weight:850!important;
+ box-shadow:0 2px 7px rgba(0,0,0,.2)!important;
+}
+/* The editor becomes a contained studio canvas with two deliberate surfaces. */
+body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{
+ max-width:1720px!important;
+ padding:22px clamp(16px,2.7vw,42px) 104px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .card.v2-wave-card,
+body.tx-v2-editor.ac-enterprise-mode .card.segment-card.v2-transcript-card{
+ background:var(--ac-studio-surface)!important;
+ border:1px solid var(--ac-studio-border)!important;
+ border-radius:18px!important;
+ box-shadow:var(--ac-studio-shadow)!important;
+ overflow:hidden!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .card.v2-wave-card{
+ margin-bottom:20px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head{
+ background:linear-gradient(111deg,#18354f,#112942 58%,#123550)!important;
+ color:#f2f8ff!important;
+ border-bottom:1px solid #3e607e!important;
+ min-height:56px!important;
+ padding:12px 21px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head h2{
+ color:#f6fbff!important;font-size:14px!important;font-weight:830!important;
+ letter-spacing:-.018em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head .v2-pane-metrics{
+ color:#d4e8fa!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head #v2AudioLength{
+ background:rgba(235,247,255,.12)!important;
+ color:#e4f3ff!important;
+ border:1px solid rgba(207,229,246,.22)!important;
+ padding:5px 9px!important;border-radius:7px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head #v2cbPlayIndicator{
+ color:#caedfc!important;
+ border-color:rgba(177,218,238,.3)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .txr-timeline-actions button:not(#txrMakeChangesButton){
+ color:#d9ebfc!important;
+ background:rgba(227,240,252,.09)!important;
+ border:1px solid rgba(216,234,250,.24)!important;
+ border-radius:8px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .txr-timeline-actions button:not(#txrMakeChangesButton):hover{
+ background:rgba(227,240,252,.20)!important;
+ color:white!important;border-color:rgba(216,234,250,.42)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card #txrMakeChangesButton{
+ border:1px solid #9bdadf!important;
+ background:#d6f2f4!important;
+ color:#153f55!important;
+ border-radius:8px!important;
+ padding:7px 12px!important;
+ font-weight:820!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card #txrMakeChangesButton[aria-pressed="true"]{
+ background:#f17d38!important;color:#fff!important;
+ border-color:#f4a05d!important;
+}
+/* Waveform stays light for contrast and waveform legibility; no canvas sizes change. */
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools{
+ background:#f1f6fb!important;
+ border-bottom:1px solid #d8e4ee!important;
+ padding:10px 18px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools label{
+ color:#405c78!important;font-weight:730!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools :is(button,select){
+ border-radius:8px!important;background:#fff!important;
+ border:1px solid #cbdbe9!important;color:#2c4d6d!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2cb-listen-gate{
+ background:#f8fcfd!important;
+ border-bottom:1px solid #dce9ef!important;
+ padding:10px 19px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-listen-track{
+ border:1px solid #bfdad9!important;
+ background:#dfeeea!important;
+ border-radius:999px!important;overflow:hidden!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .wave-scroller{
+ background:#e8f3ff!important;
+ border-color:#c7dced!important;
+ box-shadow:inset 0 6px 18px rgba(51,102,145,.08)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .wave-caption{
+ background:#f4f8fc!important;
+ border-top:1px solid #dce7f0!important;
+ color:#66819c!important;
+}
+/* Transcript uses a warm-white reading surface, distinct from audio tooling. */
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .v2-pane-head{
+ background:linear-gradient(105deg,#fff,#f9fbfe)!important;
+ padding:14px 21px!important;
+ min-height:58px!important;
+ border-bottom:1px solid #dfe9f2!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .v2-pane-head h2{
+ color:#172e47!important;
+ font-size:15px!important;font-weight:825!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar{
+ background:#f8fbff!important;
+ border-bottom:1px solid #dce5f1!important;
+ padding:13px 18px!important;
+ gap:9px 14px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar :is(button,select){
+ border-radius:9px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #play{
+ background:linear-gradient(135deg,#2b83b9,#2763b7)!important;
+ color:#ffffff!important;
+ border:1px solid #286ca8!important;
+ box-shadow:0 4px 12px rgba(39,110,172,.20)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #submit:not(:disabled){
+ background:linear-gradient(135deg,#193b62,#102b4c)!important;
+ border:1px solid #153657!important;
+ color:#fff!important;
+ box-shadow:0 5px 15px rgba(15,36,64,.16)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #save{
+ border:1px solid #d1dfec!important;
+ background:#fff!important;color:#42617c!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .toolbar,
+body.tx-v2-editor.ac-enterprise-mode .v2-quality-strip,
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar{
+ background:#f7fafd!important;
+ border-bottom:1px solid #e1eaf3!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar{
+ padding:11px 19px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-title{
+ color:#27768b!important;font-weight:875!important;
+ letter-spacing:.1em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-caption-panel{
+ background:#fff!important;border-radius:0 0 18px 18px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-caption-heading{
+ background:#fff!important;
+ border-bottom:1px solid #e0e9f0!important;
+ padding:12px 20px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-nav{
+ background:#f4f9fd!important;
+ border-bottom:1px solid #dce9f3!important;
+ padding:12px 19px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-stage:not(.ac-lint-segment-error):not(.ac-lint-segment-warning){
+ background:linear-gradient(180deg,#ffffff,#fcfdff)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #v2SlideText,
+body.tx-v2-editor.ac-enterprise-mode #v2CaptionFlow{
+ color:#172c42!important;
+ font-family:Inter,"Noto Sans Devanagari",system-ui,sans-serif!important;
+ letter-spacing:.008em!important;
+ line-height:2.04!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-actions button,
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-controls button{
+ border-radius:9px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-footer,
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-coming{
+ background:#f6f9fd!important;border-color:#e0eaf4!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-table-wrap,
+body.tx-v2-editor.ac-enterprise-mode .segment-table th{
+ background:#f6f9fd!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .segment-table td{
+ background:#fff!important;
+ border-color:#ebf1f7!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .segment-table tr:hover td{
+ background:#f3f8ff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .txr-change-bar{
+ background:#eff6fb!important;border-bottom-color:#c9dceb!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .txr-change-preview{
+ background:#fff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #v2cbAssist,
+body.tx-v2-editor.ac-enterprise-mode .v2-work-dialog,
+body.tx-v2-editor.ac-enterprise-mode #v2ReviewDetailDialog{
+ border:1px solid #bdcfe1!important;
+ border-radius:16px!important;
+ box-shadow:0 25px 70px rgba(11,30,56,.22)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-bottom-dock{
+ background:#f9fcff!important;
+ border-color:#cad8e7!important;
+ box-shadow:0 -10px 30px rgba(15,42,73,.11)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode :is(button,input,textarea,select):focus-visible{
+ outline:2px solid #398ba8!important;outline-offset:2px!important;
+}
+/* Explicitly never re-enable hidden task controls or change linter status. */
+@media(max-width:1090px){
+ body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{
+  padding:12px 12px 88px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header{
+  min-height:62px!important;
+  padding:10px 15px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head{
+  padding:10px 13px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar{
+  padding:11px 12px!important;
+ }
+}
+@media(max-width:670px){
+ body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{
+  padding:8px 8px 88px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .card.v2-wave-card,
+ body.tx-v2-editor.ac-enterprise-mode .card.segment-card.v2-transcript-card{
+  border-radius:12px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header{
+  padding:8px 10px!important;
+  gap:7px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .tx-header .header-actions{
+  gap:5px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head{
+  padding:10px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .txr-timeline-actions{
+  gap:5px!important;
+ }
+ body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar{
+  padding:9px 10px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.tx-v2-editor.ac-enterprise-mode *{
+  animation-duration:0s!important;transition-duration:0s!important;
+ }
+}
