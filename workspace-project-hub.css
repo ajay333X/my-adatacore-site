@@ -63,3 +63,47 @@ html.ac-contributor-simple .ac-project-library-entry .ac-project-library-top{dis
 html.ac-contributor-simple .ac-project-library-entry h4{margin:0;font-size:13px}
 html.ac-contributor-simple .ac-project-library-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
 html.ac-contributor-simple .ac-project-library-actions .btn{font-size:11px;padding:8px 11px}
+
+
+/* Project work controls: keep the primary CTA above Instructions/Library. */
+html.ac-contributor-simple .ac-project-sub{margin-bottom:13px}
+html.ac-contributor-simple .ac-project-work{
+ background:var(--panel);border:1px solid var(--line);border-radius:13px;
+ padding:17px 19px;margin:0 0 19px;box-shadow:0 2px 12px #1a2e4b0a;
+}
+html.ac-contributor-simple .ac-project-work-main{display:flex;align-items:center;justify-content:space-between;gap:19px;flex-wrap:wrap}
+html.ac-contributor-simple .ac-project-work-info{flex:1 1 280px;min-width:0}
+html.ac-contributor-simple .ac-project-work-kicker{
+ display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px;
+ font-size:10px;font-weight:850;letter-spacing:.065em;color:var(--muted);
+}
+html.ac-contributor-simple .ac-project-work-level{
+ border-radius:6px;background:var(--brand-soft);color:var(--brand);
+ padding:4px 7px;font-size:10px;font-weight:780;letter-spacing:0;
+}
+html.ac-contributor-simple .ac-project-work-info>strong,
+html.ac-contributor-simple .ac-project-work-main>div>strong{display:block;font-size:15px;letter-spacing:-.025em;font-weight:820;color:var(--text)}
+html.ac-contributor-simple .ac-project-work-main p{font-size:11px;line-height:1.6;color:var(--muted);margin:5px 0 0}
+html.ac-contributor-simple .ac-project-work-queues{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}
+html.ac-contributor-simple .ac-project-work-queues>span{
+ display:inline-flex;align-items:center;gap:6px;background:var(--panel2);
+ border:1px solid var(--line);border-radius:7px;padding:5px 8px;
+ font-size:10px;font-weight:650;color:var(--muted)
+}
+html.ac-contributor-simple .ac-project-work-queues b{font-variant-numeric:tabular-nums;color:var(--text);font-size:11px}
+html.ac-contributor-simple .ac-project-work-queues .ac-project-work-fallback{
+ border-color:#c3e3d4;background:#eaf8f0;color:#237b55;font-weight:800
+}
+html.ac-contributor-simple .ac-project-work-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+html.ac-contributor-simple .ac-project-work-actions .btn{min-height:37px;padding:9px 13px;border-radius:8px;font-size:11px;font-weight:800;white-space:nowrap}
+html.ac-contributor-simple .ac-project-work-actions button:disabled{opacity:.55;cursor:not-allowed}
+html.ac-contributor-simple .ac-project-work-loading{font-size:11px;color:var(--muted);padding:9px}
+html.ac-contributor-simple .ac-project-work-error{
+ margin:11px 0 0!important;color:#b23b48!important;background:#fff1f1;
+ border:1px solid #efd0d0;border-radius:7px;padding:9px 11px
+}
+@media(max-width:670px){
+ html.ac-contributor-simple .ac-project-work{padding:14px;margin-bottom:15px}
+ html.ac-contributor-simple .ac-project-work-actions{width:100%;justify-content:stretch}
+ html.ac-contributor-simple .ac-project-work-actions>.btn:first-child{flex:1}
+}
