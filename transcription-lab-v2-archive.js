@@ -159,9 +159,12 @@ async function archiveTask(){
  try{
   const result=await rpc('admin_archive_task_by_key',{p_task_key:key,p_reason:reason.slice(0,500)});
   if(!result?.archived)throw Error('Archive confirmation was not returned.');
+  // The archive is already committed. Allow read-only reinspection while
+  // keeping the final status message visible after refreshing the task card.
+  archiving=false;
+  await inspectTask(key);
   show((result.already_archived?'Already archived: ':'Archived: ')+key+
    '. Audio removed from active queues. Submissions preserved.');
-  await inspectTask(key);
   void refreshList();
   $('queueRefresh')?.click();
   $('txqRefresh')?.click();
