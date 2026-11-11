@@ -21,7 +21,7 @@ const setting=(k,def)=>{try{return JSON.parse(localStorage.getItem(key(k)))??def
 const store=(k,v)=>{try{localStorage.setItem(key(k),JSON.stringify(v))}catch(_){}};
 const rpc=async(name,args)=>{const {data,error}=await db.rpc(name,args);if(error)throw Error(error.message);return data};
 const statusName=s=>String(s||'unassigned').replace(/_/g,' ').replace(/^./,c=>c.toUpperCase());
-const openEditor=id=>'/transcription-v2?item='+encodeURIComponent(id);
+const openEditor=id=>'/transcription-v2?item='+encodeURIComponent(id)+'&launch=admin-lab';
 const safeCell=s=>{let v=String(s??'');if(/^[\s]*[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
 function download(name,rows){const txt='\ufeff'+rows.map(row=>row.map(safeCell).join(',')).join('\r\n')+'\r\n';const href=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'}));const a=node('a');a.href=href;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1200)}
 const exportItems=items=>[['Module ID','Audio','Status','Duration (seconds)','Source','Folder','Contributor','Reviewer','Added','Submitted','Reviewed','Queue Position'],...items.map(a=>[a.id,a.display_name,a.status,a.duration_seconds,a.source_project_title,a.source_folder,a.assignee,a.reviewer,a.created_at,a.submitted_at,a.reviewed_at,a.queue_position])];
