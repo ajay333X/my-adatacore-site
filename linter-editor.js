@@ -39,6 +39,12 @@ style.textContent=[
 'body.tx-v2-editor #v2SlideStage.ac-lint-segment-error{border:1px solid #e7a3ad!important;box-shadow:inset 3px 0 0 #dc364b!important;background:#fff8f9!important}body.tx-v2-editor #v2SlideStage.ac-lint-segment-warning{border:1px solid #e4cc98!important;box-shadow:inset 3px 0 0 #d6a13b!important}',
 'body.tx-v2-editor #v2SlideCount.ac-lint-segment-error::after{content:" ●";color:#e0344d;font-size:12px}body.tx-v2-editor #v2SlideCount.ac-lint-segment-warning::after{content:" ●";color:#d2a13a;font-size:12px}',
 'body.tx-v2-editor .ac-lint-slide-note[hidden]{display:none!important}'
+,'#acLintInlineSlot[hidden]{display:none!important}',
+'body.tx-v2-editor #acLintInlineSlot{position:relative!important;display:block!important;float:none!important;clear:both!important;width:100%!important;box-sizing:border-box!important;inset:auto!important;transform:none!important;z-index:auto!important;overflow:visible!important;padding:0 12px 12px;margin:0!important;flex:0 0 100%;grid-column:1/-1}',
+'body.tx-v2-editor #acLintInlineSlot #acLintPanel{position:relative!important;display:block!important;inset:auto!important;transform:none!important;float:none!important;z-index:auto!important;width:100%;box-sizing:border-box;margin:10px 0 0!important;max-height:none!important;overflow:hidden}',
+'#issues[aria-controls="acLintPanel"]::after{content:"⌄";display:inline-block;margin-left:4px;transition:transform .15s ease}',
+'#issues[aria-controls="acLintPanel"][aria-expanded="true"]::after{transform:rotate(180deg)}',
+'#issues.ac-lint-attention{box-shadow:0 0 0 3px rgba(218,55,73,.18)!important}'
 ].join('\n');
 document.head.append(style);
 function mask(s){return s.replace(markPattern,m=>'¤'.repeat(m.length))}
@@ -153,7 +159,7 @@ function paintBadge(){
  badge.setAttribute('aria-label',badge.textContent+'; open validation details');
 }
 function paintPanel(){
- if(!panel)return;panel.hidden=!opened;if(!opened)return;
+ if(!panel)return;panel.hidden=!opened;const slot=$('acLintInlineSlot');if(slot)slot.hidden=!opened;if(!opened)return;
  const all=getAllIssues(),errors=all.filter(x=>x.severity==='block').length,warnings=all.length-errors;
  const title=errors?'Fix '+errors+' blocking error'+(errors===1?'':'s'):'Validation results';
  let html='<div class="ac-lint-top"><div><strong>'+esc(title)+'</strong><small>'+esc((runtime?.profiles||[]).map(p=>p.name).join(' · ')||'Transcript structure and project checks')+'</small></div><button data-ac-act="close" type="button">Close ✕</button></div>';
@@ -279,7 +285,7 @@ function show(authoritative){
   if(!items.some(x=>x.segment===Number(issue.segment)&&x.code===issue.code))
    items.push({segment:Number(issue.segment)||1,id:snapshot?.segments[Number(issue.segment)-1]?.id||'',code:issue.code,severity:issue.severity,label:issue.code,message:issue.message,start:-1,end:-1,expected:'',fix:null});
  }
- opened=true;paintBadge();paintPanel();schedulePaint();panel?.scrollIntoView({block:'nearest',behavior:'smooth'});
+ paintBadge();if(opened)paintPanel();schedulePaint();
 }
 function mount(){
  if(badge)return;
@@ -289,9 +295,9 @@ function mount(){
  const bar=existing?.closest('.player-bar')||document.querySelector('.v2-wave-card .player-bar')||document.querySelector('.segment-card .player-bar');
  if(!bar||!existing){console.warn('[Project Linter] Missing editor toolbar or #issues control');return;}
  badge=existing;badge.setAttribute('aria-controls','acLintPanel');
- panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Transcript validation issues');panel.hidden=true;bar.after(panel);
+ panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Transcript validation issues');panel.hidden=true;const slot=$('acLintInlineSlot');if(slot)slot.append(panel);else bar.after(panel);
  // Intercept the old structural-only handler: one canonical error button now shows every issue.
- badge.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();opened=!opened;paintPanel();paintBadge();if(opened)panel.scrollIntoView({block:'nearest',behavior:'smooth'})},true);
+ badge.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();opened=!opened;paintPanel();paintBadge()},true);
  panel.addEventListener('click',onPanelClick);rows.addEventListener('input',schedule);
  new MutationObserver(()=>{schedulePaint();if(!runtime)schedule()}).observe(rows,{childList:true});
  if($('v2CaptionFlow'))new MutationObserver(schedulePaint).observe($('v2CaptionFlow'),{childList:true,subtree:true,characterData:true});
@@ -301,6 +307,6 @@ function mount(){
  updateNative(window.txLinterNative?.()||[]);
  let attempts=0;const interval=setInterval(()=>{const current=window.txLinterCurrent?.();if(current?.projectId){clearInterval(interval);load()}else if(++attempts>=120){clearInterval(interval);loadError='Task data not loaded';paintBadge()}},100);
 }
-window.AdatacoreLint={show,mount,refresh:load,recheck:calculate,issues:()=>items.slice(),allIssues:getAllIssues,updateNative,open:()=>{calculate();opened=true;paintPanel();paintBadge();panel?.scrollIntoView({block:'nearest',behavior:'smooth'})},state:()=>({configured:!!runtime?.enabled,loading:pending,error:loadError,issues:getAllIssues(),projectIssues:items.slice()})};
+window.AdatacoreLint={show,mount,refresh:load,recheck:calculate,issues:()=>items.slice(),allIssues:getAllIssues,updateNative,open:()=>{calculate();opened=true;paintPanel();paintBadge()},signal:()=>{paintBadge();badge?.focus({preventScroll:true});badge?.classList.add('ac-lint-attention');setTimeout(()=>badge?.classList.remove('ac-lint-attention'),1600)},state:()=>({configured:!!runtime?.enabled,loading:pending,error:loadError,issues:getAllIssues(),projectIssues:items.slice()})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
