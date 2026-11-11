@@ -283,8 +283,11 @@ function show(authoritative){
 }
 function mount(){
  if(badge)return;
- const bar=document.querySelector('.segment-card .player-bar'),existing=$('issues');
- if(!bar||!existing)return;
+ const existing=$('issues');
+ // V1 uses .segment-card; V2 moves the transport into .v2-wave-card.
+ // Anchor to the actual status control so moving containers cannot silently disable linting.
+ const bar=existing?.closest('.player-bar')||document.querySelector('.v2-wave-card .player-bar')||document.querySelector('.segment-card .player-bar');
+ if(!bar||!existing){console.warn('[Project Linter] Missing editor toolbar or #issues control');return;}
  badge=existing;badge.setAttribute('aria-controls','acLintPanel');
  panel=document.createElement('section');panel.id='acLintPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Transcript validation issues');panel.hidden=true;bar.after(panel);
  // Intercept the old structural-only handler: one canonical error button now shows every issue.
