@@ -361,9 +361,9 @@ body.tx-v2-editor.ac-enterprise-mode .tx-header #backLink:hover{
  background:#fff!important;color:#0c2e4e!important;
 }
 body.tx-v2-editor.ac-enterprise-mode .tx-header #saveState{
- color:#b5edda!important;font-size:11px!important;
- background:rgba(27,141,108,.18)!important;
- border:1px solid rgba(99,216,175,.33)!important;
+ color:#d6e7f5!important;font-size:11px!important;
+ background:rgba(195,218,240,.11)!important;
+ border:1px solid rgba(184,209,233,.28)!important;
  border-radius:7px!important;
  padding:7px 10px!important;line-height:1.3!important;
 }
@@ -396,7 +396,8 @@ body.tx-v2-editor.ac-enterprise-mode .card.segment-card.v2-transcript-card{
  border:1px solid var(--ac-studio-border)!important;
  border-radius:18px!important;
  box-shadow:var(--ac-studio-shadow)!important;
- overflow:hidden!important;
+ /* Menus and transient editor overlays can extend beyond card bounds. */
+ overflow:visible!important;
 }
 body.tx-v2-editor.ac-enterprise-mode .card.v2-wave-card{
  margin-bottom:20px!important;
