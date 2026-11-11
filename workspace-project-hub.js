@@ -141,6 +141,7 @@ async function startProjectWork(button){
   const msg=String(error.message||error);
   const host=$('acProjectWork');
   if(host){const notice=document.createElement('p');notice.className='ac-project-work-error';notice.textContent=msg;host.append(notice)}
+  workBusy=false;
   await readProjectWork(projectId);
   const refreshed=$('acProjectWork');if(refreshed){
     const notice=document.createElement('p');notice.className='ac-project-work-error';
