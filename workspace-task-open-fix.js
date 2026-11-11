@@ -22,7 +22,7 @@ async function openTask(button){
       }else{
         if(data?.archived)throw Error('This task has been archived by an administrator. It is no longer available for review or submission.');
         if(data?.kind==='transcription'){
-          window.location.assign((data.editor_route||'/transcription')+'?item='+encodeURIComponent(data.audio_item_id));
+          window.location.assign((data.editor_route||'/transcription')+'?item='+encodeURIComponent(data.audio_item_id)+'&launch=workspace');
           return;
         }
       }
@@ -30,7 +30,7 @@ async function openTask(button){
   }
   if(transcription){
     const route=Number(button.dataset.transcriptionProject)===93?'/transcription-v2':'/transcription';
-    window.location.assign(route+'?item='+encodeURIComponent(transcription));
+    window.location.assign(route+'?item='+encodeURIComponent(transcription)+'&launch=workspace');
     return;
   }
   if(!id)return;
