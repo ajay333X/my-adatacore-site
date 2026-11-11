@@ -32,7 +32,7 @@
   }
 
   function setTab(name,remember=true){
-    const wanted=['overview','queue','intake','qa','people','reports','rules'].includes(name)?name:'overview';
+    const wanted=['overview','queue','queues','archives','intake','qa','people','reports','rules'].includes(name)?name:'overview';
     document.querySelectorAll('[data-tx-tab]').forEach(button=>{
       const active=button.dataset.txTab===wanted;
       button.classList.toggle('active',active);
