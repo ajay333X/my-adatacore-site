@@ -70,7 +70,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('.project-o
   if(error)throw error;
   if(!data?.item_id)throw Error('No eligible review is available right now.');
   const route=id===93?'/transcription-v2':'/transcription';
-  location.href=route+'?item='+encodeURIComponent(data.item_id);
+  location.href=route+'?item='+encodeURIComponent(data.item_id)+'&launch=workspace';
  }catch(err){
   b.disabled=false;b.textContent=old;
   const msg=String(err.message||err);
@@ -81,7 +81,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('.project-o
  }finally{claiming=false}
  return;
 }
-if(b.dataset.txProject){if(claiming)return;claiming=true;b.disabled=true;const old=b.textContent;b.textContent='Opening…';try{const {data,error}=await db.rpc('tx_claim_next',{p_project_id:Number(b.dataset.txProject)});if(error)throw error;if(!data?.item_id)throw Error('No transcription audio is available.');location.href=(Number(b.dataset.txProject)===93?'/transcription-v2':'/transcription')+'?item='+encodeURIComponent(data.item_id)}catch(err){b.disabled=false;b.textContent=old;const m=String(err.message||err).replace(/^.*?(NO_TRANSCRIPTION_ALLOWANCE|TRANSCRIPTION_QUEUE_EMPTY):\s*/,'');const sub=document.getElementById('viewSub');if(sub)sub.textContent=m||'Unable to start the next transcription task.';await refreshTx()}finally{claiming=false}return}const id=Number(b.dataset.task),title=b.dataset.title;if(b.dataset.transcription){const route=Number(b.dataset.transcriptionProject)===93?'/transcription-v2':'/transcription';location.href=route+'?item='+encodeURIComponent(b.dataset.transcription);return}if(b.dataset.layer==='L1')location.href=`/voice-engine?project=${title}&task=${id}`;else location.href=`/review?task=${id}`},true);
+if(b.dataset.txProject){if(claiming)return;claiming=true;b.disabled=true;const old=b.textContent;b.textContent='Opening…';try{const {data,error}=await db.rpc('tx_claim_next',{p_project_id:Number(b.dataset.txProject)});if(error)throw error;if(!data?.item_id)throw Error('No transcription audio is available.');location.href=(Number(b.dataset.txProject)===93?'/transcription-v2':'/transcription')+'?item='+encodeURIComponent(data.item_id)+'&launch=workspace'}catch(err){b.disabled=false;b.textContent=old;const m=String(err.message||err).replace(/^.*?(NO_TRANSCRIPTION_ALLOWANCE|TRANSCRIPTION_QUEUE_EMPTY):\s*/,'');const sub=document.getElementById('viewSub');if(sub)sub.textContent=m||'Unable to start the next transcription task.';await refreshTx()}finally{claiming=false}return}const id=Number(b.dataset.task),title=b.dataset.title;if(b.dataset.transcription){const route=Number(b.dataset.transcriptionProject)===93?'/transcription-v2':'/transcription';location.href=route+'?item='+encodeURIComponent(b.dataset.transcription)+'&launch=workspace';return}if(b.dataset.layer==='L1')location.href=`/voice-engine?project=${title}&task=${id}`;else location.href=`/review?task=${id}`},true);
 refreshTx();
 window.addEventListener('focus',refreshTx);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshTx()});
