@@ -1,0 +1,291 @@
+/* Adatacore · Reversible Enterprise Appearance (Transcription V2 only)
+ * Deliberately isolated behind body.ac-enterprise-mode.
+ * All workflow, keyboard shortcuts, data/state, playback, QC, and review code remain unchanged.
+ * Never alter hidden/disabled, linter severity, or waveform timing geometry. */
+body.tx-v2-editor.ac-enterprise-mode{
+  --ac-e-ink:#1b2b3f;
+  --ac-e-muted:#62748b;
+  --ac-e-line:#dfe6ee;
+  --ac-e-canvas:#f4f7fb;
+  --ac-e-subtle:#f8fafd;
+  --ac-e-primary:#2369b2;
+  --ac-e-shadow:0 2px 12px rgba(24,47,72,.045);
+  font-family:Inter,"Noto Sans Devanagari",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--ac-e-ink)!important;
+  background:var(--ac-e-canvas)!important;
+}
+
+/* Visible switch in both modes: one modest header control, not a new toolbar. */
+body.tx-v2-editor #acAppearanceSwitch{
+  display:inline-flex;align-items:center;gap:2px;flex:none;
+  padding:3px;margin:0;border:1px solid #d9e2ec;border-radius:9px;
+  background:#f3f6fa;box-shadow:0 1px 2px rgba(30,48,74,.04);
+}
+body.tx-v2-editor #acAppearanceSwitch .ac-appearance-option{
+  min-height:28px!important;height:28px!important;margin:0!important;padding:5px 10px!important;
+  border:0!important;border-radius:6px!important;background:transparent!important;
+  color:#617187!important;font-size:11px!important;font-weight:750!important;
+  letter-spacing:0!important;box-shadow:none!important;white-space:nowrap!important;
+}
+body.tx-v2-editor #acAppearanceSwitch .ac-appearance-option[aria-pressed="true"]{
+  background:#fff!important;color:#203f64!important;
+  box-shadow:0 1px 3px rgba(31,50,70,.12)!important;
+}
+body.tx-v2-editor #acAppearanceSwitch .ac-appearance-option:focus-visible{
+  outline:2px solid #2e75c6!important;outline-offset:2px!important;
+}
+body.tx-v2-editor #acAppearanceSwitch .ac-appearance-option:hover:not([aria-pressed="true"]){
+  color:#23374f!important;background:#e9eef6!important;
+}
+
+/* Foundation: lighter chrome and a confident, consistent blue/ink hierarchy. */
+body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header{
+  background:#fff!important;border-bottom:1px solid var(--ac-e-line)!important;
+  box-shadow:0 2px 12px rgba(24,47,72,.035)!important;
+  padding-inline:clamp(16px,2.3vw,38px)!important;
+  min-height:62px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-brand-mark{
+  border-radius:10px!important;box-shadow:0 1px 5px #1f5b9b19!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-app-context .header-title,
+body.tx-v2-editor.ac-enterprise-mode #projectTitle{
+  color:#1c3049!important;font-size:14px!important;font-weight:760!important;letter-spacing:-.015em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #breadcrumb{
+  color:#78889b!important;font-size:10.5px!important;letter-spacing:.005em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .header-actions{
+  gap:7px!important;align-items:center!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .header-actions>:is(button,a):not(#backLink){
+  border-radius:8px!important;min-height:33px!important;
+  box-shadow:none!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #backLink{
+  border-radius:8px!important;min-height:33px!important;font-weight:740!important;
+  border-color:#d6e2ed!important;background:#f5f8fc!important;color:#3f5974!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #saveState{font-size:11px!important}
+
+/* Layout: enough breathing space without reducing the usable waveform width. */
+body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{
+  max-width:1880px!important;margin-inline:auto!important;
+  padding-inline:clamp(14px,1.6vw,30px)!important;
+  padding-top:14px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .card.v2-wave-card,
+body.tx-v2-editor.ac-enterprise-mode .card.segment-card.v2-transcript-card{
+  background:#fff!important;border:1px solid var(--ac-e-line)!important;
+  border-radius:12px!important;box-shadow:var(--ac-e-shadow)!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card{
+  margin-bottom:14px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head,
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .v2-pane-head{
+  min-height:56px!important;
+  background:#fff!important;padding:14px 19px!important;
+  border-bottom:1px solid #eaf0f5!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-pane-head h2{
+  color:var(--ac-e-ink)!important;font-weight:790!important;font-size:14px!important;
+  letter-spacing:-.018em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-pane-head p{
+  color:#78889b!important;font-size:11px!important;line-height:1.55!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-pane-index{
+  font-weight:760!important;letter-spacing:.075em!important;color:#7790aa!important;font-size:10px!important;
+}
+
+/* Group controls rather than adding yet another row. Everything remains accessible. */
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools{
+  min-height:44px!important;background:#fcfdff!important;
+  border-bottom:1px solid #e8eef5!important;
+  padding:8px 15px!important;gap:7px 11px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools label{
+  color:#52647a!important;font-size:11.5px!important;font-weight:640!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools button,
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools select{
+  background:#fff!important;color:#415a75!important;border-color:#dbe4ee!important;
+  border-radius:7px!important;min-height:32px!important;font-size:11px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools button:hover:not(:disabled){
+  border-color:#9bb9d7!important;background:#f3f7fc!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-listen-gate{
+  background:#fff!important;border-bottom:1px solid #e8eef5!important;
+  padding-block:9px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-listen-label{
+  color:#536a82!important;font-size:11px!important;font-weight:680!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .wave-scroller{
+  background:#edf5fd!important;border-color:#dce9f6!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .wave-caption{
+  color:#6d8198!important;background:#fafcff!important;
+  border-top:1px solid #e9eff6!important;font-size:10px!important;
+}
+
+/* Primary task controls: separate status, utilities and submit. */
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar{
+  background:#fff!important;border-bottom:1px solid #e4eaf2!important;
+  gap:8px 12px!important;padding:11px 15px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar button{
+  border-radius:8px!important;min-height:33px!important;font-size:11.5px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #play{
+  background:var(--ac-e-primary)!important;color:#fff!important;
+  border-color:var(--ac-e-primary)!important;font-weight:780!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #submit:not(:disabled){
+  background:#274f77!important;color:#fff!important;
+  border-color:#274f77!important;font-weight:790!important;
+  box-shadow:0 2px 5px #21466f14!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #submit:hover:not(:disabled){
+  background:#173e64!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card #save{
+  background:#fff!important;color:#4e6278!important;border:1px solid #d5dfeb!important;
+  box-shadow:none!important;
+}
+/* Keep the linter's red/amber/green state authoritative; never override #issues. */
+
+/* Editing utilities and quality summary: quiet, readable, consistent. */
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .toolbar,
+body.tx-v2-editor.ac-enterprise-mode .v2-quality-strip{
+  background:#fafcff!important;border-bottom:1px solid #e9eef5!important;
+  padding:9px 15px!important;gap:9px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .toolbar button,
+body.tx-v2-editor.ac-enterprise-mode .v2-quality-strip button{
+  border:1px solid #dce5ee!important;background:#fff!important;
+  border-radius:7px!important;color:#4b6179!important;font-size:11px!important;
+  min-height:32px!important;font-weight:680!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-quality-chip,
+body.tx-v2-editor.ac-enterprise-mode .v2-segment-counter{
+  background:#f3f7fb!important;color:#657890!important;
+  border:1px solid #e1e9f2!important;border-radius:7px!important;
+  font-weight:670!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar{
+  background:#fff!important;border-bottom:1px solid #e7edf4!important;
+  min-height:46px!important;padding:8px 15px!important;
+  gap:8px 11px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-title{
+  color:#426687!important;font-weight:800!important;letter-spacing:.065em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar button,
+body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar select{
+  border-radius:7px!important;min-height:30px!important;
+  color:#536880!important;
+}
+
+/* Content is the hero, not the surrounding panels. */
+body.tx-v2-editor.ac-enterprise-mode .v2-caption-panel{
+  background:#fff!important;box-shadow:none!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-caption-heading{
+  background:#fff!important;border-bottom:1px solid #edf1f6!important;
+  padding:11px 17px!important;color:#334963!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-view,
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-stage:not(.ac-lint-segment-error):not(.ac-lint-segment-warning){
+  background:#fff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #v2SlideText{
+  color:#22354c!important;letter-spacing:0!important;
+  line-height:1.95!important;
+  font-family:Inter,"Noto Sans Devanagari",system-ui,sans-serif!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-nav{
+  background:#fbfcff!important;border-bottom:1px solid #e9eef5!important;
+  padding:11px 17px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-status{
+  color:#7b8da0!important;font-weight:760!important;letter-spacing:.08em!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-actions button{
+  border:1px solid #d6e3ef!important;background:#fff!important;
+  color:#2f688f!important;border-radius:8px!important;
+  min-height:34px!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-coming,
+body.tx-v2-editor.ac-enterprise-mode .v2-slide-footer{
+  background:#fcfdff!important;border-color:#e8edf4!important;
+  color:#8191a3!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #v2CaptionFlow{
+  background:#fff!important;color:#283e53!important;
+  line-height:1.95!important;
+  font-family:Inter,"Noto Sans Devanagari",system-ui,sans-serif!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2-caption-piece:not(.ac-lint-has-error):not(.ac-lint-has-warning){
+  border-radius:5px!important;
+}
+
+/* Segment table, reviewer tools, quality and linter: one surface language. */
+body.tx-v2-editor.ac-enterprise-mode .v2-table-wrap{
+  background:#fff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .segment-table th{
+  background:#f6f9fc!important;color:#50647a!important;
+  font-size:10px!important;letter-spacing:.025em!important;
+  border-bottom-color:#e1e8f1!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .segment-table td{
+  border-bottom-color:#edf2f7!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .segment-table tr:hover td{
+  background:rgba(235,243,252,.35);
+}
+body.tx-v2-editor.ac-enterprise-mode #acLintInlineSlot{
+  background:#fbfdff!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #acLintPanel{
+  border-radius:10px!important;border-color:#dfe6f0!important;
+  box-shadow:none!important;
+}
+body.tx-v2-editor.ac-enterprise-mode #v2cbAssist,
+body.tx-v2-editor.ac-enterprise-mode .v2-work-dialog,
+body.tx-v2-editor.ac-enterprise-mode #v2ReviewDetailDialog{
+  border-color:#dce5ee!important;border-radius:14px!important;
+  box-shadow:0 20px 55px #1b36541a!important;
+}
+body.tx-v2-editor.ac-enterprise-mode .v2cb-bottom-dock{
+  border-color:#d9e3ee!important;background:#fff!important;
+  box-shadow:0 -5px 17px #16385b0d!important;
+}
+body.tx-v2-editor.ac-enterprise-mode :is(button,select,input,textarea):focus-visible{
+  outline:2px solid #2c7cc5!important;outline-offset:2px!important;
+}
+
+/* Preserve all controls on tablets and phones; wrap naturally. */
+@media(max-width:1060px){
+  body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{padding-inline:12px!important}
+  body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .v2-pane-head,
+  body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .v2-pane-head{padding:11px 13px!important}
+  body.tx-v2-editor.ac-enterprise-mode .header-actions{gap:5px!important}
+}
+@media(max-width:740px){
+  body.tx-v2-editor #acAppearanceSwitch .ac-appearance-option{
+    min-height:31px!important;height:31px!important;padding:6px 9px!important;
+  }
+  body.tx-v2-editor.ac-enterprise-mode .tx-header.v2-app-header{padding:9px 12px!important;gap:8px!important}
+  body.tx-v2-editor.ac-enterprise-mode .editor-page.v2-workspace{padding:10px 9px 85px!important}
+  body.tx-v2-editor.ac-enterprise-mode .v2-transcript-card .player-bar{padding:9px 10px!important}
+  body.tx-v2-editor.ac-enterprise-mode .v2cb-reading-toolbar{padding:8px 10px!important}
+  body.tx-v2-editor.ac-enterprise-mode .v2-wave-card .editor-tools{padding:8px 10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.tx-v2-editor.ac-enterprise-mode *,
+  body.tx-v2-editor #acAppearanceSwitch *{transition-duration:0s!important}
+}
