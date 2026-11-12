@@ -466,7 +466,13 @@ async function leave(){
   if(!own.data&&!window.confirm('Your recording has not been submitted. Leaving will discard this take. Continue?'))return;
  }
  clearInterval(poll);clearInterval(signalTimer);
- try{if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id})}catch(e){note(fail(e))}
+ try{
+  if(session&&session.state!=='submitted'){
+   const {data:myTrack}=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+   // An actor who submitted must never cancel their partner's active recording.
+   if(!myTrack)await rpc('vs_leave',{p_session:session.id});
+  }
+ }catch(e){note(fail(e))}
  cleanup();
  if(previewUrl)URL.revokeObjectURL(previewUrl);
  previewUrl=null;blob=null;rec=null;session=null;mode='';script=null;view('home');note('Session closed.');
