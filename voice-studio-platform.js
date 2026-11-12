@@ -33,6 +33,12 @@ async function refreshAdmin(){
  for(const s of data||[]){
   const line=document.createElement('article');line.className='vs-stat';line.style.cssText='margin:10px 0;padding:16px;display:block';
   const title=document.createElement('strong');title.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+s.state;line.append(title);
+  const link=document.createElement('a');link.className='btn small';link.style.cssText='margin:6px 9px;text-decoration:none';
+  link.href='/admin/project-lab?project='+P+'&voice_task='+encodeURIComponent(voiceTaskId(s.id))+'#recordings';
+  link.textContent='▶ Open QA audio mixer';
+  line.append(link);
+  const taskCode=document.createElement('div');taskCode.style.cssText='margin:7px 0;font:600 11px ui-monospace,monospace;overflow-wrap:anywhere';
+  taskCode.textContent=voiceTaskId(s.id);line.append(taskCode);
   for(const t of tracks.filter(t=>t.session_id===s.id)){
    const b=document.createElement('button');b.className='btn small';b.textContent='Listen to recording';b.onclick=async()=>{
     const {data,error}=await db.storage.from('voice-studio').createSignedUrl(t.storage_path,120);
