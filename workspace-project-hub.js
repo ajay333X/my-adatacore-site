@@ -23,7 +23,7 @@ function initElements(){
  }
  if(!$('view-project')){
   const section=document.createElement('section');section.id='view-project';section.className='workspace-view';
-  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><section id="acProjectWork" class="ac-project-work" aria-label="Project task controls" aria-live="polite"><div class="ac-project-work-loading">Checking available tasks…</div></section><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
+  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><section id="acProjectWork" class="ac-project-work" aria-label="Project task controls" aria-live="polite"><div class="ac-project-work-loading">Checking available tasks…</div></section><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button><button class="ac-detail-tab" data-project-tab="recordings" role="tab" aria-selected="false" hidden>My recordings</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
   main.appendChild(section);
   section.querySelector('#acProjectBack').addEventListener('click',e=>{e.preventDefault();closeProject()});
   section.querySelector('#acProjectTabs').addEventListener('click',e=>{const b=e.target.closest('[data-project-tab]');if(!b)return;changeTab(b.dataset.projectTab)});
@@ -116,7 +116,7 @@ async function readProjectWork(id){
  if(isSandbox){
   $('acProjectWork').innerHTML='<div class="ac-project-work-main"><div><strong>Practice workspace</strong><p>Use Assignments to open practice tasks.</p></div><a class="btn btn-secondary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
  }
- if(Number(current.id)===94){try{const {data,error}=await client.rpc('vs_can_join',{p_project:Number(id)});if(error)throw error;if(seq===workSeq)showProjectWork({voiceAllowed:data===true})}catch(e){if(seq===workSeq)showProjectWork({voiceAllowed:false},e.message)}return}
+ if(Number(current.id)===94){try{const {data,error}=await client.rpc('vs_can_join',{p_project:Number(id)});if(error)throw error;if(seq===workSeq){showProjectWork({voiceAllowed:data===true});void applyProjectUi(id)}}catch(e){if(seq===workSeq)showProjectWork({voiceAllowed:false},e.message)}return}
  if(current.type!=='transcription'){showProjectWork({});return}
  try{
   const {data,error}=await client.rpc('tx_my_transcription_projects');
@@ -151,18 +151,89 @@ async function startProjectWork(button){
   }
  }finally{workBusy=false;if(button.isConnected){button.disabled=false;button.textContent=original}}
 }
+
+async function applyProjectUi(id){
+ const {data,error}=await client.rpc('project_ui_public',{p_project:id});
+ if(error||!current||Number(current.id)!==Number(id))return;
+ const ui=data&&typeof data==='object'?data:{};
+ const title=$('acProjectTitle'),sub=$('acProjectSub'),section=$('view-project');
+ if(!section)return;
+ title.textContent=ui.headline||current.name||'Project';
+ sub.textContent=ui.subtitle||current.description||'Project instructions, resources and feedback.';
+ const coverId='acProjectUiCover';let cover=$(coverId);
+ if(!cover){cover=document.createElement('div');cover.id=coverId;cover.style.cssText='display:none;width:100%;max-height:175px;overflow:hidden;border-radius:14px;margin:13px 0';section.querySelector('.ac-project-head')?.before(cover)}
+ cover.replaceChildren();
+ if(ui.image_url&&/^https:\/\/[^ <>"']+$/i.test(ui.image_url)){
+  const image=document.createElement('img');image.src=ui.image_url;image.alt='Project cover';image.style.cssText='width:100%;max-height:175px;object-fit:cover;display:block';cover.append(image);cover.style.display='block';
+ }else cover.style.display='none';
+ if(ui.accent&&/^#[0-9a-f]{6}$/i.test(ui.accent))section.style.setProperty('--brand',ui.accent);
+ else section.style.removeProperty('--brand');
+ const code=$('acProjectPublicCode');if(code)code.textContent=(current.project_code||'')+(ui.badge?' · '+ui.badge:'');
+ const action=section.querySelector('#acProjectWork .btn-primary');
+ if(action&&ui.button_label)action.textContent=ui.button_label+' →';
+}
+
+
+async function loadMyRecordings(){
+ const host=$('acVoiceRecordingItems');if(!host||!current||Number(current.id)!==94)return;
+ const {data:sessionRows,error}=await client.from('vs_sessions').select('id,state,mode,script_id,created_at').eq('project_id',94).eq('state','submitted').order('created_at',{ascending:false}).limit(35);
+ if(error){host.textContent='Unable to load recordings: '+error.message;return}
+ if(!host.isConnected||tab!=='recordings')return;
+ if(!sessionRows?.length){host.textContent='You have no submitted recordings yet. Your recordings will appear here after submitting a task.';return}
+ const ids=sessionRows.map(s=>s.id);
+ const [tracks,reviews,scripts]=await Promise.all([
+  client.from('vs_tracks').select('session_id,storage_path,duration_seconds,submitted_at,transcript').in('session_id',ids),
+  client.from('vs_reviews').select('session_id,verdict,quality_score,feedback').in('session_id',ids),
+  client.from('vs_scripts').select('id,title').eq('project_id',94)
+ ]);
+ if(tracks.error||reviews.error||scripts.error){host.textContent='Could not load recording details. Please refresh this project.';return}
+ if(!host.isConnected||tab!=='recordings')return;
+ host.replaceChildren();
+ for(const row of sessionRows){
+  const items=(tracks.data||[]).filter(x=>x.session_id===row.id);if(!items.length)continue;
+  const article=document.createElement('article');article.className='ac-rule-card';article.style.cssText='padding:16px;margin-bottom:12px';
+  const title=document.createElement('strong');title.textContent=(scripts.data||[]).find(x=>x.id===row.script_id)?.title||'Hindi voice recording';
+  const meta=document.createElement('p');meta.textContent=date(row.created_at)+' · '+items.length+' audio track(s) · Submitted';
+  article.append(title,meta);
+  for(const item of items){
+   const player=document.createElement('audio');player.controls=true;player.preload='none';player.style.cssText='width:100%;max-width:600px;display:none;margin-top:10px';
+   const play=document.createElement('button');play.className='btn btn-secondary';play.type='button';play.textContent='▶ Listen to my recording';
+   play.onclick=async()=>{
+    play.disabled=true;
+    try{const {data,error}=await client.storage.from('voice-studio').createSignedUrl(item.storage_path,180);if(error)throw error;player.src=data.signedUrl;player.style.display='block';await player.play().catch(()=>{})}
+    catch(e){play.textContent='Playback failed: '+e.message}finally{play.disabled=false}
+   };
+   const duration=document.createElement('p');duration.textContent='Duration: '+Math.floor(item.duration_seconds/60)+'m '+item.duration_seconds%60+'s';
+   article.append(play,player,duration);
+   if(item.transcript){
+    const d=document.createElement('details');const heading=document.createElement('summary');heading.textContent='Automatic Hindi transcript (draft)';
+    const text=document.createElement('p');text.lang='hi';text.style.whiteSpace='pre-wrap';text.textContent=item.transcript;
+    d.append(heading,text);article.append(d);
+   }
+  }
+  const review=(reviews.data||[]).find(x=>x.session_id===row.id);
+  const status=document.createElement('p');status.textContent=review?'QA: '+review.verdict.replaceAll('_',' ')+' · '+review.quality_score+'/5':'QA pending';
+  article.append(status);
+  if(review?.feedback){const p=document.createElement('p');p.textContent=review.feedback;article.append(p)}
+  host.append(article);
+ }
+ if(!host.children.length)host.textContent='No submitted audio tracks were found for your account.';
+}
+
 function renderProjects(){
  const host=$('acHomeProjectCards');if(!host)return;
  host.className=projects.length?'ac-project-grid':'ac-home-empty';
  host.innerHTML=projects.length?projects.map(p=>
- '<a class="ac-project-card" href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span>Project #'+Number(p.id)+'</span><strong style="color:var(--brand);font-size:11px">View project →</strong></div></a>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
+ '<a class="ac-project-card" href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span>'+esc(p.project_code||'Project')+'</span><strong style="color:var(--brand);font-size:11px">View project →</strong></div></a>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
 }
 async function readList(){
  try{
   let result;
   if(isSandbox){const {data,error}=await client.rpc('admin_sandbox_workspace',{p_session_id:sandboxSession});if(error)throw error;result=(data?.sandbox?.projects||[]).map(p=>({...p,lifecycle:'active'}))}
   else{const {data,error}=await client.rpc('contributor_my_project_hubs');if(error)throw error;result=data}
-  projects=Array.isArray(result)?result:[];renderProjects();
+  projects=Array.isArray(result)?result:[];
+  if(projects.length){const codes=await client.from('project_lab').select('id,project_code').in('id',projects.map(p=>Number(p.id)).filter(Number.isFinite));if(!codes.error&&Array.isArray(codes.data)){const lookup=new Map(codes.data.map(row=>[Number(row.id),row.project_code]));projects=projects.map(p=>({...p,project_code:lookup.get(Number(p.id))||''}));}}
+  renderProjects();
   const query=new URLSearchParams(location.search),p=Number(query.get('project')||0);
   if(p&&projects.some(x=>Number(x.id)===p))openProject(p,false);
  }catch(error){const host=$('acHomeProjectCards');if(host){host.className='ac-home-empty';host.textContent='Unable to load assigned projects: '+error.message}}
@@ -185,9 +256,12 @@ function openProject(id,updateUrl=true){
  document.querySelectorAll('[data-view-link]').forEach(x=>x.classList.toggle('active',x.dataset.viewLink==='overview'));
  $('acProjectTitle').textContent=project.name||'Project';
  $('acProjectSub').textContent=project.description||'Project instructions, resources and feedback.';
+ let codeLabel=$('acProjectPublicCode');if(!codeLabel){codeLabel=document.createElement('span');codeLabel.id='acProjectPublicCode';codeLabel.style.cssText='font:700 11px ui-monospace,monospace;letter-spacing:.06em;color:var(--muted);margin:4px 0 0;display:inline-block';$('acProjectSub').after(codeLabel)}codeLabel.textContent=project.project_code||'';
+ const recordingsTab=document.querySelector('[data-project-tab="recordings"]');if(recordingsTab)recordingsTab.hidden=Number(project.id)!==94;
+ void applyProjectUi(project.id);
  $('acProjectRate').hidden=true;
  setHeader('Project details','Instructions, library, feedback and announcements');
- changeTab('instructions');
+ changeTab(Number(project.id)===94&&new URLSearchParams(location.search).get('tab')==='recordings'?'recordings':'instructions');
  if(updateUrl){const u=new URL(location.href);u.searchParams.set('project',String(project.id));u.hash='';history.pushState({project:project.id},'',u.pathname+u.search)}
  readProject(project.id);
  readProjectWork(project.id);
@@ -200,12 +274,12 @@ async function readProject(id){
  const {data,error}=await client.rpc('contributor_project_hub',{p_project_id:id});
  if(error)throw error;if(seq!==requestSeq||Number(current?.id)!==Number(id))return;
  detail=data||{};if(detail.project?.hourly_rate!=null){const rate=$('acProjectRate');rate.textContent=(detail.project.currency==='USD'?'$':String(detail.project.currency||'')+' ')+Number(detail.project.hourly_rate).toFixed(2)+'/audio hour';rate.hidden=false}
- renderTab();
+ renderTab();void applyProjectUi(id);
  }catch(error){if(seq!==requestSeq)return;$('acProjectContent').innerHTML='<div class="ac-tab-empty">Unable to load project information: '+esc(error.message)+'</div>'}
 }
 function hostCloseDetail(){document.querySelectorAll('.ac-feedback-detail-row').forEach(el=>el.remove())}
 function changeTab(next){
- if(!['instructions','library','feedback','announcements'].includes(next))return;
+ if(!['instructions','library','feedback','announcements','recordings'].includes(next)||next==='recordings'&&Number(current?.id)!==94)return;
  tab=next;
  document.querySelectorAll('[data-project-tab]').forEach(b=>{const active=b.dataset.projectTab===tab;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});
  renderTab();
@@ -213,6 +287,7 @@ function changeTab(next){
 const empty=(title,desc)=>'<div class="ac-tab-empty"><strong>'+esc(title)+'</strong><div style="margin-top:8px">'+esc(desc)+'</div></div>';
 function renderTab(){
  const host=$('acProjectContent');if(!host)return;
+ if(tab==='recordings'&&Number(current?.id)===94){host.innerHTML='<h3>My recordings</h3><p class="ac-panel-sub">Listen to your submitted audio and see any automatic transcript and reviewer feedback.</p><div id="acVoiceRecordingItems" class="ac-instructions-list">Loading voice recordings…</div>';void loadMyRecordings();return}
  if(!detail){host.innerHTML='<div class="ac-detail-loading">Loading project information…</div>';return}
  const h={instructions:['Instructions','Read the published requirements before starting work.'],library:['Library','Reference materials and published project guides.'],feedback:['Feedback received','Select a row to inspect reviewer feedback and transcript changes.'],announcements:['Announcements','Updates shared for this project.']}[tab];
  let body='<h3>'+h[0]+'</h3><p class="ac-panel-sub">'+h[1]+'</p>';

@@ -5,7 +5,7 @@ if(!modal)return;
 const title=$('vsDialogTitle'),body=$('vsDialogText'),tag=$('vsDialogLabel'),
  meta=$('vsDialogMeta'),warningBox=$('vsDialogWarnings'),status=$('vsDialogStatus'),
  primary=$('vsDialogPrimary'),cancel=$('vsDialogCancel'),symbol=$('vsDialogEmblem');
-const projectUrl='/workspace?project=94';
+const projectUrl='/workspace?project=94&tab=recordings';
 let state='closed',activeCallback=null,redirectTimer=0;
 const format=s=>String(Math.floor((Number(s)||0)/60)).padStart(2,'0')+':'+String(Math.floor((Number(s)||0)%60)).padStart(2,'0');
 function goProject(){
@@ -37,7 +37,7 @@ modal.addEventListener('cancel',event=>{
 function success(){
  reset('success','ADATACORE · SUBMISSION COMPLETE','Your audio has been submitted!',
    'Your recording was successfully submitted. Returning you to the Voice Studio project dashboard.');
- meta.textContent='✓ Audio submission complete · Project #94';
+ meta.textContent='✓ Audio submission complete · Voice Studio';
  cancel.hidden=true;primary.textContent='Go to project dashboard';
  primary.onclick=goProject;
  status.textContent='Redirecting to the project dashboard…';
