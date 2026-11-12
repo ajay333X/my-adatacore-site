@@ -12,7 +12,7 @@
 <script>
 (async()=>{
   try{
-    const response=await fetch('/admin-secure?finder=global-v6',{cache:'no-store'});
+    const response=await fetch('/admin-secure?finder=global-v7',{cache:'no-store'});
     if(!response.ok)throw new Error('Admin console returned '+response.status);
     let html=await response.text();
     let theme='light';try{const a=localStorage.getItem('adatacore-theme'),b=localStorage.getItem('adatacore-admin-theme');theme=(a==='dark'||a==='light')?a:((b==='dark'||b==='light')?b:'light')}catch(_){ }
