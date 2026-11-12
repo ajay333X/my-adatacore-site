@@ -138,6 +138,10 @@
       "destination": "/coreforge"
     },
     {
+      "source": "/admin/coreforge-chatbot",
+      "destination": "/coreforge-chatbot"
+    },
+    {
       "source": "/admin/project-builder",
       "destination": "/project-builder"
     },
