@@ -1,0 +1,38 @@
+name: Audio Lab 2 release verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'audio-lab-2.html'
+      - 'audio-lab-2.js'
+      - 'audio-lab-2.css'
+      - 'voice-studio-qa-player.js'
+      - 'vercel.json'
+      - '.github/workflows/audio-lab-2-smoke.yml'
+  workflow_dispatch:
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Audio Lab 2 source and route
+        run: |
+          node --check audio-lab-2.js
+          node --check voice-studio-qa-player.js
+          node -e "const assert=require('assert');const fs=require('fs');const config=JSON.parse(fs.readFileSync('vercel.json'));assert(config.rewrites.some(r=>r.source==='/admin/audio-lab-2'&&r.destination==='/audio-lab-2'));assert(fs.readFileSync('audio-lab-2.html','utf8').includes('/audio-lab-2.js'));"
+  live-route:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Audio Lab 2 is reachable on production
+        run: |
+          set -euo pipefail
+          base='https://www.adatacore.com'
+          for path in /admin/audio-lab-2 /audio-lab-2.js /audio-lab-2.css /voice-studio-qa-player.js; do
+            curl --fail --silent --show-error --location --retry 3 --retry-delay 2 --max-time 25 "${base}${path}" >/dev/null
+          done
+          page="$(curl --fail --silent --show-error --location "${base}/admin/audio-lab-2")"
+          grep -Fq 'Audio Lab 2 — Adatacore' <<<"$page"
+          grep -Fq 'Script library' <<<"$page"
