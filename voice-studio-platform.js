@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K);
 const $=s=>document.getElementById(s),fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
-let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false;
+let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false,lastLobbyBeat=0,duoRefreshBusy=false;
 function note(t){$('vsAlert').textContent=t||''}
 function fail(e){return String(e?.message||e||'Unknown error').replaceAll('_',' ')}
 async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
@@ -266,28 +266,54 @@ function setupDuo(){
  let host=document.querySelector('#duo .card.lobby');
  host.innerHTML='<div class="orb">♫</div><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus">Waiting for a match. Numbers are drawn from the live queue.</p><div class="stat"><span><b id="vsWaiting">—</b>Waiting actors</span><span><b id="vsCountdown">01:00</b>Conversation countdown</span><span><b id="vsClock">00:00</b>Recorded</span></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><audio id="vsRemote" autoplay controls playsinline hidden style="width:100%"></audio><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop & submit my recording</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">No names or emails are shown to your partner. Direct WebRTC audio uses free STUN discovery when available. Partners may be able to see network IP addresses; restrictive networks may require an optional TURN relay. No paid relay is required to try duo mode.</p>';
  $('vsConsent').onclick=()=>void consent();$('vsStart').onclick=()=>void begin();$('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};$('vsRetry').onclick=()=>save().catch(e=>roomStatus(fail(e)));$('vsLeave').onclick=()=>void leave();
- signalId=0;offerSent=false;connected=false;iceQueue=[];pc=null;rec=null;
+ signalId=0;offerSent=false;connected=false;iceQueue=[];pc=null;rec=null;lastLobbyBeat=0;
 }
 async function duoUpdate(){
- if(mode!=='duo'||!session)return;
- let {data,error}=await db.from('vs_sessions').select('*').eq('id',session.id).single();if(error)throw error;session=data;
- $('vsWaiting').textContent=String(await rpc('vs_waiting',{p_project:P}));
- if(['cancelled','expired'].includes(session.state)){clearInterval(poll);roomStatus('This session ended. Return to the studio to start again.');return}
- if(session.state==='waiting'){roomStatus('Waiting for another voice actor to join this project.');return}
- $('vsRoomTitle').textContent=session.state==='submitted'?'Conversation completed':'Matched with Voice Actor '+(session.actor_a===me.id?'B':'A');
- $('vsDuoScript').textContent=script.body;$('vsDuoScript').hidden=false;
- let accepted=session.actor_a===me.id?session.consent_a:session.consent_b;
- $('vsConsent').hidden=accepted||!['matched','rehearsal'].includes(session.state);
- if(session.state==='matched')roomStatus('Match found. Both participants must accept before audio connects.');
- if(session.state==='rehearsal'){
- if(session.consent_a&&session.consent_b&&!pc)await startPeer();
- let left=Math.max(0,60-Math.floor((Date.now()-new Date(session.rehearsal_started_at).getTime())/1000));$('vsCountdown').textContent=fmt(left);
- $('vsStart').hidden=session.actor_a!==me.id;$('vsStart').disabled=left>0||!connected;
- roomStatus(left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A can start recording.');
- }
- if(session.state==='recording'&&!rec&&!blob){$('vsStart').hidden=true;await beginRecording()}
- if(session.state==='submitted'){clearInterval(poll);roomStatus('Both actors submitted their recordings.');$('vsStop').hidden=true}
- if(pc)await signals();
+ if(mode!=='duo'||!session||duoRefreshBusy)return;
+ duoRefreshBusy=true;
+ try{
+  // Heartbeat means a waiting browser tab remains matchable, even after five minutes.
+  if(session.state==='waiting'&&Date.now()-lastLobbyBeat>10000){
+   lastLobbyBeat=Date.now();
+   await rpc('vs_wait_heartbeat',{p_session:session.id});
+  }
+  const {data,error}=await db.from('vs_sessions').select('*').eq('id',session.id).single();
+  if(error)throw error;
+  session=data;
+  $('vsWaiting').textContent=String(await rpc('vs_waiting',{p_project:P}));
+  if(session.state==='expired'){
+   // Recover automatically when a tab wakes up after its queue lease expired.
+   session=await rpc('vs_enter',{p_project:P,p_mode:'duo'});
+   if(session.mode!=='duo')throw Error('An unfinished Solo recording is blocking Duo. Finish or leave it first.');
+   script=scripts.find(x=>x.id===session.script_id);
+   if(!script)throw Error('The matched Hindi script is unavailable');
+   setupDuo();
+   roomStatus('Previous waiting session expired. You are back in the matching queue.');
+   return;
+  }
+  if(session.state==='cancelled'){clearInterval(poll);roomStatus('This session was cancelled. Return to the studio to start again.');return;}
+  if(session.state==='waiting'){
+   $('vsRoomTitle').textContent='Finding another voice actor…';
+   roomStatus('Searching for another approved participant. Keep this page open; matching refreshes automatically.');
+   return;
+  }
+  $('vsRoomTitle').textContent=session.state==='submitted'?'Conversation completed':'Matched with Voice Actor '+(session.actor_a===me.id?'B':'A');
+  $('vsDuoScript').textContent=script.body;$('vsDuoScript').hidden=false;
+  const accepted=session.actor_a===me.id?session.consent_a:session.consent_b;
+  $('vsConsent').hidden=accepted||!['matched','rehearsal'].includes(session.state);
+  if(session.state==='matched')roomStatus('Match found. Both participants must accept before audio connects.');
+  if(session.state==='rehearsal'){
+   if(session.consent_a&&session.consent_b&&!pc)await startPeer();
+   const left=Math.max(0,60-Math.floor((Date.now()-new Date(session.rehearsal_started_at).getTime())/1000));
+   $('vsCountdown').textContent=fmt(left);
+   $('vsStart').hidden=session.actor_a!==me.id;$('vsStart').disabled=left>0||!connected;
+   roomStatus(left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A can start recording.');
+  }
+  if(session.state==='recording'&&!rec&&!blob){$('vsStart').hidden=true;await beginRecording()}
+  if(session.state==='submitted'){clearInterval(poll);roomStatus('Both actors submitted their recordings.');$('vsStop').hidden=true}
+  if(pc)await signals();
+ }catch(error){roomStatus('Unable to refresh matching: '+fail(error));}
+ finally{duoRefreshBusy=false}
 }
 async function consent(){try{await mic();session=await rpc('vs_consent',{p_session:session.id});$('vsConsent').hidden=true;await duoUpdate()}catch(e){roomStatus(fail(e));$('vsConsent').disabled=false}}
 async function signal(kind,payload){const {error}=await db.from('vs_signals').insert({session_id:session.id,sender:me.id,kind,payload});if(error)throw error}
