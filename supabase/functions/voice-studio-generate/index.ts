@@ -68,6 +68,19 @@ Deno.serve(async(req:Request)=>{
  if(rows.length===0)return out({error:"Provider returned no valid scripts; please retry"},502);
  const {data,error}=await db.from("vs_scripts").insert(rows).select("id,title");
  if(error)return out({error:"Failed saving scripts",detail:error.message},500);
- return out({created:data?.length||0,scripts:data,provider:"Groq",model:"openai/gpt-oss-120b"});
+ // Persist the exact creation settings, prompt and returned JSON for inspection
+ // in Audio Lab 2. Never store the secret provider credential in this audit log.
+ let logWarning="";
+ for(const created of data||[]){
+  const original=(parsed.scripts||[]).find((item:any)=>String(item.title||scenario).slice(0,120)===created.title)||parsed.scripts?.[0]||null;
+  const {error:historyError}=await db.from("vs_script_generations").insert({
+   project_id:project,script_id:created.id,requested_by:user.id,
+   provider:"Groq",model:"openai/gpt-oss-120b",
+   request_json:{count:n,mode,language,scenario,emotions,duration_seconds:d},
+   prompt_text:prompt,output_json:{scripts:original?[original]:[]}
+  });
+  if(historyError)logWarning="Script created, but generation history was not saved.";
+ }
+ return out({created:data?.length||0,scripts:data,provider:"Groq",model:"openai/gpt-oss-120b",warning:logWarning});
  }catch(e){return out({error:"Script generation failed",detail:String(e instanceof Error?e.message:e).slice(0,180)},500)}
 });
