@@ -118,7 +118,9 @@ async function init(){
  const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;admin=await rpc('vs_is_admin',{});
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
- if(admin){const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
+ if(admin){
+  const qaLink=document.createElement('a');qaLink.className='btn small';qaLink.href='/admin/project-lab?project=94#recordings';qaLink.textContent='Central QA · Voice';qaLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(qaLink);
+  const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
  $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=false;$('openDuo').onclick=()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
  document.querySelector('#solo [data-back]').onclick=()=>void leaveSolo();
  if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling uses a direct browser connection where supported; restrictive networks may require a relay.');
@@ -141,6 +143,9 @@ async function enter(which){
  $('emotionMeta').textContent=script.emotion;
  $('durationMeta').textContent=Math.floor(script.duration_seconds/60)+' min'+(script.duration_seconds%60?' '+script.duration_seconds%60+' sec':'');
  $('scriptPage').textContent='Hindi · solo';
+ let soloTask=$('vsSoloTaskId');
+ if(!soloTask){soloTask=document.createElement('div');soloTask.id='vsSoloTaskId';soloTask.className='vs-duo-task-id';soloTask.style.margin='12px 0';$('scriptPage').after(soloTask)}
+ soloTask.textContent='Recording task ID · '+voiceTaskId(session.id);
  $('recordTime').textContent='00:00';$('recordStatus').textContent='Ready when you are';
  $('startRecord').disabled=false;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
  $('saveRecord').textContent='Submit audio →';
@@ -182,7 +187,7 @@ async function save(){
   duoTrackStatus('Submitted to QA',session.state==='submitted'?'Submitted':'Waiting for partner');
   roomStatus(session.state==='submitted'?'Both tracks received. Task '+voiceTaskId(session.id)+' is ready for Central QA.':'Your audio was submitted successfully. Waiting for partner to submit their track. Task '+voiceTaskId(session.id));
  }
- note('Audio stored in the private Voice Studio bucket.');if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ note('Audio submitted securely. Recording task ID: '+voiceTaskId(session.id));if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
  }finally{
    uploading=false;
    if(mode==='duo'&&session?.state!=='submitted'&&blob){
