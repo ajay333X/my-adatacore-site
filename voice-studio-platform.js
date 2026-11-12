@@ -1,11 +1,22 @@
 (()=>{'use strict';
 const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K);
 const $=s=>document.getElementById(s),fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
-let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false,lastLobbyBeat=0,duoRefreshBusy=false;
+let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false,lastLobbyBeat=0,duoRefreshBusy=false,returningToDashboard=false;
 function note(t){$('vsAlert').textContent=t||''}
 function fail(e){return String(e?.message||e||'Unknown error').replaceAll('_',' ')}
 async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
 function view(s){document.querySelectorAll('main > .step').forEach(e=>e.classList.toggle('active',e.id===s));window.scrollTo(0,0)}
+function returnToProjectDashboard(){
+ if(returningToDashboard)return;
+ returningToDashboard=true;
+ // Preserve an authorized admin contributor-view context when navigating back.
+ const impersonation=new URLSearchParams(location.search).get('impersonation');
+ const params=new URLSearchParams({project:String(P)});
+ if(impersonation)params.set('impersonation',impersonation);
+ note('Recording submitted successfully. Returning to your project dashboard.');
+ cleanup();
+ location.replace('/workspace?'+params.toString());
+}
 function cleanup(){clearInterval(timer);clearInterval(poll);clearInterval(signalTimer);if(pc)pc.close();pc=null;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null}
 async function mic(){if(!stream)stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});return stream}
 function audioType(){return ['audio/webm','audio/mp4','audio/ogg'].find(t=>MediaRecorder.isTypeSupported(t))||'audio/webm'}
@@ -169,6 +180,7 @@ function record(onDone){
 }
 async function save(){
  if(uploading||!blob)return;
+ let redirectAfterSave=false;
  if(mode==='duo'&&rec?.state==='recording'){roomStatus('Stop recording before submitting your track.');return}
  uploading=true;
  if(mode==='duo'){$('vsSubmit').disabled=true;$('vsRetry').disabled=true;roomStatus('Uploading your recording securely…')}
@@ -186,12 +198,14 @@ async function save(){
    catch(e){$('soloStatus').textContent='Audio submitted. Automatic transcript could not be saved: '+fail(e)}
   }
   window.VoiceStudioExtras?.submitted();
+  redirectAfterSave=true;
  }
  else{
   $('vsSubmit').hidden=true;$('vsRetry').hidden=true;$('vsStop').hidden=true;
   $('vsDuoPreview').hidden=true;
   duoTrackStatus('Submitted to QA',session.state==='submitted'?'Submitted':'Waiting for partner');
-  roomStatus(session.state==='submitted'?'Both tracks received. Task '+voiceTaskId(session.id)+' is ready for Central QA.':'Your audio was submitted successfully. Waiting for partner to submit their track. Task '+voiceTaskId(session.id));
+  roomStatus(session.state==='submitted'?'Both tracks received. Task '+voiceTaskId(session.id)+' is ready for Central QA. Returning to your dashboard.':'Your audio was submitted successfully. Waiting for partner to submit their track. Task '+voiceTaskId(session.id));
+  redirectAfterSave=session.state==='submitted';
  }
  note('Audio submitted securely. Recording task ID: '+voiceTaskId(session.id));if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
  }finally{
@@ -201,6 +215,7 @@ async function save(){
     if(!ownTrack.data){$('vsSubmit').disabled=false;$('vsRetry').disabled=false;$('vsRetry').hidden=false;}
    }
   }
+ if(redirectAfterSave)returnToProjectDashboard();
 }
 function resetPreview(){
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;blob=null;rec=null;secs=0;
@@ -431,7 +446,12 @@ async function duoUpdate(){
   if(session.state==='submitted')duoStage(5,'Recording task completed · ready for QA');
   if(session.state==='submitted'){
    clearInterval(poll);$('vsStop').hidden=true;$('vsSubmit').hidden=true;
-   roomStatus('Both recordings received. Task '+voiceTaskId(session.id)+' is ready in Central QA.');
+   roomStatus('Both recordings received. Task '+voiceTaskId(session.id)+' is ready in Central QA. Returning to project dashboard.');
+   // Only redirect an actor who actually submitted a track. Never redirect a
+   // participant with an unsent recording; doing so could discard their audio.
+   if(!uploading&&!tracksError&&(submittedTracks||[]).some(t=>t.actor_id===me.id)){
+    returnToProjectDashboard();return;
+   }
   }
   if(pc)await signals();
  }catch(error){roomStatus('Unable to refresh matching: '+fail(error));}
