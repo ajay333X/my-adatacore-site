@@ -115,7 +115,7 @@ async function enter(which){
  $('scriptPage').textContent='Hindi · solo';
  $('recordTime').textContent='00:00';$('recordStatus').textContent='Ready when you are';
  $('startRecord').disabled=false;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
- $('saveRecord').textContent='Submit recording →';
+ $('saveRecord').textContent='Submit audio →';
  $('playback').hidden=true;$('playback').removeAttribute('src');$('soloStatus').textContent='';
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;window.VoiceStudioExtras?.reset();window.VoiceStudioExtras?.setDuration(script.duration_seconds);setupSolo();
 }
@@ -155,10 +155,14 @@ function resetPreview(){
  $('startRecord').disabled=false;$('stopRecord').disabled=true;$('resetRecord').disabled=true;$('saveRecord').disabled=true;
  $('recordStatus').textContent='Ready for a new take.';$('soloStatus').textContent='Your previous take has been discarded; nothing was uploaded.';window.VoiceStudioExtras?.reset();
 }
-async function leaveSolo(){
+async function leaveSolo(skipConfirm=false){
  if(uploading){note('The recording is uploading. Please complete the submission before leaving.');return}
  if(rec?.state==='recording'){note('Stop recording before leaving the studio.');return}
- if(blob&&!window.confirm('Discard the unsent recording and leave the session?'))return;
+ if(blob&&!skipConfirm){
+  if(!window.VoiceStudioSubmitDialog){note('Submission controls are unavailable. Please reload the studio.');return}
+  window.VoiceStudioSubmitDialog.showDiscard({seconds:secs,onDiscard:()=>leaveSolo(true)});
+  return;
+ }
  try{
   if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id});
  }catch(e){note('Could not close session: '+fail(e));return}
@@ -195,19 +199,38 @@ function setupSolo(){
  };
  $('stopRecord').onclick=()=>{if(rec?.state==='recording')rec.stop()};
  $('resetRecord').onclick=()=>{if(!uploading)resetPreview()};
- $('saveRecord').onclick=async()=>{
+ $('saveRecord').onclick=()=>{
   if(uploading||!blob||session?.state==='submitted')return;
-  const q=window.VoiceStudioExtras?.quality();
-  if(q){
-   const warnings=[];
-   if(secs<Math.min(35,script.duration_seconds*.55))warnings.push('This recording is much shorter than the assigned duration.');
-   if(q.clipping)warnings.push('Your microphone level was very high at times; audio may be distorted.');
-   if(q.mostlyQuiet)warnings.push('Much of the recording appears very quiet.');
-   if(warnings.length&&!window.confirm(warnings.join('\n')+'\n\nSubmit anyway?'))return;
-  }
-  $('saveRecord').disabled=true;$('resetRecord').disabled=true;$('recordStatus').textContent='Submitting encrypted connection to private project storage…';
-  try{await save();$('soloStatus').textContent='Submission complete. An administrator can review your audio.';$('startRecord').disabled=true;$('resetRecord').disabled=true;void loadMine()}
-  catch(e){note('Secure upload failed: '+fail(e));$('recordStatus').textContent='Upload failed — your take is still available to retry.';$('saveRecord').disabled=false;$('resetRecord').disabled=false}
+  const ui=window.VoiceStudioSubmitDialog;
+  if(!ui){note('Unable to open the submission confirmation. Please reload Voice Studio.');return}
+  const q=window.VoiceStudioExtras?.quality(),warnings=[];
+  if(secs<Math.min(35,script.duration_seconds*.55))warnings.push('This take is shorter than the assigned duration.');
+  if(q?.clipping)warnings.push('Your microphone level may have distorted parts of this recording.');
+  if(q?.mostlyQuiet)warnings.push('Some sections of the recording appear unusually quiet.');
+  ui.showSubmit({
+   seconds:secs,
+   transcriptIncluded:Boolean(window.VoiceStudioExtras?.transcript()),
+   warnings,
+   onSubmit:async()=>{
+    if(!blob||!session||session.state==='submitted')throw Error('No recording is available to submit.');
+    $('saveRecord').disabled=true;$('resetRecord').disabled=true;
+    $('recordStatus').textContent='Submitting your audio securely…';
+    try{
+     await save();
+     $('soloStatus').textContent='Your audio has been submitted successfully.';
+     $('startRecord').disabled=true;$('resetRecord').disabled=true;
+    }catch(error){
+     if(session?.state==='submitted'){
+      $('soloStatus').textContent='Your audio has been submitted successfully.';
+      return;
+     }
+     $('recordStatus').textContent='Upload failed — please try submitting again.';
+     $('soloStatus').textContent='Your recording is still available to retry.';
+     $('saveRecord').disabled=false;$('resetRecord').disabled=false;
+     throw error;
+    }
+   }
+  });
  };
 }
 function roomStatus(t){if($('vsRoomStatus'))$('vsRoomStatus').textContent=t}
