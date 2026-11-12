@@ -30,3 +30,10 @@
 #duo .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-top:16px}
 #duo .actions button{margin:0}
 @media(max-width:720px){.vs-duo-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.vs-duo-tracks{grid-template-columns:1fr}.vs-duo-task-id{min-width:0;width:100%}}
+
+/* Recorded consent is a separate action from initial microphone access. */
+#vsRecordingApproval.vs-approval{padding:16px;margin:14px 0;border:1px solid #bddbd2;background:#edf8f4;border-radius:14px;max-width:100%}
+#vsRecordingApproval.vs-approval strong{display:block;font-size:14px;color:#175c4c}
+#vsRecordingApproval.vs-approval p{font-size:12px;color:#355e56;margin:7px 0 12px;line-height:1.55}
+#vsRecordingApproval .actions{margin-top:8px}
+#vsFlagTask{border-color:#d9c6aa;color:#87602b}
