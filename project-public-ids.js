@@ -49,7 +49,7 @@ function flush(){
 }
 const style=document.createElement('style');
 style.id='ac-project-code-design';
-style.textContent='.ac-project-code-tag{display:inline-block;max-width:100%;font:700 10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.005em;overflow-wrap:anywhere;color:#366c72;background:#eaf5f3;border:1px solid #d4e8e5;border-radius:8px;padding:5px 9px;user-select:all}' +
+style.textContent='.ac-project-code-tag{display:inline-block;max-width:100%;font:700 10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.005em;overflow-wrap:anywhere;color:#366c72;background:#eaf5f3;text-transform:none!important;border:1px solid #d4e8e5;border-radius:8px;padding:5px 9px;user-select:all}' +
 '.project-stock-meta,.lab-sub,#topSub{overflow-wrap:anywhere}' +
 '#acProjectPublicCode{font-variant-numeric:tabular-nums}' +
 '.ac-ui-code{overflow-wrap:anywhere;letter-spacing:.015em}';

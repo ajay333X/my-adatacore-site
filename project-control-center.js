@@ -124,7 +124,7 @@ async function refresh(){
  }catch(e){error(e)}
 }
 function contentHead(section,description,buttonText,buttonAction){
- return '<div class="ac-pcc-heading"><div><div class="eyebrow">Project · '+(projectCode||'—')+' / Content</div><h1>'+section+'</h1><p>'+description+'</p></div>'+
+ return '<div class="ac-pcc-heading"><div><div class="eyebrow">Project · <span class="ac-project-code-tag" style="text-transform:none;letter-spacing:0">'+(projectCode||'—')+'</span> / Content</div><h1>'+section+'</h1><p>'+description+'</p></div>'+
   (canEdit()?'<div class="ac-pcc-actions"><button class="btn btn-secondary" type="button" data-pcc-action="'+buttonAction+'">'+buttonText+'</button></div>':'')+'</div>';
 }
 const actions=(kind,item)=>{

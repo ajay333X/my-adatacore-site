@@ -9,7 +9,9 @@ function displayCode(code){
   chip.replaceChildren(dot,document.createTextNode('Voice Studio · '+code));
  });
  const eyebrow=document.querySelector('.vs-welcome .eyebrow');
- if(eyebrow)eyebrow.textContent='ADATACORE · '+code;
+ if(eyebrow){eyebrow.textContent='ADATACORE · '+code;eyebrow.style.textTransform='none';eyebrow.style.letterSpacing='.035em'}
+ const sub=document.getElementById('vsPublicCodeHead');
+ if(sub){sub.textContent=code+' · Hindi voice studio';sub.style.textTransform='none';sub.style.letterSpacing='.02em'}
  for(const node of [document.querySelector('#vsAdmin .eyebrow'),document.getElementById('vsAlert')]){
   if(!node)continue;
   const rewrite=()=>{const before=node.textContent||'';if(before.includes('PROJECT #94')||before.includes('Project #94'))node.textContent=before.replaceAll('PROJECT #94',code).replaceAll('Project #94',code)};
