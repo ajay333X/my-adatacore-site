@@ -20,22 +20,130 @@ h1{font-size:clamp(36px,5vw,62px);line-height:1.08;letter-spacing:-.06em;margin:
 @media(max-width:800px){.hero,.grid,.panel-grid{grid-template-columns:1fr}.hero-visual{min-height:185px}main{padding:24px 16px 58px}.card{padding:19px}header{padding:0 16px}.crumb{display:none}h1{font-size:39px}.hero{gap:16px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<style id="vs-hindi-redesign">
+:root{color:#203746;background:#f4f7f7;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{background:#f4f7f7}
+header{height:64px;position:sticky;top:0;z-index:35;border-color:#e1e9e9;box-shadow:0 3px 14px rgba(18,55,64,.03)}
+header .chip{background:#eaf6f3;border-color:#d4eae4;color:#346c69}
+main{max-width:1280px;padding:18px 32px 225px}
+.eyebrow,.vs-overline{font-size:10px;font-weight:820;letter-spacing:.14em;text-transform:uppercase;color:#64868d}
+.btn.primary{background:#155a64;border-color:#155a64;color:white}
+.btn.primary:hover:not(:disabled){background:#0d4551}
+.card{border-radius:16px;border-color:#e0e8e9;box-shadow:0 6px 25px rgba(22,50,60,.03)}
+.vs-welcome{padding:23px 30px 22px;background:#fbfdfd;border:1px solid #deebea;border-radius:17px;margin-bottom:18px}
+.vs-welcome h1{font-size:clamp(27px,3vw,38px);letter-spacing:-.05em;line-height:1.16;margin:9px 0}
+.vs-welcome h1 span{color:#5c818a;font-weight:610}
+.vs-welcome p{font-size:12px;line-height:1.5}
+.vs-choose-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}
+.vs-choose-head h2{font-size:17px;margin:0}
+.vs-session-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vs-session-card{min-height:214px;padding:20px 22px 18px;display:flex;flex-direction:column;align-items:flex-start;border-top:3px solid #258e88}
+.vs-duo-card{border-top-color:#b0bdc4;background:#fcfdfd}
+.vs-session-card h2{font-size:21px;margin:12px 0 5px}
+.vs-session-card p{font-size:12px;line-height:1.55;max-width:420px}
+.vs-session-card .btn{margin-top:auto;padding:11px 17px;font-size:12px}
+.vs-card-top{display:flex;align-items:center;justify-content:space-between;width:100%}
+.vs-session-icon{padding:9px 12px;background:#e4f5f2;border-radius:10px;font-size:13px;color:#24776b;font-weight:800}
+.vs-duo-card .vs-session-icon{background:#f0f3f4;color:#8798a1}
+.vs-pill{display:inline-flex;align-items:center;border-radius:30px;padding:6px 11px;font-size:10px;font-weight:760;white-space:nowrap}
+.vs-ready{background:#e5f6ee;color:#24785a;border:1px solid #d2ebdc}
+.vs-pending{background:#f1f3f5;color:#788791;border:1px solid #e5eaee}
+.vs-home-foot{margin:14px 3px;color:#829198;font-size:11px}
+.vs-solo-top{margin-bottom:13px}.vs-solo-top .back{margin:0 0 6px}
+.vs-title-row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.vs-solo-top h1{font-size:clamp(25px,2.7vw,35px);margin:5px 0 0;letter-spacing:-.052em}
+.vs-solo-layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:15px}
+.vs-script-card{padding:0;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+.vs-script-head{padding:19px 24px 14px;display:flex;gap:14px;align-items:center;justify-content:space-between;border-bottom:1px solid #e9eef0}
+.vs-script-head h2{font-size:20px;margin:6px 0 0}
+.vs-script-pill{background:#ebf6f4;color:#28766f;border:1px solid #daece8}
+.vs-script-body{margin:0;background:white;border:0;border-radius:0;min-height:280px;max-height:calc(100dvh - 316px);overflow-y:auto;overflow-x:hidden;white-space:pre-wrap;padding:18px 24px 28px;color:#2b3e49;font-size:17px;line-height:1.9;flex:1}
+.vs-script-body:focus-visible{outline:3px solid #7db5ae;outline-offset:-3px}
+.vs-script-foot{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #eaf0ef;background:#f9fbfb;padding:10px 23px;font-size:10px;color:#819197}
+.vs-assignment-card{padding:21px 19px}
+.vs-assignment-card h2{font-size:19px;margin:10px 0 12px}
+.vs-assignment-card #scriptPage{margin-bottom:11px}
+.vs-assignment-row{display:flex;flex-direction:column;gap:5px;padding:12px 0;border-top:1px solid #e7edef}
+.vs-assignment-row span{font-size:10px;color:#8c9aa1}
+.vs-assignment-row strong{font-size:12px;color:#27525a;line-height:1.4}
+.vs-brief{margin-top:8px;padding:13px;border-radius:11px;background:#edf6f4;border:1px solid #deede9}
+.vs-brief b{font-size:11px;color:#266e6c}.vs-brief p{font-size:11px;line-height:1.5;margin-top:5px;color:#63848b}
+.vs-record-dock{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(1175px,calc(100vw - 40px));z-index:42;background:rgba(255,255,255,.97);backdrop-filter:blur(15px);box-shadow:0 14px 45px rgba(18,53,63,.19);border:1px solid #cadeda;border-radius:17px;padding:13px 19px 9px;text-align:left;margin:0}
+.vs-dock-top{display:flex;justify-content:space-between;align-items:center;gap:18px}
+.vs-dock-label{display:flex;align-items:center;gap:11px;min-width:175px}
+.vs-mic-indicator{height:10px;width:10px;border-radius:50%;background:#9aaeb1;flex-shrink:0}
+.vs-dock-label strong{display:block;font-size:12px;color:#23414c;margin-bottom:4px}
+.vs-dock-label #recordStatus{display:block;font-size:10px;color:#788992;max-width:185px;line-height:1.35}
+.vs-record-dock:has(#stopRecord:not(:disabled)) .vs-mic-indicator{background:#e14f59;box-shadow:0 0 0 5px #f9e2e6;animation:vsGlow 1.6s infinite}
+@keyframes vsGlow{50%{box-shadow:0 0 0 9px #f9e2e6}}
+.vs-record-dock .record-time{font-size:30px;line-height:1;letter-spacing:-.055em;margin:0;color:#174d57;white-space:nowrap}
+.vs-dock-buttons{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.vs-dock-buttons .btn,.vs-dock-review .btn{padding:11px 13px}
+.vs-dock-review{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid #e9f0f0}
+.vs-dock-review audio{display:block;height:35px;min-width:0;width:min(390px,100%);margin:0}
+.vs-dock-review audio[hidden]{display:none}
+.vs-submit{min-width:178px;background:#e6f3f0;color:#155b5d;border:1px solid #cee8e2}
+.vs-submit:not(:disabled):hover{background:#cfebe5}
+.vs-record-dock .status{min-height:0;text-align:right;margin:5px 0 0;font-size:10px;color:#587f7e}
+.vs-record-dock .status:empty{display:none}
+@media(max-width:900px){
+main{padding:16px 18px 235px}.vs-solo-layout{grid-template-columns:minmax(0,1fr) 205px}
+.vs-script-head{padding:16px 18px 12px}.vs-script-body{padding:15px 18px;font-size:16px;max-height:calc(100dvh - 345px)}
+.vs-record-dock{width:calc(100vw - 25px);bottom:7px;padding:11px 13px}.vs-dock-top{flex-wrap:wrap;gap:10px}
+.vs-dock-buttons{flex:1}
+}
+@media(max-width:650px){
+header{height:57px;padding:0 13px}.header-actions .chip{display:none}
+main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-welcome h1{font-size:28px}.vs-welcome p{font-size:11px}
+.vs-session-grid{grid-template-columns:1fr;gap:10px}.vs-session-card{min-height:170px;padding:15px 17px}
+.vs-session-card h2{margin:9px 0 4px;font-size:19px}.vs-session-card .btn{margin-top:12px}
+.vs-solo-top h1{font-size:25px}.vs-solo-layout{grid-template-columns:1fr}.vs-assignment-card{display:none}
+.vs-script-head{padding:13px 15px 11px}.vs-script-head h2{font-size:17px}
+.vs-script-body{font-size:16px;line-height:1.85;min-height:290px;max-height:calc(100dvh - 320px);padding:14px 16px}
+.vs-script-foot{padding:8px 13px;display:block}.vs-script-foot span:last-child{display:none}
+.vs-record-dock{width:calc(100vw - 14px);bottom:5px;padding:10px 11px 7px}
+.vs-dock-top{display:grid;grid-template-columns:1fr auto;gap:8px}
+.vs-dock-label{min-width:0}.vs-record-dock .record-time{font-size:26px}
+.vs-dock-buttons{grid-column:1/-1;display:grid;grid-template-columns:1.3fr .7fr 1fr;gap:5px}
+.vs-dock-buttons .btn{font-size:10px;padding:10px 5px}
+.vs-dock-review{gap:7px}.vs-dock-review audio{width:100%}
+.vs-submit{min-width:0;font-size:10px;padding:10px 8px!important}
+.vs-record-dock .status{text-align:left;max-height:39px;overflow:auto;line-height:1.3}
+}
+@media(prefers-reduced-motion:reduce){.vs-mic-indicator{animation:none!important}}
+</style>
 </head>
 <body>
-<header><a class="brand" href="/workspace"><img src="/assets/adatacore-logo.jpg" alt=""><span>Adatacore</span><span class="crumb">/ Voice Studio</span></a><div class="header-actions"><span class="chip"><span class="dot"></span>Project #94 · Solo pilot</span><a class="btn small" href="/workspace">Exit studio</a></div></header>
+<header><a class="brand" href="/workspace"><img src="/assets/adatacore-logo.jpg" alt=""><span>Adatacore</span><span class="crumb">/ Voice Studio</span></a><div class="header-actions"><span class="chip"><span class="dot"></span>Project #94 · Hindi studio</span><a class="btn small" href="/workspace">Exit studio</a></div></header>
 <main>
 <section id="home" class="step active">
-<div class="hero"><div class="hero-intro"><div class="eyebrow">Adatacore · Voice production</div><h1>Hey, Voice Actor!<br>How are you feeling today?</h1><p>Step into a calmer recording experience. Choose your format, find your voice, and create natural customer-service conversations that sound like real life.</p></div><div class="hero-visual"><div class="top">VOICE STUDIO / SESSION READY</div><div class="waves" id="heroWaves" aria-hidden="true"></div><div class="visual-foot">Every voice has a story. <span>01 / 02</span></div></div></div>
-<div class="section-head"><h2>Choose your session</h2><span class="subtext">Two ways to record</span></div>
-<div class="grid"><article class="card choose-card"><div class="symbol" aria-hidden="true">◉</div><span class="chip">Independent session</span><h2>Solo recording</h2><p>Read and perform customer-service scripts with different emotions, situations and speaking styles. Record at your own pace.</p><button class="btn primary" id="openSolo" disabled>Enter solo studio →</button></article><article class="card choose-card"><div class="symbol" aria-hidden="true">♬</div><span class="chip">Two voice actors</span><h2>Duo recording</h2><p>Two actors, one conversation. This feature will open after secure live-audio setup and testing.</p><button class="btn" id="openDuo" disabled>Duo — coming later</button></article></div>
-<div class="foot">Microphone access is requested only when you begin recording. Solo submissions are saved privately for quality review. Duo calling is paused until live audio is configured.</div>
+<div class="vs-welcome"><div class="eyebrow">ADATACORE / VOICE STUDIO</div><h1>Hey, Voice Actor! <span>Ready to record?</span></h1><p>Choose a session. Your Hindi script and recording controls are just one click away.</p></div>
+<div class="vs-choose-head"><h2>Recording sessions</h2><span class="vs-overline">PROJECT 94 · HINDI</span></div>
+<div class="vs-session-grid">
+<article class="card vs-session-card vs-solo-card"><div class="vs-card-top"><span class="vs-session-icon">01</span><span class="vs-pill vs-ready">Available for testing</span></div><h2>Solo recording</h2><p>Perform a Hindi customer-service conversation, listen to your take, and submit a clear recording.</p><button class="btn primary" id="openSolo" disabled>Open solo studio ↗</button></article>
+<article class="card vs-session-card vs-duo-card"><div class="vs-card-top"><span class="vs-session-icon">02</span><span class="vs-pill vs-pending">Coming later</span></div><h2>Duo recording</h2><p>Meet another voice actor for a live conversation. Secure calling is being prepared.</p><button class="btn" id="openDuo" disabled>Duo setup pending</button></article></div>
+<div class="vs-home-foot">Microphone access is requested only when you start. Duo remains unavailable until live-audio testing is complete.</div>
 </section>
-<section id="solo" class="step"><button class="back" data-back>← All recording formats</button><div class="eyebrow">01 / Solo production</div><h1 style="font-size:39px">Your voice. Your session.</h1><p style="margin-bottom:25px">Perform the assigned customer-service script, listen to your recording, record again if needed, then submit it securely for review.</p>
-<div class="panel-grid"><aside class="card"><h2>Assigned script</h2><p style="margin-bottom:22px">Your administrator controls the script scenario, duration and emotion. The script is selected automatically for this recording.</p><div class="field"><label for="scenario">Customer service scenario</label><select id="scenario"><option>Order delivery</option><option>Billing support</option><option>Technical support</option><option>Refund request</option><option>Account assistance</option></select></div><div class="field"><label for="emotion">Performance emotion</label><select id="emotion"><option>Calm & professional</option><option>Empathetic</option><option>Frustrated</option><option>Reassuring</option><option>Cheerful</option></select></div><div class="form-row"><div class="field"><label for="length">Target duration</label><select id="length"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="180">3 minutes</option></select></div><div class="field"><label for="scriptCount">Script count</label><input id="scriptCount" type="number" min="1" max="100" value="10"></div></div><button class="btn" id="scriptRefresh" disabled>Assigned automatically</button><div class="notice good">Your recording is saved only when you click <strong>Submit recording</strong>. You can listen and record again before submitting.</div></aside>
-<div class="card"><div class="studio-title"><div><div class="eyebrow">Practice script</div><h2 style="margin-top:8px" id="scriptTitle">Order delivery</h2></div><span class="chip" id="scriptPage">1 of 10</span></div><div class="script-meta"><span class="chip" id="emotionMeta">Calm & professional</span><span class="chip" id="durationMeta">2 min target</span></div><div class="script" id="scriptBody"></div><div class="actions"><button class="btn" id="prevScript">← Previous</button><button class="btn" id="nextScript">Next script →</button></div>
-<div class="record-panel"><div class="eyebrow">Microphone recorder</div><div class="record-time" id="recordTime">00:00</div><div class="record-hint" id="recordStatus">Ready when you are. A microphone permission prompt may appear.</div><div class="actions"><button class="btn primary" id="startRecord">● Start recording</button><button class="btn danger" id="stopRecord" disabled>■ Stop</button><button class="btn" id="resetRecord" disabled>Record again</button></div><audio class="playback" id="playback" controls hidden></audio><div class="actions"><button class="btn primary" id="saveRecord" disabled>Submit recording securely</button></div><div class="status" role="status" aria-live="polite" id="soloStatus"></div><div class="foot">Audio is uploaded to private project storage after you confirm submission. Your recording is available to authorized reviewers.</div></div>
-</div></div></section>
+<section id="solo" class="step">
+<div class="vs-solo-top"><button class="back" data-back>← Back to sessions</button><div class="vs-title-row"><div><div class="eyebrow">VOICE STUDIO / HINDI SOLO</div><h1>Read. Perform. Record.</h1></div><span class="vs-pill vs-ready">● Studio ready</span></div></div>
+<div class="vs-solo-layout">
+<article class="card vs-script-card"><div class="vs-script-head"><div><div class="vs-overline">ASSIGNED SCRIPT · हिंदी</div><h2 id="scriptTitle">हिंदी संवाद</h2></div><span class="vs-pill vs-script-pill">Voice acting</span></div>
+<div id="scriptBody" class="script vs-script-body" lang="hi" dir="auto" role="region" aria-label="Hindi recording script" tabindex="0"></div>
+<div class="vs-script-foot"><span>Read naturally and distinguish both roles.</span><span>Scroll inside script ↕</span></div></article>
+<aside class="card vs-assignment-card"><div class="vs-overline">ASSIGNMENT CENTER</div><h2>Recording brief</h2><span class="vs-pill vs-script-pill" id="scriptPage">Hindi solo</span>
+<div class="vs-assignment-row"><span>Language</span><strong>हिंदी · देवनागरी</strong></div>
+<div class="vs-assignment-row"><span>Emotion</span><strong id="emotionMeta">स्वाभाविक</strong></div>
+<div class="vs-assignment-row"><span>Target duration</span><strong id="durationMeta">2 min 30 sec</strong></div>
+<div class="vs-brief"><b>Recording tip</b><p>Choose a quiet space. Keep a comfortable microphone distance and speak clearly.</p></div>
+</aside></div>
+<div class="record-panel vs-record-dock" id="recordDock" aria-label="Recording controls">
+<div class="vs-dock-top"><div class="vs-dock-label"><span class="vs-mic-indicator" aria-hidden="true"></span><div><strong>Recording desk</strong><span id="recordStatus">Ready when you are</span></div></div>
+<div class="record-time" id="recordTime">00:00</div>
+<div class="vs-dock-buttons"><button class="btn primary" id="startRecord" type="button">● Start recording</button><button class="btn danger" id="stopRecord" type="button" disabled>■ Stop</button><button class="btn" id="resetRecord" type="button" disabled>↻ Record again</button></div></div>
+<div class="vs-dock-review"><audio class="playback" id="playback" controls preload="metadata" hidden aria-label="Listen to your recording"></audio><button class="btn vs-submit" id="saveRecord" type="button" disabled>Submit recording →</button></div>
+<div class="status" role="status" aria-live="polite" id="soloStatus"></div>
+</div></section>
 <section id="duo" class="step"><button class="back" data-back>← All recording formats</button><div class="eyebrow">02 / Collaborative production</div><h1 style="font-size:39px">Two voices. One conversation.</h1><div class="card lobby"><div class="orb" aria-hidden="true">♫</div><h2>Your next conversation starts here.</h2><p>Anonymous matchmaking will show how many voice actors are available and automatically connect compatible participants.</p><div class="stat"><span><b>—</b>Actors waiting</span><span><b>60s</b>Pre-call conversation</span><span><b>2</b>Separate audio tracks</span></div><div class="notice" style="max-width:580px;margin:0 auto 20px;text-align:left">Duo matching is on hold while secure TURN relay configuration and two-device testing are completed. Solo recording remains available for approved testing.</div><button class="btn primary" disabled>Duo mode unavailable until live-audio setup</button><div class="foot">Your name and account details will remain private from the other voice actor.</div></div></section>
 </main>
 <script>(()=>{const waves=document.getElementById('heroWaves');if(!waves)return;for(let i=0;i<36;i++){const e=document.createElement('i');e.style.height=(12+Math.abs(Math.sin(i*.72)*Math.cos(i*.22))*92)+'px';waves.appendChild(e)}})();</script>
-<script src="/voice-studio-platform.js?v=2"></script></body></html>
+<script src="/voice-studio-platform.js?v=3"></script></body></html>
