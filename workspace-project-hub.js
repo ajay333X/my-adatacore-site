@@ -97,7 +97,7 @@ function projectWorkAction(info){
 }
 function showProjectWork(info,error){
  const host=$('acProjectWork');if(!host||!current)return;
- if(Number(current.id)===94){host.innerHTML='<div class="ac-project-work-main"><div><strong>Voice Studio</strong><p>Launch a solo or anonymous two-person recording session.</p></div><a class="btn btn-primary" href="/voice-studio">Open Voice Studio →</a></div>';return;}
+ if(Number(current.id)===94){const ready=Boolean(info?.voiceAllowed);host.innerHTML=ready?'<div class="ac-project-work-main"><div><strong>Voice Studio</strong><p>Launch a solo or anonymous two-person recording session.</p></div><a class="btn btn-primary" href="/voice-studio">Open Voice Studio →</a></div>':'<div class="ac-project-work-main"><div><strong>Voice Studio setup</strong><p>The project is not yet published for contributors. Your assignment will become available after launch.</p></div><span class="pill">Pending launch</span></div>';return;}
  if(current.type!=='transcription'){
   host.innerHTML='<div class="ac-project-work-main"><div><span class="ac-project-work-kicker">PROJECT WORK</span><strong>Ready to work?</strong><p>Open Assignments to start a task from this project.</p></div><a class="btn btn-primary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
  }
@@ -116,6 +116,7 @@ async function readProjectWork(id){
  if(isSandbox){
   $('acProjectWork').innerHTML='<div class="ac-project-work-main"><div><strong>Practice workspace</strong><p>Use Assignments to open practice tasks.</p></div><a class="btn btn-secondary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
  }
+ if(Number(current.id)===94){try{const {data,error}=await client.rpc('vs_can_join',{p_project:Number(id)});if(error)throw error;if(seq===workSeq)showProjectWork({voiceAllowed:data===true})}catch(e){if(seq===workSeq)showProjectWork({voiceAllowed:false},e.message)}return}
  if(current.type!=='transcription'){showProjectWork({});return}
  try{
   const {data,error}=await client.rpc('tx_my_transcription_projects');
