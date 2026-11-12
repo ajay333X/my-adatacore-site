@@ -1,0 +1,23 @@
+/* Voice Studio: synchronized reviewer playback workstation */
+.ac-duo-player{margin:18px 0 12px;padding:18px;border:1px solid var(--line,#dfe5eb);border-radius:15px;background:var(--panel2,#f7f9fb);color:var(--text,#253446)}
+.ac-duo-player-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.ac-duo-player-head strong{font-size:15px}
+.ac-duo-player-head p{font-size:11px;color:var(--muted,#667584);margin:5px 0 0}
+.ac-duo-status{font-size:11px;color:var(--muted,#647585);max-width:280px;text-align:right;overflow-wrap:anywhere}
+.ac-duo-status.error{color:#ba4e3c}
+.ac-duo-modes{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}
+.ac-duo-modes button[aria-pressed=true]{border-color:#267e72;background:#e0f3ed;color:#155f50}
+.ac-duo-transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px}
+.ac-duo-seek-label{display:flex;flex:1 1 200px;align-items:center;gap:8px;font-size:11px;color:var(--muted,#647585)}
+.ac-duo-seek-label input{width:100%;min-width:120px;accent-color:#237a6b}
+.ac-duo-timestamp{font-size:11px;font-variant-numeric:tabular-nums}
+.ac-duo-speed{display:flex;align-items:center;gap:6px;font-size:11px}
+.ac-duo-speed select{border:1px solid var(--line,#cdd8df);border-radius:8px;padding:7px;background:var(--panel,#fff);color:var(--text,#243746)}
+.ac-duo-mixer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:17px}
+.ac-duo-channel{border:1px solid var(--line,#dde4e8);border-radius:11px;background:var(--panel,#fff);padding:13px}
+.ac-duo-channel-label{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.ac-duo-channel-label strong{font-size:12px}
+.ac-duo-channel-label span{color:var(--muted,#657785);font-size:10px}
+.ac-duo-channel label{font-size:10px;display:flex;gap:10px;align-items:center;color:var(--muted,#657785);margin-top:12px}
+.ac-duo-channel input{width:100%;accent-color:#237a6b}
+@media(max-width:680px){.ac-duo-player{padding:13px}.ac-duo-mixer{grid-template-columns:1fr}.ac-duo-transport{gap:7px}.ac-duo-status{text-align:left}.ac-duo-seek-label{flex-basis:100%}}
