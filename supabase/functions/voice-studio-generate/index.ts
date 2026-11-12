@@ -27,10 +27,43 @@ Deno.serve(async(req:Request)=>{
  if(!groq)return out({error:"Groq is not configured. Add GROQ_API_KEY in Supabase Edge Function secrets."},503);
  const prompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+(mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles")+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+Math.round(d/60*120)+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.";
  const url="https://api.groq.com/openai/v1/chat/completions";
- const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+groq},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:[{role:"system",content:"Expert voice-script author. Return strict JSON only."},{role:"user",content:prompt}],temperature:.8,response_format:{type:"json_object"},max_tokens:Math.min(9000,Math.max(2800,n*Math.round(d/60*120)*3))})});
- const result=await response.json();
- if(!response.ok)return out({error:"AI provider request failed",detail:String(result.error?.message||"Unknown provider error").slice(0,180)},502);
- const parsed=JSON.parse(result.choices?.[0]?.message?.content||"{}");
+ const schema={type:"object",additionalProperties:false,properties:{
+  scripts:{type:"array",items:{type:"object",additionalProperties:false,properties:{
+   title:{type:"string"},scenario:{type:"string"},emotion:{type:"string"},body:{type:"string"}
+  },required:["title","scenario","emotion","body"]}}
+ },required:["scripts"]};
+ let parsed:any=null,providerError="";
+ // Generate each short script as an independently validated response. A bad JSON
+ // generation should not discard already-created scripts in the caller's batch.
+ for(let attempt=0;attempt<3;attempt++){
+  const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+groq},body:JSON.stringify({
+   model:"openai/gpt-oss-120b",
+   messages:[
+    {role:"system",content:"You create excellent realistic dialogue. Return only the JSON object described by the provided schema."},
+    {role:"user",content:prompt+" Exactly "+n+" unique scripts are required. Keep body text as one escaped JSON string per script and do not include markdown."}
+   ],
+   temperature:0.65,reasoning_effort:"low",reasoning_format:"hidden",
+   response_format:{type:"json_schema",json_schema:{name:"voice_scripts",strict:true,schema}},
+   max_completion_tokens:Math.min(12000,Math.max(4000,n*Math.round(d/60*120)*5))
+  })});
+  const result=await response.json();
+  if(!response.ok){
+   providerError=String(result.error?.message||"Unknown provider error").slice(0,220);
+   // A transient constrained-generation error merits a retry. Do not retry
+   // authentication, permission or model-access failures.
+   if(response.status!==400&&response.status!==422&&response.status!==502&&response.status!==503)break;
+   if(!/json|generat|schema|validat|temporar|timeout/i.test(providerError))break;
+   continue;
+  }
+  try{
+   const candidate=JSON.parse(result.choices?.[0]?.message?.content||"{}");
+   if(Array.isArray(candidate.scripts)&&candidate.scripts.length>0&&candidate.scripts.every((s:any)=>typeof s.body==="string"&&s.body.length>250)){
+    parsed=candidate;break;
+   }
+   providerError="The AI response was incomplete or shorter than requested.";
+  }catch(_){providerError="The AI response could not be parsed as JSON."}
+ }
+ if(!parsed)return out({error:"Groq could not produce a valid script after three attempts",detail:providerError||"Please retry"},502);
  let rows=(Array.isArray(parsed.scripts)?parsed.scripts:[]).slice(0,n).filter((s:any)=>typeof s.body==="string"&&s.body.length>250).map((s:any)=>({project_id:project,mode,title:String(s.title||scenario).slice(0,120),scenario:String(s.scenario||scenario).slice(0,120),emotion:String(s.emotion||"Neutral").slice(0,50),language,duration_seconds:d,body:s.body.slice(0,18000)}));
  if(rows.length===0)return out({error:"Provider returned no valid scripts; please retry"},502);
  const {data,error}=await db.from("vs_scripts").insert(rows).select("id,title");
