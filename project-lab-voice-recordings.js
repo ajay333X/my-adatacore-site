@@ -39,6 +39,7 @@ function addStat(label,n){
 function duration(seconds){return Math.floor(seconds/60)+'m '+seconds%60+'s'}
 async function read(){
  if(busy)return;busy=true;
+ window.AdacoreDuoQAPlayer?.disposeAll();
  const host=$('acRecordingItems'),stats=$('acRecordingStats');host.textContent='Loading recordings…';
  try{
   const term=normalId($('acTaskSearch')?.value);
@@ -74,6 +75,15 @@ async function read(){
    if(sessionFlags.length){const flagBox=document.createElement('div');flagBox.className='ac-recording-qa';flagBox.style.cssText='padding:10px;border:1px solid #efcc8f;background:#fff8e8;border-radius:9px;margin:10px 0;color:#805417';flagBox.textContent='⚑ '+sessionFlags.length+' participant flag(s) for this task';for(const flag of sessionFlags){const row=document.createElement('div');row.style.cssText='margin:8px 0 0;white-space:pre-wrap';row.textContent=new Date(flag.created_at).toLocaleString()+' · '+flag.reason;flagBox.append(row)}entry.append(flagBox)}
    const task=document.createElement('div');task.className='ac-qa-task-id';const idcode=document.createElement('code');idcode.textContent=taskId(s.id);const copy=document.createElement('button');copy.type='button';copy.className='btn btn-secondary';copy.textContent='Copy task ID';copy.onclick=()=>navigator.clipboard?.writeText(taskId(s.id)).then(()=>copy.textContent='Copied',()=>copy.textContent='Select the ID to copy');task.append(idcode,copy);entry.append(task);
    const sub=document.createElement('div');sub.className='ac-recording-meta';sub.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+tracks.filter(t=>t.session_id===s.id).length+' audio track(s)';entry.append(sub);
+   const sessionTracks=tracks.filter(t=>t.session_id===s.id);
+   if(sessionTracks.length&&window.AdacoreDuoQAPlayer){
+    try{
+     const player=window.AdacoreDuoQAPlayer.create({sessionId:s.id,actorA:s.actor_a,actorB:s.actor_b,tracks:sessionTracks,db});
+     entry.append(player.element);
+    }catch(error){
+     const problem=document.createElement('p');problem.className='ac-recording-meta';problem.textContent='Combined playback unavailable: '+(error.message||String(error));entry.append(problem);
+    }
+   }
    if(!tracks.some(t=>t.session_id===s.id)){
     const pending=document.createElement('p');pending.className='ac-recording-meta';pending.textContent='No audio tracks submitted yet. This task can still be located and flagged. Session status: '+s.state;entry.append(pending);
    }
