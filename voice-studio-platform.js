@@ -157,7 +157,10 @@ function record(onDone){
  rec.start(1000);
 }
 async function save(){
- if(uploading)return;uploading=true;
+ if(uploading||!blob)return;
+ if(mode==='duo'&&rec?.state==='recording'){roomStatus('Stop recording before submitting your track.');return}
+ uploading=true;
+ if(mode==='duo'){$('vsSubmit').disabled=true;$('vsRetry').disabled=true;roomStatus('Uploading your recording securely…')}
  try{
  if(!blob||blob.size<1024)throw Error('Empty audio');
  let type=blob.type.split(';')[0],ext=type==='audio/mp4'?'.mp4':type==='audio/ogg'?'.ogg':'.webm',path=session.id+'/'+me.id+ext;
@@ -173,9 +176,20 @@ async function save(){
   }
   window.VoiceStudioExtras?.submitted();
  }
- else{roomStatus(session.state==='submitted'?'Both voice tracks submitted.':'Your track submitted. Waiting for partner.');$('vsRetry').hidden=true}
+ else{
+  $('vsSubmit').hidden=true;$('vsRetry').hidden=true;$('vsStop').hidden=true;
+  $('vsDuoPreview').hidden=true;
+  duoTrackStatus('Submitted to QA',session.state==='submitted'?'Submitted':'Waiting for partner');
+  roomStatus(session.state==='submitted'?'Both tracks received. Task '+voiceTaskId(session.id)+' is ready for Central QA.':'Your audio was submitted successfully. Waiting for partner to submit their track. Task '+voiceTaskId(session.id));
+ }
  note('Audio stored in the private Voice Studio bucket.');if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
- }finally{uploading=false}
+ }finally{
+   uploading=false;
+   if(mode==='duo'&&session?.state!=='submitted'&&blob){
+    const ownTrack=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+    if(!ownTrack.data){$('vsSubmit').disabled=false;$('vsRetry').disabled=false;$('vsRetry').hidden=false;}
+   }
+  }
 }
 function resetPreview(){
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;blob=null;rec=null;secs=0;
@@ -412,21 +426,50 @@ async function signals(){
  if(e.kind==='offer'&&!pc.remoteDescription){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}let a=await pc.createAnswer();await pc.setLocalDescription(a);await signal('answer',{type:a.type,sdp:a.sdp})}
  else if(e.kind==='answer'&&pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}}
  else if(e.kind==='candidate'){if(pc.remoteDescription){try{await pc.addIceCandidate(e.payload)}catch{}}else iceQueue.push(e.payload)}
- else if(e.kind==='stop'&&rec?.state==='recording')rec.stop();
+ else if(e.kind==='stop')duoTrackStatus(blob?'Ready to submit':rec?.state==='recording'?'Recording…':'Not started','Partner stopped · waiting for submission');
  }}finally{readBusy=false}
 }
 async function begin(){try{session=await rpc('vs_begin',{p_session:session.id});await beginRecording()}catch(e){roomStatus(fail(e))}}
 async function beginRecording(){
- if(rec||blob)return;await mic();secs=0;
- if(Date.now()-new Date(session.recording_started_at).getTime()>script.duration_seconds*1000){roomStatus('Session recording window expired.');return}
- record(async()=>{try{await save()}catch(e){roomStatus('Upload error: '+fail(e));$('vsRetry').hidden=false}});
- $('vsStart').hidden=true;$('vsStop').hidden=false;roomStatus('Recording active. Follow the dialogue and improvise naturally.');
- timer=setInterval(()=>{secs++;$('vsClock').textContent=fmt(secs);if(Date.now()-new Date(session.recording_started_at).getTime()>=script.duration_seconds*1000&&rec?.state==='recording')rec.stop()},1000);
+ if(rec||blob)return;
+ await mic();secs=0;
+ if(Date.now()-new Date(session.recording_started_at).getTime()>script.duration_seconds*1000){
+  roomStatus('The recording window expired. Return to the studio to start another session.');return;
+ }
+ record(()=>{
+  const preview=$('vsDuoPreview'),audio=$('vsPreviewAudio');
+  if(previewUrl)URL.revokeObjectURL(previewUrl);
+  previewUrl=URL.createObjectURL(blob);
+  audio.src=previewUrl;preview.hidden=false;
+  $('vsStop').hidden=true;$('vsSubmit').hidden=false;$('vsRetry').hidden=true;
+  duoTrackStatus('Stopped · preview before submitting','Waiting for partner');
+  duoStage(4,'Your recording is ready to preview and submit');
+  roomStatus('Recording stopped. Listen to your take and select Submit recording to send it to QA. Task '+voiceTaskId(session.id));
+  signal('stop',{actor:me.id}).catch(()=>{});
+ });
+ $('vsStart').hidden=true;$('vsStop').hidden=false;$('vsSubmit').hidden=true;
+ duoTrackStatus('Recording…','Waiting for partner');
+ duoStage(4,'Recording in progress · use Stop my recording to finish your track');
+ roomStatus('Recording live. Stop your own track when finished; the partner can finish independently.');
+ timer=setInterval(()=>{
+  secs++;$('vsClock').textContent=fmt(secs);
+  if(Date.now()-new Date(session.recording_started_at).getTime()>=script.duration_seconds*1000&&rec?.state==='recording')rec.stop();
+ },1000);
 }
 async function leave(){
- if(rec?.state==='recording')rec.stop();clearInterval(poll);clearInterval(signalTimer);
+ if(uploading){roomStatus('Upload is in progress. Please complete it before leaving.');return}
+ if(rec?.state==='recording'){
+  roomStatus('Stop your recording before leaving the session.');return;
+ }
+ if(blob&&mode==='duo'){
+  const own=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+  if(!own.data&&!window.confirm('Your recording has not been submitted. Leaving will discard this take. Continue?'))return;
+ }
+ clearInterval(poll);clearInterval(signalTimer);
  try{if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id})}catch(e){note(fail(e))}
- cleanup();session=null;mode='';script=null;view('home');note('Session closed.');
+ cleanup();
+ if(previewUrl)URL.revokeObjectURL(previewUrl);
+ previewUrl=null;blob=null;rec=null;session=null;mode='';script=null;view('home');note('Session closed.');
 }
 window.addEventListener('pagehide',()=>{window.VoiceStudioExtras?.dispose();if(previewUrl)URL.revokeObjectURL(previewUrl);cleanup()});
 init().catch(e=>note('Studio authorization error: '+fail(e)));
