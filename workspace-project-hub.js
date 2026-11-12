@@ -23,7 +23,7 @@ function initElements(){
  }
  if(!$('view-project')){
   const section=document.createElement('section');section.id='view-project';section.className='workspace-view';
-  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><section id="acProjectWork" class="ac-project-work" aria-label="Project task controls" aria-live="polite"><div class="ac-project-work-loading">Checking available tasks…</div></section><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button><button class="ac-detail-tab" data-project-tab="recordings" role="tab" aria-selected="false" hidden>My recordings</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
+  section.innerHTML='<a class="ac-project-back" href="#overview" id="acProjectBack">← Back to projects</a><div class="ac-project-head"><h2 id="acProjectTitle">Project</h2><span id="acProjectRate" class="ac-project-rate" hidden></span></div><p id="acProjectSub" class="ac-project-sub"></p><section id="acProjectWork" class="ac-project-work" aria-label="Project task controls" aria-live="polite"><div class="ac-project-work-loading">Checking available tasks…</div></section><nav id="acProjectTabs" class="ac-detail-tabs" aria-label="Project sections"><button class="ac-detail-tab" data-project-tab="instructions" role="tab" aria-selected="true">Instructions</button><button class="ac-detail-tab" data-project-tab="library" role="tab" aria-selected="false">Library</button><button class="ac-detail-tab" data-project-tab="feedback" role="tab" aria-selected="false">Feedback</button><button class="ac-detail-tab" data-project-tab="announcements" role="tab" aria-selected="false">Announcements</button><button class="ac-detail-tab" data-project-tab="pages" role="tab" aria-selected="false" hidden>Project pages</button><button class="ac-detail-tab" data-project-tab="recordings" role="tab" aria-selected="false" hidden>My recordings</button></nav><div id="acProjectContent" class="ac-detail-panel" role="tabpanel"><div class="ac-detail-loading">Loading project information…</div></div>';
   main.appendChild(section);
   section.querySelector('#acProjectBack').addEventListener('click',e=>{e.preventDefault();closeProject()});
   section.querySelector('#acProjectTabs').addEventListener('click',e=>{const b=e.target.closest('[data-project-tab]');if(!b)return;changeTab(b.dataset.projectTab)});
@@ -258,6 +258,14 @@ function openProject(id,updateUrl=true){
  $('acProjectSub').textContent=project.description||'Project instructions, resources and feedback.';
  let codeLabel=$('acProjectPublicCode');if(!codeLabel){codeLabel=document.createElement('span');codeLabel.id='acProjectPublicCode';codeLabel.style.cssText='font:700 10px ui-monospace,monospace;letter-spacing:.02em;color:#385c65;padding:7px 11px;border:1px solid #d8e9e7;background:#edf6f5;border-radius:9px;margin:7px 0 11px;display:inline-flex;max-width:100%;overflow-wrap:anywhere;user-select:all';$('acProjectSub').after(codeLabel)}codeLabel.textContent=project.project_code||'';
  const recordingsTab=document.querySelector('[data-project-tab="recordings"]');if(recordingsTab)recordingsTab.hidden=Number(project.id)!==94;
+ const pagesTab=document.querySelector('[data-project-tab="pages"]');if(pagesTab)pagesTab.hidden=true;
+ if(!isSandbox&&window.ACProjectVisualPages){
+  void window.ACProjectVisualPages.load(project.id,true).then(d=>{
+   if(Number(current?.id)!==Number(project.id))return;
+   const tabEl=document.querySelector('[data-project-tab="pages"]');
+   if(tabEl)tabEl.hidden=!window.ACProjectVisualPages.available(d);
+  }).catch(()=>{});
+ }
  void applyProjectUi(project.id);
  $('acProjectRate').hidden=true;
  setHeader('Project details','Instructions, library, feedback and announcements');
@@ -279,7 +287,7 @@ async function readProject(id){
 }
 function hostCloseDetail(){document.querySelectorAll('.ac-feedback-detail-row').forEach(el=>el.remove())}
 function changeTab(next){
- if(!['instructions','library','feedback','announcements','recordings'].includes(next)||next==='recordings'&&Number(current?.id)!==94)return;
+ if(!['instructions','library','feedback','announcements','recordings','pages'].includes(next)||next==='recordings'&&Number(current?.id)!==94)return;
  tab=next;
  document.querySelectorAll('[data-project-tab]').forEach(b=>{const active=b.dataset.projectTab===tab;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});
  renderTab();
@@ -287,6 +295,7 @@ function changeTab(next){
 const empty=(title,desc)=>'<div class="ac-tab-empty"><strong>'+esc(title)+'</strong><div style="margin-top:8px">'+esc(desc)+'</div></div>';
 function renderTab(){
  const host=$('acProjectContent');if(!host)return;
+ if(tab==='pages'){if(!window.ACProjectVisualPages){host.textContent='Page viewer is not available.';return}void window.ACProjectVisualPages.render(host,Number(current?.id));return}
  if(tab==='recordings'&&Number(current?.id)===94){host.innerHTML='<h3>My recordings</h3><p class="ac-panel-sub">Listen to your submitted audio and see any automatic transcript and reviewer feedback.</p><div id="acVoiceRecordingItems" class="ac-instructions-list">Loading voice recordings…</div>';void loadMyRecordings();return}
  if(!detail){host.innerHTML='<div class="ac-detail-loading">Loading project information…</div>';return}
  const h={instructions:['Instructions','Read the published requirements before starting work.'],library:['Library','Reference materials and published project guides.'],feedback:['Feedback received','Select a row to inspect reviewer feedback and transcript changes.'],announcements:['Announcements','Updates shared for this project.']}[tab];

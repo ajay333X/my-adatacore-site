@@ -130,6 +130,10 @@
       "destination": "/coreforge"
     },
     {
+      "source": "/admin/project-builder",
+      "destination": "/project-builder"
+    },
+    {
       "source": "/admin/project-lab",
       "destination": "/project-lab-entry"
     },

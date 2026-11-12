@@ -1,0 +1,60 @@
+(()=>{
+'use strict';
+const css='*{box-sizing:border-box}body{margin:0;background:#f5f8f9;color:#263b45;font-family:Inter,Arial,sans-serif}.ac-page{min-height:75vh;padding:50px 6%;background:#f5f8f9}.ac-inner{max-width:1050px;margin:auto}.ac-kicker{color:#248577;font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}.ac-title{font-size:48px;line-height:1.13;letter-spacing:-.045em;font-weight:800;margin:15px 0}.ac-lead{color:#647f88;font-size:16px;max-width:700px;line-height:1.7}.ac-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin:30px 0}.ac-card{background:white;border:1px solid #dfebeb;padding:25px;border-radius:16px;box-shadow:0 8px 25px #1638490a}.ac-card h3{margin:0 0 12px;font-size:20px}.ac-card p{font-size:13px;line-height:1.65;color:#6c838b}.ac-btn{background:#1b6168;border:0;border-radius:10px;padding:12px 20px;color:white;text-decoration:none;display:inline-block;font-size:13px;font-weight:800}.ac-panel{padding:25px;border:1px solid #dbe8e8;background:white;border-radius:16px;margin:20px 0}.ac-pill{border-radius:20px;background:#e4f4ee;color:#267860;padding:7px 12px;font-size:11px;font-weight:800}.ac-wave{height:65px;background:#eef8f6;border-radius:11px;display:flex;gap:6px;align-items:center;padding:13px;margin:18px 0}.ac-wave i{background:#39a394;border-radius:4px;height:31%;flex:1}.ac-wave i:nth-child(3n){height:80%}.ac-wave i:nth-child(5n){height:53%}.ac-label{display:block;font-size:12px;color:#527079;font-weight:750;margin:10px 0}.ac-label input,.ac-label textarea,.ac-label select{display:block;width:100%;border:1px solid #d2e0e2;background:white;border-radius:9px;padding:13px;margin:7px 0;font:inherit}.ac-muted{color:#84979f;font-size:11px;line-height:1.5}.ac-divider{border:0;border-top:1px solid #dce9e8;margin:26px 0}@media(max-width:720px){.ac-title{font-size:33px}.ac-grid{grid-template-columns:1fr}.ac-page{padding:28px 19px}}';
+const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const wrap=s=>'<main class="ac-page"><div class="ac-inner">'+s+'</div></main>';
+const wave='<div class="ac-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';
+const card='<div class="ac-card"><h3>Open your tasks</h3><p>View instructions, complete assignments and track your progress.</p><a href="/workspace" target="_top" class="ac-btn">Project workspace ↗</a></div>';
+function seed(p,t){
+ const base={id:'home',name:t==='blank'?'Blank page':'Overview',styles:css,component:wrap('<div class="ac-kicker">ADATACORE / PROJECT</div><h1 class="ac-title">'+escape(p.project_name||'New Project')+'</h1><p class="ac-lead">'+escape(p.description||'Create, review and submit work from one workspace.')+'</p><div class="ac-grid">'+card+'<div class="ac-card"><h3>Project instructions</h3><p>Read guidelines and check for updates before starting.</p><a class="ac-btn" href="/workspace" target="_top">View resources</a></div></div>')};
+ if(t==='blank'){base.component=wrap('<div class="ac-kicker">YOUR PROJECT</div><h1 class="ac-title">Create your canvas.</h1><p class="ac-lead">Drag components from the left. Select layers to edit size, position and styling.</p>');return [base]}
+ const pages=[base];
+ if(t==='voice'){
+  pages.push({id:'recording',name:'Recording',styles:css,component:wrap('<div class="ac-kicker">VOICE RECORDING / HINDI</div><h1 class="ac-title" style="font-size:36px">Recording desk</h1><div class="ac-grid"><section class="ac-card"><div class="ac-kicker">SCRIPT</div><h3>ग्राहक सहायता संवाद</h3><p style="font-size:17px;line-height:2;color:#314e58">नमस्ते! मैं आपकी कैसे सहायता कर सकता हूँ? कृपया अपनी समस्या विस्तार से बताइए।</p></section><aside class="ac-card"><h3>Assignment brief</h3><p>Language: Hindi<br>Emotion: Natural<br>Target: 2 minutes</p><span class="ac-pill">Ready to record</span></aside></div><section class="ac-panel"><h3>Recorder</h3>'+wave+'<p class="ac-muted">Layout preview. Recording is connected through the Voice Studio task engine.</p><a href="/voice-studio" class="ac-btn" target="_top">Open Voice Studio ↗</a></section>')});
+  pages.push({id:'review',name:'Review & submit',styles:css,component:wrap('<div class="ac-kicker">REVIEW</div><h1 class="ac-title">Review your take.</h1><div class="ac-panel"><h3>Playback</h3>'+wave+'<p>Listen carefully before submission.</p><button class="ac-btn">Submit audio</button></div>')});
+  pages.push({id:'success',name:'Submission success',styles:css,component:wrap('<div class="ac-kicker">SUBMITTED</div><h1 class="ac-title">Audio submitted.</h1><p class="ac-lead">Your recording has been sent successfully.</p><a href="/workspace" class="ac-btn" target="_top">Project dashboard</a>')});
+ }else if(t==='transcription'){
+  pages.push({id:'workbench',name:'Transcription editor',styles:css,component:wrap('<div class="ac-kicker">TRANSCRIPTION</div><h1 class="ac-title" style="font-size:36px">Listen. Type. Review.</h1><div class="ac-grid"><div class="ac-card"><h3>Task audio</h3>'+wave+'<audio controls style="width:100%"></audio></div><div class="ac-card"><h3>Transcription</h3><label class="ac-label">Recognized speech<textarea rows="7" placeholder="Write transcript…"></textarea></label></div></div><button class="ac-btn">Submit transcript</button>')});
+ }else if(t==='evaluation'){
+  pages.push({id:'evaluation',name:'Evaluation workstation',styles:css,component:wrap('<div class="ac-kicker">QUALITY REVIEW / EWS</div><h1 class="ac-title" style="font-size:36px">Evaluate this task.</h1><div class="ac-grid"><div class="ac-card"><h3>Source response</h3><p>Listen to or read the assigned content.</p>'+wave+'</div><div class="ac-card"><h3>Scoring</h3><label class="ac-label">Accuracy<select><option>Select</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label class="ac-label">Feedback<textarea rows="4"></textarea></label><button class="ac-btn">Submit evaluation</button></div></div>')});
+ }else if(t==='survey'){
+  pages.push({id:'form',name:'Data entry',styles:css,component:wrap('<div class="ac-kicker">SURVEY</div><h1 class="ac-title" style="font-size:36px">Research questionnaire</h1><section class="ac-panel" style="max-width:690px"><label class="ac-label">Participant name<input type="text" placeholder="Name"></label><label class="ac-label">Experience rating<select><option>Excellent</option><option>Good</option><option>Average</option></select></label><label class="ac-label">Comments<textarea rows="5"></textarea></label><button class="ac-btn">Submit response</button></section>')});
+ }else if(t==='annotation'){
+  pages.push({id:'annotation',name:'Annotation task',styles:css,component:wrap('<div class="ac-kicker">ANNOTATION</div><h1 class="ac-title" style="font-size:36px">Label the source.</h1><div class="ac-grid"><div class="ac-card"><h3>Source item</h3><div style="height:230px;border:2px dashed #b6d2d0;display:grid;place-items:center;border-radius:10px;color:#849ba0">Image · text · video</div></div><div class="ac-card"><h3>Label and comment</h3><label class="ac-label">Category<select><option>Relevant</option><option>Irrelevant</option><option>Unclear</option></select></label><label class="ac-label">Notes<textarea rows="5"></textarea></label><button class="ac-btn">Submit annotation</button></div></div>')});
+ }
+ return pages;
+}
+const blocks=[
+ ['section','Section','Layout','<section class="ac-panel"><h3>Section title</h3><p>Move content here.</p></section>','▤'],
+ ['two-columns','Two columns','Layout','<div class="ac-grid"><div class="ac-card"><h3>Left column</h3></div><div class="ac-card"><h3>Right column</h3></div></div>','▥'],
+ ['container','Container','Layout','<div style="min-height:90px;border:1px dashed #aacac9;padding:20px">Container</div>','▣'],
+ ['square','Square','Shapes','<div style="width:120px;height:120px;background:#25656a;border-radius:0"></div>','■'],
+ ['rectangle','Rectangle','Shapes','<div style="width:260px;height:105px;background:#1d3d4b;border-radius:0"></div>','▰'],
+ ['circle','Circle','Shapes','<div style="width:120px;height:120px;background:#37a490;border-radius:50%"></div>','●'],
+ ['rounded','Round card','Shapes','<div style="padding:26px;background:#e5f1ee;border-radius:24px;min-height:100px">Rounded card</div>','◯'],
+ ['heading','Heading','Text','<h2 style="font-size:32px;letter-spacing:-.04em">Edit heading</h2>','H'],
+ ['paragraph','Paragraph','Text','<p style="font-size:15px;line-height:1.7;color:#69818a">Double-click to edit this text.</p>','¶'],
+ ['badge','Label / badge','Text','<span class="ac-pill">Status</span>','◌'],
+ ['divider','Divider','Shapes','<hr class="ac-divider">','—'],
+ ['button','Button / link','Controls','<a href="/workspace" target="_top" class="ac-btn">Open project ↗</a>','↗'],
+ ['input','Text input','Controls','<label class="ac-label">Label<input placeholder="Type here"></label>','⌨'],
+ ['textarea','Text area','Controls','<label class="ac-label">Your response<textarea rows="5"></textarea></label>','≡'],
+ ['select','Dropdown','Controls','<label class="ac-label">Choose<select><option>Option A</option><option>Option B</option></select></label>','⌄'],
+ ['checkbox','Checkbox','Controls','<label><input type="checkbox"> I agree</label>','☑'],
+ ['image','Image','Media','<img src="https://placehold.co/600x250/e6f3f1/547d80?text=Your+image" style="width:100%;border-radius:12px" alt="Image placeholder">','▧'],
+ ['upload','File uploader','Media','<section class="ac-panel" style="border:2px dashed #a6c7c5"><h3>Upload source</h3><input type="file"></section>','↑'],
+ ['audio-player','Audio player','Audio','<section class="ac-panel"><h3>Source audio</h3><audio controls style="width:100%"></audio><p class="ac-muted">Connect audio source to your task engine.</p></section>','♫'],
+ ['recorder','Audio recorder','Audio','<section class="ac-panel"><h3>Audio recorder</h3>'+wave+'<p class="ac-muted">Connect a recording workflow to enable capture and submit.</p><a href="/voice-studio" target="_top" class="ac-btn">Open Voice Studio</a></section>','◉'],
+ ['wave','Waveform','Audio',wave,'≋'],
+ ['script','Hindi script','Audio','<div class="ac-card"><div class="ac-kicker">RECORDING SCRIPT</div><p style="font-size:17px;line-height:2">नमस्ते! आज हम बातचीत शुरू करते हैं।</p></div>','क'],
+ ['transcript','Transcript box','Audio','<section class="ac-panel"><h3>Transcription</h3><textarea rows="6" style="width:100%;padding:12px;border:1px solid #cee0df"></textarea></section>','▤'],
+ ['timer','Timer','Audio','<div class="ac-card"><strong style="font-size:30px">00:00</strong><p class="ac-muted">Elapsed time</p></div>','◷'],
+ ['rating','Rating selector','Evaluation','<div class="ac-card"><h3>Quality score</h3><label class="ac-label">Rating<select><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div>','★'],
+ ['feedback','Feedback field','Evaluation','<label class="ac-label">Reviewer feedback<textarea rows="5"></textarea></label>','✎'],
+ ['table','Task table','Evaluation','<table><thead><tr><th>Task</th><th>Score</th></tr></thead><tbody><tr><td>Accuracy</td><td>—</td></tr></tbody></table>','☷'],
+ ['submit','Submit control','Workflow','<section class="ac-panel"><h3>Ready to submit?</h3><button class="ac-btn">Submit task</button></section>','✓'],
+ ['instructions','Instructions','Workflow','<section class="ac-panel"><div class="ac-kicker">INSTRUCTIONS</div><h3>Task rules</h3><ol><li>Review instructions</li><li>Complete your work</li><li>Submit accurately</li></ol></section>','ⓘ'],
+ ['progress','Progress bar','Workflow','<div class="ac-panel"><strong>Task progress · 50%</strong><div style="height:10px;background:#e5eeed;border-radius:10px;margin-top:10px"><div style="width:50%;height:10px;background:#2da38f;border-radius:10px"></div></div></div>','▰']
+];
+window.ACBuilderPalette={css,seed,blocks,wrap,escape};
+})();

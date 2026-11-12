@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Project Builder — Adatacore</title>
+<link rel="icon" href="/favicon.png?v=20260831-3">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.23.6/dist/css/grapes.min.css">
+<link rel="stylesheet" href="/project-builder.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/grapesjs@0.23.6/dist/grapes.min.js"></script>
+</head>
+<body>
+<div id="builderAuth" class="loading-page"><div class="spinner"></div><strong>Opening Adatacore Project Builder</strong><p>Checking administrator access…</p></div>
+<div id="builderApp" hidden>
+<header class="builder-top">
+ <a class="builder-brand" href="/admin/projects" aria-label="Back to Admin"><span class="brand-mark">A<span class="mark-dot"></span></span><span>adatacore <em>/ builder</em></span></a>
+ <span class="top-divider"></span>
+ <div class="top-project"><strong id="projectName">Untitled Project</strong><small id="projectCode">New visual project</small></div>
+ <span id="saveState" class="save-state" role="status" aria-live="polite">Ready</span>
+ <div class="top-actions">
+  <button id="newProject" class="top-btn" type="button">＋ New project</button>
+  <button id="undoBtn" class="icon-btn" title="Undo (Ctrl/Cmd+Z)" type="button">↶</button>
+  <button id="redoBtn" class="icon-btn" title="Redo (Ctrl/Cmd+Shift+Z)" type="button">↷</button>
+  <span class="top-divider small"></span>
+  <button id="saveDraft" class="top-btn" type="button">Save draft</button>
+  <button id="publishDesign" class="top-btn primary" type="button">Publish pages ↗</button>
+ </div>
+</header>
+
+<section id="projectWelcome" class="welcome-panel" hidden>
+ <div class="welcome-intro"><div class="overline">ADATACORE / CREATION WORKSPACE</div><h1>Create something new.</h1><p>Start from a production-oriented template, or design a project from a blank canvas. Configure every page and nested layer using drag-and-drop—without writing HTML.</p></div>
+ <div class="welcome-layout">
+  <form id="createForm" class="create-form">
+   <h2>New project</h2>
+   <label for="newName">Project name <span>*</span></label><input id="newName" maxlength="90" required placeholder="e.g. Hindi Speech Collection">
+   <label for="newDescription">Description</label><textarea id="newDescription" maxlength="500" placeholder="Describe the tasks contributors will perform"></textarea>
+   <label for="newType">Project workflow</label>
+   <select id="newType">
+    <option value="voice_recording">Voice / audio recording</option>
+    <option value="transcription">Audio transcription</option>
+    <option value="audio_evaluation">Speech evaluation / EWS</option>
+    <option value="text_annotation">Text annotation</option>
+    <option value="image_annotation">Image annotation</option>
+    <option value="video_annotation">Video annotation</option>
+    <option value="survey">Surveys & data collection</option>
+    <option value="qa_review">Quality review</option>
+    <option value="custom">Custom project</option>
+   </select>
+   <label for="newTemplate">Starting layout</label>
+   <select id="newTemplate">
+    <option value="voice">Voice recording studio</option><option value="transcription">Transcription workbench</option><option value="evaluation">Evaluation / rating workstation</option>
+    <option value="survey">Survey form</option><option value="annotation">Annotation task</option><option value="blank">Blank canvas</option>
+   </select>
+   <button class="action-primary" id="createSubmit" type="submit">Create project & open builder →</button>
+   <p class="fine-print">Projects are created as <b>unpublished</b>. Publishing a page does not automatically enable task processing or participant access.</p>
+  </form>
+  <div class="welcome-existing"><div class="existing-title"><h2>Existing projects</h2><p>Open a project's pages and continue editing.</p></div><div id="projectCatalog" class="project-catalog">Loading projects…</div></div>
+ </div>
+</section>
+
+<section id="editorShell" class="editor-shell" hidden aria-label="Visual project builder">
+ <div class="editor-sidebar">
+  <div class="side-top"><div class="overline">PROJECT STRUCTURE</div><h2>Pages <button id="pageAdd" title="Add a page" type="button">＋</button></h2></div>
+  <div id="pageList" class="page-list" role="list"></div>
+  <div class="side-divider"></div>
+  <div class="side-tabs"><button class="selected" data-side="blocks" type="button">Elements</button><button data-side="components" type="button">Workflow</button></div>
+  <div class="sidebar-search"><input id="blockSearch" type="search" placeholder="Search components…" aria-label="Search components"></div>
+  <div id="blockPanel" class="side-panel selected"><div id="gjs-blocks"></div></div>
+  <div id="widgetPanel" class="side-panel"><div id="widgetShortcuts" class="widget-shortcuts"></div></div>
+  <div class="sidebar-foot"><div class="accent-dot"></div><span>Drag any block onto the canvas</span></div>
+ </div>
+ <div class="editor-center">
+  <div class="canvas-toolbar">
+   <div class="canvas-heading"><strong id="currentPageName">Home</strong><span id="currentPageSlug">/home</span></div>
+   <div class="device-switch" role="group" aria-label="Preview width"><button class="active" data-device="Desktop" type="button">Desktop</button><button data-device="Tablet" type="button">Tablet</button><button data-device="Mobile" type="button">Mobile</button></div>
+   <button class="canvas-control" id="duplicateLayer" type="button">Duplicate</button>
+   <button class="canvas-control" id="deleteLayer" type="button">Delete</button>
+   <button class="canvas-control" id="previewBtn" type="button">Preview ↗</button>
+  </div>
+  <div class="canvas-frame"><div id="gjs"></div></div>
+  <div class="canvas-hint"><span>◧ Visual canvas</span><span>Click any element to edit · Drag to move · Use the right panel for precision</span></div>
+ </div>
+ <div class="editor-inspector">
+  <div class="inspector-head"><div class="overline">DESIGN INSPECTOR</div><h2>Properties</h2></div>
+  <div class="inspector-tabs">
+   <button class="selected" data-inspect="styles" type="button">Style</button><button data-inspect="traits" type="button">Settings</button><button data-inspect="layers" type="button">Layers</button>
+  </div>
+  <div class="inspector-content selected" id="stylesPanel"><div id="gjs-styles"></div></div>
+  <div class="inspector-content" id="traitsPanel"><div id="gjs-traits"></div></div>
+  <div class="inspector-content" id="layersPanel"><div id="gjs-layers"></div></div>
+  <div class="inspector-footer"><strong>Design mode</strong><p>Buttons, inputs and media widgets can be positioned and styled here. Workflow actions require a configured project backend.</p></div>
+ </div>
+</section>
+</div>
+
+<dialog id="builderDialog" class="builder-dialog" aria-labelledby="builderDialogTitle">
+ <div class="dialog-top"><div><div class="overline" id="dialogKicker">PROJECT BUILDER</div><h2 id="builderDialogTitle">Edit page</h2></div><button id="dialogClose" type="button" aria-label="Close">✕</button></div>
+ <div id="dialogFields" class="dialog-fields"></div><p id="dialogInfo" role="status" aria-live="polite"></p>
+ <div class="dialog-actions"><button id="dialogCancel" type="button" class="top-btn">Cancel</button><button id="dialogApply" type="button" class="top-btn primary">Save</button></div>
+</dialog>
+<dialog id="previewDialog" class="preview-dialog" aria-labelledby="previewTitle">
+ <div class="dialog-top"><div><div class="overline">UNPUBLISHED PREVIEW</div><h2 id="previewTitle">Page preview</h2></div><button id="previewClose" type="button" aria-label="Close">✕</button></div>
+ <iframe id="previewIframe" title="Safe preview" sandbox="allow-top-navigation-by-user-activation"></iframe>
+</dialog>
+<div id="builderToast" role="status" aria-live="polite"></div>
+<script src="/project-builder-palette.js?v=1" defer></script>
+<script src="/project-builder.js?v=1" defer></script>
+</body></html>
