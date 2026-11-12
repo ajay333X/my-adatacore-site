@@ -140,7 +140,7 @@ jobs:
           grep -Fq 'Precision in Every Byte.' <<<"$home_js"
           grep -Fq 'initPrecisionTagline' <<<"$home_js"
           grep -Fq 'a.home-btn-primary{color:#fff!important}' <<<"$home_css"
-          grep -Fq "url('/adatacore-mark.svg')" <<<"$public_css"
+          grep -Fq "url('/assets/adatacore-logo.jpg')" <<<"$public_css"
           grep -Fq 'Voice and transcription first' <<<"$teams"
           grep -Fq 'does not charge contributors a fee' <<<"$contributors"
           grep -Fq 'Privacy Policy' <<<"$privacy"
