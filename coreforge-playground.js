@@ -1,0 +1,79 @@
+(()=>{
+'use strict';
+if(window.__cfPlayground)return;window.__cfPlayground=true;
+const U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+const $=s=>document.getElementById(s);
+let objectUrl='',resultText='',running=false;
+const notice=(msg,bad=false)=>{const el=$('cfPlayStatus');if(el){el.textContent=msg;el.classList.toggle('error',bad)}};
+function clearAudio(){
+ if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=''}
+ const p=$('cfPlayLocal');p.pause();p.removeAttribute('src');p.hidden=true;
+}
+async function onFile(){
+ clearAudio();const file=$('cfPlayFile').files?.[0];
+ if(!file)return;
+ if(file.size>10*1024*1024){notice('Choose an audio file under 10 MB.',true);$('cfPlayFile').value='';return}
+ objectUrl=URL.createObjectURL(file);
+ $('cfPlayLocal').src=objectUrl;$('cfPlayLocal').hidden=false;
+ notice('Ready to transcribe '+file.name+'. The audio stays local until you select Transcribe with AI.');
+}
+async function run(e){
+ e.preventDefault();if(running)return;
+ const file=$('cfPlayFile').files?.[0];
+ if(!file){notice('Choose an audio file first.',true);return}
+ if(file.size>10*1024*1024){notice('The 10 MB file limit was exceeded.',true);return}
+ running=true;$('cfPlaySubmit').disabled=true;$('cfCopyTranscript').disabled=true;
+ notice('Sending audio securely to the hosted Whisper baseline for inference...');
+ try{
+  if(!window.supabase?.createClient)throw Error('Secure authentication library unavailable.');
+  const client=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data:{session},error:authError}=await client.auth.getSession();
+  if(authError||!session)throw Error('Sign in again to use CoreForge.');
+  const form=new FormData();form.set('audio',file,file.name);form.set('language',$('cfPlayLanguage').value);form.set('reference',$('cfPlayReference').value.trim());
+  const response=await fetch(U+'/functions/v1/coreforge-playground',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:K},body:form});
+  const out=await response.json();
+  if(!response.ok)throw Error((out.error||'Inference failed')+(out.detail?' — '+out.detail:''));
+  resultText=out.transcript||'';
+  $('cfPlayResult').textContent=resultText;
+  $('cfCopyTranscript').disabled=!resultText;
+  const stats=$('cfPlayMetrics');stats.textContent='';
+  const items=[['Model','Whisper Large V3 Turbo'],['Provider','Groq (hosted baseline)'],['Inference time',((Number(out.duration_ms)||0)/1000).toFixed(1)+' seconds']];
+  if(out.metrics){items.push(['Word error rate',out.metrics.wer+'%'],['Character error rate',out.metrics.cer+'%'],['Word edits',out.metrics.word_edits+' / '+out.metrics.reference_words])}
+  for(const [title,value] of items){const item=document.createElement('div');const label=document.createElement('span');label.textContent=title;const data=document.createElement('strong');data.textContent=String(value);item.append(label,data);stats.append(item)}
+  notice('Transcription completed. This is a hosted Whisper baseline, not a fine-tuned Adatacore model.');
+ }catch(err){notice('Could not transcribe audio: '+String(err.message||err),true)}
+ finally{running=false;$('cfPlaySubmit').disabled=false}
+}
+async function status(){
+ const el=$('cfPlayTrainingStats'),chip=$('cfPlayWorkerState');
+ try{
+  if(!window.supabase?.createClient)return;
+  const client=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data,error}=await client.rpc('coreforge_snapshot');
+  if(error)throw error;
+  const o=data?.overview||{},runs=data?.training_runs||[],workers=data?.workers||[];
+  const online=Number(o.workers_online||0),queued=Number(o.queued_runs||0);
+  chip.textContent=online?'GPU worker connected':'No GPU worker online';
+  chip.className='cf-status '+(online?'adatacore_trainable':'neutral');
+  const stats=[['GPU workers online',online],['Queued training jobs',queued],['Completed jobs',runs.filter(r=>r.status==='completed').length],['Frozen datasets',Number(o.frozen_datasets||0)]];
+  el.textContent='';
+  for(const [title,value] of stats){const d=document.createElement('div');const t=document.createElement('span');t.textContent=title;const n=document.createElement('strong');n.textContent=String(value);d.append(t,n);el.append(d)}
+  const queuedJob=runs.find(r=>r.status==='queued');
+  if(queuedJob){const d=document.createElement('div');d.className='cf-play-job';d.textContent='Queued: '+queuedJob.name+' · '+queuedJob.base_model+' · '+(queuedJob.worker_message||'Waiting for GPU');el.append(d)}
+ }catch(error){chip.textContent='Status unavailable';el.textContent='Unable to read training status: '+error.message}
+}
+function boot(){
+ const form=$('cfPlayForm');if(!form)return;
+ form.addEventListener('submit',run);
+ form.addEventListener('reset',()=>{clearAudio();resultText='';$('cfPlayResult').textContent='Run a test to see the transcript generated by the AI.';$('cfPlayMetrics').replaceChildren();$('cfCopyTranscript').disabled=true;notice('Ready for another test.')});
+ $('cfPlayFile').addEventListener('change',onFile);
+ $('cfCopyTranscript').onclick=async()=>{if(!resultText)return;try{await navigator.clipboard.writeText(resultText);notice('Transcript copied.')}catch(e){notice('Clipboard unavailable: '+e.message,true)}};
+ $('cfJumpWorkers').onclick=()=>document.querySelector('.cf-tabs [data-tab="workers"]')?.click();
+ $('cfJumpRuns').onclick=()=>document.querySelector('.cf-tabs [data-tab="runs"]')?.click();
+ document.querySelector('.cf-tabs [data-tab="playground"]')?.addEventListener('click',status);
+ $('refreshCoreForge')?.addEventListener('click',status);
+ window.addEventListener('pagehide',clearAudio);
+ void status();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
