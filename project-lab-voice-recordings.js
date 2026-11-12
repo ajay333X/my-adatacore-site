@@ -5,18 +5,21 @@ const P=Number(new URLSearchParams(location.search).get('project')||0);
 const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml');
 const $=id=>document.getElementById(id);
 let busy=false;
+const taskId=id=>'VS-'+String(id).toUpperCase();
+const normalId=value=>String(value||'').trim().replace(/^VS-/i,'').toLowerCase();
 const css='<style id="acAudioLabCss">'+
-'.ac-recording-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}.ac-recording-stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px}.ac-recording-stat span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.ac-recording-stat strong{font-size:25px;display:block;margin-top:5px}.ac-recording-item{border:1px solid var(--line);border-radius:13px;padding:16px;background:var(--panel);margin:10px 0}.ac-recording-title{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}.ac-recording-title strong{font-size:12px}.ac-recording-meta{margin-top:6px;color:var(--muted);font-size:10px;line-height:1.55}.ac-recording-track{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.ac-recording-track audio{display:block;width:100%;max-width:700px;margin:10px 0 0}.ac-recording-track details{margin:12px 0 0}.ac-recording-track summary{cursor:pointer;font-size:11px;font-weight:800}.ac-recording-transcript{white-space:pre-wrap;background:var(--panel2);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;max-height:160px;overflow:auto;margin-top:8px}.ac-recording-qa{margin-top:10px;font-size:11px;font-weight:750;color:var(--muted)}@media(max-width:700px){.ac-recording-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}</style>';
+'.ac-recording-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}.ac-recording-stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px}.ac-recording-stat span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.ac-recording-stat strong{font-size:25px;display:block;margin-top:5px}.ac-recording-item{border:1px solid var(--line);border-radius:13px;padding:16px;background:var(--panel);margin:10px 0}.ac-recording-title{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}.ac-recording-title strong{font-size:12px}.ac-recording-meta{margin-top:6px;color:var(--muted);font-size:10px;line-height:1.55}.ac-recording-track{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.ac-recording-track audio{display:block;width:100%;max-width:700px;margin:10px 0 0}.ac-recording-track details{margin:12px 0 0}.ac-recording-track summary{cursor:pointer;font-size:11px;font-weight:800}.ac-recording-transcript{white-space:pre-wrap;background:var(--panel2);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;max-height:160px;overflow:auto;margin-top:8px}.ac-recording-qa{margin-top:10px;font-size:11px;font-weight:750;color:var(--muted)}.ac-qa-task-id{margin:10px 0;display:flex;align-items:center;gap:9px;flex-wrap:wrap}.ac-qa-task-id code{font:700 11px ui-monospace,monospace;color:var(--text);overflow-wrap:anywhere}.ac-qa-search{padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin:8px 0 16px}.ac-qa-search input{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}.ac-qa-review-form{border-top:1px solid var(--line);padding-top:13px;margin-top:13px;display:grid;gap:10px}.ac-qa-review-form .inputs{display:flex;gap:9px;flex-wrap:wrap}.ac-qa-review-form select,.ac-qa-review-form textarea{padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit}.ac-qa-review-form textarea{width:100%;min-height:70px}.ac-qa-review-status{font-size:11px;color:var(--muted)}@media(max-width:700px){.ac-recording-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}</style>';
 function addView(){
  const anchor=document.querySelector('.lab-nav [data-view="reviews"]'),main=document.querySelector('.lab-main');
  if(!anchor||!main)return false;
- const button=document.createElement('button');button.dataset.view='recordings';button.textContent='◉ Voice recordings';anchor.after(button);
+ const button=document.createElement('button');button.dataset.view='recordings';button.textContent='◉ Central QA · Voice';anchor.after(button);
  button.onclick=()=>switchView();
  const section=document.createElement('section');section.id='view-recordings';section.className='lab-view';
- section.innerHTML='<div class="view-head"><div><div class="eyebrow">Audio production</div><h1>Recordings & audio summaries</h1><p>Submitted audio tracks, durations, Hindi transcript drafts and review results are available here.</p></div><div class="toolbar"><button id="acRecordRefresh" class="btn btn-secondary" type="button">Refresh recordings</button><a id="acRecordQaLink" class="btn btn-primary" href="/voice-studio" target="_blank" rel="noopener">Open Voice Studio QA ↗</a></div></div><div id="acRecordingStats" class="ac-recording-stats"></div><div id="acRecordingItems" aria-live="polite">Choose this section to view recordings.</div>';
+ section.innerHTML='<div class="view-head"><div><div class="eyebrow">Central QA / Audio production</div><h1>Central QA — Voice recordings</h1><p>Search by unique recording task ID. Review Solo and both Duo tracks together and submit QA feedback.</p></div><div class="toolbar"><button id="acRecordRefresh" class="btn btn-secondary" type="button">Refresh recordings</button><a id="acRecordQaLink" class="btn btn-secondary" href="/voice-studio" target="_blank" rel="noopener">Voice Studio ↗</a></div></div><div class="ac-qa-search"><label for="acTaskSearch"><strong>Find task ID</strong></label><input type="search" id="acTaskSearch" placeholder="VS-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" aria-label="Find Voice Studio task by ID"></div><div id="acRecordingStats" class="ac-recording-stats"></div><div id="acRecordingItems" aria-live="polite">Choose this section to view recordings.</div>';
  main.append(section);document.head.insertAdjacentHTML('beforeend',css);
  new MutationObserver(()=>{if(section.classList.contains('active'))void read()}).observe(section,{attributes:true,attributeFilter:['class']});
  $('acRecordRefresh').onclick=()=>void read();
+ $('acTaskSearch').addEventListener('input',()=>{clearTimeout(window.__acQaSearchTimer);window.__acQaSearchTimer=setTimeout(()=>void read(),300)});
  return true;
 }
 function switchView(){
@@ -36,7 +39,11 @@ async function read(){
  if(busy)return;busy=true;
  const host=$('acRecordingItems'),stats=$('acRecordingStats');host.textContent='Loading recordings…';
  try{
-  const {data:sessions,error}=await db.from('vs_sessions').select('id,mode,state,created_at,script_id,actor_a,actor_b').eq('project_id',P).order('created_at',{ascending:false}).limit(150);
+  const term=normalId($('acTaskSearch')?.value);
+  const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(term);
+  let request=db.from('vs_sessions').select('id,mode,state,created_at,script_id,actor_a,actor_b').eq('project_id',P);
+  if(isUuid)request=request.eq('id',term);
+  const {data:sessions,error}=await request.order('created_at',{ascending:false}).limit(150);
   if(error)throw error;
   const ids=(sessions||[]).map(s=>s.id);
   let tracks=[],reviews=[],scripts=[];
@@ -54,12 +61,13 @@ async function read(){
   if(!tracks.length){
    const p=document.createElement('div');p.className='card lab-card';p.textContent='No submitted audio yet. Completed recordings will automatically appear here with playback and transcript drafts.';host.append(p);return;
   }
-  for(const s of sessions.filter(s=>tracks.some(t=>t.session_id===s.id))){
+  for(const s of sessions.filter(s=>tracks.some(t=>t.session_id===s.id)&&(!term||taskId(s.id).toLowerCase().includes(term)||s.id.toLowerCase().includes(term)))){
    const entry=document.createElement('article');entry.className='ac-recording-item';
    const top=document.createElement('div');top.className='ac-recording-title';
    const heading=document.createElement('strong');heading.textContent=scripts.find(x=>x.id===s.script_id)?.title||'Voice Studio session';
    const pill=document.createElement('span');pill.className='pill pill-gray';pill.textContent=s.state==='submitted'?'Submitted':s.state;
    top.append(heading,pill);entry.append(top);
+   const task=document.createElement('div');task.className='ac-qa-task-id';const idcode=document.createElement('code');idcode.textContent=taskId(s.id);const copy=document.createElement('button');copy.type='button';copy.className='btn btn-secondary';copy.textContent='Copy task ID';copy.onclick=()=>navigator.clipboard?.writeText(taskId(s.id)).then(()=>copy.textContent='Copied',()=>copy.textContent='Select the ID to copy');task.append(idcode,copy);entry.append(task);
    const sub=document.createElement('div');sub.className='ac-recording-meta';sub.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+tracks.filter(t=>t.session_id===s.id).length+' audio track(s)';entry.append(sub);
    for(const t of tracks.filter(t=>t.session_id===s.id)){
     const row=document.createElement('div');row.className='ac-recording-track';
@@ -89,8 +97,36 @@ async function read(){
    qa.textContent=review?'QA: '+review.verdict+' · '+review.quality_score+'/5':s.state==='submitted'?'Awaiting QA review':'Not yet ready for review';
    entry.append(qa);
    if(review?.feedback){const text=document.createElement('div');text.className='ac-recording-transcript';text.textContent=review.feedback;entry.append(text)}
+   if(s.state==='submitted'){
+    const form=document.createElement('form');form.className='ac-qa-review-form';
+    const title=document.createElement('strong');title.textContent=review?'Update Central QA review':'Review completed recording';
+    const controls=document.createElement('div');controls.className='inputs';
+    const verdict=document.createElement('select');verdict.setAttribute('aria-label','Review verdict');
+    for(const name of ['approved','needs_changes','rejected']){const option=document.createElement('option');option.value=name;option.textContent=name.replaceAll('_',' ');verdict.append(option)}
+    verdict.value=review?.verdict||'approved';
+    const score=document.createElement('select');score.setAttribute('aria-label','Quality score');
+    for(let i=1;i<=5;i++){const option=document.createElement('option');option.value=String(i);option.textContent=i+' / 5';score.append(option)}
+    score.value=String(review?.quality_score||4);controls.append(verdict,score);
+    const feedback=document.createElement('textarea');feedback.placeholder='Specific QA feedback for the recording task';feedback.maxLength=4000;feedback.value=review?.feedback||'';
+    const submit=document.createElement('button');submit.type='submit';submit.className='btn btn-primary';submit.textContent=review?'Update QA review':'Submit QA review';
+    const result=document.createElement('span');result.className='ac-qa-review-status';result.setAttribute('role','status');
+    form.append(title,controls,feedback,submit,result);
+    form.onsubmit=async event=>{
+     event.preventDefault();submit.disabled=true;result.textContent='Saving QA review…';
+     try{
+      const {data:{user},error:authError}=await db.auth.getUser();
+      if(authError||!user)throw authError||new Error('Sign in again');
+      const {error}=await db.from('vs_reviews').upsert({session_id:s.id,reviewer_id:user.id,verdict:verdict.value,quality_score:Number(score.value),feedback:feedback.value.trim()},{onConflict:'session_id'});
+      if(error)throw error;
+      result.textContent='Review saved for '+taskId(s.id);qa.textContent='QA: '+verdict.value+' · '+score.value+'/5';submit.textContent='Update QA review';
+     }catch(e){result.textContent='Unable to save review: '+e.message}
+     finally{submit.disabled=false}
+    };
+    entry.append(form);
+   }
    host.append(entry);
   }
+ if(!host.children.length){host.textContent='No recordings found for that task ID. Check the ID and refresh.'}
  }catch(e){host.textContent='Unable to load voice recordings: '+e.message}
  finally{busy=false}
 }
