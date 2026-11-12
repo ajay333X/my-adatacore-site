@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K);
 const $=s=>document.getElementById(s),fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
-let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[];
+let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false;
 function note(t){$('vsAlert').textContent=t||''}
 function fail(e){return String(e?.message||e||'Unknown error').replaceAll('_',' ')}
 async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
@@ -17,15 +17,75 @@ document.querySelector('main').append(adminSection);
 $('vsAdminBack').onclick=()=>view('home');
 async function refreshAdmin(){
  try{
- let obj=await rpc('vs_admin_overview',{});
- $('vsMetrics').innerHTML=Object.entries(obj).map(([k,v])=>'<span class="vs-stat">'+k.replaceAll('_',' ')+': <b>'+String(v)+'</b></span>').join('');
+ const stats=await rpc('vs_admin_overview',{});
+ $('vsMetrics').textContent='';
+ for(const [key,value] of Object.entries(stats)){const span=document.createElement('span');span.className='vs-stat';span.textContent=key.replaceAll('_',' ')+': '+String(value);$('vsMetrics').append(span)}
  const {data,error}=await db.from('vs_sessions').select('id,mode,state,created_at').eq('project_id',P).order('created_at',{ascending:false}).limit(30);if(error)throw error;
- const ids=(data||[]).map(x=>x.id);let tracks=[];
- if(ids.length){let r=await db.from('vs_tracks').select('session_id,storage_path,duration_seconds').in('session_id',ids);if(r.error)throw r.error;tracks=r.data||[]}
+ const ids=(data||[]).map(x=>x.id);let tracks=[],reviews=[];
+ if(ids.length){
+  const [t,r]=await Promise.all([
+   db.from('vs_tracks').select('session_id,storage_path,duration_seconds').in('session_id',ids),
+   db.from('vs_reviews').select('session_id,verdict,quality_score,feedback').in('session_id',ids)
+  ]);
+  if(t.error)throw t.error;if(r.error)throw r.error;tracks=t.data||[];reviews=r.data||[];
+ }
  const host=$('vsSessions');host.textContent='';
- for(const s of data||[]){let line=document.createElement('p');line.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+s.state+' ';for(const t of tracks.filter(t=>t.session_id===s.id)){const b=document.createElement('button');b.className='btn small';b.textContent='Listen to track';b.onclick=async()=>{let {data,error}=await db.storage.from('voice-studio').createSignedUrl(t.storage_path,120);if(error)note(fail(error));else window.open(data.signedUrl,'_blank','noopener,noreferrer')};line.append(b)}host.append(line)}
- if(!data?.length)host.textContent='No sessions recorded yet.';
- }catch(e){note(fail(e))}
+ for(const s of data||[]){
+  const line=document.createElement('article');line.className='vs-stat';line.style.cssText='margin:10px 0;padding:16px;display:block';
+  const title=document.createElement('strong');title.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+s.state;line.append(title);
+  for(const t of tracks.filter(t=>t.session_id===s.id)){
+   const b=document.createElement('button');b.className='btn small';b.textContent='Listen to recording';b.onclick=async()=>{
+    const {data,error}=await db.storage.from('voice-studio').createSignedUrl(t.storage_path,120);
+    if(error)note(fail(error));else window.open(data.signedUrl,'_blank','noopener,noreferrer');
+   };line.append(b);
+  }
+  if(s.state==='submitted'){
+   const previous=reviews.find(x=>x.session_id===s.id);
+   const review=document.createElement('div');review.style.cssText='margin-top:15px;padding-top:14px;border-top:1px solid #e6e8ef';
+   const label=document.createElement('div');label.textContent=previous?'Reviewed: '+previous.verdict+' · '+previous.quality_score+'/5':'Pending quality review';
+   label.style.cssText='font-weight:700;margin-bottom:9px';review.append(label);
+   const verdict=document.createElement('select');verdict.setAttribute('aria-label','Review verdict');
+   for(const value of ['approved','needs_changes','rejected']){const o=document.createElement('option');o.value=value;o.textContent=value.replaceAll('_',' ');verdict.append(o)}
+   verdict.value=previous?.verdict||'approved';
+   const quality=document.createElement('select');quality.setAttribute('aria-label','Quality score');
+   for(let n=1;n<=5;n++){const o=document.createElement('option');o.value=String(n);o.textContent=n+' / 5';quality.append(o)}
+   quality.value=String(previous?.quality_score||4);
+   const feedback=document.createElement('textarea');feedback.setAttribute('aria-label','Reviewer feedback');feedback.maxLength=4000;feedback.rows=2;feedback.placeholder='Specific, actionable feedback for the voice actor';feedback.value=previous?.feedback||'';feedback.style.cssText='width:100%;margin-top:8px;padding:10px;border:1px solid #dfe2e8;border-radius:9px;font:inherit';
+   const saveButton=document.createElement('button');saveButton.className='btn primary small';saveButton.textContent=previous?'Update review':'Submit review';
+   const result=document.createElement('span');result.style.cssText='margin-left:10px;font-size:12px';
+   saveButton.onclick=async()=>{
+    saveButton.disabled=true;result.textContent='Saving…';
+    try{
+     const {error}=await db.from('vs_reviews').upsert({session_id:s.id,reviewer_id:me.id,verdict:verdict.value,quality_score:Number(quality.value),feedback:feedback.value.trim()},{onConflict:'session_id'});
+     if(error)throw error;result.textContent='Review saved successfully.';label.textContent='Reviewed: '+verdict.value+' · '+quality.value+'/5';saveButton.textContent='Update review';
+    }catch(e){result.textContent='Review failed: '+fail(e)}finally{saveButton.disabled=false}
+   };
+   review.append(verdict,quality,feedback,saveButton,result);line.append(review);
+  }
+  host.append(line);
+ }
+ if(!data?.length)host.textContent='No recording sessions yet.';
+ }catch(e){note('Admin review list unavailable: '+fail(e))}
+}
+async function loadMine(){
+ if(!me||admin)return;
+ try{
+  const {data,error}=await db.from('vs_sessions').select('id,mode,created_at,state').eq('project_id',P).eq('mode','solo').eq('state','submitted').order('created_at',{ascending:false}).limit(12);
+  if(error)throw error;
+  let host=$('vsMySubmissions');
+  if(!host){host=document.createElement('section');host.id='vsMySubmissions';host.className='card';host.style.marginTop='20px';$('home').append(host)}
+  host.textContent='';const heading=document.createElement('h2');heading.textContent='My recording submissions';host.append(heading);
+  if(!data?.length){const para=document.createElement('p');para.textContent='Your completed recordings and reviewer feedback will appear here.';host.append(para);return}
+  const ids=data.map(x=>x.id);const rv=await db.from('vs_reviews').select('session_id,verdict,quality_score,feedback,reviewed_at').in('session_id',ids);
+  if(rv.error)throw rv.error;
+  for(const s of data){const row=document.createElement('div');row.style.cssText='padding:12px 0;border-top:1px solid #eaedf0;font-size:13px';
+   const review=(rv.data||[]).find(x=>x.session_id===s.id);
+   const stamp=document.createElement('strong');stamp.textContent=new Date(s.created_at).toLocaleString()+' · '+(review?review.verdict.replaceAll('_',' ')+' · '+review.quality_score+'/5':'Awaiting quality review');
+   row.append(stamp);
+   if(review?.feedback){const para=document.createElement('p');para.textContent=review.feedback;row.append(para)}
+   host.append(row);
+  }
+ }catch(e){note('Submission history unavailable: '+fail(e))}
 }
 $('vsRefresh').onclick=()=>void refreshAdmin();
 $('vsAssign').onclick=async()=>{let b=$('vsAssign');b.disabled=true;try{await rpc('vs_assign_member',{p_email:$('vsMember').value.trim(),p_enabled:$('vsAccess').value==='true',p_limit:Number($('vsLimit').value)});$('vsAssignResult').textContent='Access updated successfully.';await refreshAdmin()}catch(e){$('vsAssignResult').textContent=fail(e)}finally{b.disabled=false}};
@@ -36,11 +96,13 @@ async function init(){
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P);if(error)throw error;scripts=data||[];
  if(admin){const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
- $('openSolo').onclick=()=>void enter('solo');$('openDuo').onclick=()=>void enter('duo');note('Account verified. Project #94 '+(admin?'administrator preview':'participant access')+'.');
+ $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=true;$('openDuo').title='Duo calling will become available after TURN relay and end-to-end tests';
+ document.querySelector('#solo [data-back]').onclick=()=>void leaveSolo();
+ if(!admin)void loadMine();note('Account verified. Project #94 '+(admin?'administrator preview':'participant access')+'. Duo calling is postponed.');
 }
 async function enter(which){
- try{cleanup();if(which==='duo')await turnIce();mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned script unavailable');blob=null;secs=0;
- if(which==='solo'){view('solo');$('scriptTitle').textContent=script.title;$('scriptBody').textContent=script.body;$('emotionMeta').textContent=script.emotion;$('durationMeta').textContent=script.duration_seconds/60+' min target';$('scriptPage').textContent='Assigned';$('scenario').disabled=$('emotion').disabled=$('length').disabled=$('scriptCount').disabled=true;['prevScript','nextScript','scriptRefresh'].forEach(x=>$(x).disabled=true);$('recordTime').textContent='00:00';$('recordStatus').textContent='Microphone ready when you start';$('startRecord').disabled=false;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('saveRecord').textContent='Retry secure upload';$('playback').hidden=true;setupSolo()}
+ try{if(which!=='solo'){note('Duo mode is on hold. Solo recording is available for pilot testing.');return}cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned script unavailable');blob=null;secs=0;
+ if(which==='solo'){view('solo');$('scriptTitle').textContent=script.title;$('scriptBody').textContent=script.body;$('emotionMeta').textContent=script.emotion;$('durationMeta').textContent=script.duration_seconds/60+' min target';$('scriptPage').textContent='Assigned';$('scenario').replaceChildren(new Option(script.scenario,script.scenario));$('emotion').replaceChildren(new Option(script.emotion,script.emotion));$('length').replaceChildren(new Option(fmt(script.duration_seconds),String(script.duration_seconds)));$('scriptCount').value='1';$('scenario').disabled=$('emotion').disabled=$('length').disabled=$('scriptCount').disabled=true;['prevScript','nextScript','scriptRefresh'].forEach(x=>$(x).disabled=true);$('recordTime').textContent='00:00';$('recordStatus').textContent='Microphone ready when you start';$('startRecord').disabled=false;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('saveRecord').textContent='Submit recording securely';$('playback').hidden=true;$('playback').removeAttribute('src');$('soloStatus').textContent='';if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;setupSolo()}
  else{view('duo');setupDuo();await duoUpdate();poll=setInterval(()=>duoUpdate().catch(e=>roomStatus(fail(e))),1500)}
  }catch(e){note('Unable to start: '+fail(e))}
 }
@@ -51,6 +113,8 @@ function record(onDone){
  rec.start(1000);
 }
 async function save(){
+ if(uploading)return;uploading=true;
+ try{
  if(!blob||blob.size<1024)throw Error('Empty audio');
  let type=blob.type.split(';')[0],ext=type==='audio/mp4'?'.mp4':type==='audio/ogg'?'.ogg':'.webm',path=session.id+'/'+me.id+ext;
  const {error}=await db.storage.from('voice-studio').upload(path,blob,{contentType:type,upsert:false});
@@ -59,12 +123,58 @@ async function save(){
  if(mode==='solo'){$('recordStatus').textContent='Recording securely submitted.';$('saveRecord').disabled=true}
  else{roomStatus(session.state==='submitted'?'Both voice tracks submitted.':'Your track submitted. Waiting for partner.');$('vsRetry').hidden=true}
  note('Audio stored in the private Voice Studio bucket.');if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ }finally{uploading=false}
+}
+function resetPreview(){
+ if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;blob=null;rec=null;secs=0;
+ $('recordTime').textContent='00:00';$('playback').pause();$('playback').removeAttribute('src');$('playback').hidden=true;
+ $('startRecord').disabled=false;$('stopRecord').disabled=true;$('resetRecord').disabled=true;$('saveRecord').disabled=true;
+ $('recordStatus').textContent='Ready for a new take.';$('soloStatus').textContent='Your previous take has been discarded; nothing was uploaded.';
+}
+async function leaveSolo(){
+ if(uploading){note('The recording is uploading. Please complete the submission before leaving.');return}
+ if(rec?.state==='recording'){note('Stop recording before leaving the studio.');return}
+ if(blob&&!window.confirm('Discard the unsent recording and leave the session?'))return;
+ try{
+  if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id});
+ }catch(e){note('Could not close session: '+fail(e));return}
+ if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;
+ cleanup();rec=null;blob=null;mode='';session=null;script=null;view('home');note('Session closed. Your unsent recording was discarded.');
 }
 function setupSolo(){
- $('startRecord').onclick=async()=>{try{await mic();session=await rpc('vs_consent',{p_session:session.id});session=await rpc('vs_begin',{p_session:session.id});secs=0;$('startRecord').disabled=true;$('stopRecord').disabled=false;$('recordStatus').textContent='Recording active';record(async()=>{try{await save()}catch(e){$('recordStatus').textContent='Upload failed: '+fail(e);$('saveRecord').disabled=false}});timer=setInterval(()=>{secs++;$('recordTime').textContent=fmt(secs);if(secs>=script.duration_seconds&&rec?.state==='recording')rec.stop()},1000)}catch(e){note(fail(e));cleanup()}};
+ $('startRecord').onclick=async()=>{
+  if(uploading||rec?.state==='recording'||session?.state==='submitted')return;
+  try{
+   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('This browser does not support microphone recording.');
+   await mic();
+   if(session.state==='matched')session=await rpc('vs_consent',{p_session:session.id});
+   if(session.state==='rehearsal')session=await rpc('vs_begin',{p_session:session.id});
+   if(session.state!=='recording')throw Error('Session is not ready to record.');
+   if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;blob=null;secs=0;
+   $('recordTime').textContent='00:00';$('playback').hidden=true;$('playback').removeAttribute('src');
+   $('startRecord').disabled=true;$('stopRecord').disabled=false;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
+   $('recordStatus').textContent='Recording active — please deliver the assigned script.';
+   $('soloStatus').textContent='';
+   record(()=>{
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+    $('stopRecord').disabled=true;
+    if(!blob||blob.size<1024){$('recordStatus').textContent='No usable audio captured.';$('resetRecord').disabled=false;return}
+    previewUrl=URL.createObjectURL(blob);$('playback').src=previewUrl;$('playback').hidden=false;
+    $('saveRecord').disabled=false;$('resetRecord').disabled=false;
+    $('recordStatus').textContent='Recording complete — review your playback before submitting.';
+    $('soloStatus').textContent='Not yet submitted. Choose Submit recording or Record again.';
+   });
+   timer=setInterval(()=>{secs++;$('recordTime').textContent=fmt(secs);if(secs>=script.duration_seconds&&rec?.state==='recording')rec.stop()},1000);
+  }catch(e){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('startRecord').disabled=false;$('recordStatus').textContent='Recording could not start.';note(fail(e))}
+ };
  $('stopRecord').onclick=()=>{if(rec?.state==='recording')rec.stop()};
- $('saveRecord').onclick=()=>save().catch(e=>note(fail(e)));
- $('resetRecord').disabled=true;
+ $('resetRecord').onclick=()=>{if(!uploading)resetPreview()};
+ $('saveRecord').onclick=async()=>{
+  if(uploading||!blob||session?.state==='submitted')return;
+  $('saveRecord').disabled=true;$('resetRecord').disabled=true;$('recordStatus').textContent='Submitting encrypted connection to private project storage…';
+  try{await save();$('soloStatus').textContent='Submission complete. An administrator can review your audio.';$('startRecord').disabled=true;$('resetRecord').disabled=true;void loadMine()}
+  catch(e){note('Secure upload failed: '+fail(e));$('recordStatus').textContent='Upload failed — your take is still available to retry.';$('saveRecord').disabled=false;$('resetRecord').disabled=false}
+ };
 }
 function roomStatus(t){if($('vsRoomStatus'))$('vsRoomStatus').textContent=t}
 function setupDuo(){
@@ -130,6 +240,6 @@ async function leave(){
  try{if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id})}catch(e){note(fail(e))}
  cleanup();session=null;mode='';script=null;view('home');note('Session closed.');
 }
-window.addEventListener('pagehide',cleanup);
+window.addEventListener('pagehide',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);cleanup()});
 init().catch(e=>note('Studio authorization error: '+fail(e)));
 })();
