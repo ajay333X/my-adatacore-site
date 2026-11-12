@@ -1,0 +1,30 @@
+name: CoreForge chatbot public dataset refresh
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 0'
+permissions:
+  contents: read
+concurrency:
+  group: coreforge-chatbot-public-refresh
+  cancel-in-progress: true
+jobs:
+  prepare-public-sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install public data dependency
+        run: python -m pip install 'datasets>=3.0,<5' 'huggingface-hub>=0.28,<2'
+      - name: Prepare open licensed research sample
+        run: python workers/coreforge_chat_data.py --source oasst1 --limit 250 --accept-license --out coreforge-chatbot-data
+      - name: Publish train and evaluation files as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coreforge-chatbot-public-research-data
+          path: coreforge-chatbot-data/
+          retention-days: 7
+          if-no-files-found: error
