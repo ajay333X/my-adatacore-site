@@ -306,9 +306,20 @@ function duoTrackStatus(local,partner){
 
 function setupDuo(){
  const host=document.querySelector('#duo .card.lobby');
- host.innerHTML='<div class="vs-duo-header"><div><span class="vs-duo-overline">LIVE SESSION / TWO-PERSON AUDIO</span><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus" role="status" aria-live="polite">Searching for another approved contributor.</p></div><div class="vs-duo-task-id"><span>Recording task ID</span><strong id="vsDuoTaskId">Assigning…</strong><button type="button" class="btn small" id="vsCopyId">Copy ID</button></div></div><div class="vs-stage-list" id="vsStageList" aria-label="Session progress"></div><div class="vs-progress-caption" id="vsProgressSummary"></div><div class="vs-duo-stats"><div><small>Participants</small><strong id="vsParticipants">1 / 2</strong></div><div><small>Audio connection</small><strong id="vsAudioConnection" data-state="pending">Not connected</strong></div><div><small>Rehearsal remaining</small><strong id="vsCountdown">01:00</strong></div><div><small>Recorded</small><strong id="vsClock">00:00</strong></div><div><small>Other actors waiting</small><strong id="vsWaiting">0</strong></div></div><div class="vs-duo-tracks"><div><span>Your recording</span><strong id="vsLocalTrack">Not started</strong></div><div><span>Partner recording</span><strong id="vsPartnerTrack">Not started</strong></div></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><div class="vs-audio-player"><audio id="vsRemote" autoplay controls playsinline hidden></audio><button type="button" class="btn" id="vsHearPartner" hidden>▶ Hear partner</button></div><div id="vsDuoPreview" class="vs-duo-preview" hidden><h3>Review your take before submitting</h3><audio id="vsPreviewAudio" controls preload="metadata"></audio><p>The recording stays on this device until you select Submit recording.</p></div><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop my recording</button><button class="btn primary" id="vsSubmit" hidden>Submit recording to QA</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">Each participant stops and submits their own track separately. Both tracks share one task ID and appear in Central QA after submission. Direct WebRTC may expose IP information and may require a TURN relay on restrictive networks.</p>';
+ host.innerHTML='<div class="vs-duo-header"><div><span class="vs-duo-overline">LIVE SESSION / TWO-PERSON AUDIO</span><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus" role="status" aria-live="polite">Searching for another approved contributor.</p></div><div class="vs-duo-task-id"><span>Recording task ID</span><strong id="vsDuoTaskId">Assigning…</strong><button type="button" class="btn small" id="vsCopyId">Copy ID</button><button type="button" class="btn small" id="vsFlagTask">Flag task</button></div></div><div class="vs-stage-list" id="vsStageList" aria-label="Session progress"></div><div class="vs-progress-caption" id="vsProgressSummary"></div><div class="vs-duo-stats"><div><small>Participants</small><strong id="vsParticipants">1 / 2</strong></div><div><small>Audio connection</small><strong id="vsAudioConnection" data-state="pending">Not connected</strong></div><div><small>Rehearsal remaining</small><strong id="vsCountdown">01:00</strong></div><div><small>Recorded</small><strong id="vsClock">00:00</strong></div><div><small>Other actors waiting</small><strong id="vsWaiting">0</strong></div></div><div class="vs-duo-tracks"><div><span>Your recording</span><strong id="vsLocalTrack">Not started</strong></div><div><span>Partner recording</span><strong id="vsPartnerTrack">Not started</strong></div></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><div class="vs-audio-player"><audio id="vsRemote" autoplay controls playsinline hidden></audio><button type="button" class="btn" id="vsHearPartner" hidden>▶ Hear partner</button></div><div id="vsDuoPreview" class="vs-duo-preview" hidden><h3>Review your take before submitting</h3><audio id="vsPreviewAudio" controls preload="metadata"></audio><p>The recording stays on this device until you select Submit recording.</p></div><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Request recording start</button><div id="vsRecordingApproval" class="vs-approval" hidden><strong>Recording permission requested</strong><p>Voice Actor A wants to start recording this conversation. You can accept or decline.</p><div class="actions"><button type="button" class="btn primary" id="vsAcceptRecording">Accept recording</button><button type="button" class="btn" id="vsDeclineRecording">Decline</button></div></div><button class="btn danger" id="vsStop" hidden>Stop my recording</button><button class="btn primary" id="vsSubmit" hidden>Submit recording to QA</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">Each participant stops and submits their own track separately. Both tracks share one task ID and appear in Central QA after submission. Direct WebRTC may expose IP information and may require a TURN relay on restrictive networks.</p>';
  $('vsConsent').onclick=()=>void consent();
  $('vsStart').onclick=()=>void begin();
+ $('vsAcceptRecording').onclick=()=>void answerRecording(true);
+ $('vsDeclineRecording').onclick=()=>void answerRecording(false);
+ $('vsFlagTask').onclick=async()=>{
+  const reason=window.prompt('Flag recording task '+voiceTaskId(session?.id)+'\nDescribe the issue for Central QA (minimum 5 characters):');
+  if(reason===null)return;
+  if(reason.trim().length<5){roomStatus('Please provide at least 5 characters describing the issue.');return;}
+  try{
+   await rpc('vs_flag_task',{p_session:session.id,p_reason:reason.trim()});
+   roomStatus('Task '+voiceTaskId(session.id)+' flagged for Central QA. Your report was saved.');
+  }catch(error){roomStatus('Could not flag task: '+fail(error))}
+ };
  $('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};
  $('vsSubmit').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
  $('vsRetry').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
@@ -319,6 +330,19 @@ function setupDuo(){
  duoStage(0,'Waiting for the second participant');
  duoAudioStatus('Waiting for partner');
  duoTrackStatus('Not started','Not started');
+}
+const trackLabel=state=>({
+ not_started:'Not started',recording:'Recording now',stopped:'Stopped · awaiting submission',submitted:'Submitted to QA'
+})[state]||'Not started';
+async function answerRecording(accept){
+ const approve=$('vsAcceptRecording'),decline=$('vsDeclineRecording');
+ approve.disabled=true;decline.disabled=true;
+ try{
+  session=await rpc('vs_respond_recording',{p_session:session.id,p_accept:accept});
+  $('vsRecordingApproval').hidden=true;
+  roomStatus(accept?'Recording approved. Both participants will begin when the host starts.':'Recording declined. No recording has started.');
+ }catch(error){roomStatus(fail(error))}
+ finally{approve.disabled=false;decline.disabled=false}
 }
 async function duoUpdate(){
  if(mode!=='duo'||!session||duoRefreshBusy)return;
@@ -337,9 +361,13 @@ async function duoUpdate(){
   $('vsWaiting').textContent=String(await rpc('vs_waiting',{p_project:P}));
   const {data:submittedTracks,error:tracksError}=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id);
   if(!tracksError){
+   const ownA=session.actor_a===me.id;
+   const myProgress=ownA?session.actor_a_track_state:session.actor_b_track_state;
+   const partnerProgress=ownA?session.actor_b_track_state:session.actor_a_track_state;
    const done=(submittedTracks||[]).some(t=>t.actor_id===me.id);
    const partner=(submittedTracks||[]).some(t=>t.actor_id!==me.id);
-   duoTrackStatus(done?'Submitted to QA':blob?'Ready to submit':rec?.state==='recording'?'Recording…':'Not started',partner?'Submitted':session.state==='submitted'?'Submitted':'Waiting');
+   duoTrackStatus(done?'Submitted to QA':rec?.state==='recording'?'Recording now':blob?'Stopped · ready to submit':trackLabel(myProgress),
+     partner?'Submitted to QA':trackLabel(partnerProgress));
   }
   if(session.state==='expired'){
    // Recover automatically when a tab wakes up after its queue lease expired.
@@ -370,10 +398,29 @@ async function duoUpdate(){
    duoStage(connected?3:2,connected?'Conversation practice · speak normally':'Connecting secure audio with your partner…');
    const left=Math.max(0,60-Math.floor((Date.now()-new Date(session.rehearsal_started_at).getTime())/1000));
    $('vsCountdown').textContent=fmt(left);
-   $('vsStart').hidden=session.actor_a!==me.id;$('vsStart').disabled=left>0||!connected;
-   roomStatus(!connected?'Waiting for two-way audio. Check the connection indicator and click Hear partner if needed.':left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A can start recording.');
+   const host=session.actor_a===me.id;
+   const request=session.recording_request_status||'none';
+   $('vsStart').hidden=!host||request==='pending'||request==='approved';
+   $('vsStart').disabled=left>0||!connected;
+   $('vsRecordingApproval').hidden=host||request!=='pending';
+   if(host&&request==='approved'){
+    roomStatus('Your partner accepted. Starting the agreed recording…');
+    session=await rpc('vs_begin',{p_session:session.id});
+    await beginRecording();
+    return;
+   }
+   if(request==='pending'){
+    roomStatus(host?'Recording request sent. Waiting for your partner to accept or decline.':'Recording request received. Accept or decline before anything is recorded.');
+   }else if(request==='declined'){
+    roomStatus(host?'Your partner declined recording. You can request again after discussing.':'You declined recording. No recording will start until you approve a new request.');
+   }else{
+    roomStatus(!connected?'Waiting for two-way audio. Check the connection indicator and click Hear partner if needed.':left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A may request recording approval.');
+   }
   }
-  if(session.state==='recording'&&!rec&&!blob){$('vsStart').hidden=true;await beginRecording()}
+  if(session.state==='recording'&&!rec&&!blob){
+   $('vsStart').hidden=true;$('vsRecordingApproval').hidden=true;
+   await beginRecording();
+  }
   if(session.state==='recording')duoStage(4,rec?.state==='recording'?'Recording live · stop when your take is complete':blob?'Recording stopped · preview and submit':'Waiting for recording to begin');
   if(session.state==='submitted')duoStage(5,'Recording task completed · ready for QA');
   if(session.state==='submitted'){
@@ -434,26 +481,36 @@ async function signals(){
  else if(e.kind==='stop')duoTrackStatus(blob?'Ready to submit':rec?.state==='recording'?'Recording…':'Not started','Partner stopped · waiting for submission');
  }}finally{readBusy=false}
 }
-async function begin(){try{session=await rpc('vs_begin',{p_session:session.id});await beginRecording()}catch(e){roomStatus(fail(e))}}
+async function begin(){
+ const button=$('vsStart');button.disabled=true;
+ try{
+  session=await rpc('vs_request_recording',{p_session:session.id});
+  button.hidden=true;
+  roomStatus('Recording request sent. Your partner must explicitly accept before either microphone is recorded.');
+ }catch(e){roomStatus(fail(e));button.disabled=false}
+}
 async function beginRecording(){
  if(rec||blob)return;
  await mic();secs=0;
  if(Date.now()-new Date(session.recording_started_at).getTime()>script.duration_seconds*1000){
   roomStatus('The recording window expired. Return to the studio to start another session.');return;
  }
- record(()=>{
+ record(async()=>{
+  try{session=await rpc('vs_track_progress',{p_session:session.id,p_state:'stopped'})}
+  catch(error){roomStatus('Local recording saved, but partner status could not update: '+fail(error))}
   const preview=$('vsDuoPreview'),audio=$('vsPreviewAudio');
   if(previewUrl)URL.revokeObjectURL(previewUrl);
   previewUrl=URL.createObjectURL(blob);
   audio.src=previewUrl;preview.hidden=false;
   $('vsStop').hidden=true;$('vsSubmit').hidden=false;$('vsRetry').hidden=true;
-  duoTrackStatus('Stopped · preview before submitting','Waiting for partner');
+  duoTrackStatus('Stopped · preview before submitting',trackLabel(session.actor_a===me.id?session.actor_b_track_state:session.actor_a_track_state));
   duoStage(4,'Your recording is ready to preview and submit');
   roomStatus('Recording stopped. Listen to your take and select Submit recording to send it to QA. Task '+voiceTaskId(session.id));
   signal('stop',{actor:me.id}).catch(()=>{});
  });
  $('vsStart').hidden=true;$('vsStop').hidden=false;$('vsSubmit').hidden=true;
- duoTrackStatus('Recording…','Waiting for partner');
+ duoTrackStatus('Recording now',trackLabel(session.actor_a===me.id?session.actor_b_track_state:session.actor_a_track_state));
+ rpc('vs_track_progress',{p_session:session.id,p_state:'recording'}).then(v=>{session=v}).catch(e=>roomStatus('Recording started; status sync failed: '+fail(e)));
  duoStage(4,'Recording in progress · use Stop my recording to finish your track');
  roomStatus('Recording live. Stop your own track when finished; the partner can finish independently.');
  timer=setInterval(()=>{
