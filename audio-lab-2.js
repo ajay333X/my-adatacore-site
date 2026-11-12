@@ -232,6 +232,44 @@ function renderSessions(){
   if(script){const text=document.createElement('details');text.innerHTML='<summary style="cursor:pointer;font-weight:700;margin:16px 0">View assigned dialogue</summary>';const pre=document.createElement('div');pre.className='al-text';pre.textContent=script.body;text.append(pre);detail.append(text)}
   if(fs.length){const flagsBox=document.createElement('div');flagsBox.className='al-note';flagsBox.textContent='Participant flags';for(const fl of fs){const p=document.createElement('p');p.textContent=stamp(fl.created_at)+' — '+fl.reason;flagsBox.append(p)}detail.append(flagsBox)}
   const review=document.createElement('p');review.className='al-meta';review.textContent=rv?'QA: '+rv.verdict+' · '+rv.quality_score+'/5'+(rv.feedback?' · '+rv.feedback:''):'QA: Not reviewed';detail.append(review);
+  if(s.state==='submitted'){
+   const qaForm=document.createElement('form');qaForm.className='al-form';
+   qaForm.style.cssText='border-top:1px solid var(--line);padding:14px 0 4px;margin-top:15px';
+   const title=document.createElement('h3');title.textContent='Central QA review';qaForm.append(title);
+   const fields=document.createElement('div');fields.className='al-two';
+   const verdict=document.createElement('select');verdict.setAttribute('aria-label','QA verdict');
+   for(const value of ['approved','needs_changes','rejected']){const option=document.createElement('option');option.value=value;option.textContent=value.replaceAll('_',' ');verdict.append(option)}
+   verdict.value=rv?.verdict||'approved';
+   const quality=document.createElement('select');quality.setAttribute('aria-label','Quality score');
+   for(let score=1;score<=5;score++){const option=document.createElement('option');option.value=String(score);option.textContent=score+' / 5';quality.append(option)}
+   quality.value=String(rv?.quality_score||4);
+   const a=document.createElement('label');a.textContent='Verdict';a.append(verdict);
+   const b=document.createElement('label');b.textContent='Quality score';b.append(quality);
+   fields.append(a,b);qaForm.append(fields);
+   const feedbackLabel=document.createElement('label');feedbackLabel.textContent='Reviewer feedback';
+   const feedback=document.createElement('textarea');feedback.rows=3;feedback.maxLength=4000;feedback.value=rv?.feedback||'';feedback.placeholder='Specific, actionable comments';
+   feedbackLabel.append(feedback);qaForm.append(feedbackLabel);
+   const footer=document.createElement('div');footer.className='al-form-actions';
+   const save=document.createElement('button');save.type='submit';save.className='al-button al-primary';save.textContent=rv?'Update QA review':'Submit QA review';
+   const result=document.createElement('span');result.className='al-meta';result.setAttribute('role','status');
+   footer.append(save,result);qaForm.append(footer);
+   qaForm.onsubmit=async event=>{
+    event.preventDefault();save.disabled=true;result.textContent='Saving review…';
+    try{
+     const {data:{user},error:authError}=await db.auth.getUser();
+     if(authError||!user)throw authError||Error('Sign in required');
+     const {error}=await db.from('vs_reviews').upsert({session_id:s.id,reviewer_id:user.id,verdict:verdict.value,quality_score:Number(quality.value),feedback:feedback.value.trim()},{onConflict:'session_id'});
+     if(error)throw error;
+     reviews=reviews.filter(x=>x.session_id!==s.id);
+     reviews.push({session_id:s.id,verdict:verdict.value,quality_score:Number(quality.value),feedback:feedback.value.trim()});
+     review.textContent='QA: '+verdict.value+' · '+quality.value+'/5';
+     result.textContent='Saved for '+task(s.id);save.textContent='Update QA review';
+     renderOverview();
+    }catch(error){result.textContent='Review not saved: '+error.message}
+    finally{save.disabled=false}
+   };
+   detail.append(qaForm);
+  }
   item.append(detail);
   item.querySelector('[data-show=toggle]').onclick=e=>{detail.hidden=!detail.hidden;e.currentTarget.textContent=detail.hidden?'Show playback & details':'Hide playback & details'};
   host.append(item);
