@@ -102,12 +102,23 @@ async function init(){
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
  if(admin){const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
- $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=true;$('openDuo').title='Duo calling will become available after TURN relay and end-to-end tests';
+ $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=false;$('openDuo').onclick=()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
  document.querySelector('#solo [data-back]').onclick=()=>void leaveSolo();
- if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling is postponed.');
+ if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling uses a direct browser connection where supported; restrictive networks may require a relay.');
 }
 async function enter(which){
- try{if(which!=='solo'){note('Duo mode is on hold. Solo recording is available for pilot testing.');return}cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned Hindi script is unavailable. Please contact the administrator.');blob=null;secs=0;
+ try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
+ if(session.mode!==which){
+  // The server may return an unfinished session from another mode.
+  // Never discard a recording without the participant's explicit consent.
+  if(session.state==='recording')throw Error('Finish your current recording before switching studio modes.');
+  const ok=window.confirm('You have an unfinished '+session.mode+' session. Leave it and open '+which+' instead?');
+  if(!ok){session=null;mode='';return}
+  await rpc('vs_leave',{p_session:session.id});
+  session=await rpc('vs_enter',{p_project:P,p_mode:which});
+  if(session.mode!==which)throw Error('Unable to switch studio modes. Please reload and try again.');
+ }
+ script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned Hindi script is unavailable. Please contact the administrator.');blob=null;secs=0;
  if(which==='solo'){
  view('solo');$('scriptTitle').textContent=script.title;$('scriptBody').textContent=script.body;
  $('emotionMeta').textContent=script.emotion;
@@ -236,7 +247,7 @@ function setupSolo(){
 function roomStatus(t){if($('vsRoomStatus'))$('vsRoomStatus').textContent=t}
 function setupDuo(){
  let host=document.querySelector('#duo .card.lobby');
- host.innerHTML='<div class="orb">♫</div><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus">Waiting for a match. Numbers are drawn from the live queue.</p><div class="stat"><span><b id="vsWaiting">—</b>Waiting actors</span><span><b id="vsCountdown">01:00</b>Conversation countdown</span><span><b id="vsClock">00:00</b>Recorded</span></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><audio id="vsRemote" autoplay controls playsinline hidden style="width:100%"></audio><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop & submit my recording</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">No names or emails are shown to your partner. Direct WebRTC connections may expose IP information; a TURN relay is necessary for stronger network privacy and reliable production use.</p>';
+ host.innerHTML='<div class="orb">♫</div><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus">Waiting for a match. Numbers are drawn from the live queue.</p><div class="stat"><span><b id="vsWaiting">—</b>Waiting actors</span><span><b id="vsCountdown">01:00</b>Conversation countdown</span><span><b id="vsClock">00:00</b>Recorded</span></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><audio id="vsRemote" autoplay controls playsinline hidden style="width:100%"></audio><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop & submit my recording</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">No names or emails are shown to your partner. Direct WebRTC audio uses free STUN discovery when available. Partners may be able to see network IP addresses; restrictive networks may require an optional TURN relay. No paid relay is required to try duo mode.</p>';
  $('vsConsent').onclick=()=>void consent();$('vsStart').onclick=()=>void begin();$('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};$('vsRetry').onclick=()=>save().catch(e=>roomStatus(fail(e)));$('vsLeave').onclick=()=>void leave();
  signalId=0;offerSent=false;connected=false;iceQueue=[];pc=null;rec=null;
 }
@@ -263,12 +274,28 @@ async function duoUpdate(){
 }
 async function consent(){try{await mic();session=await rpc('vs_consent',{p_session:session.id});$('vsConsent').hidden=true;await duoUpdate()}catch(e){roomStatus(fail(e));$('vsConsent').disabled=false}}
 async function signal(kind,payload){const {error}=await db.from('vs_signals').insert({session_id:session.id,sender:me.id,kind,payload});if(error)throw error}
-async function turnIce(){const {data:{session:a}}=await db.auth.getSession();if(!a)throw Error('Please sign in again');const r=await fetch(U+'/functions/v1/voice-studio-ice',{method:'POST',headers:{Authorization:'Bearer '+a.access_token,apikey:K,'Content-Type':'application/json'},body:'{}'});const b=await r.json();if(!r.ok)throw Error(b.error||'TURN provider not configured');return b.iceServers}
+async function turnIce(){
+ // Use the existing authenticated relay if configured, but never require a paid TURN account.
+ // Public STUN only helps peers discover routes; it is not an audio relay.
+ const fallback=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+ try{
+  const {data:{session:a}}=await db.auth.getSession();
+  if(!a)return fallback;
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),2500);
+  try{
+   const r=await fetch(U+'/functions/v1/voice-studio-ice',{method:'POST',headers:{Authorization:'Bearer '+a.access_token,apikey:K,'Content-Type':'application/json'},body:'{}',signal:controller.signal});
+   if(!r.ok)return fallback;
+   const response=await r.json();
+   const servers=Array.isArray(response.iceServers)?response.iceServers.filter(x=>x&&x.urls):[];
+   return servers.length?[...servers,...fallback]:fallback;
+  }finally{clearTimeout(timeout)}
+ }catch(_){return fallback}
+}
 async function startPeer(){
- await mic();const ice=await turnIce();pc=new RTCPeerConnection({iceServers:ice,iceTransportPolicy:'relay'});
+ await mic();const ice=await turnIce();pc=new RTCPeerConnection({iceServers:ice,iceTransportPolicy:'all'});
  stream.getTracks().forEach(t=>pc.addTrack(t,stream));
  pc.ontrack=e=>{peerStream=e.streams[0];$('vsRemote').srcObject=peerStream;$('vsRemote').hidden=false;$('vsRemote').play().catch(()=>roomStatus('Press play to hear the other voice actor.'))};
- pc.onconnectionstatechange=()=>{connected=pc.connectionState==='connected';if(['disconnected','failed'].includes(pc.connectionState))roomStatus('Voice connection lost. Try leaving and matching again.')};
+ pc.onconnectionstatechange=()=>{connected=pc.connectionState==='connected';if(pc.connectionState==='failed')roomStatus('Direct audio could not connect on this network. Try another network or configure an optional TURN relay. Your microphone recording can still work in Solo mode.');else if(pc.connectionState==='disconnected')roomStatus('Voice connection interrupted. Reconnecting…')};
  pc.onicecandidate=e=>{if(e.candidate)signal('candidate',e.candidate.toJSON()).catch(x=>roomStatus(fail(x)))};
  signalTimer=setInterval(()=>signals().catch(e=>roomStatus(fail(e))),900);
  await signals();
