@@ -147,7 +147,7 @@ function openEditor(s){
   form.elements.namedItem(k).value=value[k];
  }
  form.elements.namedItem('is_active').checked=value.is_active;
- $('alEditWarning').textContent=s&&sessions.some(x=>x.script_id===s.id)?'This script is already assigned to existing sessions. Edits are recorded as revisions and affect the current shared script text; consider Duplicate for a new version.':'Editing saves an automatic revision snapshot. Archived scripts are excluded from new assignments.';
+ $('alEditWarning').textContent=s&&sessions.some(x=>x.script_id===s.id)?'This script has existing sessions: to preserve recorded QA evidence, its dialogue and metadata cannot be changed. Use Duplicate to make a new editable version. You may archive this script without affecting old tasks.':'Changes are saved in the revision history. Archived scripts are excluded from new assignments.';
  $('alEditorStatus').textContent='';$('alEditor').showModal();
 }
 function switchEditorMode(value){
@@ -179,6 +179,14 @@ async function saveEditor(event){
   item.duration_seconds=Number(item.duration_seconds);item.is_active=Boolean(item.is_active);
   if(!item.title||!item.body||!['solo','duo'].includes(item.mode)||!['Hindi','English','Hinglish'].includes(item.language)||!Number.isInteger(item.duration_seconds)||item.duration_seconds<60||item.duration_seconds>180)throw Error('Check the title, mode, language, duration (60–180 seconds) and dialogue.');
   if(item.title.length>120||item.scenario.length>120||item.emotion.length>50||item.body.length>18000)throw Error('One or more fields exceed their permitted length.');
+  // Never mutate a script already referenced by a live or completed session.
+  // QA must always be able to inspect the original assigned dialogue and duration.
+  if(editing&&sessions.some(x=>x.script_id===editing.id)){
+   const before=scriptShape(editing);
+   const after=scriptShape(item);
+   if(Object.keys(before).some(k=>k!=='is_active'&&before[k]!==after[k]))
+    throw Error('This script is already assigned to recorded sessions. Use Duplicate to create an editable version without altering existing QA evidence.');
+  }
   const data={title:item.title,scenario:item.scenario,emotion:item.emotion,mode:item.mode,language:item.language,duration_seconds:item.duration_seconds,body:item.body,is_active:item.is_active};
   let r;
   if(editing)r=await db.from('vs_scripts').update(data).eq('id',editing.id).eq('project_id',P).select('id').single();
