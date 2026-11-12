@@ -1,0 +1,43 @@
+name: CoreForge chatbot static checks
+on:
+  push:
+    paths:
+      - 'coreforge-chatbot.*'
+      - 'coreforge.html'
+      - 'vercel.json'
+      - 'workers/coreforge_chat_*.py'
+      - 'workers/CoreForge_Chatbot_Colab.ipynb'
+      - '.github/workflows/coreforge-chatbot-*.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate chatbot scripts
+        run: |
+          node --check coreforge-chatbot.js
+          python -m py_compile workers/coreforge_chat_data.py workers/coreforge_chat_train.py
+      - name: Verify notebook, site links and routes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          nb=json.loads(Path('workers/CoreForge_Chatbot_Colab.ipynb').read_text())
+          assert nb['nbformat']==4 and len(nb['cells'])>=5
+          site=Path('coreforge.html').read_text()
+          assert '/admin/coreforge-chatbot' in site
+          page=Path('coreforge-chatbot.html').read_text()
+          assert 'coreforge-chatbot.js?v=1' in page and 'coreforge-chatbot.css?v=1' in page
+          assert Path('coreforge-chatbot.css').stat().st_size>200
+          vercel=json.loads(Path('vercel.json').read_text())
+          assert any(row.get('source')=='/admin/coreforge-chatbot' and row.get('destination')=='/coreforge-chatbot' for row in vercel['rewrites'])
+          assert not any('GROQ_API_KEY' in Path(p).read_text() for p in ['coreforge-chatbot.js','coreforge-chatbot.html'])
+          print('CoreForge chatbot static checks passed.')
+          PY
