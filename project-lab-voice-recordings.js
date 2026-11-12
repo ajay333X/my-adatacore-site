@@ -46,15 +46,16 @@ async function read(){
   const {data:sessions,error}=await request.order('created_at',{ascending:false}).limit(150);
   if(error)throw error;
   const ids=(sessions||[]).map(s=>s.id);
-  let tracks=[],reviews=[],scripts=[];
+  let tracks=[],reviews=[],scripts=[],flags=[];
   if(ids.length){
    const results=await Promise.all([
     db.from('vs_tracks').select('session_id,actor_id,storage_path,duration_seconds,bytes,submitted_at,transcript').in('session_id',ids),
     db.from('vs_reviews').select('session_id,verdict,quality_score,feedback,reviewed_at').in('session_id',ids),
-    db.from('vs_scripts').select('id,title').eq('project_id',P)
+    db.from('vs_scripts').select('id,title').eq('project_id',P),
+    db.from('vs_task_flags').select('session_id,reason,created_at').in('session_id',ids).order('created_at',{ascending:false})
    ]);
    for(const res of results)if(res.error)throw res.error;
-   [tracks,reviews,scripts]=results.map(x=>x.data||[]);
+   [tracks,reviews,scripts,flags]=results.map(x=>x.data||[]);
   }
   stats.replaceChildren(addStat('Recent sessions',sessions.length),addStat('Uploaded tracks',tracks.length),addStat('Completed sessions',sessions.filter(s=>s.state==='submitted').length),addStat('Reviewed',reviews.length));
   host.textContent='';
@@ -67,6 +68,8 @@ async function read(){
    const heading=document.createElement('strong');heading.textContent=scripts.find(x=>x.id===s.script_id)?.title||'Voice Studio session';
    const pill=document.createElement('span');pill.className='pill pill-gray';pill.textContent=s.state==='submitted'?'Submitted':s.state;
    top.append(heading,pill);entry.append(top);
+   const sessionFlags=flags.filter(f=>f.session_id===s.id);
+   if(sessionFlags.length){const flagBox=document.createElement('div');flagBox.className='ac-recording-qa';flagBox.style.cssText='padding:10px;border:1px solid #efcc8f;background:#fff8e8;border-radius:9px;margin:10px 0;color:#805417';flagBox.textContent='⚑ '+sessionFlags.length+' participant flag(s) for this task';for(const flag of sessionFlags){const row=document.createElement('div');row.style.cssText='margin:8px 0 0;white-space:pre-wrap';row.textContent=new Date(flag.created_at).toLocaleString()+' · '+flag.reason;flagBox.append(row)}entry.append(flagBox)}
    const task=document.createElement('div');task.className='ac-qa-task-id';const idcode=document.createElement('code');idcode.textContent=taskId(s.id);const copy=document.createElement('button');copy.type='button';copy.className='btn btn-secondary';copy.textContent='Copy task ID';copy.onclick=()=>navigator.clipboard?.writeText(taskId(s.id)).then(()=>copy.textContent='Copied',()=>copy.textContent='Select the ID to copy');task.append(idcode,copy);entry.append(task);
    const sub=document.createElement('div');sub.className='ac-recording-meta';sub.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+tracks.filter(t=>t.session_id===s.id).length+' audio track(s)';entry.append(sub);
    for(const t of tracks.filter(t=>t.session_id===s.id)){
