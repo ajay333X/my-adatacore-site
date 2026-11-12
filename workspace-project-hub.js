@@ -224,7 +224,7 @@ function renderProjects(){
  const host=$('acHomeProjectCards');if(!host)return;
  host.className=projects.length?'ac-project-grid':'ac-home-empty';
  host.innerHTML=projects.length?projects.map(p=>
- '<a class="ac-project-card" href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span>'+esc(p.project_code||'Project')+'</span><strong style="color:var(--brand);font-size:11px">View project →</strong></div></a>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
+ '<a class="ac-project-card" href="'+projectLink(p.id)+'" data-project-id="'+Number(p.id)+'"><div class="ac-pr-top"><span class="ac-pr-type">'+esc(p.type==='transcription'?'Transcription':p.type==='voice_recording'?'Voice recording':p.type||'Project')+'</span><span class="pill pill-green">Assigned</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'Project instructions, feedback and updates are available inside.')+'</p><div class="ac-pr-action"><span class="ac-project-code-tag">'+esc(p.project_code||'Project')+'</span><strong style="color:var(--brand);font-size:11px">View project →</strong></div></a>').join(''):'No active project access appears on this account. Your available task assignments remain accessible under Assignments.';
 }
 async function readList(){
  try{
@@ -256,7 +256,7 @@ function openProject(id,updateUrl=true){
  document.querySelectorAll('[data-view-link]').forEach(x=>x.classList.toggle('active',x.dataset.viewLink==='overview'));
  $('acProjectTitle').textContent=project.name||'Project';
  $('acProjectSub').textContent=project.description||'Project instructions, resources and feedback.';
- let codeLabel=$('acProjectPublicCode');if(!codeLabel){codeLabel=document.createElement('span');codeLabel.id='acProjectPublicCode';codeLabel.style.cssText='font:700 11px ui-monospace,monospace;letter-spacing:.06em;color:var(--muted);margin:4px 0 0;display:inline-block';$('acProjectSub').after(codeLabel)}codeLabel.textContent=project.project_code||'';
+ let codeLabel=$('acProjectPublicCode');if(!codeLabel){codeLabel=document.createElement('span');codeLabel.id='acProjectPublicCode';codeLabel.style.cssText='font:700 10px ui-monospace,monospace;letter-spacing:.02em;color:#385c65;padding:7px 11px;border:1px solid #d8e9e7;background:#edf6f5;border-radius:9px;margin:7px 0 11px;display:inline-flex;max-width:100%;overflow-wrap:anywhere;user-select:all';$('acProjectSub').after(codeLabel)}codeLabel.textContent=project.project_code||'';
  const recordingsTab=document.querySelector('[data-project-tab="recordings"]');if(recordingsTab)recordingsTab.hidden=Number(project.id)!==94;
  void applyProjectUi(project.id);
  $('acProjectRate').hidden=true;

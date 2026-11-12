@@ -57,7 +57,7 @@
       const pm=pr.includes('project_manager'),qa=pr.includes('qa_manager');
       const primary=qa&&!pm?`/admin/project-lab?project=${encodeURIComponent(p.id)}#reviews`:`/admin/project-lab?project=${encodeURIComponent(p.id)}`;
       const primaryLabel=qa&&!pm?'Open QA view':'Open Project Lab';
-      return `<article class="card" style="padding:18px"><div class="eyebrow">Project #${esc(p.id)}</div><h3 style="margin:7px 0 5px">${esc(p.name||'Project')}</h3><div class="page-sub">${pr.map(x=>esc(roleLabel[x]||x)).join(' · ')}</div><div class="toolbar" style="margin-top:14px"><a class="btn btn-primary" href="${primary}">${primaryLabel}</a>${pm?`<a class="btn btn-secondary" href="/admin/assignments?project=${encodeURIComponent(p.id)}">Assignments</a>`:''}</div></article>`;
+      return `<article class="card" style="padding:18px"><div class="eyebrow">${esc(p.project_code||window.AdProjectCodes?.get(p.id)||"Project")}</div><h3 style="margin:7px 0 5px">${esc(p.name||'Project')}</h3><div class="page-sub">${pr.map(x=>esc(roleLabel[x]||x)).join(' · ')}</div><div class="toolbar" style="margin-top:14px"><a class="btn btn-primary" href="${primary}">${primaryLabel}</a>${pm?`<a class="btn btn-secondary" href="/admin/assignments?project=${encodeURIComponent(p.id)}">Assignments</a>`:''}</div></article>`;
     }).join(''):'<div class="card empty">No project-scoped role is currently assigned to this account.</div>';
   }
 

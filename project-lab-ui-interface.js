@@ -43,7 +43,7 @@ function initUi(){
  panel.innerHTML=
  '<div class="view-head"><div><div class="eyebrow">No-code project design</div><h1>UI Interface</h1><p>Customize the project screen without touching code. Preview changes, save a draft, publish the design, or restore the previous design.</p></div><span id="acUiState" class="pill pill-gray">Draft</span></div>'+
  '<div class="ac-ui-grid"><div class="card lab-card ac-ui-fields">'+
- '<div><label>Public project code</label><div class="ac-ui-code" id="acUiCode">Loading…</div></div>'+
+ '<div><label>Public project reference</label><div class="ac-ui-columns"><code class="ac-ui-code" id="acUiCode" style="overflow-wrap:anywhere;user-select:all;flex:1">Loading…</code><button type="button" class="btn btn-secondary" id="acUiCopy">Copy ID</button></div></div>'+
  '<div><label for="acUiHeadline">Main heading</label><input id="acUiHeadline" maxlength="110" class="input" placeholder="Welcome to your project"></div>'+
  '<div><label for="acUiSubtitle">Description</label><textarea id="acUiSubtitle" maxlength="260" class="input" placeholder="Short introduction"></textarea></div>'+
  '<div><label for="acUiBadge">Small label</label><input id="acUiBadge" maxlength="60" class="input" placeholder="Voice Studio"></div>'+
@@ -61,6 +61,7 @@ function initUi(){
  b.onclick=()=>showUi();
  for(const id of ['acUiHeadline','acUiSubtitle','acUiBadge','acUiButton','acUiAccent','acUiImage'])$(id).addEventListener('input',()=>{try{preview();message('')}catch(e){message(e.message)}});
  const swatches=$('acUiSwatches');for(const col of colors){const x=document.createElement('button');x.type='button';x.style.background=col;x.title=col;x.onclick=()=>{$('acUiAccent').value=col;preview()};swatches.append(x)}
+ $('acUiCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('acUiCode').textContent);message('Project reference copied to clipboard.')}catch(e){message('Select the project reference above to copy it.')}};
  $('acUiSave').onclick=()=>void save(false);$('acUiPublish').onclick=()=>void save(true);
  $('acUiRestore').onclick=()=>{fill(stored?.published||{});message('Published design restored in the editor. Save draft to retain it.')};
  $('acUiFile').onchange=()=>void upload();

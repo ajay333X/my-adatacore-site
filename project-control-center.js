@@ -17,7 +17,7 @@ const tabs=[
  ['announcements','Announcements','ac-announcements'],['jobs','Jobs','assignments'],
  ['activity','Activity','activity']
 ];
-let snap=null,active='overview',dialogKind=null,editing=null,writing=false,search='',folder='',initialized=false;
+let snap=null,active='overview',dialogKind=null,editing=null,writing=false,search='',folder='',initialized=false,projectCode='';
 const access=()=>window.__adatacoreProjectAccess;
 const canEdit=()=>!!access()?.is_super_admin||!!access()?.project_roles?.includes('project_manager');
 const hasAccess=()=>!!access()?.allowed&&(access()?.is_super_admin||access()?.project_roles?.some(x=>x==='project_manager'||x==='qa_manager'));
@@ -35,7 +35,7 @@ function ensureUi(){
  if(!main||!labNav||!hasAccess())return false;
  if(!$('pccSummary')){
   const summary=document.createElement('div');summary.id='pccSummary';summary.className='ac-pcc-summary';
-  summary.innerHTML='<div><div id="pccName" class="ac-pcc-project">Loading project…</div><div id="pccMeta" class="ac-pcc-meta">Project #'+projectId+'</div></div><span class="ac-pcc-pill"><span class="ac-pcc-dot"></span> Project-specific controls</span>';
+  summary.innerHTML='<div><div id="pccName" class="ac-pcc-project">Loading project…</div><div id="pccMeta" class="ac-pcc-meta">Project · '+(projectCode||'—')+'</div></div><span class="ac-pcc-pill"><span class="ac-pcc-dot"></span> Project-specific controls</span>';
   main.prepend(summary);
  }
  if(!$('pccTabs')){
@@ -119,12 +119,12 @@ async function refresh(){
   snap=await rpc('admin_project_content_snapshot',{p_project_id:projectId});
   if(!snap?.project)throw Error('Project not found or access denied');
   $('pccName').textContent=snap.project.name;
-  $('pccMeta').textContent='Project #'+projectId+' · '+(snap.project.type||'Project')+' · '+(snap.project.language||'')+' · '+(snap.project.lifecycle||'');
+  $('pccMeta').textContent='Project · '+(projectCode||'—')+' · '+(snap.project.type||'Project')+' · '+(snap.project.language||'')+' · '+(snap.project.lifecycle||'');
   render(active);message('');
  }catch(e){error(e)}
 }
 function contentHead(section,description,buttonText,buttonAction){
- return '<div class="ac-pcc-heading"><div><div class="eyebrow">Project #'+projectId+' / Content</div><h1>'+section+'</h1><p>'+description+'</p></div>'+
+ return '<div class="ac-pcc-heading"><div><div class="eyebrow">Project · '+(projectCode||'—')+' / Content</div><h1>'+section+'</h1><p>'+description+'</p></div>'+
   (canEdit()?'<div class="ac-pcc-actions"><button class="btn btn-secondary" type="button" data-pcc-action="'+buttonAction+'">'+buttonText+'</button></div>':'')+'</div>';
 }
 const actions=(kind,item)=>{
@@ -229,7 +229,7 @@ function openEditor(kind,item){
  dialogKind=kind;editing=item||null;$('pccSave').hidden=false;
  const d=$('pccDialog');d.hidden=false;
  $('pccDrawerHeading').textContent=(item?'Edit ':'Add ')+(kind==='instructions'?'instructions':kind==='announcements'?'announcement':'library resource');
- $('pccDrawerDesc').textContent='Project #'+projectId+' · '+(snap?.project?.name||'');
+ $('pccDrawerDesc').textContent='Project · '+(projectCode||'—')+' · '+(snap?.project?.name||'');
  $('pccDrawerBody').innerHTML=editorHtml(kind,item);
  $('pccDrawerStatus').textContent='';
  $('pccSave').disabled=false;
@@ -332,6 +332,10 @@ async function openFile(id){
  }catch(e){error(e)}
 }
 async function boot(){
+ try{
+  const {data}=await db.from('project_lab').select('project_code').eq('id',projectId).maybeSingle();
+  projectCode=data?.project_code||window.AdProjectCodes?.get(projectId)||'';
+ }catch(_){}
  for(let i=0;i<100;i++){
   if(ensureUi()){initialized=true;break}
   await new Promise(r=>setTimeout(r,110));
@@ -349,7 +353,7 @@ async function boot(){
   syncTabs(active);
   const title=document.getElementById('topTitle')?.textContent;
   if(title&&title!=='Project Lab')$('pccName').textContent=title;
-  $('pccMeta').textContent='Project #'+projectId+' · Content is loaded when opened';
+  $('pccMeta').textContent='Project · '+(projectCode||'—')+' · Content is loaded when opened';
  }
  document.addEventListener('click',e=>{
   const b=e.target.closest('.lab-nav [data-view]');

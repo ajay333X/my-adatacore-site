@@ -97,7 +97,12 @@ function mount(){
  if(!document.getElementById('unifiedTopLink')){const a=document.createElement('a');a.id='unifiedTopLink';a.className='btn btn-secondary';a.href='/admin/live-operations?project='+projectId;a.textContent='Live metrics ↗';top.prepend(a)}
  if(!document.getElementById('unifiedProjectSelect')){
   const select=document.createElement('select');select.id='unifiedProjectSelect';select.className='lab-project-switch';select.title='Switch to another authorized project';select.setAttribute('aria-label','Switch project');
-  select.innerHTML='<option value="'+projectId+'">Project #'+projectId+'</option>';
+  select.innerHTML='<option value="'+projectId+'">Current project</option>';
+ const refreshLabel=()=>{
+  const code=window.AdProjectCodes?.get(projectId);
+  if(code&&select.options.length===1)select.options[0].textContent=code;
+ };
+ refreshLabel();document.addEventListener('adatacore:project-codes-ready',refreshLabel);
   select.onchange=()=>{const id=Number(select.value);if(id&&id!==projectId)location.assign('/admin/project-lab?project='+id)};
   top.prepend(select);
  }

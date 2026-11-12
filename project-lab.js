@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const CORE_SRC='/project-lab-core.js?v=20260902-live-sync-1';
+  const CORE_SRC='/project-lab-core.js?v=20261112-uuid-2';
   const U='https://llmhyezgcnbognmmsnzq.supabase.co';
   const K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
   const projectId=Number(new URLSearchParams(location.search).get('project')||0);
@@ -37,7 +37,7 @@
     const metrics=document.querySelectorAll('#metricGrid .metric');if(metrics[5])metrics[5].style.display='none';
     const current=location.hash.slice(1);forceView(views.has(current)?current:(projectRoles.includes('qa_manager')&&!projectRoles.includes('project_manager')?'reviews':'overview'));
     const label=projectRoles.includes('project_manager')&&projectRoles.includes('qa_manager')?'Project Manager + QA Manager':projectRoles.includes('project_manager')?'Project Manager':'QA Manager';
-    const sub=document.getElementById('topSub');if(sub)sub.textContent=`Scoped ${label} access · Project #${projectId}`;
+    const sub=document.getElementById('topSub');if(sub){const publicCode=access?.projects?.find(p=>Number(p.id)===projectId)?.project_code||window.AdProjectCodes?.get(projectId)||'Project';sub.textContent=`Scoped ${label} access · ${publicCode}`;}
   }
 
   async function loadCore(){
