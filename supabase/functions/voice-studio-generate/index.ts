@@ -26,7 +26,15 @@ Deno.serve(async(req:Request)=>{
  // Do not silently charge OpenAI when Groq is missing or unavailable.
  const groq=Deno.env.get("GROQ_API_KEY");
  if(!groq)return out({error:"Groq is not configured. Add GROQ_API_KEY in Supabase Edge Function secrets."},503);
- const prompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+(mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles")+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+Math.round(d/60*120)+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent."+(instructions?" Additional administrator directions: "+instructions:"");
+ const promptTemplate=String(p.prompt_template||"").slice(0,8000).trim();
+ const replacements:Record<string,string>={
+  count:String(n),language,mode:mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles",
+  scenario,emotions:emotions.join(", "),duration_seconds:String(d),
+  word_count:String(Math.round(d/60*120))
+ };
+ const defaultPrompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+replacements.mode+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+replacements.word_count+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.";
+ const customizedPrompt=promptTemplate?promptTemplate.replace(/\\{(count|language|mode|scenario|emotions|duration_seconds|word_count)\\}/g,(_:string,key:string)=>replacements[key]||""):"";
+ const prompt=(customizedPrompt||defaultPrompt)+" Must return exactly "+n+" scripts with keys title, scenario, emotion and body as schema-valid JSON. No markdown."+(instructions?" Additional administrator directions: "+instructions:"");
  const url="https://api.groq.com/openai/v1/chat/completions";
  const schema={type:"object",additionalProperties:false,properties:{
   scripts:{type:"array",items:{type:"object",additionalProperties:false,properties:{
@@ -77,7 +85,7 @@ Deno.serve(async(req:Request)=>{
   const {error:historyError}=await db.from("vs_script_generations").insert({
    project_id:project,script_id:created.id,requested_by:user.id,
    provider:"Groq",model:"openai/gpt-oss-120b",
-   request_json:{count:n,mode,language,scenario,emotions,duration_seconds:d,instructions},
+   request_json:{count:n,mode,language,scenario,emotions,duration_seconds:d,instructions,prompt_template:promptTemplate},
    prompt_text:prompt,output_json:{scripts:original?[original]:[]}
   });
   if(historyError)logWarning="Script created, but generation history was not saved.";
