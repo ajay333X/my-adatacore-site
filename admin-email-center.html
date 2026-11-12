@@ -24,186 +24,90 @@
 button:focus-visible,a:focus-visible{outline:2px solid #4f9ad2;outline-offset:3px}
 @media(max-width:980px){.layout{grid-template-columns:1fr}.preview-frame{height:530px}}@media(max-width:600px){.top{padding:12px 16px}.wrap{padding:19px 12px 45px}.page-heading h1{font-size:25px}.panel-head,.editor{padding:16px}.history-list{grid-template-columns:1fr;padding:12px}.preview-wrap{padding:10px}.preview-frame{height:460px}.toolrow{gap:3px}.editor-foot{justify-content:flex-start}}
 </style>
-</head>
+<link rel="stylesheet" href="/admin-email-center-v2.css?v=1"></head>
 <body>
 <header class="top"><a class="ac-brand" href="/admin" aria-label="Adatacore Admin"><span class="ac-brand-icon" aria-hidden="true"><img src="/assets/adatacore-logo.jpg" width="34" height="34" alt=""></span><span class="ac-brand-text"><span class="ac-brand-label">Adatacore</span></span></a><div class="top-r"><span class="top-context">Admin / Communications</span><a class="back" href="/admin">← Back to Admin</a></div></header>
 <div class="loading-screen" id="loading">Verifying administrator access and secure email connection…</div>
 <main class="app wrap" id="app">
- <div class="page-heading"><div><span class="eyebrow">Communication workspace</span><h1>Email Center</h1><p>Compose on-brand emails, preview exactly what recipients will see, and send securely through Resend.</p></div><div class="provider" id="provider"><span class="provider-dot"></span><span>Resend · Verifying connection</span></div></div>
+ <div class="page-heading"><div><span class="eyebrow">Communication workspace</span><h1>Email Center</h1><p>Compose rich-text or HTML emails, preview live, and send individually, in bulk, or by project and participant level.</p></div><div class="provider" id="provider"><span class="provider-dot"></span><span>Resend · Verifying connection</span></div></div>
  <div class="layout">
-  <section class="panel" aria-labelledby="composeTitle"><div class="panel-head"><h2 id="composeTitle">Compose email</h2><span class="hint">Individual message</span></div>
+  <section class="panel" aria-labelledby="composeTitle"><div class="panel-head"><h2 id="composeTitle">Compose email</h2><span class="hint">Rich text & HTML</span></div>
    <div class="editor">
-    <div class="field"><label for="from">From · Verified company sender</label><input id="from" readonly value="Verifying sender…" aria-label="Verified sender"><p>The sender is fixed by the server; it cannot be changed from the browser.</p></div>
-    <div class="field"><label for="to">Recipient email</label><input id="to" type="email" maxlength="320" placeholder="name@example.com" autocomplete="off"><p>One recipient per message. Only email people you are authorized to contact.</p></div>
-    <div class="field"><label for="subject">Subject</label><input id="subject" type="text" maxlength="180" placeholder="Project update from Adatacore" autocomplete="off"></div>
-    <div class="field"><label for="body">Message</label>
-     <div class="toolrow" role="toolbar" aria-label="Email text formatting">
-      <button type="button" data-format="bold" title="Bold text"><b>B</b></button><button type="button" data-format="italic" title="Italic text"><i>I</i></button>
-      <span class="tool-sep"></span><button type="button" data-format="heading" title="Add heading">H2</button><button type="button" data-format="bullet" title="Bullet list">• List</button><button type="button" data-format="numbered" title="Numbered list">1. List</button><button type="button" data-format="link" title="Insert link">Link</button><button type="button" data-format="divider" title="Divider">—</button>
-      <button type="button" data-format="template" class="template-btn" title="Insert a simple company message template">Use template</button>
-     </div><textarea id="body" maxlength="20000" spellcheck="true" aria-label="Formatted email message" placeholder="Hello,&#10;&#10;Write your message here. Use the toolbar above for bold, headings, links and lists."></textarea><p>Formatting uses simple markers while editing. The live preview shows the finished styled email.</p>
+    <div class="field">
+      <label for="from">Company sender email</label>
+      <div class="emailv2-row">
+        <div><select id="from" aria-label="Choose company email sender"><option value="">Loading company senders…</option></select></div>
+        <div><input id="senderName" maxlength="65" value="Adatacore" aria-label="Sender display name" placeholder="Sender display name"></div>
+      </div>
+      <input id="senderCustom" hidden type="email" placeholder="hello@adatacore.com" style="margin-top:9px" aria-label="Custom company sender">
+      <div id="senderInfo" class="sender-note">The sender is validated by the server and Resend. Use a verified company domain; an address does not have to be a separate mailbox to send from a verified domain.</div>
     </div>
-    <div class="editor-foot"><small>Messages are logged for accountability. An accepted request does not necessarily mean the email was delivered.</small><div class="button-line"><button id="test" class="secondary" type="button" disabled>Send test to me</button><button id="send" class="primary" type="button" disabled>Send email</button></div></div>
+    <div class="field">
+      <label>Recipients</label>
+      <div class="mode-pills" id="audienceModes" role="group" aria-label="Recipient selection">
+        <button type="button" class="active" data-audience="individual" aria-pressed="true">Individual</button>
+        <button type="button" data-audience="multi" aria-pressed="false">Multiple</button>
+        <button type="button" data-audience="project" aria-pressed="false">By project</button>
+      </div>
+    </div>
+    <div id="manualGroup" class="field">
+      <label for="to" id="manualLabel">Recipient email</label>
+      <textarea id="to" rows="2" spellcheck="false" placeholder="name@example.com" aria-label="Email recipient addresses"></textarea>
+      <p id="manualHint">Add one email address. For several recipients, switch to Multiple.</p>
+    </div>
+    <div id="projectGroup" hidden>
+      <div class="emailv2-row">
+        <div class="field"><label for="projectSelect">Project</label><select id="projectSelect"><option value="">Select an active project</option></select></div>
+        <div class="field"><label for="projectLevel">Participant level</label><select id="projectLevel"><option value="all">All active participants</option><option value="l1">L1 contributors only</option><option value="l2">L2 reviewers only</option></select></div>
+      </div>
+      <p class="emailv2-subhead">Only accounts with current active project access are included. Historical task owners and suspended accounts are excluded. L1/L2 follows each project's assigned permissions.</p>
+    </div>
+    <div class="field"><label for="subject">Email subject</label><input id="subject" type="text" maxlength="180" placeholder="Welcome back to Adatacore" autocomplete="off"></div>
+    <div class="field">
+      <div class="modebar"><label class="emailv2-label" style="margin:0">Compose message</label>
+        <div class="mode-pills" id="contentModes" role="group" aria-label="Email content mode"><button type="button" class="active" data-mode="rich" aria-pressed="true">Rich text</button><button type="button" data-mode="html" aria-pressed="false">HTML code</button></div>
+      </div>
+      <div id="richGroup">
+        <div class="toolrow" role="toolbar" aria-label="Rich text formatting">
+          <button type="button" data-format="bold"><b>B</b></button><button type="button" data-format="italic"><i>I</i></button>
+          <span class="tool-sep"></span><button type="button" data-format="heading">Heading</button><button type="button" data-format="bullet">• List</button><button type="button" data-format="numbered">1. List</button>
+          <button type="button" data-format="link">Link</button><button type="button" data-format="button">Button</button><button type="button" data-format="divider">Divider</button>
+          <button type="button" data-format="template" class="template-btn">Welcome template</button>
+        </div>
+        <textarea id="body" maxlength="60000" spellcheck="true" aria-label="Rich text email content" placeholder="Hello,&#10;&#10;Welcome back to Adatacore!&#10;&#10;Use the Button tool to insert a clickable dashboard button."></textarea>
+      </div>
+      <div id="htmlGroup" hidden>
+        <div class="code-toolbar" role="toolbar" aria-label="HTML code editor tools">
+         <button type="button" data-code="button">Insert HTML button</button>
+         <button type="button" data-code="heading">Heading</button>
+         <button type="button" data-code="paragraph">Paragraph</button>
+         <button type="button" data-code="table">Table</button>
+         <button type="button" data-code="template">HTML welcome template</button>
+        </div>
+        <div class="code-editor"><div id="codeLines" class="code-lines" aria-hidden="true">1</div><textarea id="htmlCode" maxlength="60000" rows="17" spellcheck="false" aria-label="HTML source code editor" placeholder="<h1>Welcome back!</h1>&#10;<p>We look forward to working with you.</p>&#10;<a href=&quot;https://www.adatacore.com/workspace&quot; style=&quot;display:inline-block;background-color:#205c94;color:white;padding:14px 22px;border-radius:8px;text-decoration:none&quot;>Open Dashboard</a>"></textarea></div>
+        <p>Write or paste email-safe HTML. Script, forms and unsafe elements are removed before preview and sending. Use inline styles for email buttons and layout.</p>
+      </div>
+      <div class="emailv2-row" style="margin-top:13px"><label class="checkline"><input id="branded" type="checkbox" checked>Add Adatacore header and footer</label><span class="emailv2-subhead" id="charCount" style="text-align:right;margin:0">0 / 60,000 characters</span></div>
+    </div>
+    <div class="button-line" style="margin-top:3px"><button id="review" class="secondary" type="button" disabled>Review recipients</button><button id="test" class="secondary" type="button" disabled>Send test to me</button></div>
+    <div id="audienceReview" class="audience-review" hidden><h3 id="audienceCount">Recipient review</h3><p>Review this exact audience before sending. If you change the recipient selection, review again.</p><div id="audienceList" class="audience-list"></div></div>
+    <div class="editor-foot"><small>A Resend-accepted email is not necessarily delivered. Recipients get separate emails, never a shared CC list. Your sends are logged.</small><div class="button-line"><button id="send" class="primary" type="button" disabled>Review recipients first</button></div></div>
     <div id="message" class="msg" role="status" aria-live="polite"></div>
    </div>
   </section>
   <section class="panel" aria-labelledby="previewTitle"><div class="panel-head"><h2 id="previewTitle">Live email preview</h2><span class="hint">Desktop · 640px email</span></div>
-   <div class="preview-wrap"><div class="preview-meta"><div><span>From: </span><strong id="previewFrom">Adatacore</strong></div><div><span>To: </span><strong id="previewTo">Recipient preview</strong></div><div><span>Subject: </span><strong id="previewSubject">Your email subject</strong></div></div><iframe id="preview" class="preview-frame" sandbox="" title="Rendered email preview" referrerpolicy="no-referrer"></iframe><p class="preview-help">Preview uses the same branded message structure as the sending service. Some email applications may render fonts or spacing differently.</p></div>
+   <div class="preview-wrap">
+    <div class="preview-meta"><div><span>From: </span><strong id="previewFrom">Adatacore</strong></div><div><span>To: </span><strong id="previewTo">Recipient preview</strong></div><div><span>Subject: </span><strong id="previewSubject">Your email subject</strong></div></div>
+    <div class="preview-actions"><button class="active" type="button" data-preview="rendered">Rendered email</button><button type="button" data-preview="source">HTML source</button><button id="forcePreview" type="button">↻ Refresh preview</button><button id="expandPreview" type="button">Expand view</button></div>
+    <div id="previewMount" class="preview-mount" style="margin-top:11px"><div class="preview-loading">Loading a secure rendered preview…</div></div>
+    <pre id="previewSource" class="preview-code" hidden aria-label="Sanitized HTML code sent via Resend"></pre>
+    <p class="preview-status" id="previewStatus" role="status">Waiting for preview…</p>
+    <p class="preview-help">Preview uses the same server-rendered HTML as outgoing Resend emails. Some email clients render fonts and spacing differently.</p>
+   </div>
   </section>
  </div>
- <section class="panel history-panel" aria-labelledby="historyTitle"><div class="panel-head"><div><h2 id="historyTitle">Email history</h2><p class="note">Last 40 send attempts, including Resend acceptance or error status.</p></div><button id="refresh" type="button" class="secondary">↻ Refresh history</button></div><div id="history" class="history-list"><div class="history-empty">Loading email history…</div></div></section>
+ <section class="panel history-panel" aria-labelledby="historyTitle"><div class="panel-head"><div><h2 id="historyTitle">Email history</h2><p class="note">Recent campaigns with per-recipient Resend acceptance and error details.</p></div><button id="refresh" type="button" class="secondary">↻ Refresh history</button></div><div id="history" class="history-list"><div class="history-empty">Loading email history…</div></div></section>
 </main>
-<script>
-(function(){
-"use strict";
-const $=id=>document.getElementById(id);
-const db=window.supabase.createClient("https://llmhyezgcnbognmmsnzq.supabase.co","sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml");
-const url="https://llmhyezgcnbognmmsnzq.supabase.co/functions/v1/admin-email-center";
-const state={sender:"",own:"",busy:false,items:[]};
-function esc(x){return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-function rich(t){
- let x=esc(t);
- x=x.replace(/\[([^\]\n]{1,120})\]\((https?:\/\/[^\s<>"()]{3,450})\)/gi,function(_m,name,u){return '<a href="'+u+'" style="color:#2368a3;text-decoration:underline">'+name+"</a>"});
- x=x.replace(/\*\*([^*\n]{1,1000})\*\*/g,"<strong>$1</strong>");
- x=x.replace(/(^|[^*])\*([^*\n]{1,1000})\*(?!\*)/g,"$1<em>$2</em>");
- return x;
-}
-function renderBody(markdown){
- let out="",list=null;
- function close(){if(list){out+="</"+list+">";list=null}}
- const lines=String(markdown).replace(/\r\n?/g,"\n").split("\n");
- for(const orig of lines){
-  const line=orig.trim();
-  if(!line){close();continue}
-  if(/^---+$/.test(line)){close();out+='<hr style="border:0;border-top:1px solid #e3e9f0;margin:22px 0">';continue}
-  const h=line.match(/^(#{1,3})\s+(.+)$/);
-  if(h){close();const size=h[1].length===1?25:h[1].length===2?20:17;out+='<h2 style="font-size:'+size+'px;margin:15px 0 13px;line-height:1.35;color:#1a2b43">'+rich(h[2])+"</h2>";continue}
-  const ul=line.match(/^[-*]\s+(.+)$/),ol=line.match(/^\d+\.\s+(.+)$/);
-  if(ul||ol){const kind=ul?"ul":"ol";if(list!==kind){close();out+="<"+kind+' style="margin:0 0 18px;padding-left:24px;font-size:15px;line-height:1.75;color:#374151">';list=kind}out+='<li style="margin:4px 0">'+rich((ul||ol)[1])+"</li>";continue}
-  close();
-  if(/^>\s*/.test(line)){out+='<blockquote style="margin:10px 0 18px;padding:11px 18px;background:#f5f8fc;border-left:3px solid #b5d0ec;color:#4b5f76;font-size:15px;line-height:1.7">'+rich(line.replace(/^>\s*/,""))+"</blockquote>";continue}
-  out+='<p style="margin:0 0 17px;color:#354459;font-size:15px;line-height:1.8">'+rich(line)+"</p>";
- }
- close();return out||'<p style="color:#64748b">Your message appears here.</p>';
-}
-function emailPreview(body){
- return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#f3f6fa;color:#1b2d43;font-family:Arial,Helvetica,sans-serif">'+
- '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f6fa"><tr><td align="center" style="padding:32px 14px">'+
- '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#fff;border:1px solid #dfe7f0;border-radius:14px">'+
- '<tr><td style="padding:23px 32px;border-bottom:1px solid #e9eef5"><table role="presentation" cellpadding="0" cellspacing="0"><tr>'+
- '<td><img src="https://www.adatacore.com/assets/adatacore-logo.jpg" width="38" height="38" alt="Adatacore" style="display:block;border-radius:9px"></td>'+
- '<td style="padding-left:11px;color:#17263a;font-size:19px;font-weight:700;letter-spacing:-.02em">Adatacore</td></tr></table></td></tr>'+
- '<tr><td style="padding:32px 34px 26px">'+renderBody(body)+'</td></tr>'+
- '<tr><td style="padding:20px 32px;background:#fafbfe;border-top:1px solid #edf1f5;color:#718096;font-size:12px;line-height:1.6">Sent by Adatacore · <a href="https://www.adatacore.com" style="color:#39729d;text-decoration:none">adatacore.com</a></td></tr></table></td></tr></table></body></html>';
-}
-function preview(){
- $("previewFrom").textContent=state.sender||"Adatacore";
- $("previewTo").textContent=$("to").value.trim()||"Recipient preview";
- $("previewSubject").textContent=$("subject").value.trim()||"Your email subject";
- $("preview").srcdoc=emailPreview($("body").value.trim());
-}
-function message(text,type){
- const el=$("message");el.textContent=text||"";el.className="msg"+(text?" show":"")+(type?" "+type:"");
-}
-async function api(action,params){
- const session=await db.auth.getSession();
- const token=session.data&&session.data.session&&session.data.session.access_token;
- if(!token)throw Error("You are signed out. Please sign in again.");
- const res=await fetch(url,{method:"POST",headers:{"Authorization":"Bearer "+token,"apikey":"sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml","Content-Type":"application/json"},body:JSON.stringify(Object.assign({action:action},params||{}))});
- const result=await res.json().catch(function(){return {error:"Invalid response from email service"}});
- if(!res.ok)throw Error(String(result.error||result.detail||"Email service request failed")+(result.detail?" — "+result.detail:""));
- return result;
-}
-function setBusy(yes){
- state.busy=Boolean(yes);$("test").disabled=yes;$("send").disabled=yes;
- $("send").textContent=yes?"Sending…":"Send email";$("test").textContent=yes?"Working…":"Send test to me";
-}
-function format(which){
- const input=$("body"),from=input.selectionStart,to=input.selectionEnd,selected=input.value.slice(from,to);
- const defaults={bold:"important text",italic:"emphasized text",heading:"Section heading",bullet:"First item",numbered:"First item",link:"link text"};
- const text=selected||defaults[which]||"";
- let replacement=text;
- if(which==="bold")replacement="**"+text+"**";
- if(which==="italic")replacement="*"+text+"*";
- if(which==="heading")replacement="# "+text;
- if(which==="bullet")replacement=text.split("\n").map(function(x){return "- "+x}).join("\n");
- if(which==="numbered")replacement=text.split("\n").map(function(x,i){return (i+1)+". "+x}).join("\n");
- if(which==="link")replacement="["+text+"](https://www.adatacore.com)";
- if(which==="divider")replacement="\n---\n";
- if(which==="template"){
-  if(input.value.trim()&&!window.confirm("Replace your current message with the Adatacore project-update template?"))return;
-  input.value="Hello,\n\n# Project update\n\nWe are writing to share an update from the Adatacore team.\n\n**What's changing**\n- Add the first important update here.\n- Add any action required from the recipient.\n\n**Next steps**\nPlease visit [your Adatacore workspace](https://www.adatacore.com/workspace) for further details.\n\nThank you,\nAdatacore Team";
-  preview();input.focus();return;
- }
- input.setRangeText(replacement,from,to,"end");preview();input.focus();
-}
-async function send(test){
- if(state.busy)return;
- const subject=$("subject").value.trim(),body=$("body").value.trim(),to=$("to").value.trim();
- if(subject.length<3){message("Please add a subject with at least 3 characters.","error");$("subject").focus();return}
- if(body.length<5){message("Please write your email message before sending.","error");$("body").focus();return}
- if(!test&&!/^[^\s@,;<>]+@[^\s@,;<>]+\.[A-Za-z]{2,30}$/.test(to)){message("Please enter one valid recipient email address.","error");$("to").focus();return}
- const recipient=test?state.own:to;
- if(!recipient){message("Your administrator email is unavailable.","error");return}
- const question=(test?"Send a test email to your account?":"Send this email to the recipient?")+"\n\nFrom: "+state.sender+"\nTo: "+recipient+"\nSubject: "+subject+"\n\nPlease confirm before sending.";
- if(!window.confirm(question))return;
- setBusy(true);message("Submitting email securely to Resend…");
- try{
-  const result=await api("send",{to:to,subject:subject,body_markdown:body,request_id:window.crypto.randomUUID(),test:test});
-  if(result.ok&&result.status==="accepted")message("Resend accepted the "+(test?"test ":"")+"email to "+recipient+". Provider ID: "+String(result.provider_id||"—")+". Delivery is not yet confirmed.","success");
-  else message("This request was already processed. Status: "+String(result.status||"unknown")+". Refresh history before retrying.","error");
-  await history();
- }catch(e){message(String(e.message||e),"error");await history()}
- finally{setBusy(false)}
-}
-function line(tag,className,value){const n=document.createElement(tag);if(className)n.className=className;if(value!=null)n.textContent=String(value);return n}
-function stamp(date){const d=new Date(date);return Number.isNaN(d.getTime())?"—":d.toLocaleString()}
-async function history(){
- const host=$("history");$("refresh").disabled=true;
- try{
-  const res=await api("history");
-  state.items=res.items||[];
-  host.replaceChildren();
-  if(!state.items.length){host.append(line("p","history-empty","No email sends yet. Your first message will appear here."));return}
-  for(const item of state.items){
-   const card=line("article","history-item");
-   const top=line("div","history-top");
-   top.append(line("strong","",item.subject||"Untitled"),line("span","status "+String(item.status||""),item.status==="accepted"?"Resend accepted":item.status||"unknown"));
-   card.append(top,line("small","",String(item.kind==="test"?"TEST · ":"")+item.recipient_email+" · "+stamp(item.created_at)));
-   if(item.error_message)card.append(line("small","",item.error_message));
-   const reuse=line("button","","Use as draft");reuse.type="button";
-   reuse.addEventListener("click",function(){
-    if(($("subject").value||$("body").value)&&!window.confirm("Replace your current draft with this past message?"))return;
-    $("to").value=item.recipient_email||"";$("subject").value=item.subject||"";$("body").value=item.body_markdown||"";
-    preview();window.scrollTo({top:0,behavior:"smooth"});$("subject").focus();message("Previous email loaded as a new draft.");
-   });
-   card.append(reuse);host.append(card);
-  }
- }catch(e){host.replaceChildren(line("p","history-empty","Could not load email history: "+String(e.message||e)))}
- finally{$("refresh").disabled=false}
-}
-async function init(){
- preview();
- try{
-  const session=await db.auth.getSession();
-  if(!session.data.session){window.location.replace("/auth?returnTo=%2Fadmin%2Femail-center");return}
-  const config=await api("config");
-  state.sender=config.sender||"Adatacore <applications@adatacore.com>";state.own=config.user_email||"";
-  $("from").value=state.sender;
-  const provider=$("provider");provider.classList.add("active");provider.querySelector("span:last-child").textContent="Resend · Secure sender connected";
-  document.body.classList.add("ready");
-  setBusy(false);preview();await history();
- }catch(e){
-  $("loading").textContent="Email Center access unavailable: "+String(e.message||e)+". Return to Admin to check your permissions.";
-  const link=document.createElement("a");link.href="/admin";link.textContent=" Back to Admin";link.style.color="#2367a1";$("loading").append(link);
- }
-}
-for(const id of ["to","subject","body"])$(id).addEventListener("input",preview);
-document.querySelectorAll("[data-format]").forEach(function(btn){btn.addEventListener("click",function(){format(btn.dataset.format)})});
-$("send").addEventListener("click",function(){send(false)});
-$("test").addEventListener("click",function(){send(true)});
-$("refresh").addEventListener("click",history);
-init();
-})();
-</script>
+<dialog id="confirmDialog" class="confirm-modal" aria-labelledby="confirmTitle"><div class="confirm-header"><h2 id="confirmTitle">Confirm email send</h2><p>Sending is permanent. Review the sender, subject and audience.</p></div><div class="confirm-body"><div class="confirm-row"><b>From</b><span id="confirmFrom">—</span></div><div class="confirm-row"><b>To</b><span id="confirmTo">—</span></div><div class="confirm-row"><b>Subject</b><span id="confirmSubject">—</span></div><div class="confirm-row"><b>Format</b><span id="confirmFormat">—</span></div><div class="confirm-recipients" id="confirmRecipients"></div></div><div class="confirm-foot"><button id="confirmCancel" class="secondary" type="button">Cancel</button><button id="confirmSend" class="primary" type="button">Confirm and send</button></div></dialog>
+<script defer src="/admin-email-center-v2.js?v=1"></script>
 </body></html>
