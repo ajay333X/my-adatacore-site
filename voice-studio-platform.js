@@ -136,6 +136,7 @@ async function init(){
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
  if(admin){
+  const labLink=document.createElement('a');labLink.className='btn small';labLink.href='/admin/audio-lab-2';labLink.textContent='Audio Lab 2';labLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(labLink);
   const qaLink=document.createElement('a');qaLink.className='btn small';qaLink.href='/admin/project-lab?project=94#recordings';qaLink.textContent='Central QA · Voice';qaLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(qaLink);
   const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
  $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=false;$('openDuo').onclick=()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
