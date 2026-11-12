@@ -97,6 +97,7 @@ function projectWorkAction(info){
 }
 function showProjectWork(info,error){
  const host=$('acProjectWork');if(!host||!current)return;
+ if(Number(current.id)===94){host.innerHTML='<div class="ac-project-work-main"><div><strong>Voice Studio</strong><p>Launch a solo or anonymous two-person recording session.</p></div><a class="btn btn-primary" href="/voice-studio">Open Voice Studio →</a></div>';return;}
  if(current.type!=='transcription'){
   host.innerHTML='<div class="ac-project-work-main"><div><span class="ac-project-work-kicker">PROJECT WORK</span><strong>Ready to work?</strong><p>Open Assignments to start a task from this project.</p></div><a class="btn btn-primary" href="#assignments" data-ac-open-assignments>View assignments →</a></div>';return;
  }
