@@ -262,11 +262,44 @@ function setupSolo(){
  };
 }
 function roomStatus(t){if($('vsRoomStatus'))$('vsRoomStatus').textContent=t}
+const voiceTaskId=id=>id?'VS-'+String(id).toUpperCase():'—';
+function duoStage(index,label){
+ const stages=['Matching','Mic consent','Audio connected','Rehearsal','Recording','Submitted'];
+ const host=$('vsStageList');if(!host)return;
+ host.replaceChildren();
+ stages.forEach((title,i)=>{
+  const item=document.createElement('span');
+  item.className='vs-stage'+(i<index?' done':i===index?' current':'');
+  item.textContent=(i<index?'✓ ':i===index?'● ':'○ ')+title;
+  host.append(item);
+ });
+ const summary=$('vsProgressSummary');if(summary)summary.textContent=label||stages[index]||'';
+}
+function duoAudioStatus(message,level='pending'){
+ const el=$('vsAudioConnection');if(!el)return;
+ el.textContent=message;el.dataset.state=level;
+}
+function duoTrackStatus(local,partner){
+ const a=$('vsLocalTrack'),b=$('vsPartnerTrack');
+ if(a)a.textContent=local;
+ if(b)b.textContent=partner;
+}
+
 function setupDuo(){
- let host=document.querySelector('#duo .card.lobby');
- host.innerHTML='<div class="orb">♫</div><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus">Waiting for a match. Numbers are drawn from the live queue.</p><div class="stat"><span><b id="vsWaiting">—</b>Waiting actors</span><span><b id="vsCountdown">01:00</b>Conversation countdown</span><span><b id="vsClock">00:00</b>Recorded</span></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><audio id="vsRemote" autoplay controls playsinline hidden style="width:100%"></audio><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop & submit my recording</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">No names or emails are shown to your partner. Direct WebRTC audio uses free STUN discovery when available. Partners may be able to see network IP addresses; restrictive networks may require an optional TURN relay. No paid relay is required to try duo mode.</p>';
- $('vsConsent').onclick=()=>void consent();$('vsStart').onclick=()=>void begin();$('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};$('vsRetry').onclick=()=>save().catch(e=>roomStatus(fail(e)));$('vsLeave').onclick=()=>void leave();
+ const host=document.querySelector('#duo .card.lobby');
+ host.innerHTML='<div class="vs-duo-header"><div><span class="vs-duo-overline">LIVE SESSION / TWO-PERSON AUDIO</span><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus" role="status" aria-live="polite">Searching for another approved contributor.</p></div><div class="vs-duo-task-id"><span>Recording task ID</span><strong id="vsDuoTaskId">Assigning…</strong><button type="button" class="btn small" id="vsCopyId">Copy ID</button></div></div><div class="vs-stage-list" id="vsStageList" aria-label="Session progress"></div><div class="vs-progress-caption" id="vsProgressSummary"></div><div class="vs-duo-stats"><div><small>Participants</small><strong id="vsParticipants">1 / 2</strong></div><div><small>Audio connection</small><strong id="vsAudioConnection" data-state="pending">Not connected</strong></div><div><small>Rehearsal remaining</small><strong id="vsCountdown">01:00</strong></div><div><small>Recorded</small><strong id="vsClock">00:00</strong></div><div><small>Other actors waiting</small><strong id="vsWaiting">0</strong></div></div><div class="vs-duo-tracks"><div><span>Your recording</span><strong id="vsLocalTrack">Not started</strong></div><div><span>Partner recording</span><strong id="vsPartnerTrack">Not started</strong></div></div><div class="vs-room"><pre id="vsDuoScript" hidden></pre><div class="vs-audio-player"><audio id="vsRemote" autoplay controls playsinline hidden></audio><button type="button" class="btn" id="vsHearPartner" hidden>▶ Hear partner</button></div><div id="vsDuoPreview" class="vs-duo-preview" hidden><h3>Review your take before submitting</h3><audio id="vsPreviewAudio" controls preload="metadata"></audio><p>The recording stays on this device until you select Submit recording.</p></div><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Start recording</button><button class="btn danger" id="vsStop" hidden>Stop my recording</button><button class="btn primary" id="vsSubmit" hidden>Submit recording to QA</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">Each participant stops and submits their own track separately. Both tracks share one task ID and appear in Central QA after submission. Direct WebRTC may expose IP information and may require a TURN relay on restrictive networks.</p>';
+ $('vsConsent').onclick=()=>void consent();
+ $('vsStart').onclick=()=>void begin();
+ $('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};
+ $('vsSubmit').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
+ $('vsRetry').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
+ $('vsHearPartner').onclick=()=>{const a=$('vsRemote');if(a?.srcObject)a.play().then(()=>duoAudioStatus('Partner audio playing','good')).catch(()=>duoAudioStatus('Press play on the audio controls','warn'))};
+ $('vsCopyId').onclick=()=>navigator.clipboard?.writeText(voiceTaskId(session?.id)).then(()=>roomStatus('Task ID copied.'),()=>roomStatus('Copy the task ID shown above.'));
+ $('vsLeave').onclick=()=>void leave();
  signalId=0;offerSent=false;connected=false;iceQueue=[];pc=null;rec=null;lastLobbyBeat=0;
+ duoStage(0,'Waiting for the second participant');
+ duoAudioStatus('Waiting for partner');
+ duoTrackStatus('Not started','Not started');
 }
 async function duoUpdate(){
  if(mode!=='duo'||!session||duoRefreshBusy)return;
