@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/audio-lab-2",
+      "destination": "/audio-lab-2"
+    },
+    {
       "source": "/admin/email-center",
       "destination": "/admin-email-center"
     },
