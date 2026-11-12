@@ -107,7 +107,18 @@ async function init(){
  if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling uses a direct browser connection where supported; restrictive networks may require a relay.');
 }
 async function enter(which){
- try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned Hindi script is unavailable. Please contact the administrator.');blob=null;secs=0;
+ try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
+ if(session.mode!==which){
+  // The server may return an unfinished session from another mode.
+  // Never discard a recording without the participant's explicit consent.
+  if(session.state==='recording')throw Error('Finish your current recording before switching studio modes.');
+  const ok=window.confirm('You have an unfinished '+session.mode+' session. Leave it and open '+which+' instead?');
+  if(!ok){session=null;mode='';return}
+  await rpc('vs_leave',{p_session:session.id});
+  session=await rpc('vs_enter',{p_project:P,p_mode:which});
+  if(session.mode!==which)throw Error('Unable to switch studio modes. Please reload and try again.');
+ }
+ script=scripts.find(x=>x.id===session.script_id);if(!script)throw Error('Assigned Hindi script is unavailable. Please contact the administrator.');blob=null;secs=0;
  if(which==='solo'){
  view('solo');$('scriptTitle').textContent=script.title;$('scriptBody').textContent=script.body;
  $('emotionMeta').textContent=script.emotion;
