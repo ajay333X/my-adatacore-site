@@ -1,0 +1,32 @@
+/* Voice Studio live Duo: accessible production states */
+#duo .card.lobby{max-width:1060px;margin:0 auto;text-align:left;padding:clamp(18px,3vw,34px);border-radius:20px}
+.vs-duo-header{display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap}
+.vs-duo-header h2{margin:7px 0 9px;font-size:clamp(21px,3vw,29px);letter-spacing:-.035em}
+.vs-duo-header p{font-size:13px;line-height:1.55;color:#536274}
+.vs-duo-overline{font-size:10px;font-weight:850;letter-spacing:.1em;color:#237a70}
+.vs-duo-task-id{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:12px;background:#f4f7fa;border:1px solid #e3e9ee;border-radius:12px;min-width:260px;max-width:100%}
+.vs-duo-task-id span{font-size:10px;color:#697587;text-transform:uppercase;font-weight:750}
+.vs-duo-task-id strong{font:700 11px/1.5 ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}
+.vs-stage-list{display:flex;gap:7px;flex-wrap:wrap;margin:22px 0 8px}
+.vs-stage{border:1px solid #e5e9ed;border-radius:999px;padding:7px 10px;color:#6f7a89;font-size:10px;font-weight:750;background:white}
+.vs-stage.done{background:#e6f4ee;border-color:#c2e5d6;color:#176d54}
+.vs-stage.current{background:#e8f3f5;border-color:#a9d0d4;color:#155b65}
+.vs-progress-caption{font-size:12px;color:#46616b;margin-bottom:16px}
+.vs-duo-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:16px}
+.vs-duo-stats>div,.vs-duo-tracks>div{background:#f6f8fa;border:1px solid #e3e8ee;padding:13px;border-radius:12px;min-width:0}
+.vs-duo-stats small,.vs-duo-tracks span{font-size:10px;color:#697587;display:block;margin-bottom:6px}
+.vs-duo-stats strong,.vs-duo-tracks strong{font-size:13px;line-height:1.45;display:block;overflow-wrap:anywhere}
+#vsAudioConnection[data-state=good]{color:#16815e}
+#vsAudioConnection[data-state=warn]{color:#b86517}
+.vs-duo-tracks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 19px}
+#duo .vs-room{max-width:100%}
+#vsDuoScript{max-height:290px;overflow:auto;background:#f7f9fb;border:1px solid #e5e9ef}
+.vs-audio-player{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.vs-audio-player audio{width:min(100%,500px)}
+.vs-duo-preview{padding:17px;margin:14px 0;background:#eff8f5;border:1px solid #cae5da;border-radius:14px}
+.vs-duo-preview h3{font-size:14px;margin:0 0 10px}
+.vs-duo-preview audio{width:100%}
+.vs-duo-preview p{font-size:11px;color:#507569}
+#duo .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-top:16px}
+#duo .actions button{margin:0}
+@media(max-width:720px){.vs-duo-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.vs-duo-tracks{grid-template-columns:1fr}.vs-duo-task-id{min-width:0;width:100%}}
