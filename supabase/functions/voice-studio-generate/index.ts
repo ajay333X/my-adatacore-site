@@ -33,7 +33,7 @@ Deno.serve(async(req:Request)=>{
   word_count:String(Math.round(d/60*120))
  };
  const defaultPrompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+replacements.mode+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+replacements.word_count+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.";
- const customizedPrompt=promptTemplate?promptTemplate.replace(/\\{(count|language|mode|scenario|emotions|duration_seconds|word_count)\\}/g,(_:string,key:string)=>replacements[key]||""):"";
+ const customizedPrompt=promptTemplate?promptTemplate.replace(/\{(count|language|mode|scenario|emotions|duration_seconds|word_count)\}/g,(_:string,key:string)=>replacements[key]||""):"";
  const prompt=(customizedPrompt||defaultPrompt)+" Must return exactly "+n+" scripts with keys title, scenario, emotion and body as schema-valid JSON. No markdown."+(instructions?" Additional administrator directions: "+instructions:"");
  const url="https://api.groq.com/openai/v1/chat/completions";
  const schema={type:"object",additionalProperties:false,properties:{
