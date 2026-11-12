@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f6f8fa">
+<title>Audio Lab 2 — Adatacore</title>
+<link rel="icon" href="/favicon.png?v=20260831-3">
+<link rel="stylesheet" href="/audio-lab-2.css?v=1">
+<link rel="stylesheet" href="/voice-studio-qa-player.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+</head>
+<body>
+<div id="labApp" class="al-app" hidden>
+<aside class="al-side">
+<a class="al-logo" href="/admin"><span class="al-mark">A</span><span>adatacore<small>ADMIN WORKSPACE</small></span></a>
+<div class="al-brand"><span class="al-tag">PROJECT 94 / AUDIO PRODUCTION</span><strong>Audio Lab <em>2</em></strong><small>Scripts, sessions & quality operations</small></div>
+<nav id="labNav" aria-label="Audio Lab navigation">
+<button data-tab="overview" class="active"><span>◫</span> Overview</button>
+<button data-tab="scripts"><span>▤</span> Script library</button>
+<button data-tab="generate"><span>✧</span> Groq generator</button>
+<button data-tab="sessions"><span>◉</span> Audio sessions</button>
+<button data-tab="history"><span>↺</span> Prompt & JSON history</button>
+</nav>
+<div class="al-side-bottom"><a href="/voice-studio">↗ Voice Studio</a><a href="/admin/project-lab?project=94#recordings">↗ Central QA</a><a href="/admin">← Admin Console</a></div>
+</aside>
+<main class="al-main">
+<header class="al-head"><div><span class="al-eyebrow">ADMIN / PRODUCTION TOOLS</span><h1 id="alPageTitle">Audio production overview</h1><p id="alPageSub">Your central workspace for voice scripts, recorded sessions and QA.</p></div><div class="al-head-actions"><span id="alCurrentUser" class="al-user">Administrator</span><button id="alRefresh" class="al-button al-secondary" type="button">↻ Refresh</button></div></header>
+<div id="alNotice" class="al-notice" role="status" aria-live="polite"></div>
+<section id="al-overview" class="al-panel active">
+<div id="alStats" class="al-stats"></div>
+<div class="al-tiles">
+<div class="al-card al-overview-tile"><span class="al-eyebrow">SCRIPT OPERATIONS</span><h2>Script library</h2><p>Search, preview, edit, clone, archive or restore scripts. See script JSON and its revision history.</p><button class="al-button al-primary" data-go="scripts">Manage scripts</button></div>
+<div class="al-card al-overview-tile"><span class="al-eyebrow">AI CREATION</span><h2>Generate with Groq</h2><p>Customize the prompt and settings, generate new dialogue, and inspect the original response JSON.</p><button class="al-button al-secondary" data-go="generate">Open generator</button></div>
+<div class="al-card al-overview-tile"><span class="al-eyebrow">AUDIO & QUALITY</span><h2>Recordings and reviews</h2><p>Find a VS task ID, listen to Voice A or B independently or together, and open Central QA.</p><button class="al-button al-secondary" data-go="sessions">Explore sessions</button></div>
+</div>
+<div class="al-card"><div class="al-section-head"><div><h2>Recent activity</h2><p>Latest session and script activity for Project 94</p></div></div><div id="alOverviewRecent"></div></div>
+</section>
+<section id="al-scripts" class="al-panel">
+<div class="al-section-head"><div><h2>All generated scripts</h2><p>Manage the script inventory. Existing task recordings are never deleted by archiving a script.</p></div><button class="al-button al-primary" id="alNewScript">+ New script</button></div>
+<div class="al-toolbar"><input id="alScriptSearch" type="search" placeholder="Search title, dialogue, emotion or script ID" aria-label="Search scripts"><select id="alScriptMode"><option value="all">All modes</option><option value="solo">Solo</option><option value="duo">Duo</option></select><select id="alScriptStatus"><option value="all">All scripts</option><option value="active">Active</option><option value="archived">Archived</option></select></div>
+<div class="al-split"><div class="al-card al-list" id="alScriptList"></div><div class="al-card al-detail" id="alScriptDetail"><div class="al-empty">Choose a script to view its dialogue, JSON, prompt provenance and editing controls.</div></div></div>
+</section>
+<section id="al-generate" class="al-panel">
+<div class="al-section-head"><div><h2>Groq script generator</h2><p>Generates and saves one validated script at a time, preserving individual progress.</p></div><span class="al-provider">Groq · gpt-oss-120b</span></div>
+<div class="al-split al-generate-layout">
+<div class="al-card"><form id="alGeneratorForm" class="al-form">
+<div class="al-two"><label>Scripts to generate<input name="count" type="number" min="1" max="30" value="2" required></label><label>Recording format<select name="mode"><option value="duo">Duo</option><option value="solo">Solo</option></select></label></div>
+<div class="al-two"><label>Language<select name="language"><option>Hindi</option><option>English</option><option>Hinglish</option></select></label><label>Duration<select name="duration"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="180">3 minutes</option></select></label></div>
+<label>Scenario<input name="scenario" maxlength="140" value="Realistic customer support"></label>
+<label>Emotions (comma separated)<input name="emotions" value="calm, empathetic, frustrated, reassuring"></label>
+<label>Custom prompt / additional instructions <small>(optional)</small><textarea name="instructions" rows="8" maxlength="5000" placeholder="Describe character personalities, dialogue pacing, tone, topic constraints, turn-taking and other specific requirements. The structural JSON instructions remain enforced."></textarea></label>
+<div class="al-form-actions"><button type="submit" id="alGenerateBtn" class="al-button al-primary">✧ Generate & save scripts</button><button id="alStopGeneration" class="al-button al-secondary" type="button" disabled>Stop after current script</button></div>
+<div id="alGenerateStatus" role="status" aria-live="polite"></div>
+</form></div>
+<div class="al-card al-prompt-panel"><span class="al-eyebrow">GENERATION CONTRACT</span><h3>Structured output</h3><p>All generations must return this JSON structure. Prompt text, settings, output and script IDs are logged for future generations.</p><pre id="alJsonSchema"></pre><div class="al-note">Previous prompts were not stored by the original generator. The generation-history section records requests made after this upgrade.</div></div>
+</div>
+</section>
+<section id="al-sessions" class="al-panel">
+<div class="al-section-head"><div><h2>Recording studio & QA playback</h2><p>View completed and in-progress Voice Studio tasks, play synchronized Duo audio and inspect flags.</p></div><a class="al-button al-secondary" href="/admin/project-lab?project=94#recordings">Open Central QA ↗</a></div>
+<div class="al-toolbar"><input type="search" id="alSessionSearch" placeholder="Search VS task ID / session UUID"><select id="alSessionStatus"><option value="all">All statuses</option><option value="submitted">Submitted</option><option value="recording">Recording</option><option value="rehearsal">Rehearsal</option><option value="waiting">Waiting</option><option value="cancelled">Cancelled</option></select></div>
+<div id="alSessionList"></div>
+</section>
+<section id="al-history" class="al-panel">
+<div class="al-section-head"><div><h2>Generation prompts and JSON</h2><p>Trace each new script to the exact request settings, model, prompt and returned JSON.</p></div></div>
+<div class="al-toolbar"><input id="alHistorySearch" type="search" placeholder="Search script, prompt or generation ID"></div>
+<div class="al-split"><div class="al-card al-list" id="alHistoryList"></div><div class="al-card al-detail" id="alHistoryDetail"><div class="al-empty">Select a generation to inspect and copy the prompt and source JSON.</div></div></div>
+</section>
+</main>
+</div>
+<div id="alGate" class="al-gate">Verifying Audio Lab access…</div>
+<dialog id="alEditor" class="al-dialog"><form id="alEditorForm" method="dialog"><div class="al-dialog-head"><div><span class="al-eyebrow">SCRIPT EDITOR</span><h2 id="alEditorTitle">Edit script</h2></div><button class="al-button al-secondary" type="button" id="alCloseEditor">✕</button></div><div class="al-dialog-body"><div class="al-two"><label>Title<input name="title" maxlength="120" required></label><label>Mode<select name="mode"><option value="solo">Solo</option><option value="duo">Duo</option></select></label></div><div class="al-two"><label>Scenario<input name="scenario" maxlength="120"></label><label>Emotion<input name="emotion" maxlength="50"></label></div><div class="al-two"><label>Language<select name="language"><option>Hindi</option><option>English</option><option>Hinglish</option></select></label><label>Duration (seconds)<input name="duration_seconds" type="number" min="60" max="180"></label></div><div class="al-two"><label>Editor mode<select id="alEditorMode"><option value="text">Dialogue text</option><option value="json">Full JSON</option></select></label><label class="al-checkbox"><input name="is_active" type="checkbox" checked> Published / available for new tasks</label></div><label>Script / JSON<textarea name="body" id="alEditorBody" rows="16" required></textarea></label><p class="al-note" id="alEditWarning">Editing an existing script updates the script library. A revision snapshot is saved automatically.</p></div><div class="al-dialog-actions"><span id="alEditorStatus"></span><button type="button" class="al-button al-secondary" id="alCancelEditor">Cancel</button><button type="submit" class="al-button al-primary">Save script</button></div></form></dialog>
+<script src="/voice-studio-qa-player.js?v=2"></script>
+<script src="/audio-lab-2.js?v=1"></script>
+</body></html>
