@@ -98,6 +98,23 @@ $('vsAssign').onclick=async()=>{let b=$('vsAssign');b.disabled=true;try{await rp
 $('vsGen').onclick=async()=>{const b=$('vsGen'),total=Number($('vsGenCount').value);if(!Number.isInteger(total)||total<1||total>100){$('vsGenResult').textContent='Select between 1 and 100 scripts.';return}b.disabled=true;let created=0;try{const {data:{session:s}}=await db.auth.getSession();if(!s)throw Error('Sign in required');while(created<total){const count=Math.min(5,total-created);$('vsGenResult').textContent='Creating scripts '+(created+1)+'–'+(created+count)+' of '+total+'…';const response=await fetch(U+'/functions/v1/voice-studio-generate',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,apikey:K,'Content-Type':'application/json'},body:JSON.stringify({project_id:P,count,mode:$('vsGenMode').value,language:$('vsGenLang').value,scenario:$('vsGenScenario').value,emotions:$('vsGenEmotions').value.split(',').map(x=>x.trim()),duration_seconds:Number($('vsGenLength').value)})});const result=await response.json();if(!response.ok)throw Error(result.error+' '+(result.detail||''));if(!Number.isInteger(result.created)||result.created<1)throw Error('The AI returned no valid scripts');created+=result.created}$('vsGenResult').textContent=created+' scripts stored successfully.';await refreshAdmin()}catch(e){$('vsGenResult').textContent=created+' of '+total+' created. '+fail(e)}finally{b.disabled=false}};
 let scripts=[];
 async function init(){
+ const supportId=new URLSearchParams(location.search).get('impersonation');
+ if(supportId){
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(supportId))throw Error('Invalid admin contributor-view session');
+  const {data:preview,error:previewError}=await db.rpc('admin_get_contributor_impersonation',{p_session_id:supportId});
+  if(previewError||!preview?.target)throw Error('Admin contributor-view session has expired or is unauthorized');
+  const banner=document.createElement('div');
+  banner.setAttribute('role','status');
+  banner.style.cssText='padding:12px 20px;background:#211b33;color:#fff;font:600 12px/1.6 Inter,system-ui;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap';
+  const message=document.createElement('span');
+  message.textContent='Admin contributor-view · Testing Voice Studio for '+(preview.target.fullName||preview.target.email||'assigned contributor')+'. Recordings and submissions use your admin account, not their identity.';
+  const back=document.createElement('a');
+  back.href='/workspace?impersonation='+encodeURIComponent(supportId);
+  back.textContent='Return to contributor view';
+  back.style.cssText='color:white;text-decoration:underline;font-weight:800';
+  banner.append(message,back);
+  document.body.prepend(banner);
+ }
  const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;admin=await rpc('vs_is_admin',{});
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
