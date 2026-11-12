@@ -313,7 +313,15 @@ async function duoUpdate(){
   const {data,error}=await db.from('vs_sessions').select('*').eq('id',session.id).single();
   if(error)throw error;
   session=data;
+  $('vsDuoTaskId').textContent=voiceTaskId(session.id);
+  $('vsParticipants').textContent=session.actor_b?'2 / 2':'1 / 2';
   $('vsWaiting').textContent=String(await rpc('vs_waiting',{p_project:P}));
+  const {data:submittedTracks,error:tracksError}=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id);
+  if(!tracksError){
+   const done=(submittedTracks||[]).some(t=>t.actor_id===me.id);
+   const partner=(submittedTracks||[]).some(t=>t.actor_id!==me.id);
+   duoTrackStatus(done?'Submitted to QA':blob?'Ready to submit':rec?.state==='recording'?'Recording…':'Not started',partner?'Submitted':session.state==='submitted'?'Submitted':'Waiting');
+  }
   if(session.state==='expired'){
    // Recover automatically when a tab wakes up after its queue lease expired.
    session=await rpc('vs_enter',{p_project:P,p_mode:'duo'});
@@ -326,6 +334,8 @@ async function duoUpdate(){
   }
   if(session.state==='cancelled'){clearInterval(poll);roomStatus('This session was cancelled. Return to the studio to start again.');return;}
   if(session.state==='waiting'){
+   duoStage(0,'Waiting for another approved participant');
+   duoAudioStatus('Waiting for partner');
    $('vsRoomTitle').textContent='Finding another voice actor…';
    roomStatus('Searching for another approved participant. Keep this page open; matching refreshes automatically.');
    return;
@@ -334,16 +344,23 @@ async function duoUpdate(){
   $('vsDuoScript').textContent=script.body;$('vsDuoScript').hidden=false;
   const accepted=session.actor_a===me.id?session.consent_a:session.consent_b;
   $('vsConsent').hidden=accepted||!['matched','rehearsal'].includes(session.state);
+  if(session.state==='matched')duoStage(1,'Match found · both participants must accept microphone access');
   if(session.state==='matched')roomStatus('Match found. Both participants must accept before audio connects.');
   if(session.state==='rehearsal'){
    if(session.consent_a&&session.consent_b&&!pc)await startPeer();
+   duoStage(connected?3:2,connected?'Conversation practice · speak normally':'Connecting secure audio with your partner…');
    const left=Math.max(0,60-Math.floor((Date.now()-new Date(session.rehearsal_started_at).getTime())/1000));
    $('vsCountdown').textContent=fmt(left);
    $('vsStart').hidden=session.actor_a!==me.id;$('vsStart').disabled=left>0||!connected;
-   roomStatus(left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A can start recording.');
+   roomStatus(!connected?'Waiting for two-way audio. Check the connection indicator and click Hear partner if needed.':left?'Talk with your partner. This one-minute conversation is not recorded.':'Rehearsal complete. Voice Actor A can start recording.');
   }
   if(session.state==='recording'&&!rec&&!blob){$('vsStart').hidden=true;await beginRecording()}
-  if(session.state==='submitted'){clearInterval(poll);roomStatus('Both actors submitted their recordings.');$('vsStop').hidden=true}
+  if(session.state==='recording')duoStage(4,rec?.state==='recording'?'Recording live · stop when your take is complete':blob?'Recording stopped · preview and submit':'Waiting for recording to begin');
+  if(session.state==='submitted')duoStage(5,'Recording task completed · ready for QA');
+  if(session.state==='submitted'){
+   clearInterval(poll);$('vsStop').hidden=true;$('vsSubmit').hidden=true;
+   roomStatus('Both recordings received. Task '+voiceTaskId(session.id)+' is ready in Central QA.');
+  }
   if(pc)await signals();
  }catch(error){roomStatus('Unable to refresh matching: '+fail(error));}
  finally{duoRefreshBusy=false}
@@ -370,8 +387,19 @@ async function turnIce(){
 async function startPeer(){
  await mic();const ice=await turnIce();pc=new RTCPeerConnection({iceServers:ice,iceTransportPolicy:'all'});
  stream.getTracks().forEach(t=>pc.addTrack(t,stream));
- pc.ontrack=e=>{peerStream=e.streams[0];$('vsRemote').srcObject=peerStream;$('vsRemote').hidden=false;$('vsRemote').play().catch(()=>roomStatus('Press play to hear the other voice actor.'))};
- pc.onconnectionstatechange=()=>{connected=pc.connectionState==='connected';if(pc.connectionState==='failed')roomStatus('Direct audio could not connect on this network. Try another network or configure an optional TURN relay. Your microphone recording can still work in Solo mode.');else if(pc.connectionState==='disconnected')roomStatus('Voice connection interrupted. Reconnecting…')};
+ pc.ontrack=e=>{
+  peerStream=e.streams[0]||new MediaStream([e.track]);
+  const audio=$('vsRemote');audio.srcObject=peerStream;audio.hidden=false;
+  $('vsHearPartner').hidden=false;
+  audio.play().then(()=>duoAudioStatus('Partner audio playing','good')).catch(()=>duoAudioStatus('Partner audio available · click Hear partner','warn'));
+ };
+ pc.onconnectionstatechange=()=>{
+  connected=pc.connectionState==='connected';
+  if(connected){duoAudioStatus('Connected to partner','good');duoStage(3,'Two-way audio connected · practice conversation');}
+  else if(pc.connectionState==='failed'){duoAudioStatus('Connection failed · relay may be required','warn');roomStatus('Audio could not connect on this network. Try another network or configure a TURN relay.');}
+  else if(pc.connectionState==='disconnected'){duoAudioStatus('Reconnecting…','warn');roomStatus('Voice connection interrupted. Reconnecting…');}
+  else duoAudioStatus('Connecting: '+pc.connectionState);
+ };
  pc.onicecandidate=e=>{if(e.candidate)signal('candidate',e.candidate.toJSON()).catch(x=>roomStatus(fail(x)))};
  signalTimer=setInterval(()=>signals().catch(e=>roomStatus(fail(e))),900);
  await signals();
