@@ -11,6 +11,22 @@ const short=id=>String(id||'').slice(0,8).toUpperCase();
 const task=id=>'VS-'+String(id).toUpperCase();
 const fmt=n=>{n=Math.floor(Number(n)||0);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
 const scriptShape=x=>({title:x.title||'',scenario:x.scenario||'',emotion:x.emotion||'',mode:x.mode||'duo',language:x.language||'Hindi',duration_seconds:Number(x.duration_seconds)||120,body:x.body||'',is_active:x.is_active!==false});
+const DEFAULT_PROMPT='Create {count} DIFFERENT authentic, emotionally rich {language} customer-service dialogue scripts for a {mode}. Scenario: {scenario}. Emotions: {emotions}. Each conversation must contain approximately {word_count} spoken words (roughly {duration_seconds} seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing {count} objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.';
+function renderPrompt(){
+ const form=$('alGeneratorForm');if(!form)return;
+ const fields=form.elements,duration=Number(fields.namedItem('duration').value)||120;
+ const values={
+  count:'1',language:fields.namedItem('language').value,
+  mode:fields.namedItem('mode').value==='solo'?'single voice actor reading both sides':'pair of voice actors reading Agent and Customer roles',
+  scenario:fields.namedItem('scenario').value,
+  emotions:fields.namedItem('emotions').value,
+  duration_seconds:String(duration),word_count:String(Math.round(duration/60*120))
+ };
+ const template=fields.namedItem('prompt_template').value||DEFAULT_PROMPT;
+ const prompt=template.replace(/\{(count|language|mode|scenario|emotions|duration_seconds|word_count)\}/g,(_,name)=>values[name]);
+ $('alPromptPreview').textContent=prompt+' Must return exactly 1 scripts with keys title, scenario, emotion and body as schema-valid JSON. No markdown.'+(fields.namedItem('instructions').value.trim()?' Additional administrator directions: '+fields.namedItem('instructions').value.trim():'');
+}
+
 let noticeTimer=0;
 function notify(message,error=false){
  const el=$('alNotice');el.textContent=String(message);el.classList.add('show');el.classList.toggle('error',!!error);
@@ -243,7 +259,9 @@ function showHistory(id){
   if(data.duration_seconds)fields.namedItem('duration').value=String(data.duration_seconds);
   if(Array.isArray(data.emotions))fields.namedItem('emotions').value=data.emotions.join(', ');
   fields.namedItem('instructions').value=String(data.instructions||'');
-  go('generate');notify('Original settings restored. Review before submitting; generation is not automatic.');
+  fields.namedItem('prompt_template').value=String(data.prompt_template||h.prompt_text||DEFAULT_PROMPT);
+  renderPrompt();
+  go('generate');notify('Original prompt and settings loaded. Review and edit before generating; nothing was submitted automatically.');
  };
 }
 function setupEvents(){
@@ -275,6 +293,10 @@ function setupEvents(){
  $('alHistorySearch').addEventListener('input',renderHistory);
  $('alHistoryList').addEventListener('click',event=>{const b=event.target.closest('[data-generation]');if(b)showHistory(b.dataset.generation)});
  $('alGeneratorForm').onsubmit=event=>void generate(event);
+ $('alResetPrompt').onclick=()=>{document.getElementById('alPromptTemplate').value=DEFAULT_PROMPT;renderPrompt();notify('Groq prompt template reset to the default.')};
+ $('alGeneratorForm').addEventListener('input',renderPrompt);
+ $('alGeneratorForm').elements.namedItem('prompt_template').value=DEFAULT_PROMPT;
+ renderPrompt();
  $('alStopGeneration').onclick=()=>{stopping=true;$('alGenerateStatus').textContent+='\\nStopping after the current script…'};
  $('alJsonSchema').textContent=JSON.stringify({scripts:[{title:'Short descriptive title',scenario:'Situation',emotion:'Core emotion',body:'Agent: Dialogue...\\nCustomer: Response...'}]},null,2);
  window.addEventListener('hashchange',()=>{const name=location.hash.slice(1);if(pages[name]&&tab!==name)go(name)});
@@ -290,7 +312,7 @@ async function generate(event){
   if(authError||!auth)throw Error('Admin sign-in expired.');
   for(let i=0;i<count&&!stopping;i++){
    status.textContent='Creating script '+(i+1)+' / '+count+' with Groq… '+created+' saved.';
-   const payload={project_id:P,count:1,mode:fields.namedItem('mode').value,language:fields.namedItem('language').value,scenario:fields.namedItem('scenario').value,emotions:fields.namedItem('emotions').value.split(',').map(x=>x.trim()).filter(Boolean),duration_seconds:Number(fields.namedItem('duration').value),instructions:fields.namedItem('instructions').value};
+   const payload={project_id:P,count:1,mode:fields.namedItem('mode').value,language:fields.namedItem('language').value,scenario:fields.namedItem('scenario').value,emotions:fields.namedItem('emotions').value.split(',').map(x=>x.trim()).filter(Boolean),duration_seconds:Number(fields.namedItem('duration').value),instructions:fields.namedItem('instructions').value,prompt_template:fields.namedItem('prompt_template').value};
    const response=await fetch(U+'/functions/v1/voice-studio-generate',{method:'POST',headers:{Authorization:'Bearer '+auth.access_token,apikey:K,'Content-Type':'application/json'},body:JSON.stringify(payload)});
    const body=await response.json();
    if(!response.ok)throw Error((body.error||'Generation failed')+' · '+(body.detail||''));
