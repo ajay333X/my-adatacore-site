@@ -253,6 +253,19 @@ function setupEvents(){
  for(const id of ['alScriptSearch','alScriptMode','alScriptStatus'])$(id).addEventListener(id==='alScriptSearch'?'input':'change',renderScripts);
  $('alScriptList').addEventListener('click',event=>{const b=event.target.closest('[data-script]');if(b)void showScript(b.dataset.script)});
  $('alNewScript').onclick=()=>openEditor(null);
+ $('alExportScripts').onclick=()=>{
+  const documentData={
+   project_id:P,
+   exported_at:new Date().toISOString(),
+   scripts:scripts.map(s=>({id:s.id,created_at:s.created_at,...scriptShape(s)}))
+  };
+  const blob=new Blob([JSON.stringify(documentData,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='adatacore-audio-lab-2-scripts.json';
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  notify('Exported '+scripts.length+' scripts as JSON.');
+ };
  $('alEditorForm').onsubmit=event=>void saveEditor(event);
  $('alCloseEditor').onclick=$('alCancelEditor').onclick=()=>$('alEditor').close();
  $('alEditorMode').onchange=event=>switchEditorMode(event.target.value);
