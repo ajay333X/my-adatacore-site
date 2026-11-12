@@ -24,7 +24,7 @@ async function refreshAdmin(){
  const ids=(data||[]).map(x=>x.id);let tracks=[],reviews=[];
  if(ids.length){
   const [t,r]=await Promise.all([
-   db.from('vs_tracks').select('session_id,storage_path,duration_seconds').in('session_id',ids),
+   db.from('vs_tracks').select('session_id,storage_path,duration_seconds,transcript,transcript_source').in('session_id',ids),
    db.from('vs_reviews').select('session_id,verdict,quality_score,feedback').in('session_id',ids)
   ]);
   if(t.error)throw t.error;if(r.error)throw r.error;tracks=t.data||[];reviews=r.data||[];
@@ -38,6 +38,12 @@ async function refreshAdmin(){
     const {data,error}=await db.storage.from('voice-studio').createSignedUrl(t.storage_path,120);
     if(error)note(fail(error));else window.open(data.signedUrl,'_blank','noopener,noreferrer');
    };line.append(b);
+   if(t.transcript){
+    const details=document.createElement('details');details.style.cssText='margin-top:9px;font-size:12px';
+    const summary=document.createElement('summary');summary.textContent='Automatic transcript (unverified draft)';summary.style.cursor='pointer';
+    const pre=document.createElement('div');pre.textContent=t.transcript;pre.lang='hi';pre.style.cssText='white-space:pre-wrap;max-height:180px;overflow:auto;border-radius:9px;padding:12px;background:#f4f8f7;color:#304a51';
+    details.append(summary,pre);line.append(details);
+   }
   }
   if(s.state==='submitted'){
    const previous=reviews.find(x=>x.session_id===s.id);
@@ -111,7 +117,7 @@ async function enter(which){
  $('startRecord').disabled=false;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
  $('saveRecord').textContent='Submit recording →';
  $('playback').hidden=true;$('playback').removeAttribute('src');$('soloStatus').textContent='';
- if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;setupSolo();
+ if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;window.VoiceStudioExtras?.reset();window.VoiceStudioExtras?.setDuration(script.duration_seconds);setupSolo();
 }
  else{view('duo');setupDuo();await duoUpdate();poll=setInterval(()=>duoUpdate().catch(e=>roomStatus(fail(e))),1500)}
  }catch(e){note('Unable to start: '+fail(e))}
@@ -130,7 +136,15 @@ async function save(){
  const {error}=await db.storage.from('voice-studio').upload(path,blob,{contentType:type,upsert:false});
  if(error&&!error.message.toLowerCase().includes('already exists'))throw error;
  session=await rpc('vs_submit',{p_session:session.id,p_path:path,p_seconds:Math.max(secs,1),p_mime:type,p_bytes:blob.size});
- if(mode==='solo'){$('recordStatus').textContent='Recording securely submitted.';$('saveRecord').disabled=true}
+ if(mode==='solo'){
+  $('recordStatus').textContent='Recording securely submitted.';$('saveRecord').disabled=true;
+  const liveTranscript=window.VoiceStudioExtras?.transcript()||'';
+  if(liveTranscript.trim()){
+   try{await rpc('vs_save_transcript',{p_session:session.id,p_text:liveTranscript})}
+   catch(e){$('soloStatus').textContent='Audio submitted. Automatic transcript could not be saved: '+fail(e)}
+  }
+  window.VoiceStudioExtras?.submitted();
+ }
  else{roomStatus(session.state==='submitted'?'Both voice tracks submitted.':'Your track submitted. Waiting for partner.');$('vsRetry').hidden=true}
  note('Audio stored in the private Voice Studio bucket.');if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
  }finally{uploading=false}
@@ -139,7 +153,7 @@ function resetPreview(){
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;blob=null;rec=null;secs=0;
  $('recordTime').textContent='00:00';$('playback').pause();$('playback').removeAttribute('src');$('playback').hidden=true;
  $('startRecord').disabled=false;$('stopRecord').disabled=true;$('resetRecord').disabled=true;$('saveRecord').disabled=true;
- $('recordStatus').textContent='Ready for a new take.';$('soloStatus').textContent='Your previous take has been discarded; nothing was uploaded.';
+ $('recordStatus').textContent='Ready for a new take.';$('soloStatus').textContent='Your previous take has been discarded; nothing was uploaded.';window.VoiceStudioExtras?.reset();
 }
 async function leaveSolo(){
  if(uploading){note('The recording is uploading. Please complete the submission before leaving.');return}
@@ -149,7 +163,7 @@ async function leaveSolo(){
   if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id});
  }catch(e){note('Could not close session: '+fail(e));return}
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;
- cleanup();rec=null;blob=null;mode='';session=null;script=null;view('home');note('Session closed. Your unsent recording was discarded.');
+ window.VoiceStudioExtras?.reset();cleanup();rec=null;blob=null;mode='';session=null;script=null;view('home');note('Session closed. Your unsent recording was discarded.');
 }
 function setupSolo(){
  $('startRecord').onclick=async()=>{
@@ -166,6 +180,7 @@ function setupSolo(){
    $('recordStatus').textContent='Recording active — please deliver the assigned script.';
    $('soloStatus').textContent='';
    record(()=>{
+    window.VoiceStudioExtras?.stop(secs);
     if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
     $('stopRecord').disabled=true;
     if(!blob||blob.size<1024){$('recordStatus').textContent='No usable audio captured.';$('resetRecord').disabled=false;return}
@@ -174,6 +189,7 @@ function setupSolo(){
     $('recordStatus').textContent='Recording complete — review your playback before submitting.';
     $('soloStatus').textContent='Not yet submitted. Choose Submit recording or Record again.';
    });
+   window.VoiceStudioExtras?.start(stream,script.duration_seconds);
    timer=setInterval(()=>{secs++;$('recordTime').textContent=fmt(secs);if(secs>=script.duration_seconds&&rec?.state==='recording')rec.stop()},1000);
   }catch(e){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('startRecord').disabled=false;$('recordStatus').textContent='Recording could not start.';note(fail(e))}
  };
@@ -181,6 +197,14 @@ function setupSolo(){
  $('resetRecord').onclick=()=>{if(!uploading)resetPreview()};
  $('saveRecord').onclick=async()=>{
   if(uploading||!blob||session?.state==='submitted')return;
+  const q=window.VoiceStudioExtras?.quality();
+  if(q){
+   const warnings=[];
+   if(secs<Math.min(35,script.duration_seconds*.55))warnings.push('This recording is much shorter than the assigned duration.');
+   if(q.clipping)warnings.push('Your microphone level was very high at times; audio may be distorted.');
+   if(q.mostlyQuiet)warnings.push('Much of the recording appears very quiet.');
+   if(warnings.length&&!window.confirm(warnings.join('\n')+'\n\nSubmit anyway?'))return;
+  }
   $('saveRecord').disabled=true;$('resetRecord').disabled=true;$('recordStatus').textContent='Submitting encrypted connection to private project storage…';
   try{await save();$('soloStatus').textContent='Submission complete. An administrator can review your audio.';$('startRecord').disabled=true;$('resetRecord').disabled=true;void loadMine()}
   catch(e){note('Secure upload failed: '+fail(e));$('recordStatus').textContent='Upload failed — your take is still available to retry.';$('saveRecord').disabled=false;$('resetRecord').disabled=false}
@@ -250,6 +274,6 @@ async function leave(){
  try{if(session&&session.state!=='submitted')await rpc('vs_leave',{p_session:session.id})}catch(e){note(fail(e))}
  cleanup();session=null;mode='';script=null;view('home');note('Session closed.');
 }
-window.addEventListener('pagehide',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);cleanup()});
+window.addEventListener('pagehide',()=>{window.VoiceStudioExtras?.dispose();if(previewUrl)URL.revokeObjectURL(previewUrl);cleanup()});
 init().catch(e=>note('Studio authorization error: '+fail(e)));
 })();

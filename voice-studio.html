@@ -112,6 +112,36 @@ main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-wel
 }
 @media(max-height:700px){.vs-script-body{min-height:170px!important;max-height:calc(100dvh - 420px)!important}}@media(prefers-reduced-motion:reduce){.vs-mic-indicator{animation:none!important}}
 </style>
+
+<style id="vs-wave-and-captions-style">
+.vs-wave-wrap{margin-top:10px;background:#f6faf9;border:1px solid #e0eae9;border-radius:12px;padding:5px 12px 4px}
+#vsWaveCanvas{display:block;width:100%;height:53px;max-height:53px;touch-action:pan-y;cursor:default;outline-offset:3px}
+#vsWaveCanvas.vs-seekable{cursor:crosshair}
+#vsWaveCanvas:focus-visible{outline:2px solid #2f8c84;border-radius:5px}
+.vs-wave-info{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:#67848a;line-height:1.5}
+#vsMicState[data-status="clipping"]{color:#cb5356;font-weight:760}
+#vsMicState[data-status="quiet"]{color:#ae7b35;font-weight:720}
+#vsMicState[data-status="good"]{color:#247965}
+.vs-captions-control{margin:8px 0 2px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:#355962}
+.vs-captions-control label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:680;white-space:nowrap}
+.vs-captions-control input{width:15px;height:15px;accent-color:#1a7972}
+.vs-beta{font-size:8px;letter-spacing:.06em;background:#e7f3f0;color:#1e8077;padding:3px 5px;border-radius:4px}
+#vsSpeechStatus{color:#809299;font-size:10px;text-align:right}
+.vs-caption-pane{margin-top:8px;padding:9px 11px;background:#f9fcfc;border:1px solid #d9e9e6;border-radius:10px}
+.vs-caption-pane[hidden]{display:none}
+.vs-caption-head{display:flex;align-items:center;justify-content:space-between;gap:9px;color:#2c6c6c;font-size:10px;margin-bottom:6px}
+.vs-caption-pane #vsCaptionText{font-size:12px;line-height:1.55;color:#304c56;max-height:55px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;min-height:16px}
+.vs-caption-pane p{margin-top:6px;font-size:9px;line-height:1.45;color:#88969b}
+.vs-record-dock .vs-dock-review{margin-top:8px;padding-top:7px}
+@media(max-height:720px){.vs-wave-wrap{margin-top:6px}#vsWaveCanvas{height:38px;max-height:38px}.vs-caption-pane #vsCaptionText{max-height:34px}}
+@media(max-width:650px){
+.vs-wave-wrap{margin-top:7px;padding:4px 8px}
+#vsWaveCanvas{height:43px;max-height:43px}
+.vs-captions-control{font-size:10px;gap:6px}
+#vsSpeechStatus{font-size:9px;max-width:46%;line-height:1.2}
+.vs-caption-pane{padding:7px 9px}.vs-caption-pane #vsCaptionText{max-height:36px;font-size:11px}.vs-caption-pane p{font-size:9px}
+}
+</style>
 </head>
 <body>
 <header><a class="brand" href="/workspace"><img src="/assets/adatacore-logo.jpg" alt=""><span>Adatacore</span><span class="crumb">/ Voice Studio</span></a><div class="header-actions"><span class="chip"><span class="dot"></span>Project #94 · Hindi studio</span><a class="btn small" href="/workspace">Exit studio</a></div></header>
@@ -140,10 +170,25 @@ main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-wel
 <div class="vs-dock-top"><div class="vs-dock-label"><span class="vs-mic-indicator" aria-hidden="true"></span><div><strong>Recording desk</strong><span id="recordStatus">Ready when you are</span></div></div>
 <div class="record-time" id="recordTime">00:00</div>
 <div class="vs-dock-buttons"><button class="btn primary" id="startRecord" type="button">● Start recording</button><button class="btn danger" id="stopRecord" type="button" disabled>■ Stop</button><button class="btn" id="resetRecord" type="button" disabled>↻ Record again</button></div></div>
+
+<div class="vs-wave-wrap" aria-label="Audio waveform and recording levels">
+  <canvas id="vsWaveCanvas" width="900" height="62" tabindex="0" role="slider" aria-label="Recording waveform; after recording, use arrow keys to seek playback" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Waveform · click to seek after recording"></canvas>
+  <div class="vs-wave-info"><span id="vsMicState" aria-live="polite">● Microphone standby</span><span id="vsTargetTime">Target: —</span></div>
+</div>
+<div class="vs-captions-control">
+  <label for="vsCaptionsToggle"><input id="vsCaptionsToggle" type="checkbox"> Live Hindi captions <span class="vs-beta">BETA</span></label>
+  <span id="vsSpeechStatus">Optional · depends on browser support</span>
+</div>
+<div class="vs-caption-pane" id="vsCaptionPane" hidden>
+  <div class="vs-caption-head"><strong>Automatic Hindi transcript · draft</strong><span id="vsCaptionCount">0 words</span></div>
+  <div id="vsCaptionText" lang="hi" aria-label="Speech-recognition transcript">Start recording to see recognized speech here.</div>
+  <p>Captions are approximate. Your browser may send speech to its recognition provider. If enabled, recognized text is saved with your audio submission.</p>
+</div>
 <div class="vs-dock-review"><audio class="playback" id="playback" controls preload="metadata" hidden aria-label="Listen to your recording"></audio><button class="btn vs-submit" id="saveRecord" type="button" disabled>Submit recording →</button></div>
 <div class="status" role="status" aria-live="polite" id="soloStatus"></div>
 </div></section>
 <section id="duo" class="step"><button class="back" data-back>← All recording formats</button><div class="eyebrow">02 / Collaborative production</div><h1 style="font-size:39px">Two voices. One conversation.</h1><div class="card lobby"><div class="orb" aria-hidden="true">♫</div><h2>Your next conversation starts here.</h2><p>Anonymous matchmaking will show how many voice actors are available and automatically connect compatible participants.</p><div class="stat"><span><b>—</b>Actors waiting</span><span><b>60s</b>Pre-call conversation</span><span><b>2</b>Separate audio tracks</span></div><div class="notice" style="max-width:580px;margin:0 auto 20px;text-align:left">Duo matching is on hold while secure TURN relay configuration and two-device testing are completed. Solo recording remains available for approved testing.</div><button class="btn primary" disabled>Duo mode unavailable until live-audio setup</button><div class="foot">Your name and account details will remain private from the other voice actor.</div></div></section>
 </main>
 <script>(()=>{const waves=document.getElementById('heroWaves');if(!waves)return;for(let i=0;i<36;i++){const e=document.createElement('i');e.style.height=(12+Math.abs(Math.sin(i*.72)*Math.cos(i*.22))*92)+'px';waves.appendChild(e)}})();</script>
-<script src="/voice-studio-platform.js?v=3"></script></body></html>
+<script src="/voice-studio-recorder-extras.js?v=1"></script>
+<script src="/voice-studio-platform.js?v=4"></script></body></html>
