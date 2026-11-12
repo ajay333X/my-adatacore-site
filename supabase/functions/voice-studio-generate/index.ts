@@ -21,11 +21,12 @@ Deno.serve(async(req:Request)=>{
  if(project!==94||!Number.isInteger(n)||n<1||n>5||!Number.isInteger(d)||d<60||d>180||!["solo","duo"].includes(mode))return out({error:"Invalid script configuration"},400);
  const language=String(p.language||"English").slice(0,45),scenario=String(p.scenario||"Customer support").slice(0,140);
  const emotions=(Array.isArray(p.emotions)?p.emotions:[]).map((v:unknown)=>String(v).slice(0,40)).slice(0,12);
+ const instructions=String(p.instructions||"").slice(0,5000).trim();
  // Groq is the fast inference provider already supported by this project (not xAI Grok).
  // Do not silently charge OpenAI when Groq is missing or unavailable.
  const groq=Deno.env.get("GROQ_API_KEY");
  if(!groq)return out({error:"Groq is not configured. Add GROQ_API_KEY in Supabase Edge Function secrets."},503);
- const prompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+(mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles")+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+Math.round(d/60*120)+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.";
+ const prompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+(mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles")+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+Math.round(d/60*120)+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent."+(instructions?" Additional administrator directions: "+instructions:"");
  const url="https://api.groq.com/openai/v1/chat/completions";
  const schema={type:"object",additionalProperties:false,properties:{
   scripts:{type:"array",items:{type:"object",additionalProperties:false,properties:{
@@ -76,7 +77,7 @@ Deno.serve(async(req:Request)=>{
   const {error:historyError}=await db.from("vs_script_generations").insert({
    project_id:project,script_id:created.id,requested_by:user.id,
    provider:"Groq",model:"openai/gpt-oss-120b",
-   request_json:{count:n,mode,language,scenario,emotions,duration_seconds:d},
+   request_json:{count:n,mode,language,scenario,emotions,duration_seconds:d,instructions},
    prompt_text:prompt,output_json:{scripts:original?[original]:[]}
   });
   if(historyError)logWarning="Script created, but generation history was not saved.";
