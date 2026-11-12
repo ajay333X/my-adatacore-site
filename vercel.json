@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/email-center",
+      "destination": "/admin-email-center"
+    },
+    {
       "source": "/admin/linters",
       "destination": "/linter-library"
     },
