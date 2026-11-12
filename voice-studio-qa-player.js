@@ -47,8 +47,7 @@ function create({sessionId,actorA,actorB,tracks,db}){
  };
  for(const [key,b] of Object.entries(buttons))b.onclick=()=>{mode=key;volumeUpdate()};
  for(const v of Object.values(inputs))v.addEventListener('input',volumeUpdate);
- const master=()=>sound.a.ready?sound.a.audio:sound.b.audio;
- const now=()=>{const p=master();return p?p.currentTime:0};
+ const now=()=>valid().length?Math.max(...valid().map(s=>s.audio.currentTime||0)):0;
  const paint=()=>{
   if(disposed)return;
   const t=now(),limit=duration||0;
