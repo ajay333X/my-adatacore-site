@@ -16,13 +16,13 @@ function renderPrompt(){
  const form=$('alGeneratorForm');if(!form)return;
  const fields=form.elements,duration=Number(fields.namedItem('duration').value)||120;
  const values={
-  count:'1',language:fields.namedItem('language').value,
+  count:'1',language:String(fields.namedItem('language').value).slice(0,45),
   mode:fields.namedItem('mode').value==='solo'?'single voice actor reading both sides':'pair of voice actors reading Agent and Customer roles',
-  scenario:fields.namedItem('scenario').value,
-  emotions:fields.namedItem('emotions').value,
+  scenario:String(fields.namedItem('scenario').value).slice(0,140),
+  emotions:String(fields.namedItem('emotions').value).split(',').map(x=>x.trim().slice(0,40)).slice(0,12).join(', '),
   duration_seconds:String(duration),word_count:String(Math.round(duration/60*120))
  };
- const template=fields.namedItem('prompt_template').value||DEFAULT_PROMPT;
+ const template=String(fields.namedItem('prompt_template').value||'').slice(0,8000).trim()||DEFAULT_PROMPT;
  const prompt=template.replace(/\{(count|language|mode|scenario|emotions|duration_seconds|word_count)\}/g,(_,name)=>values[name]);
  $('alPromptPreview').textContent=prompt+' Must return exactly 1 scripts with keys title, scenario, emotion and body as schema-valid JSON. No markdown.'+(fields.namedItem('instructions').value.trim()?' Additional administrator directions: '+fields.namedItem('instructions').value.trim():'');
 }
