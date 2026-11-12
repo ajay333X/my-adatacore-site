@@ -17,6 +17,8 @@ function addView(){
  const section=document.createElement('section');section.id='view-recordings';section.className='lab-view';
  section.innerHTML='<div class="view-head"><div><div class="eyebrow">Central QA / Audio production</div><h1>Central QA — Voice recordings</h1><p>Search by unique recording task ID. Review Solo and both Duo tracks together and submit QA feedback.</p></div><div class="toolbar"><button id="acRecordRefresh" class="btn btn-secondary" type="button">Refresh recordings</button><a id="acRecordQaLink" class="btn btn-secondary" href="/voice-studio" target="_blank" rel="noopener">Voice Studio ↗</a></div></div><div class="ac-qa-search"><label for="acTaskSearch"><strong>Find task ID</strong></label><input type="search" id="acTaskSearch" placeholder="VS-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" aria-label="Find Voice Studio task by ID"></div><div id="acRecordingStats" class="ac-recording-stats"></div><div id="acRecordingItems" aria-live="polite">Choose this section to view recordings.</div>';
  main.append(section);document.head.insertAdjacentHTML('beforeend',css);
+ const targetTask=new URLSearchParams(location.search).get('voice_task');
+ if(targetTask)$('acTaskSearch').value=targetTask;
  new MutationObserver(()=>{if(section.classList.contains('active'))void read()}).observe(section,{attributes:true,attributeFilter:['class']});
  $('acRecordRefresh').onclick=()=>void read();
  $('acTaskSearch').addEventListener('input',()=>{clearTimeout(window.__acQaSearchTimer);window.__acQaSearchTimer=setTimeout(()=>void read(),300)});
@@ -25,7 +27,7 @@ function addView(){
 function switchView(){
  document.querySelectorAll('.lab-nav button').forEach(b=>b.classList.toggle('active',b.dataset.view==='recordings'));
  document.querySelectorAll('.lab-view').forEach(v=>v.classList.toggle('active',v.id==='view-recordings'));
- history.replaceState(null,'','/admin/project-lab?project='+P+'#recordings');
+ const u=new URL(location.href);u.hash='recordings';history.replaceState(null,'',u.pathname+u.search+u.hash);
  void read();
 }
 function addStat(label,n){
@@ -59,10 +61,10 @@ async function read(){
   }
   stats.replaceChildren(addStat('Recent sessions',sessions.length),addStat('Uploaded tracks',tracks.length),addStat('Completed sessions',sessions.filter(s=>s.state==='submitted').length),addStat('Reviewed',reviews.length));
   host.textContent='';
-  if(!tracks.length){
-   const p=document.createElement('div');p.className='card lab-card';p.textContent='No submitted audio yet. Completed recordings will automatically appear here with playback and transcript drafts.';host.append(p);return;
+  if(!tracks.length&&!term&&!flags.length){
+   const p=document.createElement('div');p.className='card lab-card';p.textContent='No submitted audio yet. Use a task ID to find a pending or flagged session as well.';host.append(p);return;
   }
-  for(const s of sessions.filter(s=>tracks.some(t=>t.session_id===s.id)&&(!term||taskId(s.id).toLowerCase().includes(term)||s.id.toLowerCase().includes(term)))){
+  for(const s of sessions.filter(s=>(Boolean(term)||tracks.some(t=>t.session_id===s.id)||flags.some(f=>f.session_id===s.id))&&(!term||taskId(s.id).toLowerCase().includes(term)||s.id.toLowerCase().includes(term)))){
    const entry=document.createElement('article');entry.className='ac-recording-item';
    const top=document.createElement('div');top.className='ac-recording-title';
    const heading=document.createElement('strong');heading.textContent=scripts.find(x=>x.id===s.script_id)?.title||'Voice Studio session';
@@ -72,6 +74,9 @@ async function read(){
    if(sessionFlags.length){const flagBox=document.createElement('div');flagBox.className='ac-recording-qa';flagBox.style.cssText='padding:10px;border:1px solid #efcc8f;background:#fff8e8;border-radius:9px;margin:10px 0;color:#805417';flagBox.textContent='⚑ '+sessionFlags.length+' participant flag(s) for this task';for(const flag of sessionFlags){const row=document.createElement('div');row.style.cssText='margin:8px 0 0;white-space:pre-wrap';row.textContent=new Date(flag.created_at).toLocaleString()+' · '+flag.reason;flagBox.append(row)}entry.append(flagBox)}
    const task=document.createElement('div');task.className='ac-qa-task-id';const idcode=document.createElement('code');idcode.textContent=taskId(s.id);const copy=document.createElement('button');copy.type='button';copy.className='btn btn-secondary';copy.textContent='Copy task ID';copy.onclick=()=>navigator.clipboard?.writeText(taskId(s.id)).then(()=>copy.textContent='Copied',()=>copy.textContent='Select the ID to copy');task.append(idcode,copy);entry.append(task);
    const sub=document.createElement('div');sub.className='ac-recording-meta';sub.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+tracks.filter(t=>t.session_id===s.id).length+' audio track(s)';entry.append(sub);
+   if(!tracks.some(t=>t.session_id===s.id)){
+    const pending=document.createElement('p');pending.className='ac-recording-meta';pending.textContent='No audio tracks submitted yet. This task can still be located and flagged. Session status: '+s.state;entry.append(pending);
+   }
    for(const t of tracks.filter(t=>t.session_id===s.id)){
     const row=document.createElement('div');row.className='ac-recording-track';
     const details=document.createElement('div');details.className='ac-recording-meta';
@@ -129,7 +134,7 @@ async function read(){
    }
    host.append(entry);
   }
- if(!host.children.length){host.textContent='No recordings found for that task ID. Check the ID and refresh.'}
+ if(!host.children.length){host.textContent='No Voice Studio session found for that task ID. Enter the complete VS-UUID (including all hyphens) and check the project.'}
  }catch(e){host.textContent='Unable to load voice recordings: '+e.message}
  finally{busy=false}
 }
