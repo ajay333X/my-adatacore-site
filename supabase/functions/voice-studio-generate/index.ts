@@ -27,7 +27,7 @@ Deno.serve(async(req:Request)=>{
  if(!groq)return out({error:"Groq is not configured. Add GROQ_API_KEY in Supabase Edge Function secrets."},503);
  const prompt="Create "+n+" DIFFERENT authentic, emotionally rich "+language+" customer-service dialogue scripts for a "+(mode==="solo"?"single voice actor reading both sides":"pair of voice actors reading Agent and Customer roles")+". Scenario: "+scenario+". Emotions: "+emotions.join(", ")+". Each conversation must contain approximately "+Math.round(d/60*120)+" spoken words (roughly "+d+" seconds). Different situations and resolutions, clear Agent:/Customer: turns, realistic interruptions and corrections, no filler repetition, natural conversational phrases, no real identifying data, financial secrets, dangerous instructions, or made-up company policies. JSON only with key scripts containing "+n+" objects with keys title,scenario,emotion,body. Make sure the scripts are long enough and dialogue remains coherent.";
  const url="https://api.groq.com/openai/v1/chat/completions";
- const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+groq},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"system",content:"Expert voice-script author. Return strict JSON only."},{role:"user",content:prompt}],temperature:.8,response_format:{type:"json_object"},max_tokens:Math.min(9000,Math.max(2800,n*Math.round(d/60*120)*3))})});
+ const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+groq},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:[{role:"system",content:"Expert voice-script author. Return strict JSON only."},{role:"user",content:prompt}],temperature:.8,response_format:{type:"json_object"},max_tokens:Math.min(9000,Math.max(2800,n*Math.round(d/60*120)*3))})});
  const result=await response.json();
  if(!response.ok)return out({error:"AI provider request failed",detail:String(result.error?.message||"Unknown provider error").slice(0,180)},502);
  const parsed=JSON.parse(result.choices?.[0]?.message?.content||"{}");
@@ -35,6 +35,6 @@ Deno.serve(async(req:Request)=>{
  if(rows.length===0)return out({error:"Provider returned no valid scripts; please retry"},502);
  const {data,error}=await db.from("vs_scripts").insert(rows).select("id,title");
  if(error)return out({error:"Failed saving scripts",detail:error.message},500);
- return out({created:data?.length||0,scripts:data,provider:"Groq",model:"llama-3.3-70b-versatile"});
+ return out({created:data?.length||0,scripts:data,provider:"Groq",model:"openai/gpt-oss-120b"});
  }catch(e){return out({error:"Script generation failed",detail:String(e instanceof Error?e.message:e).slice(0,180)},500)}
 });
