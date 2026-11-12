@@ -47,9 +47,9 @@ def main():
     import torch
     if not torch.cuda.is_available():
         raise SystemExit("No CUDA GPU detected. Enable a Kaggle or Colab GPU first.")
+    from unsloth import FastLanguageModel
     from datasets import Dataset
     from transformers import Trainer, TrainingArguments
-    from unsloth import FastLanguageModel
     root = Path(args.data)
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     if not manifest.get("license_acknowledged") or manifest.get("production_approval"):
