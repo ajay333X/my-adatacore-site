@@ -342,13 +342,13 @@ async function startPeer(){
  pc.onicecandidate=e=>{if(e.candidate)signal('candidate',e.candidate.toJSON()).catch(x=>roomStatus(fail(x)))};
  signalTimer=setInterval(()=>signals().catch(e=>roomStatus(fail(e))),900);
  await signals();
- if(session.actor_a===me.id&&!offerSent){offerSent=true;const s=await pc.createOffer();await pc.setLocalDescription(s);await signal('offer',s.toJSON())}
+ if(session.actor_a===me.id&&!offerSent){offerSent=true;const s=await pc.createOffer();await pc.setLocalDescription(s);await signal('offer',{type:s.type,sdp:s.sdp})}
 }
 async function signals(){
  if(!pc||readBusy)return;readBusy=true;
  try{const {data,error}=await db.from('vs_signals').select('id,sender,kind,payload').eq('session_id',session.id).gt('id',signalId).order('id').limit(100);if(error)throw error;
  for(let e of data||[]){signalId=e.id;if(e.sender===me.id)continue;
- if(e.kind==='offer'&&!pc.remoteDescription){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}let a=await pc.createAnswer();await pc.setLocalDescription(a);await signal('answer',a.toJSON())}
+ if(e.kind==='offer'&&!pc.remoteDescription){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}let a=await pc.createAnswer();await pc.setLocalDescription(a);await signal('answer',{type:a.type,sdp:a.sdp})}
  else if(e.kind==='answer'&&pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}}
  else if(e.kind==='candidate'){if(pc.remoteDescription){try{await pc.addIceCandidate(e.payload)}catch{}}else iceQueue.push(e.payload)}
  else if(e.kind==='stop'&&rec?.state==='recording')rec.stop();
