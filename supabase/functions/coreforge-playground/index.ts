@@ -30,13 +30,12 @@ Deno.serve(async request=>{
   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:{user},error}=await db.auth.getUser(token);
   if(error||!user)return reply({error:"Sign in required"},401);
-  const {data:access,error:accessError}=await db.rpc("get_my_admin_access");
   // Service-role RPC does not inherit a user identity; use authenticated role
   // plus the same verified account check as the CoreForge super-admin guard.
   const {data:profile,error:profileError}=await db.from("users").select("role,accountStatus").eq("id",user.id).maybeSingle();
   if(profileError||profile?.role!=="admin"||profile.accountStatus!=="active")return reply({error:"Administrator permission required"},403);
   // Validate scoped super-admin status with the user's authenticated JWT.
-  const actor=createClient(url,Deno.env.get("SUPABASE_ANON_KEY")||Deno.env.get("SUPABASE_PUBLISHABLE_KEY")||key,{global:{headers:{Authorization:"Bearer "+token}},auth:{persistSession:false,autoRefreshToken:false}});
+  const actor=createClient(url,"sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml",{global:{headers:{Authorization:"Bearer "+token}},auth:{persistSession:false,autoRefreshToken:false}});
   const permitted=await actor.rpc("get_my_admin_access");
   if(permitted.error||permitted.data?.is_super_admin!==true)return reply({error:"Super Admin permission required"},403);
 
