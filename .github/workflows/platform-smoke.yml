@@ -73,7 +73,7 @@ jobs:
           check 'Precision in Every Byte.' homepage-v2.js
           check 'initPrecisionTagline' homepage-v2.js
           check 'a.home-btn-primary{color:#fff!important}' homepage-enterprise.css
-          check "url('/adatacore-mark.svg')" public-company.css
+          check "url('/assets/adatacore-logo.jpg')" public-company.css
           check 'a.cp-btn.primary' public-company.css
           check 'Precision in Every Byte.' public-info.css
           check 'public-site-gateway' homepage-v2.js
