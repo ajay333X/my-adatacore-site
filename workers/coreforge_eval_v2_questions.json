@@ -1,0 +1,376 @@
+{
+  "version": "coreforge-eval-v2.0",
+  "status": "human_review_pending",
+  "purpose": "40 paired Hindi evaluations of same untouched base model, with vs without selectively retrieved candidate knowledge",
+  "criteria": "Assess factual correctness, Hindi fluency, concision, groundedness, and instruction following manually; no automatic ground-truth quality score.",
+  "questions": [
+    {
+      "id": "H01",
+      "category": "transcription_qa",
+      "prompt": "WER का पूरा नाम और इसका उपयोग क्या है?",
+      "reference_ids": [
+        "wer"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H02",
+      "category": "transcription_qa",
+      "prompt": "WER की गणना में S, D, I और N किसके लिए हैं?",
+      "reference_ids": [
+        "wer"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H03",
+      "category": "transcription_qa",
+      "prompt": "CER और WER में गणना का मूल अंतर क्या है?",
+      "reference_ids": [
+        "cer",
+        "wer"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H04",
+      "category": "transcription_qa",
+      "prompt": "अक्षर-स्तर पर ट्रांसक्रिप्शन त्रुटि किस मेट्रिक से मापेंगे?",
+      "reference_ids": [
+        "cer"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H05",
+      "category": "transcription_qa",
+      "prompt": "अगर बोले गए वाक्य में 'है' है, लेकिन ट्रांसक्रिप्शन में नहीं है, क्या करना चाहिए?",
+      "reference_ids": [
+        "word_accuracy"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H06",
+      "category": "transcription_qa",
+      "prompt": "सिर्फ व्याकरण गलत लगने पर सुने बिना शब्द सुधारना सही है?",
+      "reference_ids": [
+        "word_accuracy"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H07",
+      "category": "transcription_qa",
+      "prompt": "बोलते समय 'उम्' सुनाई दे तो ट्रांसक्रिप्शन में उसका क्या करें?",
+      "reference_ids": [
+        "fillers"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H08",
+      "category": "transcription_qa",
+      "prompt": "क्या QA समीक्षक बिना ऑडियो के filler हटा सकता है?",
+      "reference_ids": [
+        "fillers"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H09",
+      "category": "transcription_qa",
+      "prompt": "'मैं कल नहीं आया' से 'नहीं' हटाने का अर्थ पर क्या असर पड़ता है?",
+      "reference_ids": [
+        "meaning"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H10",
+      "category": "transcription_qa",
+      "prompt": "किसी ट्रांसक्रिप्शन से एक नकारात्मक शब्द हटाने के क्या खतरे हैं?",
+      "reference_ids": [
+        "meaning"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H11",
+      "category": "transcription_qa",
+      "prompt": "क्या हर पूर्ण विराम के बाद स्वतः [ठहराव] लगाना ठीक है?",
+      "reference_ids": [
+        "punctuation"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H12",
+      "category": "transcription_qa",
+      "prompt": "विराम टैग किस साक्ष्य और किन नियमों पर आधारित होना चाहिए?",
+      "reference_ids": [
+        "punctuation"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H13",
+      "category": "transcription_qa",
+      "prompt": "क्या 'फ़ोन' को हिंदी वाक्य में हर बार विदेशी भाषा टैग चाहिए?",
+      "reference_ids": [
+        "loanwords"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H14",
+      "category": "transcription_qa",
+      "prompt": "आम loanword और foreign-language speech tagging में अंतर कैसे तय करेंगे?",
+      "reference_ids": [
+        "loanwords"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H15",
+      "category": "transcription_qa",
+      "prompt": "ब्रांड का नाम सुनाई दे तो क्या उसे मनमाने हिंदी अनुवाद से बदल दें?",
+      "reference_ids": [
+        "proper_nouns"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H16",
+      "category": "transcription_qa",
+      "prompt": "proper noun की वर्तनी बदलने से पहले क्या सत्यापित करेंगे?",
+      "reference_ids": [
+        "proper_nouns"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H17",
+      "category": "qa_reliability",
+      "prompt": "किसी शब्द की वर्तनी सुधारने के लिए एक वाक्य का विनम्र हिंदी QA फीडबैक लिखें।",
+      "reference_ids": [
+        "qa_feedback"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H18",
+      "category": "qa_reliability",
+      "prompt": "अस्पष्ट QA फीडबैक और कार्रवाई योग्य QA फीडबैक में अंतर बताएं।",
+      "reference_ids": [
+        "qa_feedback"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H19",
+      "category": "qa_reliability",
+      "prompt": "अगर किसी सवाल का उत्तर नहीं पता हो तो क्या सीधे तथ्य गढ़ना चाहिए?",
+      "reference_ids": [
+        "uncertainty"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H20",
+      "category": "qa_reliability",
+      "prompt": "केवल प्रश्न सुनकर कल ऑफिस की मीटिंग का संचालक बताने का दावा करना ठीक है?",
+      "reference_ids": [
+        "uncertainty"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H21",
+      "category": "qa_reliability",
+      "prompt": "मॉडल आत्मविश्वास से बोले तो क्या यह सत्यता का प्रमाण है?",
+      "reference_ids": [
+        "hallucination"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H22",
+      "category": "qa_reliability",
+      "prompt": "बिना संदर्भ के किसी वास्तविक व्यक्ति की पहचान या तिथि कैसे बतानी चाहिए?",
+      "reference_ids": [
+        "hallucination"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H23",
+      "category": "qa_reliability",
+      "prompt": "क्या कम training loss अपने आप बेहतर हिंदी जवाब साबित करता है?",
+      "reference_ids": [
+        "metrics"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H24",
+      "category": "qa_reliability",
+      "prompt": "दो अलग datasets पर test loss देखकर AI मॉडल का सर्वश्रेष्ठ होना तय कर सकते हैं?",
+      "reference_ids": [
+        "metrics"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H25",
+      "category": "model_operations",
+      "prompt": "Training, validation और test split अलग रखने का क्या उद्देश्य है?",
+      "reference_ids": [
+        "data_split"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H26",
+      "category": "model_operations",
+      "prompt": "अगर एक ही उदाहरण training और test दोनों में हो तो समस्या क्या है?",
+      "reference_ids": [
+        "data_split"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H27",
+      "category": "model_operations",
+      "prompt": "क्या LoRA adapter की ZIP बिना base model के एक स्वतंत्र चैटबॉट है?",
+      "reference_ids": [
+        "lora"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H28",
+      "category": "model_operations",
+      "prompt": "LoRA के साथ inference चलाने के लिए किन चीज़ों की आवश्यकता होती है?",
+      "reference_ids": [
+        "lora"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H29",
+      "category": "model_operations",
+      "prompt": "Training सफल होना क्या मॉडल को production में भेजने की मंजूरी है?",
+      "reference_ids": [
+        "safety"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H30",
+      "category": "model_operations",
+      "prompt": "Hindi AI को deploy करने से पहले किन गुणों की समीक्षा जरूरी है?",
+      "reference_ids": [
+        "safety"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H31",
+      "category": "model_operations",
+      "prompt": "ऑडियो में हँसी न सुनाई दे तो [हँसी] जोड़ना चाहिए?",
+      "reference_ids": [
+        "audio_nst"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H32",
+      "category": "model_operations",
+      "prompt": "क्या ध्वनि टैग केवल अंदाज़े के आधार पर लगाए जा सकते हैं?",
+      "reference_ids": [
+        "audio_nst"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H33",
+      "category": "mixed_scenarios",
+      "prompt": "QA में गलत शब्द और गलत विराम टैग की जाँच कैसे अलग है?",
+      "reference_ids": [
+        "word_accuracy",
+        "punctuation"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H34",
+      "category": "mixed_scenarios",
+      "prompt": "किसी रिकॉर्डिंग में 'नहीं' सुनाई देता है लेकिन स्क्रिप्ट में नहीं है, क्या करेंगे?",
+      "reference_ids": [
+        "word_accuracy",
+        "meaning"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H35",
+      "category": "mixed_scenarios",
+      "prompt": "जब ऑडियो में 'अह' हो और स्क्रिप्ट में न हो, किस आधार पर सुधार करेंगे?",
+      "reference_ids": [
+        "fillers",
+        "word_accuracy"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H36",
+      "category": "mixed_scenarios",
+      "prompt": "क्या 'ईमेल' और किसी विदेशी भाषा में बोले गए पूरे वाक्य को एक समान tag करना चाहिए?",
+      "reference_ids": [
+        "loanwords"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H37",
+      "category": "mixed_scenarios",
+      "prompt": "जब बोला हुआ वाक्य अटपटा लगे, फीडबैक और ट्रांसक्रिप्शन सुधार में क्या अंतर रखें?",
+      "reference_ids": [
+        "word_accuracy",
+        "qa_feedback"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H38",
+      "category": "mixed_scenarios",
+      "prompt": "अगर मॉडल WER का अर्थ नहीं जानता, सही जवाब का तरीका क्या है?",
+      "reference_ids": [
+        "wer",
+        "uncertainty"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H39",
+      "category": "mixed_scenarios",
+      "prompt": "क्या random train-test duplication से validation score विश्वसनीय रह सकता है?",
+      "reference_ids": [
+        "data_split",
+        "metrics"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    },
+    {
+      "id": "H40",
+      "category": "mixed_scenarios",
+      "prompt": "यदि ऑडियो उपलब्ध नहीं है, तो हँसी और pause tags के बारे में क्या कहना उचित है?",
+      "reference_ids": [
+        "audio_nst",
+        "punctuation"
+      ],
+      "human_review_criteria": "उत्तर तथ्यात्मक, स्पष्ट, संक्षिप्त हिंदी में हो; मूल संबंधित संदर्भ से मेल खाए और अनावश्यक तथ्य न गढ़े।"
+    }
+  ]
+}
