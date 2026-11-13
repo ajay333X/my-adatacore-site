@@ -8,6 +8,8 @@ on:
       - 'workers/coreforge_chat_*.py'
       - 'workers/CoreForge_Chatbot_Colab.ipynb'
       - 'workers/CoreForge_Hindi_v02_Colab.ipynb'
+      - 'workers/CoreForge_Hindi_v03_Colab.ipynb'
+      - 'workers/coreforge_hindi_v03_filter.py'
       - 'workers/CoreForge_Compare_Hindi_v02.ipynb'
       - '.github/workflows/coreforge-chatbot-*.yml'
   workflow_dispatch:
@@ -43,6 +45,18 @@ jobs:
               ast.parse(source)
           assert any('BASELINE_READABLE = False' in ''.join(c['source']) for c in v02['cells'])
           assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in v02['cells'])
+          v03=json.loads(Path('workers/CoreForge_Hindi_v03_Colab.ipynb').read_text())
+          assert v03['nbformat']==4 and len(v03['cells'])>=12
+          for cell in v03['cells']:
+            if cell['cell_type']=='code':
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('!') or source.lstrip().startswith('%'): continue
+              ast.parse(source)
+          assert any('BASELINE_PASSED=False' in ''.join(c['source']) for c in v03['cells'])
+          assert any('DATA_REVIEWED=False' in ''.join(c['source']) for c in v03['cells'])
+          assert any('Qwen/Qwen3-4B-Instruct-2507' in ''.join(c['source']) for c in v03['cells'])
+          ast.parse(Path('workers/coreforge_hindi_v03_filter.py').read_text())
+
           compare=json.loads(Path('workers/CoreForge_Compare_Hindi_v02.ipynb').read_text())
           assert compare['nbformat']==4 and len(compare['cells'])>=10
           for cell in compare['cells']:
