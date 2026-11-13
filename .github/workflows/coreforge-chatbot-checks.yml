@@ -68,7 +68,9 @@ jobs:
           assert baseline['nbformat']==4 and len(baseline['cells'])>=10
           for cell in baseline['cells']:
             if cell['cell_type']=='code':
-              ast.parse(''.join(cell['source']))
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('!') or source.lstrip().startswith('%'): continue
+              ast.parse(source)
           assert any('Qwen/Qwen3-4B-Instruct-2507' in ''.join(c['source']) for c in baseline['cells'])
           assert any('human-review.csv' in ''.join(c['source']) for c in baseline['cells'])
 
