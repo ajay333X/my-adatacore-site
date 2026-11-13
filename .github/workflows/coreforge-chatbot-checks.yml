@@ -11,6 +11,9 @@ on:
       - 'workers/CoreForge_Hindi_v03_Colab.ipynb'
       - 'workers/CoreForge_Hindi_v03_Lite_Colab.ipynb'
       - 'workers/CoreForge_Hindi_Baseline_Quality_Lab.ipynb'
+      - 'workers/CoreForge_Evaluation_v2_Colab.ipynb'
+      - 'workers/coreforge_eval_v2_knowledge.json'
+      - 'workers/coreforge_eval_v2_questions.json'
       - 'workers/coreforge_hindi_v03_filter.py'
       - 'workers/CoreForge_Compare_Hindi_v02.ipynb'
       - '.github/workflows/coreforge-chatbot-*.yml'
@@ -73,6 +76,23 @@ jobs:
               ast.parse(source)
           assert any('Qwen/Qwen3-4B-Instruct-2507' in ''.join(c['source']) for c in baseline['cells'])
           assert any('human-review.csv' in ''.join(c['source']) for c in baseline['cells'])
+          qbank=json.loads(Path('workers/coreforge_eval_v2_questions.json').read_text())
+          knowledge=json.loads(Path('workers/coreforge_eval_v2_knowledge.json').read_text())
+          assert len(qbank['questions'])==40
+          assert len({q['id'] for q in qbank['questions']})==40
+          keys={k['id'] for k in knowledge['entries']}
+          assert len(keys)==len(knowledge['entries'])
+          assert all(set(q['reference_ids']).issubset(keys) for q in qbank['questions'])
+          evalv2=json.loads(Path('workers/CoreForge_Evaluation_v2_Colab.ipynb').read_text())
+          assert evalv2['nbformat']==4 and len(evalv2['cells'])>=10
+          for cell in evalv2['cells']:
+            if cell['cell_type']=='code':
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('!') or source.lstrip().startswith('%'): continue
+              ast.parse(source)
+          assert any('QUESTION_LIMIT=40' in ''.join(c['source']) for c in evalv2['cells'])
+          assert any('retrieved_context' in ''.join(c['source']) for c in evalv2['cells'])
+
 
 
           ast.parse(Path('workers/coreforge_hindi_v03_filter.py').read_text())
