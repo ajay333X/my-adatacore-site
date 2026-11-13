@@ -1,0 +1,120 @@
+{
+  "version": "coreforge-eval-v2.0",
+  "status": "curated_candidate_pending_domain_owner_signoff",
+  "usage": "evaluation_only_not_authoritative_project_style_guide",
+  "notes": "Authored benchmark references based on generally accepted definitions and examples; check against current Adatacore rules before publishing as policy. This is not a licensed external document corpus.",
+  "entries": [
+    {
+      "id": "wer",
+      "title": "WER क्या है? शब्द त्रुटि दर",
+      "content": "WER (Word Error Rate) शब्द-स्तर पर ट्रांसक्रिप्शन की त्रुटि मापता है। WER = (S + D + I) / N, जहाँ S प्रतिस्थापन, D विलोपन, I अतिरिक्त शब्द और N संदर्भ में शब्दों की संख्या है।",
+      "kind": "general_definition",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "cer",
+      "title": "CER क्या है? अक्षर त्रुटि दर",
+      "content": "CER (Character Error Rate) वर्ण/अक्षर-स्तर पर त्रुटि मापता है। CER = (S + D + I) / N, जहाँ गणना शब्दों के बजाय संदर्भ के characters पर होती है।",
+      "kind": "general_definition",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "word_accuracy",
+      "title": "ऑडियो के अनुसार शब्द सटीकता",
+      "content": "ट्रांसक्रिप्शन में वास्तविक बोले गए शब्दों का मिलान ऑडियो से करें। केवल व्याकरण ठीक करने के लिए बोला हुआ शब्द न बदलें; किसी गलती को टिप्पणी में flag किया जा सकता है।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "fillers",
+      "title": "फिलर्स और दोहराव",
+      "content": "उम्, अह जैसे सचमुच बोले गए fillers और दोहराव को परियोजना के transcription rules के अनुसार दर्ज करें। बिना ऑडियो-साक्ष्य fillers न हटाएँ और न जोड़ें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "meaning",
+      "title": "नकारात्मकता और अर्थ",
+      "content": "'मैं कल नहीं आया' और 'मैं कल आया' के अर्थ विपरीत हैं। 'नहीं' जैसे बोले गए नकारात्मक शब्द को बिना साक्ष्य हटाना meaning और word accuracy दोनों की गलती है।",
+      "kind": "general_language",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "punctuation",
+      "title": "विराम और विराम-टैग",
+      "content": "विराम-टैग केवल ऑडियो में वास्तविक विराम और संबंधित परियोजना के नियमों के अनुसार लगाएँ। हर पूर्णविराम के बाद बिना ऑडियो सुने स्वतः विराम-टैग न जोड़ें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "loanwords",
+      "title": "ऋणशब्द बनाम विदेशी भाषा",
+      "content": "फ़ोन, ईमेल और ऐप जैसे स्वीकृत अंग्रेज़ी मूल के सामान्य हिंदी ऋणशब्दों को हर बार foreign-language tag देना आवश्यक नहीं। टैगिंग का अंतिम निर्णय परियोजना के style guide से करें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "proper_nouns",
+      "title": "व्यक्तिनाम और उत्पाद नाम",
+      "content": "व्यक्तियों, ब्रांडों या उत्पादों के proper nouns को बिना साक्ष्य अनुवाद या बदलकर न लिखें। परियोजना-विशिष्ट नाम-नीति को प्राथमिकता दें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "qa_feedback",
+      "title": "संक्षिप्त पेशेवर फीडबैक",
+      "content": "QA फीडबैक विशिष्ट, विनम्र और कार्यवाही योग्य होना चाहिए। उदाहरण: 'कृपया इस शब्द की वर्तनी ऑडियो से जाँचकर सुधारें।' अनुमान के बजाय वास्तविक समस्या बताएं।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "uncertainty",
+      "title": "अनिश्चित तथ्य",
+      "content": "जब उत्तर की पुष्टि न हो, जानकारी की सीमा स्पष्ट बताएँ और सत्यापन की सलाह दें। बिना आधार किसी व्यक्ति, तिथि, मीटिंग या आँकड़े का अनुमान न गढ़ें।",
+      "kind": "general_reliability",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "hallucination",
+      "title": "मनगढ़ंत जानकारी से बचाव",
+      "content": "मॉडल का आत्मविश्वासी दिखना सही होने का प्रमाण नहीं है। स्रोत या रिकॉर्ड में जानकारी न होने पर तथ्य नहीं गढ़ें और अस्पष्टता साफ़ बताएँ।",
+      "kind": "general_reliability",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "metrics",
+      "title": "प्रशिक्षण लॉस और गुणवत्ता",
+      "content": "कम training या evaluation loss अपने आप बेहतर conversational quality सिद्ध नहीं करता, खासकर जब मॉडल या test data अलग हों। उपयोगिता जाँचने के लिए समान prompts, human evaluation और held-out tests जरूरी हैं।",
+      "kind": "general_ml",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "data_split",
+      "title": "ट्रेन और टेस्ट विभाजन",
+      "content": "Train उदाहरण मॉडल सीखने में, validation tuning/monitoring में और test अंतिम मूल्यांकन में रखें। Test उदाहरण training में न मिलाएँ; duplicate leakage रोकें।",
+      "kind": "general_ml",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "lora",
+      "title": "LoRA अडैप्टर",
+      "content": "LoRA एक parameter-efficient fine-tuning तकनीक है। LoRA adapter फाइल अकेले पूरा standalone model नहीं होती; inference के लिए compatible base model और tokenizer चाहिए।",
+      "kind": "general_ml",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "safety",
+      "title": "समीक्षा और अनुमोदन",
+      "content": "किसी research checkpoint को production-ready मानने से पहले factual accuracy, Hindi naturalness, safety और domain correctness की अलग समीक्षा करें। केवल successful training को deployment approval न मानें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    },
+    {
+      "id": "audio_nst",
+      "title": "नॉन-स्पीच टैग",
+      "content": "हँसी, साँस, निश्वास जैसे non-speech tags को तभी जोड़ें जब संबंधित ध्वनि वास्तव में सुनाई दे और project taxonomy उसे स्वीकार करती हो। ऑडियो के बिना प्रदर्शन की कल्पना न करें।",
+      "kind": "benchmark_guidance",
+      "source": "CoreForge authored evaluation reference (review required)"
+    }
+  ]
+}
