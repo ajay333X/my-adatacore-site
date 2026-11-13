@@ -8,6 +8,7 @@ on:
       - 'workers/coreforge_chat_*.py'
       - 'workers/CoreForge_Chatbot_Colab.ipynb'
       - 'workers/CoreForge_Hindi_v02_Colab.ipynb'
+      - 'workers/CoreForge_Compare_Hindi_v02.ipynb'
       - '.github/workflows/coreforge-chatbot-*.yml'
   workflow_dispatch:
 permissions:
@@ -42,6 +43,15 @@ jobs:
               ast.parse(source)
           assert any('BASELINE_READABLE = False' in ''.join(c['source']) for c in v02['cells'])
           assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in v02['cells'])
+          compare=json.loads(Path('workers/CoreForge_Compare_Hindi_v02.ipynb').read_text())
+          assert compare['nbformat']==4 and len(compare['cells'])>=10
+          for cell in compare['cells']:
+            if cell['cell_type']=='code':
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('!') or source.lstrip().startswith('%'): continue
+              ast.parse(source)
+          assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in compare['cells'])
+
           site=Path('coreforge.html').read_text()
           assert '/admin/coreforge-chatbot' in site
           page=Path('coreforge-chatbot.html').read_text()
