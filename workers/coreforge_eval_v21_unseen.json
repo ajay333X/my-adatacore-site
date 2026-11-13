@@ -1,0 +1,121 @@
+{
+  "version": "coreforge-eval-v2.1",
+  "status": "heldout_questions_pending_human_review",
+  "notes": "Additional unseen-in-v2 benchmark prompts. Do not include in retrieval documents or any training data; reference IDs only for scoring retrieval and human quality.",
+  "questions": [
+    {
+      "id": "U01",
+      "category": "unseen_hindi_qa",
+      "prompt": "अगर 'अह' स्पष्ट सुनाई दिया है, फिर भी समीक्षक उसे गैर-भाषण टैग बना दे तो क्या यह उचित है?",
+      "reference_ids": [
+        "fillers",
+        "audio_nst"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U02",
+      "category": "unseen_hindi_qa",
+      "prompt": "ऑडियो में 'मैं नहीं जाऊँगा' है लेकिन टेक्स्ट में 'मैं जाऊँगा' है; सबसे महत्वपूर्ण सुधार क्या है?",
+      "reference_ids": [
+        "meaning",
+        "word_accuracy"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U03",
+      "category": "unseen_hindi_qa",
+      "prompt": "किसी ने केवल स्टाइल सुधारने के लिए 'था' को 'है' में बदला, ऑडियो नहीं सुना। क्या समीक्षा सही है?",
+      "reference_ids": [
+        "word_accuracy"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U04",
+      "category": "unseen_hindi_qa",
+      "prompt": "कोई कहता है प्रत्येक पूर्णविराम पर [ठहराव] अनिवार्य है। आप क्या सत्यापित करेंगे?",
+      "reference_ids": [
+        "punctuation"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U05",
+      "category": "unseen_hindi_qa",
+      "prompt": "रिकॉर्डिंग में कोई साँस नहीं सुनाई देती। क्या [साँस] लगाना चाहिए?",
+      "reference_ids": [
+        "audio_nst"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U06",
+      "category": "unseen_hindi_qa",
+      "prompt": "मेरे पास रिकॉर्डिंग नहीं है लेकिन transcript में 'उम्' है। क्या मैं इसे मिटा दूँ?",
+      "reference_ids": [
+        "fillers",
+        "uncertainty"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U07",
+      "category": "unseen_hindi_qa",
+      "prompt": "बताइए कि WER का अंश और हर किन मानों से बनता है।",
+      "reference_ids": [
+        "wer"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U08",
+      "category": "unseen_hindi_qa",
+      "prompt": "यदि संदर्भ में 100 शब्द हैं और कुल 8 शब्द त्रुटियाँ हैं, WER कितने प्रतिशत होगा?",
+      "reference_ids": [
+        "wer"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U09",
+      "category": "unseen_hindi_qa",
+      "prompt": "केवल spelling गलत दिखने पर ऑडियो से बिना मिलान क्या मूल शब्द बदल सकते हैं?",
+      "reference_ids": [
+        "word_accuracy",
+        "qa_feedback"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U10",
+      "category": "unseen_hindi_qa",
+      "prompt": "'ईमेल' शब्द की वजह से क्या हर बार पूरे वाक्य को foreign-language speech टैग देंगे?",
+      "reference_ids": [
+        "loanwords"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U11",
+      "category": "unseen_hindi_qa",
+      "prompt": "एक वाक्य का QA फीडबैक लिखें जिसमें अतिरिक्त हँसी टैग हटाने का अनुरोध हो, लेकिन ऑडियो की पुष्टि जरूरी हो।",
+      "reference_ids": [
+        "qa_feedback",
+        "audio_nst"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    },
+    {
+      "id": "U12",
+      "category": "unseen_hindi_qa",
+      "prompt": "हमारी टीम ने कल कितने ट्रांसक्रिप्शन स्वीकृत किए? कोई आँकड़ा नहीं दिया गया है।",
+      "reference_ids": [
+        "uncertainty",
+        "hallucination"
+      ],
+      "human_review_criteria": "साक्ष्य-आधारित, संक्षिप्त, तथ्यात्मक उत्तर; अस्पष्ट निर्देश में अनिश्चितता स्पष्ट करें।"
+    }
+  ]
+}
