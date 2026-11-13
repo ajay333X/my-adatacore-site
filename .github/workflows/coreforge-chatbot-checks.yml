@@ -10,6 +10,7 @@ on:
       - 'workers/CoreForge_Hindi_v02_Colab.ipynb'
       - 'workers/CoreForge_Hindi_v03_Colab.ipynb'
       - 'workers/CoreForge_Hindi_v03_Lite_Colab.ipynb'
+      - 'workers/CoreForge_Hindi_Baseline_Quality_Lab.ipynb'
       - 'workers/coreforge_hindi_v03_filter.py'
       - 'workers/CoreForge_Compare_Hindi_v02.ipynb'
       - '.github/workflows/coreforge-chatbot-*.yml'
@@ -63,6 +64,14 @@ jobs:
               source=''.join(cell['source'])
               ast.parse(source)
           assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in lite['cells'])
+          baseline=json.loads(Path('workers/CoreForge_Hindi_Baseline_Quality_Lab.ipynb').read_text())
+          assert baseline['nbformat']==4 and len(baseline['cells'])>=10
+          for cell in baseline['cells']:
+            if cell['cell_type']=='code':
+              ast.parse(''.join(cell['source']))
+          assert any('Qwen/Qwen3-4B-Instruct-2507' in ''.join(c['source']) for c in baseline['cells'])
+          assert any('human-review.csv' in ''.join(c['source']) for c in baseline['cells'])
+
 
           ast.parse(Path('workers/coreforge_hindi_v03_filter.py').read_text())
           trainer_source=Path('workers/coreforge_chat_train.py').read_text()
