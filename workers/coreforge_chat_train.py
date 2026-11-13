@@ -65,7 +65,7 @@ def main():
     model, tokenizer = FastLanguageModel.from_pretrained(model_name=args.model, max_seq_length=args.max_tokens, load_in_4bit=True)
     model = FastLanguageModel.get_peft_model(model, r=8, target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"], lora_alpha=16, lora_dropout=0, bias="none", use_gradient_checkpointing="unsloth", random_state=3407)
     train = [x for row in raw_train if (x := build_training_row(row, tokenizer, args.max_tokens, args.model))]
-    val = [x for row in raw_val if (x := build_training_row(row, tokenizer, args.max_tokens))]
+    val = [x for row in raw_val if (x := build_training_row(row, tokenizer, args.max_tokens, args.model))]
     if not train or not val: raise SystemExit("No nonempty training/validation labels")
     def collate(batch):
         max_len=max(len(x["input_ids"]) for x in batch)
@@ -85,7 +85,7 @@ def main():
     model.save_pretrained(str(output / "adapter"))
     tokenizer.save_pretrained(str(output / "adapter"))
     # Held-out evaluation: report test loss; no invented quality score.
-    test=[x for row in raw_test if (x := build_training_row(row, tokenizer, args.max_tokens))]
+    test=[x for row in raw_test if (x := build_training_row(row, tokenizer, args.max_tokens, args.model))]
     test_metrics=trainer.evaluate(Dataset.from_list(test)) if test else {}
     record={"created_at":datetime.now(timezone.utc).isoformat(),"base_model":args.model,"model_license":"apache-2.0","artifact_kind":"lora_adapter_not_merged_model","source_manifest_sha256":hashlib.sha256((root/"manifest.json").read_bytes()).hexdigest(),"dataset_splits":manifest["splits"],"train_metrics":result.metrics,"validation_metrics":val_metrics,"test_metrics":test_metrics,"production_approved":False,"external_hosted":False,"note":"Research checkpoint. Needs human benchmark review and an inference deployment before use."}
     (output/"training_report.json").write_text(json.dumps(record, indent=2, default=str), encoding="utf-8")
