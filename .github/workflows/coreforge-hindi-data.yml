@@ -26,7 +26,7 @@ jobs:
       - name: Check importer syntax
         run: python -m py_compile workers/coreforge_hindi_data.py workers/coreforge_chat_data.py
       - name: Import licensed public Hindi and Hinglish research samples
-        run: python workers/coreforge_hindi_data.py --sources aya_hindi,hinglish --limit 250 --accept-license --out coreforge-hindi-data
+        run: python workers/coreforge_hindi_data.py --sources aya_hindi,hinglish --limit 1500 --accept-license --out coreforge-hindi-data
       - name: Confirm manifest and splits
         run: |
           python - <<'PY'
