@@ -7,6 +7,7 @@ on:
       - 'vercel.json'
       - 'workers/coreforge_chat_*.py'
       - 'workers/CoreForge_Chatbot_Colab.ipynb'
+      - 'workers/CoreForge_Hindi_v02_Colab.ipynb'
       - '.github/workflows/coreforge-chatbot-*.yml'
   workflow_dispatch:
 permissions:
@@ -31,6 +32,16 @@ jobs:
           from pathlib import Path
           nb=json.loads(Path('workers/CoreForge_Chatbot_Colab.ipynb').read_text())
           assert nb['nbformat']==4 and len(nb['cells'])>=5
+          v02=json.loads(Path('workers/CoreForge_Hindi_v02_Colab.ipynb').read_text())
+          assert v02['nbformat']==4 and len(v02['cells'])>=10
+          for cell in v02['cells']:
+            if cell['cell_type']=='code':
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('!') or source.lstrip().startswith('%'): continue
+              import ast
+              ast.parse(source)
+          assert any('BASELINE_READABLE = False' in ''.join(c['source']) for c in v02['cells'])
+          assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in v02['cells'])
           site=Path('coreforge.html').read_text()
           assert '/admin/coreforge-chatbot' in site
           page=Path('coreforge-chatbot.html').read_text()
