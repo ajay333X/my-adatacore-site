@@ -12,6 +12,9 @@ on:
       - 'workers/CoreForge_Hindi_v03_Lite_Colab.ipynb'
       - 'workers/CoreForge_Hindi_Baseline_Quality_Lab.ipynb'
       - 'workers/CoreForge_Evaluation_v2_Colab.ipynb'
+      - 'workers/CoreForge_Evaluation_v21_Colab.ipynb'
+      - 'workers/coreforge_eval_v21_knowledge.json'
+      - 'workers/coreforge_eval_v21_unseen.json'
       - 'workers/coreforge_eval_v2_knowledge.json'
       - 'workers/coreforge_eval_v2_questions.json'
       - 'workers/coreforge_hindi_v03_filter.py'
@@ -92,6 +95,23 @@ jobs:
               ast.parse(source)
           assert any('QUESTION_LIMIT=40' in ''.join(c['source']) for c in evalv2['cells'])
           assert any('retrieved_context' in ''.join(c['source']) for c in evalv2['cells'])
+          knowledge21=json.loads(Path('workers/coreforge_eval_v21_knowledge.json').read_text())
+          unseen21=json.loads(Path('workers/coreforge_eval_v21_unseen.json').read_text())
+          assert knowledge21['version']=='coreforge-eval-v2.1'
+          assert len(unseen21['questions'])==12
+          assert len({q['id'] for q in unseen21['questions']})==12
+          assert all(set(q['reference_ids']).issubset({e['id'] for e in knowledge21['entries']}) for q in unseen21['questions'])
+          eval21=json.loads(Path('workers/CoreForge_Evaluation_v21_Colab.ipynb').read_text())
+          assert eval21['nbformat']==4 and len(eval21['cells'])>=10
+          for cell in eval21['cells']:
+            if cell['cell_type']=='code':
+              source=''.join(cell['source'])
+              if source.lstrip().startswith('%') or source.lstrip().startswith('!'): continue
+              ast.parse(source)
+          assert any('QUESTION_LIMIT=52' in ''.join(c['source']) for c in eval21['cells'])
+          assert any('coreforge-eval-v21-results.json' in ''.join(c['source']) for c in eval21['cells'])
+          assert any('heuristic_warnings' in ''.join(c['source']) for c in eval21['cells'])
+
 
 
 
