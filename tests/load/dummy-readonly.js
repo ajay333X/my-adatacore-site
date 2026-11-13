@@ -7,13 +7,13 @@ const base = (__ENV.DUMMY_BASE_URL || '').replace(/\/$/, '');
 const agreed = __ENV.DUMMY_ISOLATED_ENV === 'YES';
 const level = Number(__ENV.DUMMY_VUS || 25);
 const allowed = [25, 50, 100, 250, 500].includes(level);
-let target;
-try { target = new URL(base); } catch (_) { throw new Error('Set DUMMY_BASE_URL to an isolated staging URL'); }
-const host = target.hostname.toLowerCase();
+const match = /^https:\/\/([^\/?#]+)\/?$/.exec(base);
+if (!match) throw new Error('Set DUMMY_BASE_URL to an isolated HTTPS staging origin');
+const host = match[1].toLowerCase();
 const forbidden = ['adatacore.com','www.adatacore.com',
  'my-adatacore-fl-ajays-projects-42da78a5.vercel.app',
  'my-adatacore-fl-git-main-ajays-projects-42da78a5.vercel.app'];
-if (!agreed || !allowed || target.protocol !== 'https:' || forbidden.includes(host) ||
+if (!agreed || !allowed || forbidden.includes(host) ||
     !(host.endsWith('.vercel.app') || host.endsWith('.internal'))) {
   throw new Error('Safety stop: isolated staging confirmation, valid staging URL and allowed VUs required');
 }
