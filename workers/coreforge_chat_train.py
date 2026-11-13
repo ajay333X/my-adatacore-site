@@ -16,10 +16,11 @@ def read_jsonl(path):
     with path.open(encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
-def build_training_row(row, tokenizer, max_tokens):
+def build_training_row(row, tokenizer, max_tokens, model_name):
+    chat_kwargs = {} if model_name.endswith("-Instruct-2507") else {"enable_thinking": False}
     messages = row["messages"]
-    prefix = tokenizer.apply_chat_template(messages[:-1], tokenize=False, add_generation_prompt=True, enable_thinking=False)
-    full = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False, enable_thinking=False)
+    prefix = tokenizer.apply_chat_template(messages[:-1], tokenize=False, add_generation_prompt=True, **chat_kwargs)
+    full = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False, **chat_kwargs)
     prompt_ids = tokenizer(prefix, add_special_tokens=False)["input_ids"]
     ids = tokenizer(full, add_special_tokens=False)["input_ids"][:max_tokens]
     labels = [-100] * min(len(prompt_ids), len(ids)) + ids[len(prompt_ids):]
@@ -42,7 +43,7 @@ def main():
         cli.error("--approve-research-run required; this runs GPU training")
     if not (1 <= args.max_steps <= 1000 and 128 <= args.max_tokens <= 2048):
         cli.error("max-steps must be 1..1000; max-tokens 128..2048")
-    if args.model not in ("Qwen/Qwen3-0.6B", "Qwen/Qwen3-1.7B"):
+    if args.model not in ("Qwen/Qwen3-0.6B", "Qwen/Qwen3-1.7B", "Qwen/Qwen3-4B-Instruct-2507"):
         cli.error("Only explicitly reviewed open-weight Qwen3 checkpoints allowed")
     import torch
     if not torch.cuda.is_available():
@@ -63,7 +64,7 @@ def main():
             raise SystemExit(f"Dataset {name} hash mismatch; training cancelled.")
     model, tokenizer = FastLanguageModel.from_pretrained(model_name=args.model, max_seq_length=args.max_tokens, load_in_4bit=True)
     model = FastLanguageModel.get_peft_model(model, r=8, target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"], lora_alpha=16, lora_dropout=0, bias="none", use_gradient_checkpointing="unsloth", random_state=3407)
-    train = [x for row in raw_train if (x := build_training_row(row, tokenizer, args.max_tokens))]
+    train = [x for row in raw_train if (x := build_training_row(row, tokenizer, args.max_tokens, args.model))]
     val = [x for row in raw_val if (x := build_training_row(row, tokenizer, args.max_tokens))]
     if not train or not val: raise SystemExit("No nonempty training/validation labels")
     def collate(batch):
