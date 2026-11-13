@@ -65,6 +65,10 @@ jobs:
           assert any('Qwen/Qwen3-1.7B' in ''.join(c['source']) for c in lite['cells'])
 
           ast.parse(Path('workers/coreforge_hindi_v03_filter.py').read_text())
+          trainer_source=Path('workers/coreforge_chat_train.py').read_text()
+          assert 'build_training_row(row, tokenizer, args.max_tokens))' not in trainer_source
+          assert trainer_source.count('build_training_row(row, tokenizer, args.max_tokens, args.model)') == 3
+
 
           compare=json.loads(Path('workers/CoreForge_Compare_Hindi_v02.ipynb').read_text())
           assert compare['nbformat']==4 and len(compare['cells'])>=10
