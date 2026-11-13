@@ -36,7 +36,7 @@ $('superClearSelected').onclick=()=>{selected.clear();renderPeople()};
 $('superRefreshDirectory').onclick=()=>run(loadDirectory);
 $('superViewMembers').onclick=()=>run(viewMembers);
 $('superInvite').onclick=()=>run(invite);
-$('superMemberSearch').oninput=renderPeople;
+let queryTimer; $('superMemberSearch').oninput=()=>{clearTimeout(queryTimer);queryTimer=setTimeout(()=>run(loadDirectory),300)};
 $('superChannel').onchange=()=>{const c=channels.find(x=>x.id===$('superChannel').value);$('superRename').value=c?.name||''};
 $('superProjectId').oninput=()=>{const v=$('superProjectId').value;$('superProjectLink').href=v?'/admin-project-lab?project='+encodeURIComponent(v):'/admin'};
 }
@@ -45,7 +45,7 @@ function renderPeople(){const shown=directory.filter(matches).slice(0,250);$('su
 function channel(){const id=$('superChannel').value;if(!id)throw Error('Choose a private channel first');const c=channels.find(x=>x.id===id);if(!c)throw Error('Refresh the channel list');return c}
 function pid(){const n=Number($('superProjectId').value);if(!Number.isSafeInteger(n)||n<1)throw Error('Enter a valid numeric Project Lab ID');return n}
 async function loadChannels(){const d=await call(F,{type:'channels'});channels=d.channels||[];const sel=$('superChannel'),old=sel.value;sel.innerHTML='<option value="">Select private channel</option>'+channels.map(c=>'<option value="'+escape(c.id)+'">'+escape('#'+c.name)+' · '+escape(c.id)+'</option>').join('');if(channels.some(c=>c.id===old))sel.value=old;$('superChannelCount').textContent='Private channels '+channels.length;say('Channel list refreshed.')}
-async function loadDirectory(){const {data,error}=await db.rpc('admin_slack_directory',{p_query:'',p_limit:500});if(error)throw error;directory=Array.isArray(data)?data:[];renderPeople();say('Member directory loaded.')}
+async function loadDirectory(){const {data,error}=await db.rpc('admin_slack_directory',{p_query:$('superMemberSearch').value.trim(),p_limit:250});if(error)throw error;directory=Array.isArray(data)?data:[];renderPeople();say('Member directory loaded. Search is server-side and shows up to 250 matches.')}
 async function create(){const name=$('superNewChannel').value.trim();if(!name)throw Error('Enter a name');const d=await call(ADV,{action:'create',name});await loadChannels();$('superChannel').value=d.channel.id;$('superRename').value=d.channel.name;say('Created private channel #'+d.channel.name+'. You can now assign a project or invite people.')}
 async function rename(){const c=channel();const name=$('superRename').value.trim();if(!name)throw Error('Enter a new name');if(!confirm('Rename #'+c.name+' to #'+name+'?'))return;await call(ADV,{action:'rename',channel_id:c.id,name});await loadChannels();$('superChannel').value=c.id;say('Channel renamed successfully.')}
 async function checkProject(){const project=pid();const {data,error}=await db.rpc('admin_slack_project_get',{p_project_id:project});if(error)throw error;mapping=data||{};$('superMapping').textContent=mapping.channel_name?'Currently mapped: #'+mapping.channel_name:'No mapped Slack channel';say('Project '+project+' mapping checked.')}
