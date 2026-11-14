@@ -65,7 +65,7 @@ async function boot(){
   $('cflMessages').querySelector('.cfl-placeholder')?.remove();
   addMessage('user',question);$('cflPrompt').value='';status('Qwen is generating locally...');
   const output=addMessage('assistant','Generating...');
-  const messages=[{role:'system',content:'You are Adatacore Assistant, a multilingual chatbot. Answer directly in the same language as the user, accurately and concisely. Do not reveal analysis or thinking text. Do not claim to have been specially trained by Adatacore. Be clear when you cannot access business PDFs or data.'},...history,{role:'user',content:question+'\\n/no_think'}];
+  const messages=[{role:'system',content:'You are Adatacore Assistant, a multilingual chatbot. Answer directly in the same language as the user, accurately and concisely. Do not reveal analysis or thinking text. Do not claim to have been specially trained by Adatacore. Be clear when you cannot access business PDFs or data.'},...history,{role:'user',content:question+'\n/no_think'}];
   try{
    const res=await inference(messages,{max_new_tokens:320,do_sample:false});
    const generated=res?.[0]?.generated_text;
