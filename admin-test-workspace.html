@@ -10,7 +10,7 @@
 <div class="sx-fixed-banner"><span><strong>TEST MODE</strong> · Passwordless sandbox · No real payouts, messages, assignments or production submissions</span><button class="sx-btn" style="min-height:32px;padding:5px 10px" id="exitBtn">Exit to Admin</button></div>
 <main class="sx-shell">
 <header class="sx-top"><a class="sx-brand ac-brand" href="/admin/test-accounts"><span class="ac-brand-icon" aria-hidden="true"><img src="/assets/adatacore-logo.jpg" width="34" height="34" alt="" decoding="async"></span><span class="ac-brand-text"><span class="ac-brand-label">Adatacore</span></span></a><span class="sx-badge" id="roleBadge">Checking session…</span></header>
-<section class="sx-hero"><div><div class="sx-eyebrow">Sandbox / Transcription TTS / Project 93</div><h1 id="welcome">Test contributor</h1><p id="explain">Loading your isolated test queue…</p></div><button class="sx-btn" id="reloadBtn">↻ Refresh tasks</button></section>
+<section class="sx-hero"><div><div class="sx-eyebrow">Sandbox / Selected Project</div><h1 id="welcome">Test contributor</h1><p id="explain">Loading your isolated test queue…</p></div><button class="sx-btn" id="reloadBtn">↻ Refresh tasks</button></section>
 <div id="notice" class="sx-note" role="status">Validating secure admin session…</div>
 <div class="sx-grid three" style="margin:18px 0"><div class="sx-kpi"><strong id="countMine">—</strong><span>Available test tasks</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>Pending L2 review</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved</span></div></div>
 <section class="sx-grid" style="grid-template-columns:minmax(240px,.75fr) minmax(0,1.45fr);align-items:start">
@@ -98,5 +98,5 @@ el('exitBtn').onclick=async()=>{try{await call('admin_sandbox_action',{p_session
 })();
 })();
 </script>
-<script defer src="/sandbox-universal-adapter.js?v=20261114-1"></script>
+<script defer src="/sandbox-universal-adapter.js?v=20261114-2"></script>
 </body></html>
