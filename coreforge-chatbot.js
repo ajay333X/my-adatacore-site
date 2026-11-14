@@ -13,10 +13,10 @@ function addMessage(role,content){
 }
 function cleanAnswer(raw){
  const value=String(raw||'');
- // Qwen3 sometimes emits a reasoning block. Never render it as customer-facing text.
- const afterClosedThink=value.replace(/<think>[\\s\\S]*?<\\/think>/gi,'').trim();
+ // Keep internal reasoning out of the customer-facing transcript.
+ const afterClosedThink=value.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
  if(/<think>/i.test(afterClosedThink))return '';
- return afterClosedThink.replace(/<\\/?(?:think|answer)>/gi,'').trim();
+ return afterClosedThink.replace(/<\/?(?:think|answer)>/gi,'').trim();
 }
 function setUsable(yes){$('cflPrompt').disabled=!yes;$('cflSend').disabled=!yes;$('cflLoad').disabled=yes;$('cflReady').textContent=yes?'Qwen ready locally':loading?'Downloading model':'Model not loaded';$('cflHint').textContent=yes?'Running entirely in your browser · not Groq':'Load the model to begin.'}
 async function checkAccess(){
