@@ -29,7 +29,14 @@ async function identify(){
  info.querySelector('h3').textContent=project.name+' · '+label+' · '+data.sandbox.level;
  info.querySelector('p').textContent=voice?'Practice voice scripts and record a local audio preview. The L1/L2 dummy task pipeline saves review text and feedback, NOT the recording.':transcript?'Transcription projects can also use the isolated real-source test editor from the dummy dashboard.':'This project can be assigned to test accounts and its L1/L2 review cycle can be simulated here. A dedicated component adapter is required to reproduce the full production interface.';
  const notice=$('notice');notice?.insertAdjacentElement('afterend',info);
- if(voice){const obs=new MutationObserver(()=>injectVoice());obs.observe($('editor'),{childList:true,subtree:false});injectVoice()}
+ if(voice){const obs=new MutationObserver(()=>adaptVoiceEditor());obs.observe($('editor'),{childList:true,subtree:false});adaptVoiceEditor()}
+}
+function adaptVoiceEditor(){
+ const root=$('editor');if(!root)return;
+ const draftLabel=root.querySelector('label[for="draft"]');if(draftLabel)draftLabel.textContent='Performance notes / draft script';
+ const reviewLabel=root.querySelector('label[for="reviewText"]');if(reviewLabel)reviewLabel.textContent='Review notes / corrected script';
+ const reference=root.querySelector('.sx-field label');if(reference&&reference.textContent.includes('Expected speech'))reference.textContent='Voice script / expected performance';
+ injectVoice();
 }
 function injectVoice(){
  const root=$('editor');if(!root||root.querySelector('#sxVoiceRecorder'))return;
