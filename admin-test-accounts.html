@@ -13,6 +13,7 @@
 <section class="sx-hero"><div><div class="sx-eyebrow">Admin tools / Universal Sandbox</div><h1>Test Accounts</h1><p>Assign dummy identities to any eligible Adatacore project, including Voice, Transcription, and custom workflows. All test submissions remain isolated from production.</p></div><span class="sx-badge">● Isolated sandbox</span></section>
 <div class="sx-grid three" style="margin-bottom:18px"><div class="sx-kpi"><strong id="countAccounts">—</strong><span>Test identities</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>L2 review pending</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved test tasks</span></div></div>
 <div id="notice" class="sx-note" role="status">Checking admin access and sandbox configuration…</div>
+<section class="sx-panel" style="margin-top:15px"><div class="sx-row sx-between"><div><h2>Choose sandbox project</h2><p>Create a dummy account group for any eligible project, or select Project 93 to continue using your existing dummy accounts and grant them access to other projects.</p></div></div><div class="sx-field"><label for="sandboxHomeProject">Sandbox account group</label><select class="sx-select" id="sandboxHomeProject"><option value="">Loading projects…</option></select></div></section>
 <section class="sx-panel" style="margin-top:18px"><div class="sx-row sx-between"><div><div class="sx-eyebrow">Configuration</div><h2>Set up your test contributors</h2><p>No emails, passwords, real payouts, or account registrations.</p></div><span class="sx-badge">Project-independent permissions</span></div>
 <form id="setupForm" class="sx-stack">
 <div class="sx-grid">
@@ -30,13 +31,13 @@
 </section>
 <section class="sx-grid">
 <div class="sx-panel"><h2>Review test activity</h2><p>Actions and revisions from both dummies are visible here.</p><div id="eventList" class="sx-stack"></div></div>
-<div class="sx-panel"><h2>Reset test tasks</h2><p>Release all test claims and remove sandbox edits for Project 93 while keeping your test accounts. Real production tasks and payouts are not changed.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Release all sandbox task claims and discard test edits?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
+<div class="sx-panel"><h2>Reset test tasks</h2><p>Release test claims and remove sandbox edits for the selected project only, while keeping test identities. Real production tasks and payouts are never changed.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Release all sandbox task claims and discard test edits?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
 </section>
 </main><div id="toast" class="sx-toast" role="status" aria-live="polite"></div>
 <script>
 (function(){
 'use strict';
-const PROJECT=93,URL='https://llmhyezgcnbognmmsnzq.supabase.co',KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
+let PROJECT=93;const URL='https://llmhyezgcnbognmmsnzq.supabase.co',KEY='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml';
 const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 const el=id=>document.getElementById(id);
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -53,7 +54,7 @@ async function reload(){
  el('accountList').innerHTML=as.length?as.map(a=>'<div class="sx-account"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main"><div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge">'+safe(a.level)+'</span></div><p>Universal sandbox · Passwordless internal identity<br>Created '+safe(when(a.created_at))+'</p><div class="sx-row" style="margin-top:9px"><select class="sx-select" data-open-project="'+safe(a.id)+'" style="flex:1;min-width:145px">'+(projectAccess.access||[]).filter(x=>x.account_id===a.id).map(x=>'<option value="'+Number(x.project_id)+'">'+safe(((projectAccess.projects||[]).find(p=>Number(p.id)===Number(x.project_id))||{}).name||('Project '+x.project_id))+' · '+safe(x.level)+'</option>').join('')+'</select><button class="sx-btn primary" data-open="'+safe(a.id)+'" '+(!(projectAccess.access||[]).some(x=>x.account_id===a.id)?'disabled':'')+'>Open Contributor Dashboard ↗</button></div></div></div>').join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Use the form above to create Dummy 01 and Dummy 02.</div>';
  renderAccess(projectAccess,as);
  el('eventList').innerHTML=ev.length?ev.slice(0,12).map(e=>'<div class="sx-event"><span class="sx-dot"></span><div><strong>'+safe(e.action.replaceAll('_',' '))+'</strong><small>'+safe(when(e.created_at))+' · '+safe(e.task_id?String(e.task_id).slice(0,8):'Admin action')+'</small></div></div>').join(''):'<div class="sx-muted" style="font-size:12px">Test activity will appear here.</div>';
- notice('Sandbox is ready. All actions stay isolated from production.');
+ notice('Sandbox ready for project '+PROJECT+'. All actions stay isolated from production.');
 }
 
 function renderAccess(access,accounts){
@@ -106,7 +107,26 @@ el('resetYes').onclick=async()=>{
  try{const r=await call('admin_sandbox_reset',{p_project_id:PROJECT});el('resetConfirm').classList.add('sx-hidden');await reload();toast('Reset '+r.tasks_deleted+' sandbox task(s).')}
  catch(e){notice(e.message,true)}finally{b.disabled=false}
 };
-(async()=>{try{const r=await db.auth.getUser();if(!r.data.user){location.replace('/auth');return}await reload()}catch(e){notice('Unable to open sandbox: '+e.message,true)}})();
+async function loadProjectOptions(){
+ const {data,error}=await db.from('project_lab').select('id,project_name,project_type,lifecycle_status').eq('lifecycle_status','active').order('project_name');
+ if(error)throw error;
+ const dropdown=el('sandboxHomeProject');dropdown.replaceChildren();
+ const projects=Array.isArray(data)?data:[];
+ if(!projects.length){dropdown.add(new Option('No active projects available',''));throw Error('No active projects found for this admin account.')}
+ for(const p of projects)dropdown.add(new Option(p.project_name+' · #'+p.id+' · '+(p.project_type||'custom'),String(p.id)));
+ const requested=Number(new URLSearchParams(location.search).get('project')||sessionStorage.getItem('adatacore-sandbox-project')||93);
+ PROJECT=projects.some(x=>Number(x.id)===requested)?requested:Number(projects[0].id);
+ dropdown.value=String(PROJECT);
+ dropdown.addEventListener('change',async()=>{
+  const newId=Number(dropdown.value);
+  if(!Number.isSafeInteger(newId)||newId<1)return;
+  PROJECT=newId;
+  sessionStorage.setItem('adatacore-sandbox-project',String(PROJECT));
+  history.replaceState(null,'',location.pathname+'?project='+encodeURIComponent(PROJECT));
+  try{await reload()}catch(e){notice('Cannot manage sandbox for project '+PROJECT+': '+e.message,true)}
+ });
+}
+(async()=>{try{const r=await db.auth.getUser();if(!r.data.user){location.replace('/auth');return}await loadProjectOptions();await reload()}catch(e){notice('Unable to open sandbox: '+e.message,true)}})();
 })();
 </script>
 </body></html>
