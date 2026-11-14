@@ -10,6 +10,28 @@ const knowledge=window.CoreForgeKnowledge;
 let inference=null,loadedKey='',history=[],busy=false,loading=false,documents=[],modelStats=[];
 const status=s=>{$('cflStatus').textContent=s};
 const now=()=>performance.now();
+const LOAD_MEMORY_GB={small:'~1 GB or more',medium:'~3 GB or more',large:'~5 GB or more'};
+let lastLoadFailure=false;
+async function checkGpu(key){
+ if(!navigator.gpu)throw Error('WebGPU is unavailable. Use a compatible up-to-date Chrome or Edge browser.');
+ const adapter=await navigator.gpu.requestAdapter({powerPreference:'high-performance'});
+ if(!adapter)throw Error('No WebGPU adapter is available. Check your browser GPU acceleration settings.');
+ const f16=adapter.features?.has('shader-f16')===true;
+ if(!f16&&key==='large')throw Error('This GPU does not expose shader-f16, required for the 4B experimental build.');
+ return {f16,adapter};
+}
+function loadErrorMessage(error,key){
+ const raw=String(error?.message||error||'Unknown failure');
+ if(/Aborted\\(\\)|memory|allocation|out.of.memory|device lost|failed to create.*session/i.test(raw))
+  return MODELS[key].label+' could not initialize in this browser. This often means insufficient GPU/browser memory or an ONNX runtime failure. The larger models can need '+LOAD_MEMORY_GB[key]+' of available memory including runtime overhead. Restart with Qwen3 0.6B, close other GPU-heavy tabs, or try Chrome/Edge with GPU acceleration enabled.';
+ if(/fetch|network|download|failed to load|404/i.test(raw))
+  return 'Could not download '+MODELS[key].label+'. Check connection and model availability, then retry. '+raw.slice(0,110);
+ return 'Could not initialize '+MODELS[key].label+': '+raw.slice(0,190)+'. Try the lightweight model.';
+}
+function setRecovery(show){
+ const button=$('cflRecover');if(button)button.hidden=!show;
+}
+
 function addMessage(role,content){
  const card=document.createElement('div');card.className='cfl-message '+role;
  const tag=document.createElement('span');tag.textContent=role==='user'?'You':(MODELS[loadedKey]?.label||'CoreForge')+' · local';
@@ -92,7 +114,9 @@ function qualityNote(question,answer,grounded){
 async function boot(){
  if(!(await checkAccess()))return;
  const supported=Boolean(navigator.gpu);
- status(supported?'WebGPU available. Choose a model and select Load.':'WebGPU unavailable. Use a compatible browser.');
+ status(supported?'WebGPU detected. Larger models require substantial free graphics memory; availability is not guaranteed.':'WebGPU unavailable. Use a compatible browser.');
+ $('cflRecover').onclick=()=>{try{sessionStorage.setItem('coreforge_recovery_small','1')}catch(_){}location.reload()};
+ try{if(sessionStorage.getItem('coreforge_recovery_small')==='1'){sessionStorage.removeItem('coreforge_recovery_small');$('cflModel').value='small';status('Recovery mode: Qwen3 0.6B selected. Click Load local model.')}}catch(_){}
  $('cflLoad').disabled=!supported;
  $('cflModel').onchange=()=>{
   if(busy||loading)return;
@@ -106,14 +130,17 @@ async function boot(){
   if(loading||inference||!supported)return;
   const key=$('cflModel').value,chosen=MODELS[key];
   if(!chosen)return;
-  loading=true;setUsable(false);$('cflLoad').disabled=true;$('cflProgress').hidden=false;
+  loading=true;lastLoadFailure=false;setRecovery(false);setUsable(false);$('cflLoad').disabled=true;$('cflProgress').hidden=false;
   $('cflProgressFill').style.width='3%';
   try{
+   const gpu=await checkGpu(key);
+   const dtype=gpu.f16?'q4f16':'q4';
+   status('GPU compatible with '+dtype+'. Preparing '+chosen.label+'.');
    const lib=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm');
    lib.env.allowLocalModels=false;lib.env.useBrowserCache=true;
    status('Downloading '+chosen.label+'. Larger models need substantially more browser GPU memory.');
    const pipe=await lib.pipeline('text-generation',chosen.id,{
-    device:'webgpu',dtype:'q4f16',progress_callback:p=>{
+    device:'webgpu',dtype,progress_callback:p=>{
      if(p.status==='progress'&&typeof p.progress==='number')
       $('cflProgressFill').style.width=Math.max(3,Math.min(100,p.progress))+'%';
     }
@@ -121,11 +148,11 @@ async function boot(){
    inference=pipe;loadedKey=key;loading=false;
    $('cflProgressFill').style.width='100%';setUsable(true);
    $('cflModelName').textContent=chosen.label;
-   status(chosen.label+' loaded on this device. Actual answer quality still requires testing.');
+   status(chosen.label+' loaded with '+dtype+'. Actual answer quality still requires testing.');
   }catch(error){
-   loading=false;inference=null;loadedKey='';setUsable(false);
-   $('cflLoad').disabled=false;$('cflProgress').hidden=true;
-   status('Model load failed: '+String(error.message||error).slice(0,220)+' Try a smaller model.');
+   loading=false;inference=null;loadedKey='';lastLoadFailure=true;setUsable(false);
+   $('cflLoad').disabled=true;$('cflProgress').hidden=true;setRecovery(true);
+   status(loadErrorMessage(error,key));
   }
  };
  $('cflSample').onclick=()=>{
