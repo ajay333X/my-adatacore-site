@@ -11,6 +11,13 @@ function addMessage(role,content){
  $('cflMessages').scrollTop=$('cflMessages').scrollHeight;
  return text;
 }
+function cleanAnswer(raw){
+ const value=String(raw||'');
+ // Keep internal reasoning out of the customer-facing transcript.
+ const afterClosedThink=value.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
+ if(/<think>/i.test(afterClosedThink))return '';
+ return afterClosedThink.replace(/<\/?(?:think|answer)>/gi,'').trim();
+}
 function setUsable(yes){$('cflPrompt').disabled=!yes;$('cflSend').disabled=!yes;$('cflLoad').disabled=yes;$('cflReady').textContent=yes?'Qwen ready locally':loading?'Downloading model':'Model not loaded';$('cflHint').textContent=yes?'Running entirely in your browser · not Groq':'Load the model to begin.'}
 async function checkAccess(){
  try{
@@ -58,13 +65,13 @@ async function boot(){
   $('cflMessages').querySelector('.cfl-placeholder')?.remove();
   addMessage('user',question);$('cflPrompt').value='';status('Qwen is generating locally...');
   const output=addMessage('assistant','Generating...');
-  const messages=[{role:'system',content:'You are Adatacore Assistant, a helpful multilingual chatbot. Respond accurately and concisely. Do not claim to have been specially trained by Adatacore.'},...history,{role:'user',content:question}];
+  const messages=[{role:'system',content:'You are Adatacore Assistant, a multilingual chatbot. Answer directly in the same language as the user, accurately and concisely. Do not reveal analysis or thinking text. Do not claim to have been specially trained by Adatacore. Be clear when you cannot access business PDFs or data.'},...history,{role:'user',content:question+'\n/no_think'}];
   try{
-   const res=await inference(messages,{max_new_tokens:200,do_sample:false});
+   const res=await inference(messages,{max_new_tokens:320,do_sample:false});
    const generated=res?.[0]?.generated_text;
    const last=Array.isArray(generated)?generated.at(-1):null;
-   const content=String(last?.content|| (typeof generated==='string'?generated:'') ||'').trim();
-   if(!content)throw Error('Model returned empty text');
+   const content=cleanAnswer(last?.content|| (typeof generated==='string'?generated:'') ||'');
+   if(!content)throw Error('The model did not produce a final answer. Please try again or use a stronger model.');
    output.textContent=content;
    history.push({role:'user',content:question},{role:'assistant',content});
    status('Answer generated on this device. No hosted inference API was called.');
