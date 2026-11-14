@@ -22,7 +22,7 @@ async function checkGpu(key){
 }
 function loadErrorMessage(error,key){
  const raw=String(error?.message||error||'Unknown failure');
- if(/Aborted\\(\\)|memory|allocation|out.of.memory|device lost|failed to create.*session/i.test(raw))
+ if(/Aborted\(\)|memory|allocation|out.of.memory|device lost|failed to create.*session/i.test(raw))
   return MODELS[key].label+' could not initialize in this browser. This often means insufficient GPU/browser memory or an ONNX runtime failure. The larger models can need '+LOAD_MEMORY_GB[key]+' of available memory including runtime overhead. Restart with Qwen3 0.6B, close other GPU-heavy tabs, or try Chrome/Edge with GPU acceleration enabled.';
  if(/fetch|network|download|failed to load|404/i.test(raw))
   return 'Could not download '+MODELS[key].label+'. Check connection and model availability, then retry. '+raw.slice(0,110);
