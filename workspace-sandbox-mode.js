@@ -63,15 +63,24 @@ function renderGrantedProjects(projects){
   const supported=p.type==='transcription';
   return '<article class="card card-hover task-card"><div class="task-top"><span class="pill pill-brand">'+safe(p.role)+'</span><span class="pill pill-green"><span class="status-dot"></span>Access granted</span></div>'+
   '<h3>'+safe(p.name)+'</h3><div class="task-public-id">Project '+Number(p.id)+' · '+safe(p.type||'Project')+'</div>'+
-  '<div class="task-actions"><span class="muted" style="font-size:11px">'+(supported?'Real queue · isolated test claims':'Project visible · claim adapter not configured')+'</span>'+
-  (supported?'<button type="button" class="btn btn-primary sandbox-granted-open" data-project="'+Number(p.id)+'">Open project →</button>':'<button type="button" class="btn btn-secondary" disabled>Testing unavailable</button>')+'</div></article>';
+  '<div class="task-actions"><span class="muted" style="font-size:11px">'+(supported?'Real source · isolated test claims':'Isolated practice · live submissions disabled')+'</span>'+
+  '<button type="button" class="btn btn-primary sandbox-granted-open" data-project="'+Number(p.id)+'" data-type="'+safe(p.type||'custom')+'">'+(supported?'Open isolated task queue →':'Open safe practice workspace →')+'</button>'+'</div></article>';
  }).join(''):'<div class="card empty" style="grid-column:1/-1">No projects assigned. Grant access in Admin → Test Accounts.</div>')+'</div>';
  section.querySelectorAll('.sandbox-granted-open').forEach(b=>b.addEventListener('click',()=>{
   const projectId=Number(b.dataset.project);
+  if(b.dataset.type!=='transcription'){
+    client.rpc('admin_sandbox_launch_project',{p_account_id:sandboxAccountId,p_project_id:projectId}).then(({data,error})=>{
+      if(error)throw error;
+      location.assign('/admin/test-workspace?session='+encodeURIComponent(data.session_id));
+    }).catch(error=>{const sub=document.getElementById('viewSub');if(sub)sub.textContent='TEST MODE · '+String(error.message||error)});
+    return;
+  }
   const native=Array.from(document.querySelectorAll('.project-open')).find(x=>Number(x.dataset.txProject||x.dataset.txReviewProject)===projectId);
   if(native){native.scrollIntoView({behavior:'smooth',block:'center'});native.focus();return}
-  const assignments=document.querySelector('[data-view-link="assignments"]');
-  if(assignments)assignments.click();
+  client.rpc('admin_sandbox_launch_project',{p_account_id:sandboxAccountId,p_project_id:projectId}).then(({data,error})=>{
+    if(error)throw error;
+    location.assign('/admin/test-workspace?session='+encodeURIComponent(data.session_id));
+  }).catch(error=>{const sub=document.getElementById('viewSub');if(sub)sub.textContent=String(error.message||error)});
  }));
 }
 async function initializeProjectCards(){
