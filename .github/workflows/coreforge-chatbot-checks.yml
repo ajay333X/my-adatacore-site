@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'coreforge-chatbot.*'
+      - 'coreforge-knowledge.js'
+      - 'tests/coreforge-knowledge.test.cjs'
       - 'coreforge.html'
       - 'vercel.json'
       - 'workers/coreforge_chat_*.py'
@@ -35,6 +37,8 @@ jobs:
       - name: Validate chatbot scripts
         run: |
           node --check coreforge-chatbot.js
+          node --check coreforge-knowledge.js
+          node --test tests/coreforge-knowledge.test.cjs
           python -m py_compile workers/coreforge_chat_data.py workers/coreforge_chat_train.py
       - name: Verify notebook, site links and routes
         run: |
