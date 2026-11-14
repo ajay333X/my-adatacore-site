@@ -128,6 +128,11 @@ async function boot(){
    status('Model load failed: '+String(error.message||error).slice(0,220)+' Try a smaller model.');
   }
  };
+ $('cflSample').onclick=()=>{
+  if(busy)return;
+  documents=[{label:'fictional-academy.txt',text:'Sunrise Learning Academy (fictional test organization). Office hours: Monday to Saturday, 9:00 AM to 6:00 PM. Closed Sunday. Foundation Mathematics course: 8 weeks, fee ₹4,000. Spoken English course: 6 weeks, fee ₹3,000. Registration fee: ₹500; non-refundable after enrollment confirmation. Course-fee refund: full refund only if cancellation is at least 7 days before course start. No course-fee refunds after classes begin. Support email: support@sunrise.example. This example does not provide scholarship, transportation, hostel, teacher identity or payment link details.'}];
+  renderDocs();resetConversation('Fictional academy knowledge loaded. Try: What is the Foundation Mathematics course fee?');status('Fictional sample data loaded locally. No private customer information is needed.');
+ };
  $('cflAddDocs').onclick=async()=>{
   const files=Array.from($('cflFiles').files||[]);
   if(!files.length){status('Choose a PDF, TXT or MD file.');return}
