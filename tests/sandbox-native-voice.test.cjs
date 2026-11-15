@@ -5,6 +5,10 @@ const sandbox=fs.readFileSync('sandbox-native-voice.js','utf8');
 const workspace=fs.readFileSync('workspace-sandbox-mode.js','utf8');
 const projectCards=fs.readFileSync('workspace-project-groups.js','utf8');
 const migration=fs.readFileSync('supabase/migrations/20261115010000_sandbox_native_voice_studio.sql','utf8');
+test('invalid test-session never falls back to production Voice Studio',()=>{
+ assert.match(voice,/has\('test_session'\)&&!sandbox/);
+ assert.match(voice,/SANDBOX_CONTEXT_INVALID/);
+});
 test('native studio loads its sandbox adapter before shared production UI',()=>{
  assert.ok(studio.indexOf('/sandbox-native-voice.js')<studio.indexOf('/voice-studio-platform.js'));
  assert.match(voice,/sandbox=window\.SandboxNativeVoice\|\|null/);
