@@ -34,6 +34,7 @@ jobs:
           node --test tests/voice-duo-shared-recorder.test.cjs
           node --test tests/admin-command-center.test.cjs
           node --test tests/project-builder-recovery.test.cjs
+          node --test tests/workspace-v2-opt-in.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
