@@ -168,7 +168,7 @@ begin
    from app_private.sandbox_voice_takes t where t.duo_session_id=v_duo.id
    and t.owner_id=v_owner and t.storage_path is not null),'[]'::jsonb);
  elseif p_action='signal_send' then
-  if p_payload->>'kind' not in ('offer','answer','ice') or length((p_payload->'payload')::text)>100000 then
+  if p_payload->>'kind' not in ('offer','answer','candidate','stop') or length((p_payload->'payload')::text)>100000 then
    raise exception 'INVALID_SIGNAL';end if;
   insert into app_private.sandbox_voice_duo_signals(duo_id,sender,kind,payload)
   values(v_duo.id,v_account.id,p_payload->>'kind',coalesce(p_payload->'payload','{}'::jsonb));
