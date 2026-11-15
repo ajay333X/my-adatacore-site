@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Test Accounts · Adatacore Developer Lab</title>
 <link rel="icon" href="/favicon.png" type="image/png">
-<link rel="stylesheet" href="/sandbox-test.css?v=1">
+<link rel="stylesheet" href="/sandbox-test.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 <link rel="stylesheet" href="/adatacore-brand.css?v=1"></head>
 <body>
@@ -13,16 +13,12 @@
 <section class="sx-hero"><div><div class="sx-eyebrow">Admin tools / Universal Sandbox</div><h1>Test Accounts</h1><p>Assign dummy identities to any eligible Adatacore project, including Voice, Transcription, and custom workflows. All test submissions remain isolated from production.</p></div><span class="sx-badge">● Isolated sandbox</span></section>
 <div class="sx-grid three" style="margin-bottom:18px"><div class="sx-kpi"><strong id="countAccounts">—</strong><span>Test identities</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>L2 review pending</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved test tasks</span></div></div>
 <div id="notice" class="sx-note" role="status">Checking admin access and sandbox configuration…</div>
-<section class="sx-panel" style="margin-top:15px"><div class="sx-row sx-between"><div><h2>Choose sandbox project</h2><p>Create a dummy account group for any eligible project, or select Project 93 to continue using your existing dummy accounts and grant them access to other projects.</p></div></div><div class="sx-field"><label for="sandboxHomeProject">Sandbox account group</label><select class="sx-select" id="sandboxHomeProject"><option value="">Loading projects…</option></select></div></section>
+<section class="sx-panel" style="margin-top:15px"><div class="sx-row sx-between"><div><h2>Choose sandbox project</h2><p>Choose the account group in which identities are created. Existing identities can also be assigned to other projects below.</p></div></div><div class="sx-field"><label for="sandboxHomeProject">Sandbox account group</label><select class="sx-select" id="sandboxHomeProject"><option value="">Loading projects…</option></select></div></section>
 <section class="sx-panel" style="margin-top:18px"><div class="sx-row sx-between"><div><div class="sx-eyebrow">Configuration</div><h2>Set up your test contributors</h2><p>No emails, passwords, real payouts, or account registrations.</p></div><span class="sx-badge">Project-independent permissions</span></div>
 <form id="setupForm" class="sx-stack">
-<div class="sx-grid">
-<div class="sx-field"><label for="dummyOne">Dummy 01 · Contributor name</label><input id="dummyOne" class="sx-input" required maxlength="80" value="Dummy Contributor 01"></div>
-<div class="sx-field"><label for="roleOne">Access level</label><select id="roleOne" class="sx-select"><option value="L1">L1 · Contributor</option><option value="L2">L2 · Reviewer</option></select></div>
-<div class="sx-field"><label for="dummyTwo">Dummy 02 · Reviewer name</label><input id="dummyTwo" class="sx-input" required maxlength="80" value="Dummy Reviewer 02"></div>
-<div class="sx-field"><label for="roleTwo">Access level</label><select id="roleTwo" class="sx-select"><option value="L2" selected>L2 · Reviewer</option><option value="L1">L1 · Contributor</option></select></div>
-</div>
-<div class="sx-row sx-between"><div class="sx-muted" style="font-size:11px">Shared access: disabled · Test data: isolated · Feedback and diff view: enabled</div><button class="sx-btn primary" id="setupBtn" type="submit">Create / Update Test Accounts ↗</button></div>
+<div class="sx-row sx-between"><div><strong>Create or update identities</strong><p>Add up to eight internal test contributors per account group. Choose their default level; individual project access is managed below.</p></div><button id="addDummyBtn" type="button" class="sx-btn">+ Add test account</button></div>
+<div id="dummyRows" class="sx-stack" aria-live="polite"></div>
+<div class="sx-row sx-between"><div class="sx-muted" style="font-size:11px">Shared access: disabled · Test data: isolated · Feedback and diff view: enabled</div><button class="sx-btn primary" id="setupBtn" type="submit">Save Test Accounts</button></div>
 </form></section>
 <section class="sx-panel"><div class="sx-row sx-between" style="margin-bottom:17px"><div><div class="sx-eyebrow">Sandbox identities</div><h2>Open contributor dashboards</h2><p>Sessions expire after 45 minutes and require your existing admin login.</p></div><button class="sx-btn" id="reloadBtn" type="button">↻ Refresh</button></div><div class="sx-grid" id="accountList"><div class="sx-note">Loading…</div></div></section>
 <section class="sx-panel">
@@ -42,6 +38,18 @@ const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshTok
 const el=id=>document.getElementById(id);
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state={accounts:[],tasks:[],events:[]};
+const draftRows=[{name:'Dummy Contributor 01',role:'L1'},{name:'Dummy Reviewer 02',role:'L2'}];
+function addRow(name='',role='L1'){
+ const host=el('dummyRows');if(host.children.length>=8){toast('Maximum eight identities per save.');return}
+ const row=document.createElement('div');row.className='sx-identity-row';
+ const nameInput=document.createElement('input');nameInput.className='sx-input';nameInput.maxLength=80;nameInput.required=true;nameInput.placeholder='Test contributor name';nameInput.setAttribute('aria-label','Test account display name');nameInput.value=name;
+ const select=document.createElement('select');select.className='sx-select';select.setAttribute('aria-label','Default access level');
+ for(const [value,text] of [['L1','L1 · Contributor'],['L2','L2 · Reviewer']])select.add(new Option(text,value));select.value=role;
+ const remove=document.createElement('button');remove.type='button';remove.className='sx-btn';remove.textContent='Remove';remove.setAttribute('aria-label','Remove unsaved test account row');remove.onclick=()=>{if(host.children.length>1)row.remove();else toast('Keep at least one test account.')};
+ row.append(nameInput,select,remove);host.append(row);
+}
+function loadIdentityRows(){el('dummyRows').replaceChildren();for(const item of draftRows)addRow(item.name,item.role)}
+
 function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3200)}
 function notice(message,bad){const e=el('notice');e.textContent=message;e.className='sx-note'+(bad?' sx-error':'')}
 async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw new Error(r.error.message);return r.data}
@@ -85,11 +93,12 @@ el('accessList').addEventListener('click',async e=>{
 el('setupForm').addEventListener('submit',async event=>{
  event.preventDefault();const btn=el('setupBtn');btn.disabled=true;btn.textContent='Configuring…';
  try{
- const accounts=[{name:el('dummyOne').value.trim(),role:el('roleOne').value},{name:el('dummyTwo').value.trim(),role:el('roleTwo').value}];
- if(accounts[0].name===accounts[1].name)throw new Error('Use different display names for each dummy.');
+ const accounts=[...el('dummyRows').children].map(row=>({name:row.querySelector('input').value.trim(),role:row.querySelector('select').value}));
+ if(accounts.length<1||accounts.length>8||accounts.some(a=>!a.name||a.name.length>80))throw new Error('Provide 1–8 valid test account names.');
+ if(new Set(accounts.map(a=>a.name.toLocaleLowerCase())).size!==accounts.length)throw new Error('Each test account needs a distinct name.');
  await call('admin_sandbox_setup',{p_project_id:PROJECT,p_accounts:accounts});
- await reload();toast('Test identities configured successfully.');
- }catch(e){notice(e.message,true)}finally{btn.disabled=false;btn.textContent='Create / Update Test Accounts ↗'}
+ await reload();toast('Saved '+accounts.length+' test identities.');
+ }catch(e){notice(e.message,true)}finally{btn.disabled=false;btn.textContent='Save Test Accounts'}
 });
 el('accountList').addEventListener('click',async event=>{
  const btn=event.target.closest('[data-open]');if(!btn)return;btn.disabled=true;
@@ -99,6 +108,8 @@ el('accountList').addEventListener('click',async event=>{
  catch(e){if(tab)tab.close();notice(e.message,true)}
  finally{btn.disabled=false}
 });
+el('addDummyBtn').onclick=()=>addRow();
+loadIdentityRows();
 el('reloadBtn').onclick=()=>reload().catch(e=>notice(e.message,true));
 el('resetBtn').onclick=()=>{el('resetConfirm').classList.remove('sx-hidden')};
 el('resetNo').onclick=()=>{el('resetConfirm').classList.add('sx-hidden')};
