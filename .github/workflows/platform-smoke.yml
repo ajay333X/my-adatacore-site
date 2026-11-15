@@ -28,6 +28,7 @@ jobs:
           node --test tests/test-account-manager-ui.test.cjs
           node --test tests/sandbox-duo-integration.test.cjs
           node --test tests/test-account-global-manager.test.cjs
+          node --test tests/sandbox-voice-review-access.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
