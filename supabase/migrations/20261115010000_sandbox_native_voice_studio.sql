@@ -119,7 +119,7 @@ begin
    if v_take.id is null then raise exception 'SANDBOX_TAKE_NOT_FOUND';end if;
    v_path := v_owner::text||'/'||v_take.id::text||'/'||v_account.id::text||'.'||(p_payload->>'extension');
    v_bytes := nullif(p_payload->>'bytes','')::integer;
-   if p_payload->>'extension' not in ('webm','mp4','ogg') or v_bytes<1024 or v_bytes>26214400
+   if coalesce(p_payload->>'extension','') not in ('webm','mp4','ogg') or v_bytes is null or v_bytes<1024 or v_bytes>26214400
     or not exists(select 1 from storage.objects where bucket_id='sandbox-voice' and name=v_path)
     then raise exception 'SANDBOX_AUDIO_UPLOAD_REQUIRED';end if;
    update app_private.sandbox_voice_takes set
@@ -149,7 +149,8 @@ begin
    if v_role<>'L2' then raise exception 'L2_ONLY';end if;
    v_decision := p_payload->>'decision';
    v_feedback := trim(coalesce(p_payload->>'feedback',''));
-   if v_decision not in ('approve','request_changes') or length(v_feedback)>4000 then
+   if v_decision not in ('approve','request_changes') or length(v_feedback)>4000
+    or (v_decision='request_changes' and length(v_feedback)<3) then
      raise exception 'INVALID_REVIEW';end if;
    update app_private.sandbox_voice_takes set
     state=case when v_decision='approve' then 'approved' else 'changes_requested' end,
