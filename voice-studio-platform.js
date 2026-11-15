@@ -95,13 +95,13 @@ async function refreshAdmin(){
 async function loadMine(){
  if(!me||admin)return;
  try{
-  const {data,error}=await db.from('vs_sessions').select('id,mode,created_at,state').eq('project_id',P).eq('mode','solo').eq('state','submitted').order('created_at',{ascending:false}).limit(12);
+  const {data,error}=sandbox?{data:(await sandbox.list(db)).filter(t=>t.state!=='recording').slice(0,12),error:null}:await db.from('vs_sessions').select('id,mode,created_at,state').eq('project_id',P).eq('mode','solo').eq('state','submitted').order('created_at',{ascending:false}).limit(12);
   if(error)throw error;
   let host=$('vsMySubmissions');
   if(!host){host=document.createElement('section');host.id='vsMySubmissions';host.className='card';host.style.marginTop='20px';$('home').append(host)}
   host.textContent='';const heading=document.createElement('h2');heading.textContent='My recording submissions';host.append(heading);
   if(!data?.length){const para=document.createElement('p');para.textContent='Your completed recordings and reviewer feedback will appear here.';host.append(para);return}
-  const ids=data.map(x=>x.id);const rv=await db.from('vs_reviews').select('session_id,verdict,quality_score,feedback,reviewed_at').in('session_id',ids);
+  const ids=data.map(x=>x.id);const rv=sandbox?{data:data.filter(t=>t.rating).map(t=>({session_id:t.id,verdict:t.state,quality_score:t.rating,feedback:t.feedback})),error:null}:await db.from('vs_reviews').select('session_id,verdict,quality_score,feedback,reviewed_at').in('session_id',ids);
   if(rv.error)throw rv.error;
   for(const s of data){const row=document.createElement('div');row.style.cssText='padding:12px 0;border-top:1px solid #eaedf0;font-size:13px';
    const review=(rv.data||[]).find(x=>x.session_id===s.id);
