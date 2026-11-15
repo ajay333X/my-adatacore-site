@@ -29,12 +29,13 @@ document.querySelector('main').append(adminSection);
 $('vsAdminBack').onclick=()=>view('home');
 async function refreshAdmin(){
  try{
- const stats=await rpc('vs_admin_overview',{});
+ const sandboxRows=sandbox?await sandbox.list(db):null;
+  const stats=sandbox?{pending_review:sandboxRows.filter(t=>t.state==='l2_pending').length,approved:sandboxRows.filter(t=>t.state==='approved').length}:await rpc('vs_admin_overview',{});
  $('vsMetrics').textContent='';
  for(const [key,value] of Object.entries(stats)){const span=document.createElement('span');span.className='vs-stat';span.textContent=key.replaceAll('_',' ')+': '+String(value);$('vsMetrics').append(span)}
- const {data,error}=await db.from('vs_sessions').select('id,mode,state,created_at').eq('project_id',P).order('created_at',{ascending:false}).limit(30);if(error)throw error;
+ const {data,error}=sandbox?{data:sandboxRows.map(t=>({...t,state:t.state==='l2_pending'?'submitted':t.state})),error:null}:await db.from('vs_sessions').select('id,mode,state,created_at').eq('project_id',P).order('created_at',{ascending:false}).limit(30);if(error)throw error;
  const ids=(data||[]).map(x=>x.id);let tracks=[],reviews=[];
- if(ids.length){
+ if(ids.length&&!sandbox){
   const [t,r]=await Promise.all([
    db.from('vs_tracks').select('session_id,storage_path,duration_seconds,transcript,transcript_source').in('session_id',ids),
    db.from('vs_reviews').select('session_id,verdict,quality_score,feedback').in('session_id',ids)
@@ -46,14 +47,14 @@ async function refreshAdmin(){
   const line=document.createElement('article');line.className='vs-stat';line.style.cssText='margin:10px 0;padding:16px;display:block';
   const title=document.createElement('strong');title.textContent=new Date(s.created_at).toLocaleString()+' · '+s.mode+' · '+s.state;line.append(title);
   const link=document.createElement('a');link.className='btn small';link.style.cssText='margin:6px 9px;text-decoration:none';
-  link.href='/admin/project-lab?project='+P+'&voice_task='+encodeURIComponent(voiceTaskId(s.id))+'#recordings';
+  link.href=sandbox?'#':'/admin/project-lab?project='+P+'&voice_task='+encodeURIComponent(voiceTaskId(s.id))+'#recordings';
   link.textContent='▶ Open QA audio mixer';
-  line.append(link);
+  if(!sandbox)line.append(link);
   const taskCode=document.createElement('div');taskCode.style.cssText='margin:7px 0;font:600 11px ui-monospace,monospace;overflow-wrap:anywhere';
   taskCode.textContent=voiceTaskId(s.id);line.append(taskCode);
-  for(const t of tracks.filter(t=>t.session_id===s.id)){
+  for(const t of (sandbox?(s.storage_path?[{session_id:s.id,storage_path:s.storage_path}]:[]):tracks.filter(t=>t.session_id===s.id))){
    const b=document.createElement('button');b.className='btn small';b.textContent='Listen to recording';b.onclick=async()=>{
-    const {data,error}=await db.storage.from('voice-studio').createSignedUrl(t.storage_path,120);
+    const {data,error}=await db.storage.from(sandbox?'sandbox-voice':'voice-studio').createSignedUrl(t.storage_path,120);
     if(error)note(fail(error));else window.open(data.signedUrl,'_blank','noopener,noreferrer');
    };line.append(b);
    if(t.transcript){
@@ -64,7 +65,7 @@ async function refreshAdmin(){
    }
   }
   if(s.state==='submitted'){
-   const previous=reviews.find(x=>x.session_id===s.id);
+   const previous=sandbox?(s.rating?{verdict:s.state==='approved'?'approved':'needs_changes',quality_score:s.rating,feedback:s.feedback}:null):reviews.find(x=>x.session_id===s.id);
    const review=document.createElement('div');review.style.cssText='margin-top:15px;padding-top:14px;border-top:1px solid #e6e8ef';
    const label=document.createElement('div');label.textContent=previous?'Reviewed: '+previous.verdict+' · '+previous.quality_score+'/5':'Pending quality review';
    label.style.cssText='font-weight:700;margin-bottom:9px';review.append(label);
@@ -80,7 +81,7 @@ async function refreshAdmin(){
    saveButton.onclick=async()=>{
     saveButton.disabled=true;result.textContent='Saving…';
     try{
-     const {error}=await db.from('vs_reviews').upsert({session_id:s.id,reviewer_id:me.id,verdict:verdict.value,quality_score:Number(quality.value),feedback:feedback.value.trim()},{onConflict:'session_id'});
+     const {error}=sandbox?{error:await sandbox.review(db,s.id,verdict.value==='approved'?'approve':'request_changes',Number(quality.value),feedback.value.trim()).then(()=>null,e=>e)}:await db.from('vs_reviews').upsert({session_id:s.id,reviewer_id:me.id,verdict:verdict.value,quality_score:Number(quality.value),feedback:feedback.value.trim()},{onConflict:'session_id'});
      if(error)throw error;result.textContent='Review saved successfully.';label.textContent='Reviewed: '+verdict.value+' · '+quality.value+'/5';saveButton.textContent='Update review';
     }catch(e){result.textContent='Review failed: '+fail(e)}finally{saveButton.disabled=false}
    };
