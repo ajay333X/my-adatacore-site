@@ -210,13 +210,13 @@ function installDesignRecovery(){
    const draft=imported.draft;
    if(draft?.schema!==1||!draft.projectData||!Array.isArray(draft.pages)||!draft.pages.length||draft.pages.length>40)throw Error('Backup does not contain a valid design.');
    if(draft.pages.some(p=>typeof p.id!=='string'||typeof p.name!=='string'||typeof p.html!=='string'||typeof p.css!=='string'||p.html.length>250000||p.css.length>150000))throw Error('Backup page data is invalid.');
-   confirmation('Restore design backup?','The backup will replace the current editor canvas. Unsaved changes will be discarded. Nothing will be published or saved until you choose Save draft.','Restore',()=>{
+   confirmation('Restore design backup?','The backup will replace the current editor canvas. Unsaved changes will be discarded. Nothing will be published or saved until you choose Save draft.',()=>{
     const previous=editor.getProjectData();
     try{
      editor.loadProjectData(draft.projectData);renderPages();titlePage();changed();
      toast('Backup restored into the editor. Review it and choose Save draft when ready.');
     }catch(error){try{editor.loadProjectData(previous);renderPages();titlePage()}catch(_){ }toast('Restore failed: '+error.message)}
-   });
+   },'Restore');
   }catch(error){toast('Unable to restore backup: '+error.message)}
  };
 }
