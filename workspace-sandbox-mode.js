@@ -64,8 +64,8 @@ function renderGrantedProjects(projects){
   const supported=p.type==='transcription'||nativeVoice;
   return '<article class="card card-hover task-card"><div class="task-top"><span class="pill pill-brand">'+safe(p.role)+'</span><span class="pill pill-green"><span class="status-dot"></span>Access granted</span></div>'+
   '<h3>'+safe(p.name)+'</h3><div class="task-public-id">Project '+Number(p.id)+' · '+safe(p.type||'Project')+'</div>'+
-  '<div class="task-actions"><span class="muted" style="font-size:11px">'+(nativeVoice?'Native Voice Studio · isolated test recordings':supported?'Real source · isolated test claims':'Project adapter not yet available')+'</span>'+
-  '<button type="button" class="btn btn-primary sandbox-granted-open" data-project="'+Number(p.id)+'" data-type="'+safe(p.type||'custom')+'">'+(nativeVoice?'Open native Voice Studio →':supported?'Open isolated task queue →':'Not yet supported')+'</button>'+'</div></article>';
+  '<div class="task-actions"><span class="muted" style="font-size:11px">'+(nativeVoice?'Native Voice Studio · isolated test recordings':supported?'Real source · isolated test claims':'Legacy isolated practice · native integration pending')+'</span>'+
+  '<button type="button" class="btn btn-primary sandbox-granted-open" data-project="'+Number(p.id)+'" data-type="'+safe(p.type||'custom')+'">'+(nativeVoice?'Open native Voice Studio →':supported?'Open isolated task queue →':'Open practice workspace →')+'</button>'+'</div></article>';
  }).join(''):'<div class="card empty" style="grid-column:1/-1">No projects assigned. Grant access in Admin → Test Accounts.</div>')+'</div>';
  section.querySelectorAll('.sandbox-granted-open').forEach(b=>b.addEventListener('click',()=>{
   const projectId=Number(b.dataset.project);
@@ -77,8 +77,12 @@ function renderGrantedProjects(projects){
     return;
   }
   if(b.dataset.type!=='transcription'){
-    const sub=document.getElementById('viewSub');
-    if(sub)sub.textContent='TEST MODE · Native editor not yet supported for this project. No production workflow was opened.';
+    // Retain the existing isolated practice fallback until each project has a
+    // fully verified native backend. Never forward this to a production editor.
+    client.rpc('admin_sandbox_launch_project',{p_account_id:sandboxAccountId,p_project_id:projectId}).then(({data,error})=>{
+      if(error)throw error;
+      location.assign('/admin/test-workspace?session='+encodeURIComponent(data.session_id));
+    }).catch(error=>{const sub=document.getElementById('viewSub');if(sub)sub.textContent='TEST MODE · '+String(error.message||error)});
     return;
   }
   const native=Array.from(document.querySelectorAll('.project-open')).find(x=>Number(x.dataset.txProject||x.dataset.txReviewProject)===projectId);
