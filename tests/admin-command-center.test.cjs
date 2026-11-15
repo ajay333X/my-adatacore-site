@@ -26,3 +26,10 @@ test('keyboard dialog supports search and escape, and does not synthesize metric
  assert.match(center,/search\.addEventListener\('input',render\)/);
  assert.doesNotMatch(center,/fakeMetrics|Math\.random\(\)/);
 });
+
+test('personal pins retain authorized search results and do not override access',()=>{
+ assert.match(center,/adatacore-admin-command-pins-v1/);
+ assert.match(center,/tools\.filter\(t=>t\.join\(' '\)\.toLowerCase\(\)\.includes\(q\)\)/);
+ assert.match(center,/localStorage\.setItem\(pinKey,JSON\.stringify\(pins\)\)/);
+ assert.match(center,/pin\.setAttribute\('aria-label'/);
+});
