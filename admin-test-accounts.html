@@ -4,19 +4,19 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Test Accounts · Adatacore Developer Lab</title>
 <link rel="icon" href="/favicon.png" type="image/png">
-<link rel="stylesheet" href="/sandbox-test.css?v=2">
+<link rel="stylesheet" href="/sandbox-test.css?v=3">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 <link rel="stylesheet" href="/adatacore-brand.css?v=1"></head>
 <body>
 <main class="sx-shell">
 <header class="sx-top"><a class="sx-brand ac-brand" href="/admin"><span class="ac-brand-icon" aria-hidden="true"><img src="/assets/adatacore-logo.jpg" width="34" height="34" alt="" decoding="async"></span><span class="ac-brand-text"><span class="ac-brand-label">Adatacore</span></span></a><a class="sx-back" href="/admin/projects">← Back to Admin</a></header>
-<section class="sx-hero"><div><div class="sx-eyebrow">Admin tools / Universal Sandbox</div><h1>Test Accounts</h1><p>Assign dummy identities to any eligible Adatacore project, including Voice, Transcription, and custom workflows. All test submissions remain isolated from production.</p></div><span class="sx-badge">● Isolated sandbox</span></section>
+<section class="sx-hero"><div><div class="sx-eyebrow">Admin tools / Universal Sandbox</div><h1>Test Accounts</h1><p>Manage isolated test identities and project roles in one place. Native task support varies by project; no test action should create a production submission.</p></div><span class="sx-badge">● Isolated sandbox</span></section>
 <div class="sx-grid three" style="margin-bottom:18px"><div class="sx-kpi"><strong id="countAccounts">—</strong><span>Test identities</span></div><div class="sx-kpi"><strong id="countPending">—</strong><span>L2 review pending</span></div><div class="sx-kpi"><strong id="countDone">—</strong><span>Approved test tasks</span></div></div>
 <div id="notice" class="sx-note" role="status">Checking admin access and sandbox configuration…</div>
-<section class="sx-panel" style="margin-top:15px"><div class="sx-row sx-between"><div><h2>Choose sandbox project</h2><p>Choose the account group in which identities are created. Existing identities can also be assigned to other projects below.</p></div></div><div class="sx-field"><label for="sandboxHomeProject">Sandbox account group</label><select class="sx-select" id="sandboxHomeProject"><option value="">Loading projects…</option></select></div></section>
+<section class="sx-panel" style="margin-top:15px"><div class="sx-row sx-between"><div><h2>Choose account group</h2><p>Choose the account group in which identities are created. Existing identities can also be assigned to other projects below.</p></div></div><div class="sx-field"><label for="sandboxHomeProject">Account creation and activity group</label><select class="sx-select" id="sandboxHomeProject"><option value="">Loading projects…</option></select></div></section>
 <section class="sx-panel" style="margin-top:18px"><div class="sx-row sx-between"><div><div class="sx-eyebrow">Configuration</div><h2>Set up your test contributors</h2><p>No emails, passwords, real payouts, or account registrations.</p></div><span class="sx-badge">Project-independent permissions</span></div>
 <form id="setupForm" class="sx-stack">
-<div class="sx-row sx-between"><div><strong>Create or update identities</strong><p>Add up to eight internal test contributors per account group. Choose their default level; individual project access is managed below.</p></div><button id="addDummyBtn" type="button" class="sx-btn">+ Add test account</button></div>
+<div class="sx-row sx-between"><div><strong>Create or update identities</strong><p>Add up to eight internal test contributors per save. Choose their default level; individual project access is managed below.</p></div><button id="addDummyBtn" type="button" class="sx-btn">+ Add test account</button></div>
 <div id="dummyRows" class="sx-stack" aria-live="polite"></div>
 <div class="sx-row sx-between"><div class="sx-muted" style="font-size:11px">Shared access: disabled · Test data: isolated · Feedback and diff view: enabled</div><button class="sx-btn primary" id="setupBtn" type="submit">Save Test Accounts</button></div>
 </form></section>
@@ -27,7 +27,7 @@
 </section>
 <section class="sx-grid">
 <div class="sx-panel"><h2>Review test activity</h2><p>Actions and revisions from both dummies are visible here.</p><div id="eventList" class="sx-stack"></div></div>
-<div class="sx-panel"><h2>Reset test tasks</h2><p>Release test claims and remove sandbox edits for the selected project only, while keeping test identities. Real production tasks and payouts are never changed.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Release all sandbox task claims and discard test edits?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
+<div class="sx-panel"><h2>Reset test tasks</h2><p>Reset scoped task claims and practice edits for this project. Voice recordings may require separate storage cleanup. Real production tasks and payouts are never changed.</p><div id="resetStart"><button id="resetBtn" class="sx-btn danger">Reset test tasks</button></div><div id="resetConfirm" class="sx-note sx-warning sx-hidden" style="margin-top:12px"><strong>Release all sandbox task claims and discard test edits?</strong><div class="sx-row" style="margin-top:12px"><button id="resetYes" class="sx-btn danger">Yes, reset sandbox</button><button id="resetNo" class="sx-btn">Cancel</button></div></div></div>
 </section>
 </main><div id="toast" class="sx-toast" role="status" aria-live="polite"></div>
 <script>
@@ -55,15 +55,32 @@ function toast(message){const t=el('toast');t.textContent=message;t.classList.ad
 function notice(message,bad){const e=el('notice');e.textContent=message;e.className='sx-note'+(bad?' sx-error':'')}
 async function call(name,args){const r=await db.rpc(name,args);if(r.error)throw new Error(r.error.message);return r.data}
 function when(value){return value?new Date(value).toLocaleString():'—'}
+function accountCard(a,access){
+ const projectName=((access.projects||[]).find(p=>Number(p.id)===Number(a.project_id))||{}).name||('Project '+a.project_id);
+ const grants=(access.access||[]).filter(x=>x.account_id===a.id);
+ const options=grants.map(x=>'<option value="'+Number(x.project_id)+'">'+safe(((access.projects||[]).find(p=>Number(p.id)===Number(x.project_id))||{}).name||('Project '+x.project_id))+' · '+safe(x.level)+'</option>').join('');
+ return '<div class="sx-account'+(a.active?'':' sx-account-inactive')+'"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main">'+
+ '<div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge '+(a.active?'good':'warn')+'">'+(a.active?'Active':'Suspended')+'</span></div>'+
+ '<p>Home group: '+safe(projectName)+' · Default '+safe(a.level)+'<br>Created '+safe(when(a.created_at))+'</p>'+
+ '<div class="sx-row"><select class="sx-select" data-open-project="'+safe(a.id)+'" aria-label="Project to open for '+safe(a.name)+'" style="flex:1;min-width:145px">'+options+'</select>'+
+ '<button class="sx-btn primary" data-open="'+safe(a.id)+'" '+(!a.active||!grants.length?'disabled':'')+'>Open dashboard</button>'+
+ '<button type="button" class="sx-btn" data-edit-account="'+safe(a.id)+'" aria-expanded="false">Manage</button></div>'+
+ '<form class="sx-account-edit sx-hidden" data-edit-form="'+safe(a.id)+'">'+
+ '<label>Display name<input class="sx-input" name="name" maxlength="80" value="'+safe(a.name)+'" required></label>'+
+ '<label>Default level<select class="sx-select" name="level"><option value="L1" '+(a.level==='L1'?'selected':'')+'>L1 · Contributor</option><option value="L2" '+(a.level==='L2'?'selected':'')+'>L2 · Reviewer</option></select></label>'+
+ '<label>Account status<select class="sx-select" name="active"><option value="true" '+(a.active?'selected':'')+'>Active</option><option value="false" '+(!a.active?'selected':'')+'>Suspended</option></select></label>'+
+ '<p class="sx-muted">Changing the default level does not alter existing project-specific roles. Suspending an account ends its active test sessions.</p>'+
+ '<button class="sx-btn primary" type="submit">Save account</button></form></div></div>';
+}
 async function reload(){
  const data=await call('admin_sandbox_list',{p_project_id:PROJECT});
  const projectAccess=await call('admin_sandbox_access_list',{p_project_id:PROJECT});
  state=data||state;const as=state.accounts||[],ts=state.tasks||[],ev=state.events||[];
- el('countAccounts').textContent=as.length;el('countPending').textContent=ts.filter(t=>t.status==='l2_pending').length;el('countDone').textContent=ts.filter(t=>t.status==='approved').length;
- el('accountList').innerHTML=as.length?as.map(a=>'<div class="sx-account"><span class="sx-avatar">'+safe(a.level)+'</span><div class="sx-account-main"><div class="sx-row sx-between"><h3>'+safe(a.name)+'</h3><span class="sx-badge">'+safe(a.level)+'</span></div><p>Universal sandbox · Passwordless internal identity<br>Created '+safe(when(a.created_at))+'</p><div class="sx-row" style="margin-top:9px"><select class="sx-select" data-open-project="'+safe(a.id)+'" style="flex:1;min-width:145px">'+(projectAccess.access||[]).filter(x=>x.account_id===a.id).map(x=>'<option value="'+Number(x.project_id)+'">'+safe(((projectAccess.projects||[]).find(p=>Number(p.id)===Number(x.project_id))||{}).name||('Project '+x.project_id))+' · '+safe(x.level)+'</option>').join('')+'</select><button class="sx-btn primary" data-open="'+safe(a.id)+'" '+(!(projectAccess.access||[]).some(x=>x.account_id===a.id)?'disabled':'')+'>Open Contributor Dashboard ↗</button></div></div></div>').join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Use the form above to create Dummy 01 and Dummy 02.</div>';
+ el('countAccounts').textContent=as.filter(a=>a.active).length+' / '+as.length;el('countPending').textContent=ts.filter(t=>t.status==='l2_pending').length;el('countDone').textContent=ts.filter(t=>t.status==='approved').length;
+ el('accountList').innerHTML=as.length?as.map(a=>accountCard(a,projectAccess)).join(''):'<div class="sx-note" style="grid-column:1/-1">No test accounts yet. Add an identity above to get started.</div>';
  renderAccess(projectAccess,as);
  el('eventList').innerHTML=ev.length?ev.slice(0,12).map(e=>'<div class="sx-event"><span class="sx-dot"></span><div><strong>'+safe(e.action.replaceAll('_',' '))+'</strong><small>'+safe(when(e.created_at))+' · '+safe(e.task_id?String(e.task_id).slice(0,8):'Admin action')+'</small></div></div>').join(''):'<div class="sx-muted" style="font-size:12px">Test activity will appear here.</div>';
- notice('Sandbox ready for project '+PROJECT+'. All actions stay isolated from production.');
+ notice('All test identities are listed. Task activity and reset are scoped to Project '+PROJECT+'.');
 }
 
 function renderAccess(access,accounts){
@@ -104,11 +121,25 @@ el('setupForm').addEventListener('submit',async event=>{
  }catch(e){notice(e.message,true)}finally{btn.disabled=false;btn.textContent='Save Test Accounts'}
 });
 el('accountList').addEventListener('click',async event=>{
+ const edit=event.target.closest('[data-edit-account]');
+ if(edit){const form=el('accountList').querySelector('[data-edit-form="'+edit.dataset.editAccount+'"]');if(form){form.classList.toggle('sx-hidden');edit.setAttribute('aria-expanded',String(!form.classList.contains('sx-hidden')))}return}
  const btn=event.target.closest('[data-open]');if(!btn)return;btn.disabled=true;
  const tab=window.open('about:blank','_blank');if(tab)tab.opener=null;
  if(tab)tab.document.write('<title>Opening sandbox…</title><p style="font:14px system-ui;padding:30px">Starting a secure sandbox session…</p>');
  try{const selectedProject=Number(el('accountList').querySelector('[data-open-project="'+btn.dataset.open+'"]')?.value);if(!selectedProject)throw new Error('Grant project access before opening a test dashboard.');const r=await call('admin_sandbox_launch_project',{p_account_id:btn.dataset.open,p_project_id:selectedProject});const url='/workspace?test_session='+encodeURIComponent(r.session_id);if(tab)tab.location.assign(url);else location.assign(url);toast('Test session opened')}
  catch(e){if(tab)tab.close();notice(e.message,true)}
+ finally{btn.disabled=false}
+});
+el('accountList').addEventListener('submit',async event=>{
+ const form=event.target.closest('[data-edit-form]');if(!form)return;
+ event.preventDefault();const btn=form.querySelector('[type=submit]');btn.disabled=true;
+ try{
+  const f=new FormData(form),name=String(f.get('name')||'').trim();
+  const level=String(f.get('level')||''),active=String(f.get('active'))==='true';
+  if(!name||name.length>80||!['L1','L2'].includes(level))throw Error('Enter a valid name and level.');
+  await call('admin_sandbox_update_account',{p_account_id:form.dataset.editForm,p_name:name,p_level:level,p_active:active});
+  await reload();toast('Test account updated.');
+ }catch(error){notice('Unable to update account: '+error.message,true)}
  finally{btn.disabled=false}
 });
 el('addDummyBtn').onclick=()=>addRow();
