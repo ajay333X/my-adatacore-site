@@ -25,6 +25,7 @@ jobs:
           while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -type f -name '*.js' -not -path './vendor/*' -not -path './node_modules/*' -print0)
           node --test tests/sandbox-native-voice.test.cjs
           node --test tests/voice-duo-role-script.test.cjs
+          node --test tests/test-account-manager-ui.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
