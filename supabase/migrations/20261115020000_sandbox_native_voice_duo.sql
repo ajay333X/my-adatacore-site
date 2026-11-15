@@ -180,6 +180,8 @@ begin
     order by id limit 100) x),'[]'::jsonb);
  elseif p_action='leave' then
   if v_duo.state='submitted' then return to_jsonb(v_duo);end if;
+  update app_private.sandbox_voice_takes set state='changes_requested'
+   where duo_session_id=v_duo.id and owner_id=v_owner and state='recording';
   update app_private.sandbox_voice_duo_sessions set state='cancelled' where id=v_duo.id;
  elseif p_action='flag' then
   insert into app_private.sandbox_test_events(owner_id,project_id,account_id,action,details)
