@@ -38,6 +38,7 @@ const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshTok
 const el=id=>document.getElementById(id);
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state={accounts:[],tasks:[],events:[]};
+let accessBusy=false;
 const draftRows=[{name:'Dummy Contributor 01',role:'L1'},{name:'Dummy Reviewer 02',role:'L2'}];
 function addRow(name='',role='L1'){
  const host=el('dummyRows');if(host.children.length>=8){toast('Maximum eight identities per save.');return}
@@ -81,14 +82,15 @@ function renderAccess(access,accounts){
 }
 el('accessList').addEventListener('click',async e=>{
  const grant=e.target.closest('[data-grant]'),revoke=e.target.closest('[data-revoke-account]');
- if(!grant&&!revoke)return;
+ if(!grant&&!revoke||accessBusy)return;
+ accessBusy=true;
  const account=grant?.dataset.grant||revoke?.dataset.revokeAccount;
  const project=grant?Number(el('accessList').querySelector('[data-access-project="'+account+'"]')?.value):Number(revoke.dataset.revokeProject);
  const level=grant?el('accessList').querySelector('[data-access-role="'+account+'"]')?.value:'L1';
  if(!project){toast('Choose a project first');return}
  const button=grant||revoke;button.disabled=true;
  try{await call('admin_sandbox_project_access',{p_account_id:account,p_project_id:project,p_level:level,p_enabled:!!grant});await reload();toast(grant?'Project access granted.':'Project access revoked.')}
- catch(err){notice(err.message,true)}finally{button.disabled=false}
+ catch(err){notice(err.message,true)}finally{button.disabled=false;accessBusy=false}
 });
 el('setupForm').addEventListener('submit',async event=>{
  event.preventDefault();const btn=el('setupBtn');btn.disabled=true;btn.textContent='Configuring…';
@@ -96,6 +98,7 @@ el('setupForm').addEventListener('submit',async event=>{
  const accounts=[...el('dummyRows').children].map(row=>({name:row.querySelector('input').value.trim(),role:row.querySelector('select').value}));
  if(accounts.length<1||accounts.length>8||accounts.some(a=>!a.name||a.name.length>80))throw new Error('Provide 1–8 valid test account names.');
  if(new Set(accounts.map(a=>a.name.toLocaleLowerCase())).size!==accounts.length)throw new Error('Each test account needs a distinct name.');
+ if(accounts.some(a=>!['L1','L2'].includes(a.role)))throw new Error('Choose an L1 or L2 role for each account.');
  await call('admin_sandbox_setup',{p_project_id:PROJECT,p_accounts:accounts});
  await reload();toast('Saved '+accounts.length+' test identities.');
  }catch(e){notice(e.message,true)}finally{btn.disabled=false;btn.textContent='Save Test Accounts'}
