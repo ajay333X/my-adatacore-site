@@ -1,0 +1,70 @@
+name: Platform foundation contract gates
+
+# Staging-only checks: develop is excluded from Vercel deployments.
+on:
+  push:
+    branches: [develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-platform-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate role routes, protections and deployment policy
+        shell: bash
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const cfg = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+          assert.equal(cfg.git?.deploymentEnabled?.develop, false,
+            'develop must not trigger Vercel deployments');
+          const redirects = cfg.redirects || [];
+          const rewrites = cfg.rewrites || [];
+          const routeKeys = (items) => items.map(x => x.source);
+          assert.equal(new Set(routeKeys(rewrites)).size, rewrites.length,
+            'duplicate rewrites can shadow project routes');
+          assert.equal(new Set(routeKeys(redirects)).size, redirects.length,
+            'duplicate redirects can shadow project routes');
+          for (const path of ['/admin', '/voice-engine']) {
+            assert.ok(rewrites.some(r => r.source === path),
+              'required route missing: ' + path);
+          }
+          const headers = cfg.headers || [];
+          for (const path of ['/admin', '/auth', '/dashboard']) {
+            assert.ok(headers.some(h => h.source === path &&
+              (h.headers || []).some(v =>
+                v.key.toLowerCase() === 'cache-control' &&
+                /no-store/.test(v.value))),
+              'sensitive page missing no-store: ' + path);
+          }
+          assert.ok(headers.some(h => (h.headers || []).some(v =>
+            v.key.toLowerCase() === 'content-security-policy')),
+            'security response headers are required');
+          console.log('Static route, cache, CSP and deployment-policy checks passed');
+          NODE
+      - name: Verify core pages are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in admin-entry.html workspace.html auth.html vercel.json; do
+            test -f "$file" || { echo "::error file=$file::Missing critical entry file"; exit 1; }
+          done
+      - name: Check JavaScript syntax without deploying
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.js' \
+            -not -path './node_modules/*' \
+            -not -path './vendor/*' -print0)
