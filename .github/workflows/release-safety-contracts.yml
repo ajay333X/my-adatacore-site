@@ -1,0 +1,45 @@
+name: Release safety contracts
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard-production-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check deployment policy, protected caching and routes
+        run: |
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const cfg=JSON.parse(fs.readFileSync('vercel.json','utf8'));
+          assert.equal(cfg.git?.deploymentEnabled?.develop,false,'develop must not deploy automatically');
+          for(const field of ['redirects','rewrites']){
+            const entries=cfg[field]||[];
+            assert.equal(new Set(entries.map(x=>x.source)).size,entries.length,'Duplicate '+field);
+          }
+          const paths=['/admin','/auth','/dashboard','/client-portal','/voice-engine'];
+          for(const path of paths){
+            assert.ok((cfg.headers||[]).some(h=>h.source===path&&(h.headers||[]).some(
+              x=>x.key.toLowerCase()==='cache-control'&&/no-store/.test(x.value))),
+              'Missing sensitive-page no-store header: '+path);
+          }
+          const required=['/admin','/admin/operations','/admin/project-builder','/admin/test-accounts','/workspace/overview'];
+          for(const path of required)assert.ok((cfg.rewrites||[]).some(x=>x.source===path),'Missing required route '+path);
+          console.log('Production routing and sensitive-cache contracts verified');
+          NODE
+      - name: Verify role and project regression coverage exists
+        run: |
+          test -f tests/sandbox-native-voice.test.cjs
+          test -f tests/sandbox-duo-integration.test.cjs
+          test -f tests/project-builder-recovery.test.cjs
+          test -f tests/test-account-global-manager.test.cjs
