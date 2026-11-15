@@ -178,7 +178,51 @@ function setupWidgets(){
   };host.append(button);
  }
 }
+
+function installDesignRecovery(){
+ const actions=document.querySelector('.top-actions'),saveButton=$('saveDraft');
+ if(!actions||!saveButton||document.getElementById('exportDesignBackup'))return;
+ const backup=document.createElement('button');backup.type='button';backup.id='exportDesignBackup';
+ backup.className='top-btn';backup.textContent='Export backup';backup.title='Download an editable copy of this draft, without publishing';
+ const restore=document.createElement('button');restore.type='button';restore.id='restoreDesignBackup';
+ restore.className='top-btn';restore.textContent='Restore backup';restore.title='Load a local backup into the editor as unsaved changes';
+ const file=document.createElement('input');file.id='restoreDesignFile';file.type='file';file.accept='.json,application/json';file.hidden=true;
+ actions.insertBefore(backup,saveButton);actions.insertBefore(restore,saveButton);document.body.appendChild(file);
+ backup.onclick=()=>{
+  if(!editor||!projectId)return toast('Open a project before exporting.');
+  try{
+   const payload=exported(),data=JSON.stringify({format:'adatacore-project-design-backup',version:1,projectId,projectName:project.project_name,exportedAt:new Date().toISOString(),draft:payload});
+   if(new Blob([data]).size>1800000)throw Error('Design exceeds the backup limit.');
+   const blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+   link.href=url;link.download='adatacore-project-'+projectId+'-design-backup.json';document.body.append(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+   toast('Backup downloaded. This has not published or changed the project.');
+  }catch(error){toast('Backup failed: '+error.message)}
+ };
+ restore.onclick=()=>file.click();
+ file.onchange=async()=>{
+  const selected=file.files?.[0];file.value='';if(!selected)return;
+  try{
+   if(selected.size>1800000)throw Error('Backup is too large (max 1.8 MB).');
+   const imported=JSON.parse(await selected.text());
+   if(imported.format!=='adatacore-project-design-backup'||imported.version!==1)throw Error('Unrecognized backup format.');
+   if(imported.projectId!==projectId)throw Error('This backup belongs to a different project.');
+   const draft=imported.draft;
+   if(draft?.schema!==1||!draft.projectData||!Array.isArray(draft.pages)||!draft.pages.length||draft.pages.length>40)throw Error('Backup does not contain a valid design.');
+   if(draft.pages.some(p=>typeof p.id!=='string'||typeof p.name!=='string'||typeof p.html!=='string'||typeof p.css!=='string'||p.html.length>250000||p.css.length>150000))throw Error('Backup page data is invalid.');
+   confirmation('Restore design backup?','The backup will replace the current editor canvas. Unsaved changes will be discarded. Nothing will be published or saved until you choose Save draft.','Restore',()=>{
+    const previous=editor.getProjectData();
+    try{
+     editor.loadProjectData(draft.projectData);renderPages();titlePage();changed();
+     toast('Backup restored into the editor. Review it and choose Save draft when ready.');
+    }catch(error){try{editor.loadProjectData(previous);renderPages();titlePage()}catch(_){ }toast('Restore failed: '+error.message)}
+   });
+  }catch(error){toast('Unable to restore backup: '+error.message)}
+ };
+}
+
 function bindButtons(){
+ installDesignRecovery();
  $('pageAdd').onclick=addPage;
  $('undoBtn').onclick=()=>editor.UndoManager.undo();$('redoBtn').onclick=()=>editor.UndoManager.redo();
  $('deleteLayer').onclick=()=>{const node=editor.getSelected();if(!node||node===editor.getWrapper())return toast('Select an element to delete.');node.remove();changed()};
