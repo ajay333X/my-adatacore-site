@@ -219,7 +219,7 @@ async function save(){
  }finally{
    uploading=false;
    if(mode==='duo'&&session?.state!=='submitted'&&blob){
-    const ownTrack=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+    const ownTrack=sandbox?{data:(await sandbox.tracks(db,session.id)).find(x=>x.actor_id===me.id)||null,error:null}:await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
     if(!ownTrack.data){$('vsSubmit').disabled=false;$('vsRetry').disabled=false;$('vsRetry').hidden=false;}
    }
   }
