@@ -109,13 +109,9 @@ async function initializeProjectCards(){
    control.onclick=()=>sandboxTaskOpen(Number(sandboxProjectId),true,'test_submission');
  }
 
- const response=await fetch('/workspace-project-groups.js?v=7',{cache:'no-store'});
- if(!response.ok)throw Error('Project cards could not be loaded');
- let source=await response.text();
- const old="db.rpc('tx_my_transcription_projects')";
- if(!source.includes(old))throw Error('Project card compatibility check failed');
- source=source.replace(old,"db.rpc('admin_sandbox_project_cards',{p_session_id:'"+id+"'})");
- const script=document.createElement('script');script.textContent=source;
+ window.AdatasandboxContext=Object.freeze({sessionId:id});
+ const script=document.createElement('script');
+ script.src='/workspace-project-groups.js?v=10';
  document.body.appendChild(script);
 }
 initializeProjectCards().catch(error=>{
