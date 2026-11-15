@@ -52,3 +52,14 @@ input:focus,select:focus,textarea:focus{border-color:#65b4a1!important;box-shado
 .al-gate{min-height:100vh;display:grid;place-items:center;color:#516477;font-size:14px}
 @media(max-width:1000px){.al-app{grid-template-columns:205px minmax(0,1fr)}.al-split{grid-template-columns:1fr}.al-list{max-height:350px}.al-stats{grid-template-columns:repeat(2,1fr)}.al-tiles{grid-template-columns:1fr}.al-overview-tile{min-height:0}}
 @media(max-width:680px){.al-app{display:block}.al-side{position:static;height:auto;padding:14px}.al-logo,.al-brand,.al-side-bottom{display:none}#labNav{display:flex;gap:4px;overflow:auto}#labNav button{flex-shrink:0;font-size:11px;padding:9px}#labNav button span{display:none}.al-main{padding:22px 13px}.al-head{margin-bottom:20px}.al-head-actions{width:100%;justify-content:space-between}.al-two{grid-template-columns:1fr}.al-card{padding:14px}.al-stats{gap:9px}.al-stat{padding:12px}.al-stat strong{font-size:23px}.al-dialog-body{padding:13px}.al-dialog-actions{padding:14px}}
+
+/* Complete dialogue view — collapsed only by user choice, never line-clamped. */
+.al-full-script-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0}
+.al-full-script-head h3{margin:0 8px 0 0}
+.al-full-script-head .al-meta{margin-right:auto}
+.al-text.al-expanded,.al-code.al-expanded{max-height:none;overflow:visible}
+.al-generated-scripts{display:grid;gap:14px;margin-top:18px}
+.al-generated-scripts:empty{display:none}
+.al-generated-preview{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff;min-width:0}
+.al-generated-preview h4{font-size:14px;margin:0 0 5px}
+.al-generated-preview .al-text{margin-top:12px}
