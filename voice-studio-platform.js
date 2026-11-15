@@ -1,10 +1,10 @@
 (()=>{'use strict';
-const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K);
+const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K),sandbox=window.SandboxNativeVoice||null;
 const $=s=>document.getElementById(s),fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false,lastLobbyBeat=0,duoRefreshBusy=false,returningToDashboard=false;
 function note(t){$('vsAlert').textContent=t||''}
 function fail(e){return String(e?.message||e||'Unknown error').replaceAll('_',' ')}
-async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
+async function rpc(name,args){if(sandbox)return sandbox.rpc(db,name,args);const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
 function view(s){document.querySelectorAll('main > .step').forEach(e=>e.classList.toggle('active',e.id===s));window.scrollTo(0,0)}
 function returnToProjectDashboard(){
  if(returningToDashboard)return;
@@ -13,6 +13,7 @@ function returnToProjectDashboard(){
  const impersonation=new URLSearchParams(location.search).get('impersonation');
  const params=new URLSearchParams({project:String(P)});
  if(impersonation)params.set('impersonation',impersonation);
+  if(sandbox)params.set('test_session',sandbox.id);
  note('Recording submitted successfully. Returning to your project dashboard.');
  cleanup();
  location.replace('/workspace?'+params.toString());
@@ -132,19 +133,20 @@ async function init(){
   banner.append(message,back);
   document.body.prepend(banner);
  }
- const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;admin=await rpc('vs_is_admin',{});
+ const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;if(sandbox)await sandbox.initialize(db);admin=await rpc('vs_is_admin',{});
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
- if(admin){
+ if(admin&&!sandbox){
   const labLink=document.createElement('a');labLink.className='btn small';labLink.href='/admin/audio-lab-2';labLink.textContent='Audio Lab 2';labLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(labLink);
   const qaLink=document.createElement('a');qaLink.className='btn small';qaLink.href='/admin/project-lab?project=94#recordings';qaLink.textContent='Central QA · Voice';qaLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(qaLink);
   const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
- $('openSolo').disabled=false;$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=false;$('openDuo').onclick=()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
+ if(sandbox&&admin){const b=document.createElement('button');b.className='btn small';b.textContent='Review test recordings';b.onclick=()=>{view('vsAdmin');void refreshAdmin()};document.querySelector('.header-actions').prepend(b);document.querySelector('#vsAdmin .grid')?.remove()}
+  $('openSolo').disabled=Boolean(sandbox&&admin);$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=Boolean(sandbox);$('openDuo').onclick=sandbox?null:()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
  document.querySelector('#solo [data-back]').onclick=()=>void leaveSolo();
  if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling uses a direct browser connection where supported; restrictive networks may require a relay.');
 }
 async function enter(which){
- try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
+ try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');if(sandbox&&which!=='solo')throw Error('Sandbox Duo is not available yet');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
  if(session.mode!==which){
   // The server may return an unfinished session from another mode.
   // Never discard a recording without the participant's explicit consent.
@@ -188,8 +190,8 @@ async function save(){
  try{
  if(!blob||blob.size<1024)throw Error('Empty audio');
  let type=blob.type.split(';')[0],ext=type==='audio/mp4'?'.mp4':type==='audio/ogg'?'.ogg':'.webm',path=session.id+'/'+me.id+ext;
- const {error}=await db.storage.from('voice-studio').upload(path,blob,{contentType:type,upsert:false});
- if(error&&!error.message.toLowerCase().includes('already exists'))throw error;
+ if(sandbox)path=await sandbox.upload(db,session.id,ext.slice(1),blob,{contentType:type});
+ else{const {error}=await db.storage.from('voice-studio').upload(path,blob,{contentType:type,upsert:false});if(error&&!error.message.toLowerCase().includes('already exists'))throw error;}
  session=await rpc('vs_submit',{p_session:session.id,p_path:path,p_seconds:Math.max(secs,1),p_mime:type,p_bytes:blob.size});
  if(mode==='solo'){
   $('recordStatus').textContent='Recording securely submitted.';$('saveRecord').disabled=true;
