@@ -79,7 +79,7 @@ begin
    select * into v_duo from app_private.sandbox_voice_duo_sessions
    where owner_id=v_owner and project_id=v_sid.project_id
     and state='waiting' and actor_a<>v_account.id and actor_b is null
-   order by created_at for update skip locked limit 1;
+   order by created_at limit 1 for update skip locked;
    if v_duo.id is not null then
     update app_private.sandbox_voice_duo_sessions set actor_b=v_account.id,state='matched',updated_at=now()
     where id=v_duo.id returning * into v_duo;
