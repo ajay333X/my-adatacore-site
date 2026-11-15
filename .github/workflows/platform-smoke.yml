@@ -30,6 +30,7 @@ jobs:
           node --test tests/test-account-global-manager.test.cjs
           node --test tests/sandbox-voice-review-access.test.cjs
           node --test tests/sandbox-parallel-mode.test.cjs
+          node --test tests/voice-studio-visibility-cues.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
