@@ -236,6 +236,10 @@
     {
       "source": "/invite/voice-actors/assessment",
       "destination": "/voice-actor-assessment"
+    },
+    {
+      "source": "/workspace-v2",
+      "destination": "/workspace"
     }
   ],
   "headers": [
@@ -516,6 +520,19 @@
         {
           "key": "X-Frame-Options",
           "value": "DENY"
+        }
+      ]
+    },
+    {
+      "source": "/workspace-v2",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
         }
       ]
     }
