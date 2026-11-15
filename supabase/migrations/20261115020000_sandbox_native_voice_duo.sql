@@ -4,6 +4,8 @@ create table if not exists app_private.sandbox_voice_duo_sessions(
  owner_id uuid not null,
  project_id integer not null references public.project_lab(id),
  script_id uuid not null references public.vs_scripts(id),
+ mode text not null default 'duo' check (mode='duo'),
+ recording_started_at timestamptz,
  actor_a uuid not null references app_private.sandbox_test_accounts(id),
  actor_b uuid references app_private.sandbox_test_accounts(id),
  state text not null default 'waiting' check(state in ('waiting','matched','rehearsal','recording','submitted','cancelled')),
@@ -129,7 +131,7 @@ begin
  elseif p_action='begin' then
   if not v_mine or v_duo.state<>'rehearsal' or v_duo.recording_request_status<>'approved'
   then raise exception 'DUO_START_NOT_ALLOWED';end if;
-  update app_private.sandbox_voice_duo_sessions set state='recording' where id=v_duo.id;
+  update app_private.sandbox_voice_duo_sessions set state='recording',recording_started_at=now() where id=v_duo.id;
  elseif p_action='progress' then
   if v_duo.state<>'recording' or p_payload->>'state' not in ('recording','stopped')
   then raise exception 'DUO_PROGRESS_NOT_ALLOWED';end if;
