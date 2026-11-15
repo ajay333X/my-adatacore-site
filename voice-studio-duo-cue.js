@@ -37,7 +37,7 @@ function mount(host,dialog,script,role){
   const mine=row.role===role;
   text.textContent=(mine?'Your line':'Partner / narration')+' · '+speaker+': '+row.text;
   previous.disabled=index<=0;next.disabled=index>=rows.length-1;
-  if(scroll)rows[index]?.scrollIntoView({block:'nearest',behavior:root.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  if(scroll)rows[index]?.scrollIntoView({block:'nearest',behavior:root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth'});
  }
  const advance=(delta,scroll=true)=>{index=Math.min(rows.length-1,Math.max(0,index+delta));paint(scroll)};
  previous.onclick=()=>advance(-1);next.onclick=()=>advance(1);
