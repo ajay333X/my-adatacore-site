@@ -1,5 +1,9 @@
 (()=>{'use strict';
 const P=94,U='https://llmhyezgcnbognmmsnzq.supabase.co',K='sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',db=supabase.createClient(U,K),sandbox=window.SandboxNativeVoice||null;
+if(new URLSearchParams(location.search).has('test_session')&&!sandbox){
+ document.body.textContent='Invalid sandbox session. Production Voice Studio was not started.';
+ throw Error('SANDBOX_CONTEXT_INVALID');
+}
 const $=s=>document.getElementById(s),fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStream=null,rec=null,blob=null,secs=0,timer=0,poll=0,signalTimer=0,signalId=0,readBusy=false,offerSent=false,connected=false,iceQueue=[],previewUrl=null,uploading=false,lastLobbyBeat=0,duoRefreshBusy=false,returningToDashboard=false;
 function note(t){$('vsAlert').textContent=t||''}
