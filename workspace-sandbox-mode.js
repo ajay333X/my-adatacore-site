@@ -111,7 +111,7 @@ async function initializeProjectCards(){
 
  window.AdatasandboxContext=Object.freeze({sessionId:id});
  const script=document.createElement('script');
- script.src='/workspace-project-groups.js?v=10';
+ script.src='/workspace-project-groups.js?v=11';
  document.body.appendChild(script);
 }
 initializeProjectCards().catch(error=>{
