@@ -110,8 +110,9 @@ async function showScript(id){
  const target=$('alScriptDetail');
  const used=sessions.filter(x=>x.script_id===id);
  const generation=generations.find(x=>x.script_id===id);
- target.innerHTML='<div class="al-detail-head"><div><span class="al-eyebrow">SCRIPT '+escapeHtml(short(s.id))+'</span><h2>'+escapeHtml(s.title)+'</h2><div class="al-meta">'+escapeHtml(s.mode.toUpperCase())+' · '+escapeHtml(s.language)+' · '+fmt(s.duration_seconds)+' · '+escapeHtml(s.emotion||'Neutral')+' · '+escapeHtml(stamp(s.created_at))+'</div></div>'+statusPill(s.is_active?'active':'archived')+'</div><div class="al-actions"><button class="al-button al-primary" data-script-action="edit">Edit script</button><button class="al-button al-secondary" data-script-action="clone">Duplicate</button><button class="al-button al-secondary" data-script-action="toggle">'+(s.is_active?'Archive':'Restore')+'</button><button class="al-button al-secondary" data-script-action="copy">Copy JSON</button></div><div class="al-meta">Script ID: '+escapeHtml(s.id)+' · Used in '+used.length+' recorded or in-progress session(s)</div><h3>Full script</h3><div class="al-text" lang="'+(s.language==='Hindi'?'hi':'en')+'"></div><details><summary style="cursor:pointer;margin-top:15px;font-weight:700">Source JSON</summary><pre class="al-code" id="alSelectedJson"></pre></details><h3>Origin and changes</h3><div id="alScriptOrigin" class="al-note">Loading provenance and changes…</div>';
+ target.innerHTML='<div class="al-detail-head"><div><span class="al-eyebrow">SCRIPT '+escapeHtml(short(s.id))+'</span><h2>'+escapeHtml(s.title)+'</h2><div class="al-meta">'+escapeHtml(s.mode.toUpperCase())+' · '+escapeHtml(s.language)+' · '+fmt(s.duration_seconds)+' · '+escapeHtml(s.emotion||'Neutral')+' · '+escapeHtml(stamp(s.created_at))+'</div></div>'+statusPill(s.is_active?'active':'archived')+'</div><div class="al-actions"><button class="al-button al-primary" data-script-action="edit">Edit script</button><button class="al-button al-secondary" data-script-action="clone">Duplicate</button><button class="al-button al-secondary" data-script-action="toggle">'+(s.is_active?'Archive':'Restore')+'</button><button class="al-button al-secondary" data-script-action="copy">Copy JSON</button></div><div class="al-meta">Script ID: '+escapeHtml(s.id)+' · Used in '+used.length+' recorded or in-progress session(s)</div><div class="al-row al-full-script-head"><h3>Full script</h3><span id="alScriptChars" class="al-meta"></span><button type="button" class="al-button al-secondary" data-script-action="expand">Show entire script ↓</button><button type="button" class="al-button al-secondary" data-script-action="copy-text">Copy full text</button></div><div class="al-text" lang="'+(s.language==='Hindi'?'hi':'en')+'"></div><details><summary style="cursor:pointer;margin-top:15px;font-weight:700">Source JSON</summary><pre class="al-code" id="alSelectedJson"></pre></details><h3>Origin and changes</h3><div id="alScriptOrigin" class="al-note">Loading provenance and changes…</div>';
  target.querySelector('.al-text').textContent=s.body;
+ target.querySelector('#alScriptChars').textContent=String(s.body||'').length.toLocaleString()+' characters · full saved text';
  target.querySelector('#alSelectedJson').textContent=JSON.stringify(scriptShape(s),null,2);
  target.querySelectorAll('[data-script-action]').forEach(b=>b.onclick=()=>void scriptAction(b.dataset.scriptAction,s));
  if(generation){
@@ -136,6 +137,8 @@ async function showScript(id){
 }
 async function scriptAction(action,s){
  try{
+  if(action==='expand'){const body=document.querySelector('#alScriptDetail .al-text');const btn=document.querySelector('#alScriptDetail [data-script-action="expand"]');if(!body||!btn)return;const expanded=body.classList.toggle('al-expanded');btn.textContent=expanded?'Collapse script ↑':'Show entire script ↓';return}
+  if(action==='copy-text'){await copyText(s.body||'');notify('Full script copied.');return}
   if(action==='edit'){openEditor(s);return}
   if(action==='copy'){await copyText(JSON.stringify(scriptShape(s),null,2));notify('Script JSON copied.');return}
   if(action==='clone'){
@@ -344,7 +347,8 @@ async function generate(event){
  const f=event.currentTarget,fields=f.elements,btn=$('alGenerateBtn'),status=$('alGenerateStatus');
  const count=Number(fields.namedItem('count').value);
  if(!Number.isInteger(count)||count<1||count>30){notify('Choose 1–30 scripts per generation.',true);return}
- creating=true;stopping=false;btn.disabled=true;$('alStopGeneration').disabled=false;let created=0;
+ creating=true;stopping=false;btn.disabled=true;$('alStopGeneration').disabled=false;let created=0;const newIds=[];
+ $('alGeneratedScripts').replaceChildren();
  try{
   const {data:{session:auth},error:authError}=await db.auth.getSession();
   if(authError||!auth)throw Error('Admin sign-in expired.');
@@ -355,11 +359,28 @@ async function generate(event){
    const body=await response.json();
    if(!response.ok)throw Error((body.error||'Generation failed')+' · '+(body.detail||''));
    created+=Number(body.created||0);
+   for(const row of body.scripts||[])if(row?.id)newIds.push(row.id);
    if(body.warning)notify(body.warning,true);
   }
   status.textContent=(stopping?'Generation stopped. ':'Generation complete. ')+created+' / '+count+' scripts saved with full prompt and JSON history.';
   await load();
-  if(created)notify(created+' scripts generated successfully.');
+  if(created){
+   notify(created+' scripts generated successfully.');
+   const latest=newIds.map(id=>scripts.find(s=>s.id===id)).filter(Boolean);
+   const preview=$('alGeneratedScripts');
+   preview.replaceChildren();
+   const heading=document.createElement('h3');heading.textContent='Newly generated scripts — full text';preview.append(heading);
+   for(const item of latest){
+    const section=document.createElement('section');section.className='al-generated-preview';
+    const title=document.createElement('h4');title.textContent=item.title;
+    const info=document.createElement('div');info.className='al-meta';info.textContent=item.language+' · '+String(item.body||'').length.toLocaleString()+' characters';
+    const text=document.createElement('div');text.className='al-text al-expanded';text.textContent=item.body||'';
+    const actions=document.createElement('div');actions.className='al-actions';
+    const copy=document.createElement('button');copy.type='button';copy.className='al-button al-secondary';copy.textContent='Copy full text';copy.onclick=()=>void copyText(item.body||'').then(()=>notify('Full script copied.'),e=>notify(e.message,true));
+    const library=document.createElement('button');library.type='button';library.className='al-button al-secondary';library.textContent='Open in script library';library.onclick=()=>{selectedScript=item.id;go('scripts')};
+    actions.append(copy,library);section.append(title,info,text,actions);preview.append(section);
+   }
+  }
  }catch(e){status.textContent=created+' of '+count+' scripts saved. '+e.message;notify('Generation stopped: '+e.message,true);if(created)await load()}
  finally{creating=false;stopping=false;btn.disabled=false;$('alStopGeneration').disabled=true}
 }

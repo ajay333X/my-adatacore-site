@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f6f8fa">
 <title>Audio Lab 2 — Adatacore</title>
 <link rel="icon" href="/favicon.png?v=20260831-3">
-<link rel="stylesheet" href="/audio-lab-2.css?v=2">
+<link rel="stylesheet" href="/audio-lab-2.css?v=3">
 <link rel="stylesheet" href="/voice-studio-qa-player.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 </head>
@@ -52,7 +52,7 @@
 <label>Additional instructions <small>(optional)</small><textarea name="instructions" rows="4" maxlength="5000" placeholder="More requirements, characters, dialogue pacing, tone, subject limits, etc."></textarea></label><details><summary style="cursor:pointer;font-weight:700">Preview exact generated prompt</summary><pre class="al-code" id="alPromptPreview"></pre></details>
 <div class="al-form-actions"><button type="submit" id="alGenerateBtn" class="al-button al-primary">✧ Generate & save scripts</button><button id="alStopGeneration" class="al-button al-secondary" type="button" disabled>Stop after current script</button></div>
 <div id="alGenerateStatus" role="status" aria-live="polite"></div>
-</form></div>
+</form><div id="alGeneratedScripts" class="al-generated-scripts" aria-live="polite"></div></div>
 <div class="al-card al-prompt-panel"><span class="al-eyebrow">GENERATION CONTRACT</span><h3>Structured output</h3><p>All generations must return this JSON structure. Prompt text, settings, output and script IDs are logged for future generations.</p><pre id="alJsonSchema"></pre><div class="al-note">Previous prompts were not stored by the original generator. The generation-history section records requests made after this upgrade.</div></div>
 </div>
 </section>
@@ -71,5 +71,5 @@
 <div id="alGate" class="al-gate">Verifying Audio Lab access…</div>
 <dialog id="alEditor" class="al-dialog"><form id="alEditorForm" method="dialog"><div class="al-dialog-head"><div><span class="al-eyebrow">SCRIPT EDITOR</span><h2 id="alEditorTitle">Edit script</h2></div><button class="al-button al-secondary" type="button" id="alCloseEditor">✕</button></div><div class="al-dialog-body"><div class="al-two"><label>Title<input name="title" maxlength="120" required></label><label>Mode<select name="mode"><option value="solo">Solo</option><option value="duo">Duo</option></select></label></div><div class="al-two"><label>Scenario<input name="scenario" maxlength="120"></label><label>Emotion<input name="emotion" maxlength="50"></label></div><div class="al-two"><label>Language<select name="language"><option>Hindi</option><option>English</option><option>Hinglish</option></select></label><label>Duration (seconds)<input name="duration_seconds" type="number" min="60" max="180"></label></div><div class="al-two"><label>Editor mode<select id="alEditorMode"><option value="text">Dialogue text</option><option value="json">Full JSON</option></select></label><label class="al-checkbox"><input name="is_active" type="checkbox" checked> Published / available for new tasks</label></div><label>Script / JSON<textarea name="body" id="alEditorBody" rows="16" required></textarea></label><p class="al-note" id="alEditWarning">Editing an existing script updates the script library. A revision snapshot is saved automatically.</p></div><div class="al-dialog-actions"><span id="alEditorStatus"></span><button type="button" class="al-button al-secondary" id="alCancelEditor">Cancel</button><button type="submit" class="al-button al-primary">Save script</button></div></form></dialog>
 <script src="/voice-studio-qa-player.js?v=2"></script>
-<script src="/audio-lab-2.js?v=3"></script>
+<script src="/audio-lab-2.js?v=4"></script>
 </body></html>
