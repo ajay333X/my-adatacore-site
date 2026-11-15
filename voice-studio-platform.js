@@ -138,7 +138,7 @@ async function init(){
   banner.append(message,back);
   document.body.prepend(banner);
  }
- const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;if(sandbox)await sandbox.initialize(db);admin=await rpc('vs_is_admin',{});
+ const {data:{user}}=await db.auth.getUser();if(!user){location.assign('/auth');return}me=user;if(sandbox){const context=await sandbox.initialize(db);me={...user,id:context.account_id};}admin=await rpc('vs_is_admin',{});
  if(!await rpc('vs_can_join',{p_project:P})){document.querySelector('main').innerHTML='<div class="card"><h2>Project access required</h2><p>Voice Studio has not been published for your account or you are not assigned.</p><a href="/workspace">Return to dashboard</a></div>';return}
  let {data,error}=await db.from('vs_scripts').select('*').eq('project_id',P).eq('language','Hindi');if(error)throw error;scripts=data||[];
  if(admin&&!sandbox){
@@ -146,12 +146,12 @@ async function init(){
   const qaLink=document.createElement('a');qaLink.className='btn small';qaLink.href='/admin/project-lab?project=94#recordings';qaLink.textContent='Central QA · Voice';qaLink.style.textDecoration='none';document.querySelector('.header-actions').prepend(qaLink);
   const b=document.createElement('button');b.className='btn small';b.textContent='Admin controls';b.onclick=()=>{view('vsAdmin');refreshAdmin()};document.querySelector('.header-actions').prepend(b)}
  if(sandbox&&admin){const b=document.createElement('button');b.className='btn small';b.textContent='Review test recordings';b.onclick=()=>{view('vsAdmin');void refreshAdmin()};document.querySelector('.header-actions').prepend(b);document.querySelector('#vsAdmin .grid')?.remove()}
-  $('openSolo').disabled=Boolean(sandbox&&admin);$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=Boolean(sandbox);$('openDuo').onclick=sandbox?null:()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
+  $('openSolo').disabled=Boolean(sandbox&&admin);$('openSolo').onclick=()=>void enter('solo');$('openDuo').disabled=Boolean(sandbox&&admin);$('openDuo').onclick=()=>void enter('duo');$('openDuo').title='Two-person browser audio (WebRTC, no paid TURN account required). Some restrictive networks may block direct connections.';
  document.querySelector('#solo [data-back]').onclick=()=>void leaveSolo();
  if(!admin)void loadMine();note('Account verified. Voice Studio '+(admin?'administrator preview':'participant access')+'. Duo calling uses a direct browser connection where supported; restrictive networks may require a relay.');
 }
 async function enter(which){
- try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');if(sandbox&&which!=='solo')throw Error('Sandbox Duo is not available yet');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
+ try{if(!['solo','duo'].includes(which))throw Error('Unsupported studio mode');if(sandbox&&which==='duo'&&sandbox.account?.level!=='L1')throw Error('Duo recording requires an L1 test account');cleanup();rec=null;blob=null;mode=which;session=await rpc('vs_enter',{p_project:P,p_mode:which});
  if(session.mode!==which){
   // The server may return an unfinished session from another mode.
   // Never discard a recording without the participant's explicit consent.
@@ -382,7 +382,7 @@ async function duoUpdate(){
    lastLobbyBeat=Date.now();
    await rpc('vs_wait_heartbeat',{p_session:session.id});
   }
-  const {data,error}=await db.from('vs_sessions').select('*').eq('id',session.id).single();
+  const {data,error}=sandbox?{data:await sandbox.getDuo(db,session.id),error:null}:await db.from('vs_sessions').select('*').eq('id',session.id).single();
   if(error)throw error;
   session=data;
   $('vsDuoTaskId').textContent=voiceTaskId(session.id);
@@ -407,7 +407,7 @@ async function duoUpdate(){
    }
   $('vsParticipants').textContent=session.actor_b?'2 / 2':'1 / 2';
   $('vsWaiting').textContent=String(await rpc('vs_waiting',{p_project:P}));
-  const {data:submittedTracks,error:tracksError}=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id);
+  const {data:submittedTracks,error:tracksError}=sandbox?{data:await sandbox.tracks(db,session.id),error:null}:await db.from('vs_tracks').select('actor_id').eq('session_id',session.id);
   if(!tracksError){
    const ownA=session.actor_a===me.id;
    const myProgress=ownA?session.actor_a_track_state:session.actor_b_track_state;
@@ -485,7 +485,7 @@ async function duoUpdate(){
  finally{duoRefreshBusy=false}
 }
 async function consent(){try{await mic();session=await rpc('vs_consent',{p_session:session.id});$('vsConsent').hidden=true;await duoUpdate()}catch(e){roomStatus(fail(e));$('vsConsent').disabled=false}}
-async function signal(kind,payload){const {error}=await db.from('vs_signals').insert({session_id:session.id,sender:me.id,kind,payload});if(error)throw error}
+async function signal(kind,payload){if(sandbox){await sandbox.signal(db,session.id,kind,payload);return}const {error}=await db.from('vs_signals').insert({session_id:session.id,sender:me.id,kind,payload});if(error)throw error}
 async function turnIce(){
  // Use the existing authenticated relay if configured, but never require a paid TURN account.
  // Public STUN only helps peers discover routes; it is not an audio relay.
@@ -526,7 +526,7 @@ async function startPeer(){
 }
 async function signals(){
  if(!pc||readBusy)return;readBusy=true;
- try{const {data,error}=await db.from('vs_signals').select('id,sender,kind,payload').eq('session_id',session.id).gt('id',signalId).order('id').limit(100);if(error)throw error;
+ try{const {data,error}=sandbox?{data:await sandbox.signals(db,session.id,signalId),error:null}:await db.from('vs_signals').select('id,sender,kind,payload').eq('session_id',session.id).gt('id',signalId).order('id').limit(100);if(error)throw error;
  for(let e of data||[]){signalId=e.id;if(e.sender===me.id)continue;
  if(e.kind==='offer'&&!pc.remoteDescription){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}let a=await pc.createAnswer();await pc.setLocalDescription(a);await signal('answer',{type:a.type,sdp:a.sdp})}
  else if(e.kind==='answer'&&pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(e.payload);for(const c of iceQueue.splice(0)){try{await pc.addIceCandidate(c)}catch{}}}
@@ -577,13 +577,13 @@ async function leave(){
   roomStatus('Stop your recording before leaving the session.');return;
  }
  if(blob&&mode==='duo'){
-  const own=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+  const own=sandbox?{data:(await sandbox.tracks(db,session.id)).find(x=>x.actor_id===me.id)||null,error:null}:await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
   if(!own.data&&!window.confirm('Your recording has not been submitted. Leaving will discard this take. Continue?'))return;
  }
  clearInterval(poll);clearInterval(signalTimer);
  try{
   if(session&&session.state!=='submitted'){
-   const {data:myTrack}=await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
+   const {data:myTrack}=sandbox?{data:(await sandbox.tracks(db,session.id)).find(x=>x.actor_id===me.id)||null}:await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
    // An actor who submitted must never cancel their partner's active recording.
    if(!myTrack)await rpc('vs_leave',{p_session:session.id});
   }
