@@ -31,6 +31,7 @@ jobs:
           node --test tests/sandbox-voice-review-access.test.cjs
           node --test tests/sandbox-parallel-mode.test.cjs
           node --test tests/voice-studio-visibility-cues.test.cjs
+          node --test tests/voice-duo-shared-recorder.test.cjs
 
       - name: Validate deployment configuration
         shell: bash

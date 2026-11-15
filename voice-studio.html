@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f7f8fa">
 <title>Voice Studio — Adatacore</title>
-<link rel="stylesheet" href="/adatacore-brand.css?v=1"><link rel="stylesheet" href="/voice-studio-duo.css?v=3"><link rel="stylesheet" href="/voice-studio-visibility-cues.css?v=1">
+<link rel="stylesheet" href="/adatacore-brand.css?v=1"><link rel="stylesheet" href="/voice-studio-duo.css?v=3"><link rel="stylesheet" href="/voice-studio-visibility-cues.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
 <style>
 :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#20252b;background:#f7f8fa}
@@ -187,7 +187,7 @@ main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-wel
 <div class="vs-assignment-row"><span>Target duration</span><strong id="durationMeta">2 min 30 sec</strong></div>
 <div class="vs-brief"><b>Recording tip</b><p>Choose a quiet space. Keep a comfortable microphone distance and speak clearly.</p></div>
 </aside></div>
-<div class="record-panel vs-record-dock" id="recordDock" aria-label="Recording controls">
+<div id="vsSoloDockHome"><div class="record-panel vs-record-dock" id="recordDock" aria-label="Recording controls">
 <div class="vs-dock-top"><div class="vs-dock-label"><span class="vs-mic-indicator" aria-hidden="true"></span><div><strong>Recording desk</strong><span id="recordStatus">Ready when you are</span></div></div>
 <div class="record-time" id="recordTime">00:00</div>
 <div class="vs-dock-buttons"><button class="btn primary" id="startRecord" type="button">● Start recording</button><button class="btn danger" id="stopRecord" type="button" disabled>■ Stop</button><button class="btn" id="resetRecord" type="button" disabled>↻ Record again</button></div></div>
@@ -207,7 +207,7 @@ main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-wel
 </div>
 <div class="vs-dock-review"><audio class="playback" id="playback" controls preload="metadata" hidden aria-label="Listen to your recording"></audio><button class="btn vs-submit" id="saveRecord" type="button" disabled>Submit recording →</button></div>
 <div class="status" role="status" aria-live="polite" id="soloStatus"></div>
-</div></section>
+</div></div></section>
 <section id="duo" class="step"><button class="back" data-back>← All recording formats</button><div class="eyebrow">02 / Collaborative production</div><h1 style="font-size:39px">Two voices. One conversation.</h1><div class="card lobby"><div class="orb" aria-hidden="true">♫</div><h2>Your next conversation starts here.</h2><p>Anonymous matchmaking will show how many voice actors are available and automatically connect compatible participants.</p><div class="stat"><span><b>—</b>Actors waiting</span><span><b>60s</b>Pre-call conversation</span><span><b>2</b>Separate audio tracks</span></div><div class="notice" style="max-width:580px;margin:0 auto 20px;text-align:left">Duo matching is on hold while secure TURN relay configuration and two-device testing are completed. Solo recording remains available for approved testing.</div><button class="btn primary" disabled>Duo mode unavailable until live-audio setup</button><div class="foot">Your name and account details will remain private from the other voice actor.</div></div></section>
 </main>
 <dialog id="vsActionDialog" class="vs-action-dialog" aria-labelledby="vsDialogTitle" aria-describedby="vsDialogText">
@@ -226,5 +226,5 @@ main{padding:12px 12px 272px}.vs-welcome{padding:17px;margin-bottom:14px}.vs-wel
 <script>(()=>{const waves=document.getElementById('heroWaves');if(!waves)return;for(let i=0;i<36;i++){const e=document.createElement('i');e.style.height=(12+Math.abs(Math.sin(i*.72)*Math.cos(i*.22))*92)+'px';waves.appendChild(e)}})();</script>
 <script src="/voice-studio-recorder-extras.js?v=1"></script>
 <script src="/voice-studio-submit-dialog.js?v=2"></script>
-<script src="/sandbox-native-voice.js?v=1"></script><script src="/voice-studio-duo-script.js?v=1"></script><script src="/voice-studio-duo-cue.js?v=1"></script><script src="/voice-studio-platform.js?v=20"></script><script src="/voice-studio-solo-visibility.js?v=1"></script>
+<script src="/sandbox-native-voice.js?v=1"></script><script src="/voice-studio-duo-script.js?v=1"></script><script src="/voice-studio-duo-cue.js?v=1"></script><script src="/voice-studio-platform.js?v=21"></script><script src="/voice-studio-solo-visibility.js?v=1"></script>
 <script src="/voice-studio-personalization.js?v=3"></script><script src="/project-public-ids.js?v=2"></script></body></html>

@@ -9,7 +9,29 @@ let me,admin=false,session=null,script=null,mode='',stream=null,pc=null,peerStre
 function note(t){$('vsAlert').textContent=t||''}
 function fail(e){return String(e?.message||e||'Unknown error').replaceAll('_',' ')}
 async function rpc(name,args){if(sandbox)return sandbox.rpc(db,name,args);const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
-function view(s){document.querySelectorAll('main > .step').forEach(e=>e.classList.toggle('active',e.id===s));window.scrollTo(0,0)}
+function recordingDesk(which){
+ const dock=$('recordDock'),home=$('vsSoloDockHome'),duo=$('vsDuoDockHome');
+ if(!dock||!home||!duo)return;
+ const target=which==='duo'?duo:home;
+ if(dock.parentElement!==target)target.appendChild(dock);
+ dock.dataset.recordingMode=which;
+ $('startRecord').textContent=which==='duo'?'● Request recording':'● Start recording';
+ const captionNote=$('vsCaptionPane')?.querySelector('p');
+ if(captionNote){
+  if(!captionNote.dataset.soloCopy)captionNote.dataset.soloCopy=captionNote.textContent;
+  captionNote.textContent=which==='duo'
+   ?'Live captions are approximate and optional. Your browser may send audio to its speech provider. Duo captions are not included in this audio submission.'
+   :captionNote.dataset.soloCopy;
+ }
+ if(which==='duo'){
+  $('recordTime').textContent='00:00';$('recordStatus').textContent='Waiting for a match and microphone consent';
+  $('startRecord').disabled=true;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
+  $('saveRecord').textContent='Submit recording →';$('playback').pause();$('playback').removeAttribute('src');$('playback').hidden=true;
+  $('soloStatus').textContent='';window.VoiceStudioExtras?.reset();
+  if(script)window.VoiceStudioExtras?.setDuration(script.duration_seconds);
+ }
+}
+function view(s){document.querySelectorAll('main > .step').forEach(e=>e.classList.toggle('active',e.id===s));recordingDesk(s==='duo'?'duo':'solo');window.scrollTo(0,0)}
 function returnToProjectDashboard(){
  if(returningToDashboard)return;
  returningToDashboard=true;
@@ -191,7 +213,7 @@ async function save(){
  let redirectAfterSave=false;
  if(mode==='duo'&&rec?.state==='recording'){roomStatus('Stop recording before submitting your track.');return}
  uploading=true;
- if(mode==='duo'){$('vsSubmit').disabled=true;$('vsRetry').disabled=true;roomStatus('Uploading your recording securely…')}
+ if(mode==='duo'){$('vsSubmit').disabled=true;$('vsRetry').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;$('recordStatus').textContent='Uploading recording securely…';roomStatus('Uploading your recording securely…')}
  try{
  if(!blob||blob.size<1024)throw Error('Empty audio');
  let type=blob.type.split(';')[0],ext=type==='audio/mp4'?'.mp4':type==='audio/ogg'?'.ogg':'.webm',path=session.id+'/'+me.id+ext;
@@ -210,6 +232,8 @@ async function save(){
  }
  else{
   $('vsSubmit').hidden=true;$('vsRetry').hidden=true;$('vsStop').hidden=true;
+   $('saveRecord').disabled=true;$('resetRecord').disabled=true;$('startRecord').disabled=true;$('stopRecord').disabled=true;
+   $('recordStatus').textContent='Your recording was submitted';
   $('vsDuoPreview').hidden=true;
   duoTrackStatus('Submitted to QA',session.state==='submitted'?'Submitted':'Waiting for partner');
   roomStatus(session.state==='submitted'?'Both tracks received. Task '+voiceTaskId(session.id)+' is ready for Central QA. Returning to your dashboard.':'Your audio was submitted successfully. Waiting for partner to submit their track. Task '+voiceTaskId(session.id));
@@ -220,7 +244,7 @@ async function save(){
    uploading=false;
    if(mode==='duo'&&session?.state!=='submitted'&&blob){
     const ownTrack=sandbox?{data:(await sandbox.tracks(db,session.id)).find(x=>x.actor_id===me.id)||null,error:null}:await db.from('vs_tracks').select('actor_id').eq('session_id',session.id).eq('actor_id',me.id).maybeSingle();
-    if(!ownTrack.data){$('vsSubmit').disabled=false;$('vsRetry').disabled=false;$('vsRetry').hidden=false;}
+    if(!ownTrack.data){$('vsSubmit').disabled=false;$('vsRetry').disabled=false;$('vsRetry').hidden=false;$('saveRecord').disabled=false;$('resetRecord').disabled=false;$('recordStatus').textContent='Upload failed · recording available to retry'}
    }
   }
  if(redirectAfterSave)returnToProjectDashboard();
@@ -334,8 +358,11 @@ function duoTrackStatus(local,partner){
 }
 
 function setupDuo(){
+ // Preserve the shared recorder before replacing the Duo lobby markup.
+ recordingDesk('solo');
  const host=document.querySelector('#duo .card.lobby');
- host.innerHTML='<div class="vs-duo-header"><div><span class="vs-duo-overline">LIVE SESSION / TWO-PERSON AUDIO</span><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus" role="status" aria-live="polite">Searching for another approved contributor.</p></div><div class="vs-duo-task-id"><span>Recording task ID</span><strong id="vsDuoTaskId">Assigning…</strong><button type="button" class="btn small" id="vsCopyId">Copy ID</button><button type="button" class="btn small" id="vsFlagTask">Flag task</button></div></div><div class="vs-stage-list" id="vsStageList" aria-label="Session progress"></div><div class="vs-progress-caption" id="vsProgressSummary"></div><div class="vs-duo-stats"><div><small>Participants</small><strong id="vsParticipants">1 / 2</strong></div><div><small>Audio connection</small><strong id="vsAudioConnection" data-state="pending">Not connected</strong></div><div><small>Rehearsal remaining</small><strong id="vsCountdown">01:00</strong></div><div><small>Recorded</small><strong id="vsClock">00:00</strong></div><div><small>Other actors waiting</small><strong id="vsWaiting">0</strong></div></div><div class="vs-duo-tracks"><div><span>Your recording</span><strong id="vsLocalTrack">Not started</strong></div><div><span>Partner recording</span><strong id="vsPartnerTrack">Not started</strong></div></div><div class="vs-room"><section class="vs-duo-assignment" aria-label="Your assigned dialogue role"><div class="vs-role-heading"><span class="vs-duo-overline">YOUR ASSIGNMENT</span><strong id="vsDuoRole" aria-live="polite">Checking your role…</strong></div><p id="vsDuoRoleHint">Voice Actor A performs Agent lines. Voice Actor B performs Customer lines.</p></section><section class="vs-duo-script-panel"><div class="vs-duo-script-head"><div><span class="vs-duo-overline">COMPLETE SCRIPT</span><h3 id="vsDuoScriptTitle">Assigned dialogue</h3></div><span class="vs-duo-script-legend">● Your lines &nbsp; ○ Partner lines</span></div><div id="vsDuoScript" class="vs-duo-dialogue" lang="hi" dir="auto" role="region" aria-label="Entire Duo script with highlighted lines for your assigned role" tabindex="0"></div></section><section id="vsDuoCue" class="vs-duo-cue" aria-label="Current dialogue cue"></section><div class="vs-audio-player"><audio id="vsRemote" autoplay controls playsinline hidden></audio><button type="button" class="btn" id="vsHearPartner" hidden>▶ Hear partner</button></div><div id="vsDuoPreview" class="vs-duo-preview" hidden><h3>Review your take before submitting</h3><audio id="vsPreviewAudio" controls preload="metadata"></audio><p>The recording stays on this device until you select Submit recording.</p></div><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Request recording start</button><div id="vsRecordingApproval" class="vs-approval" hidden><strong>Recording permission requested</strong><p>Voice Actor A wants to start recording this conversation. You can accept or decline.</p><div class="actions"><button type="button" class="btn primary" id="vsAcceptRecording">Accept recording</button><button type="button" class="btn" id="vsDeclineRecording">Decline</button></div></div><button class="btn danger" id="vsStop" hidden>Stop my recording</button><button class="btn primary" id="vsSubmit" hidden>Submit recording to QA</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">Each participant stops and submits their own track separately. Both tracks share one task ID and appear in Central QA after submission. Direct WebRTC may expose IP information and may require a TURN relay on restrictive networks.</p>';
+ host.innerHTML='<div class="vs-duo-header"><div><span class="vs-duo-overline">LIVE SESSION / TWO-PERSON AUDIO</span><h2 id="vsRoomTitle">Finding another voice actor…</h2><p id="vsRoomStatus" role="status" aria-live="polite">Searching for another approved contributor.</p></div><div class="vs-duo-task-id"><span>Recording task ID</span><strong id="vsDuoTaskId">Assigning…</strong><button type="button" class="btn small" id="vsCopyId">Copy ID</button><button type="button" class="btn small" id="vsFlagTask">Flag task</button></div></div><div class="vs-stage-list" id="vsStageList" aria-label="Session progress"></div><div class="vs-progress-caption" id="vsProgressSummary"></div><div class="vs-duo-stats"><div><small>Participants</small><strong id="vsParticipants">1 / 2</strong></div><div><small>Audio connection</small><strong id="vsAudioConnection" data-state="pending">Not connected</strong></div><div><small>Rehearsal remaining</small><strong id="vsCountdown">01:00</strong></div><div><small>Recorded</small><strong id="vsClock">00:00</strong></div><div><small>Other actors waiting</small><strong id="vsWaiting">0</strong></div></div><div class="vs-duo-tracks"><div><span>Your recording</span><strong id="vsLocalTrack">Not started</strong></div><div><span>Partner recording</span><strong id="vsPartnerTrack">Not started</strong></div></div><div class="vs-room"><div id="vsDuoDockHome"></div><section class="vs-duo-assignment" aria-label="Your assigned dialogue role"><div class="vs-role-heading"><span class="vs-duo-overline">YOUR ASSIGNMENT</span><strong id="vsDuoRole" aria-live="polite">Checking your role…</strong></div><p id="vsDuoRoleHint">Voice Actor A performs Agent lines. Voice Actor B performs Customer lines.</p></section><section class="vs-duo-script-panel"><div class="vs-duo-script-head"><div><span class="vs-duo-overline">COMPLETE SCRIPT</span><h3 id="vsDuoScriptTitle">Assigned dialogue</h3></div><span class="vs-duo-script-legend">● Your lines &nbsp; ○ Partner lines</span></div><div id="vsDuoScript" class="vs-duo-dialogue" lang="hi" dir="auto" role="region" aria-label="Entire Duo script with highlighted lines for your assigned role" tabindex="0"></div></section><section id="vsDuoCue" class="vs-duo-cue" aria-label="Current dialogue cue"></section><div class="vs-audio-player"><audio id="vsRemote" autoplay controls playsinline hidden></audio><button type="button" class="btn" id="vsHearPartner" hidden>▶ Hear partner</button></div><div id="vsDuoPreview" class="vs-duo-preview" hidden><h3>Review your take before submitting</h3><audio id="vsPreviewAudio" controls preload="metadata"></audio><p>The recording stays on this device until you select Submit recording.</p></div><div class="actions"><button class="btn primary" id="vsConsent" hidden>Accept & connect microphone</button><button class="btn primary" id="vsStart" hidden disabled>Request recording start</button><div id="vsRecordingApproval" class="vs-approval" hidden><strong>Recording permission requested</strong><p>Voice Actor A wants to start recording this conversation. You can accept or decline.</p><div class="actions"><button type="button" class="btn primary" id="vsAcceptRecording">Accept recording</button><button type="button" class="btn" id="vsDeclineRecording">Decline</button></div></div><button class="btn danger" id="vsStop" hidden>Stop my recording</button><button class="btn primary" id="vsSubmit" hidden>Submit recording to QA</button><button class="btn" id="vsRetry" hidden>Retry upload</button><button class="btn" id="vsLeave">Leave session</button></div></div><p class="vs-sub">Each participant stops and submits their own track separately. Both tracks share one task ID and appear in Central QA after submission. Direct WebRTC may expose IP information and may require a TURN relay on restrictive networks.</p>';
+ recordingDesk('duo');
  $('vsConsent').onclick=()=>void consent();
  $('vsStart').onclick=()=>void begin();
  $('vsAcceptRecording').onclick=()=>void answerRecording(true);
@@ -349,6 +376,14 @@ function setupDuo(){
    roomStatus('Task '+voiceTaskId(session.id)+' flagged for Central QA. Your report was saved.');
   }catch(error){roomStatus('Could not flag task: '+fail(error))}
  };
+ $('startRecord').onclick=()=>{if(mode==='duo'&&session?.actor_a===me.id)void begin()};
+
+ $('stopRecord').onclick=()=>{if(mode==='duo'&&rec?.state==='recording')rec.stop()};
+
+ $('saveRecord').onclick=()=>{if(mode==='duo'&&!uploading&&blob)void save().catch(e=>roomStatus('Upload error: '+fail(e)))};
+
+ $('resetRecord').onclick=()=>{if(mode==='duo')void retryDuoTake()};
+
  $('vsStop').onclick=()=>{if(rec?.state==='recording')rec.stop()};
  $('vsSubmit').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
  $('vsRetry').onclick=()=>save().catch(e=>roomStatus('Upload error: '+fail(e)));
@@ -424,12 +459,13 @@ async function duoUpdate(){
    if(session.mode!=='duo')throw Error('An unfinished Solo recording is blocking Duo. Finish or leave it first.');
    script=scripts.find(x=>x.id===session.script_id);
    if(!script)throw Error('The matched Hindi script is unavailable');
-   setupDuo();
+   setupDuo();recordingDesk('duo');
    roomStatus('Previous waiting session expired. You are back in the matching queue.');
    return;
   }
-  if(session.state==='cancelled'){clearInterval(poll);roomStatus('This session was cancelled. Return to the studio to start again.');return;}
+  if(session.state==='cancelled'){clearInterval(poll);$('startRecord').disabled=true;$('stopRecord').disabled=true;$('saveRecord').disabled=true;$('resetRecord').disabled=true;roomStatus('This session was cancelled. Return to the studio to start again.');return;}
   if(session.state==='waiting'){
+   $('startRecord').disabled=true;$('recordStatus').textContent='Waiting for the second voice actor';
    duoStage(0,'Waiting for another approved participant');
    duoAudioStatus('Waiting for partner');
    $('vsRoomTitle').textContent='Finding another voice actor…';
@@ -440,7 +476,10 @@ async function duoUpdate(){
   // The shared role-based renderer above shows the complete script for both participants.
   const accepted=session.actor_a===me.id?session.consent_a:session.consent_b;
   $('vsConsent').hidden=accepted||!['matched','rehearsal'].includes(session.state);
-  if(session.state==='matched')duoStage(1,'Match found · both participants must accept microphone access');
+  if(session.state==='matched'){
+    $('startRecord').disabled=true;$('recordStatus').textContent='Matched · accept microphone access first';
+    duoStage(1,'Match found · both participants must accept microphone access');
+   }
   if(session.state==='matched')roomStatus('Match found. Both participants must accept before audio connects.');
   if(session.state==='rehearsal'){
    if(session.consent_a&&session.consent_b&&!pc)await startPeer();
@@ -449,8 +488,12 @@ async function duoUpdate(){
    $('vsCountdown').textContent=fmt(left);
    const host=session.actor_a===me.id;
    const request=session.recording_request_status||'none';
-   $('vsStart').hidden=!host||request==='pending'||request==='approved';
-   $('vsStart').disabled=left>0||!connected;
+   $('vsStart').hidden=true;$('vsStart').disabled=left>0||!connected;
+   if(!blob&&rec?.state!=='recording'){
+    $('startRecord').disabled=!host||request==='pending'||request==='approved'||left>0||!connected;
+    $('startRecord').textContent=host?'● Request recording':'● Waiting for Agent';
+    $('recordStatus').textContent=host?(left>0?'Rehearsal · wait until the timer ends':request==='pending'?'Waiting for Customer approval':'Ready to request recording'):'Agent starts the recording after your consent';
+   }
    $('vsRecordingApproval').hidden=host||request!=='pending';
    if(host&&request==='approved'){
     roomStatus('Your partner accepted. Starting the agreed recording…');
@@ -474,6 +517,7 @@ async function duoUpdate(){
   if(session.state==='submitted')duoStage(5,'Recording task completed · ready for QA');
   if(session.state==='submitted'){
    clearInterval(poll);$('vsStop').hidden=true;$('vsSubmit').hidden=true;
+   $('startRecord').disabled=true;$('stopRecord').disabled=true;$('resetRecord').disabled=true;$('saveRecord').disabled=true;
    roomStatus('Both recordings received. Task '+voiceTaskId(session.id)+' is ready in Central QA. Returning to project dashboard.');
    // Only redirect an actor who actually submitted a track. Never redirect a
    // participant with an unsent recording; doing so could discard their audio.
@@ -552,10 +596,14 @@ async function beginRecording(){
  record(async()=>{
   try{session=await rpc('vs_track_progress',{p_session:session.id,p_state:'stopped'})}
   catch(error){roomStatus('Local recording saved, but partner status could not update: '+fail(error))}
+  clearInterval(timer);window.VoiceStudioExtras?.stop(secs);
   const preview=$('vsDuoPreview'),audio=$('vsPreviewAudio');
   if(previewUrl)URL.revokeObjectURL(previewUrl);
   previewUrl=URL.createObjectURL(blob);
-  audio.src=previewUrl;preview.hidden=false;
+  audio.src=previewUrl;preview.hidden=true;
+  $('playback').src=previewUrl;$('playback').hidden=false;$('stopRecord').disabled=true;
+  $('saveRecord').disabled=false;$('resetRecord').disabled=false;
+  $('recordStatus').textContent='Recording complete · listen before submitting';
   $('vsStop').hidden=true;$('vsSubmit').hidden=false;$('vsRetry').hidden=true;
   duoTrackStatus('Stopped · preview before submitting',trackLabel(session.actor_a===me.id?session.actor_b_track_state:session.actor_a_track_state));
   duoStage(4,'Your recording is ready to preview and submit');
@@ -563,14 +611,30 @@ async function beginRecording(){
   signal('stop',{actor:me.id}).catch(()=>{});
  });
  $('vsStart').hidden=true;$('vsStop').hidden=false;$('vsSubmit').hidden=true;
+ $('startRecord').disabled=true;$('stopRecord').disabled=false;$('saveRecord').disabled=true;$('resetRecord').disabled=true;
+ $('recordStatus').textContent='Recording active · perform your highlighted lines';
+ $('recordTime').textContent='00:00';window.VoiceStudioExtras?.start(stream,script.duration_seconds);
  duoTrackStatus('Recording now',trackLabel(session.actor_a===me.id?session.actor_b_track_state:session.actor_a_track_state));
  rpc('vs_track_progress',{p_session:session.id,p_state:'recording'}).then(v=>{session=v}).catch(e=>roomStatus('Recording started; status sync failed: '+fail(e)));
  duoStage(4,'Recording in progress · use Stop my recording to finish your track');
  roomStatus('Recording live. Stop your own track when finished; the partner can finish independently.');
  timer=setInterval(()=>{
-  secs++;$('vsClock').textContent=fmt(secs);
+  secs++;$('vsClock').textContent=fmt(secs);$('recordTime').textContent=fmt(secs);
   if(Date.now()-new Date(session.recording_started_at).getTime()>=script.duration_seconds*1000&&rec?.state==='recording')rec.stop();
  },1000);
+}
+async function retryDuoTake(){
+ if(mode!=='duo'||uploading||!blob||!session||session.state!=='recording')return;
+ if(Date.now()-new Date(session.recording_started_at).getTime()>=script.duration_seconds*1000){
+  roomStatus('The recording window expired. Start a new Duo session to try again.');return;
+ }
+ if(!window.confirm('Discard this unsent recording and start another take?'))return;
+ if(previewUrl)URL.revokeObjectURL(previewUrl);
+ previewUrl=null;blob=null;rec=null;secs=0;
+ $('playback').pause();$('playback').removeAttribute('src');$('playback').hidden=true;
+ $('vsDuoPreview').hidden=true;$('recordTime').textContent='00:00';
+ $('resetRecord').disabled=true;$('saveRecord').disabled=true;
+ window.VoiceStudioExtras?.reset();await beginRecording();
 }
 async function leave(){
  if(uploading){roomStatus('Upload is in progress. Please complete it before leaving.');return}

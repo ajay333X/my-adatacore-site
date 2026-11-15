@@ -22,3 +22,19 @@
  .vs-duo-cue{top:57px;padding:12px}
  .vs-cue-preview{font-size:13px!important}
 }
+
+/* One physical recording desk is mounted into Solo or Duo, never duplicated. */
+#vsSoloDockHome,#vsDuoDockHome{display:contents}
+#duo{padding-bottom:calc(var(--vs-solo-dock-height,220px) + 58px)}
+#duo .vs-duo-dialogue{padding-bottom:calc(var(--vs-solo-dock-height,220px) + 30px);scroll-padding-bottom:calc(var(--vs-solo-dock-height,220px) + 30px)}
+#duo .vs-room>.actions #vsStop,
+#duo .vs-room>.actions #vsSubmit,
+#duo .vs-room>.actions #vsRetry,
+#duo #vsDuoPreview{display:none!important}
+#duo #recordDock{z-index:43}
+#duo #recordDock .vs-dock-label strong::after{content:" · Duo"}
+#duo #recordDock .vs-dock-review{justify-content:flex-end}
+@media(max-width:650px){
+ #duo{padding-bottom:calc(var(--vs-solo-dock-height,250px) + 42px)}
+ #duo .vs-duo-dialogue{padding-bottom:calc(var(--vs-solo-dock-height,250px) + 24px)}
+}
