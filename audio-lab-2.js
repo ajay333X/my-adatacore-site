@@ -347,7 +347,7 @@ async function generate(event){
  const f=event.currentTarget,fields=f.elements,btn=$('alGenerateBtn'),status=$('alGenerateStatus');
  const count=Number(fields.namedItem('count').value);
  if(!Number.isInteger(count)||count<1||count>30){notify('Choose 1–30 scripts per generation.',true);return}
- creating=true;stopping=false;btn.disabled=true;$('alStopGeneration').disabled=false;let created=0;
+ creating=true;stopping=false;btn.disabled=true;$('alStopGeneration').disabled=false;let created=0;const newIds=[];
  $('alGeneratedScripts').replaceChildren();
  try{
   const {data:{session:auth},error:authError}=await db.auth.getSession();
@@ -359,13 +359,14 @@ async function generate(event){
    const body=await response.json();
    if(!response.ok)throw Error((body.error||'Generation failed')+' · '+(body.detail||''));
    created+=Number(body.created||0);
+   for(const row of body.scripts||[])if(row?.id)newIds.push(row.id);
    if(body.warning)notify(body.warning,true);
   }
   status.textContent=(stopping?'Generation stopped. ':'Generation complete. ')+created+' / '+count+' scripts saved with full prompt and JSON history.';
   await load();
   if(created){
    notify(created+' scripts generated successfully.');
-   const latest=scripts.slice(0,created);
+   const latest=newIds.map(id=>scripts.find(s=>s.id===id)).filter(Boolean);
    const preview=$('alGeneratedScripts');
    preview.replaceChildren();
    const heading=document.createElement('h3');heading.textContent='Newly generated scripts — full text';preview.append(heading);
