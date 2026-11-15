@@ -1,0 +1,24 @@
+/* Solo visibility and accessible Duo navigation. Added after all legacy studio styles. */
+#solo{padding-bottom:calc(var(--vs-solo-dock-height,220px) + 44px)}
+#solo .vs-script-body{
+ max-height:clamp(240px,calc(100dvh - var(--vs-solo-dock-height,220px) - 165px),830px)!important;
+ padding-bottom:calc(var(--vs-solo-dock-height,220px) + 36px)!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain;
+}
+#solo .vs-script-card{min-width:0}
+.vs-duo-cue{position:sticky;top:64px;z-index:4;margin:12px 0;padding:15px 18px;background:#fff;border:1px solid #cbdeda;border-radius:13px;box-shadow:0 6px 20px rgba(20,61,67,.08)}
+.vs-cue-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#2d746e}
+.vs-cue-preview{font-size:15px!important;color:#27434a!important;line-height:1.6!important;font-weight:700;margin:8px 0 12px!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.vs-cue-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vs-cue-controls button{white-space:nowrap}
+.vs-cue-state{display:block;font-size:11px;color:#406c67;margin-top:9px}
+.vs-cue-privacy{margin:8px 0 0!important;font-size:10px!important;color:#67818a!important;line-height:1.45!important}
+.vs-dialog-current{outline:2px solid #178a79;outline-offset:-2px}
+.vs-dialog-completed{opacity:.73}
+@media(max-width:650px){
+ #solo{padding-bottom:calc(var(--vs-solo-dock-height,250px) + 32px)}
+ #solo .vs-script-body{min-height:220px!important;max-height:max(230px,calc(100dvh - var(--vs-solo-dock-height,250px) - 120px))!important}
+ .vs-duo-cue{top:57px;padding:12px}
+ .vs-cue-preview{font-size:13px!important}
+}
