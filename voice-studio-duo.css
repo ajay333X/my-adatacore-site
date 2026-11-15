@@ -20,7 +20,7 @@
 #vsAudioConnection[data-state=warn]{color:#b86517}
 .vs-duo-tracks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 19px}
 #duo .vs-room{max-width:100%}
-#vsDuoScript{max-height:290px;overflow:auto;background:#f7f9fb;border:1px solid #e5e9ef}
+/* Duo role-specific script lives in its own readable scroll area. */
 .vs-audio-player{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
 .vs-audio-player audio{width:min(100%,500px)}
 .vs-duo-preview{padding:17px;margin:14px 0;background:#eff8f5;border:1px solid #cae5da;border-radius:14px}
@@ -37,3 +37,24 @@
 #vsRecordingApproval.vs-approval p{font-size:12px;color:#355e56;margin:7px 0 12px;line-height:1.55}
 #vsRecordingApproval .actions{margin-top:8px}
 #vsFlagTask{border-color:#d9c6aa;color:#87602b}
+
+.vs-duo-assignment{margin:10px 0 16px;padding:16px 18px;border:1px solid #addbce;background:#eef9f5;border-radius:14px}
+.vs-role-heading{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:7px}
+.vs-role-heading strong{font-size:17px;color:#155c4c}
+.vs-duo-assignment p{font-size:12px;color:#315f55;line-height:1.65;margin:0}
+.vs-duo-script-panel{border:1px solid #dce5e9;border-radius:14px;background:#fff;overflow:hidden;margin:14px 0 18px}
+.vs-duo-script-head{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #e4eaef}
+.vs-duo-script-head h3{margin:4px 0 0;font-size:17px;line-height:1.4;color:#203743}
+.vs-duo-script-legend{font-size:11px;font-weight:700;color:#496576}
+.vs-duo-dialogue{overflow:auto;max-height:min(58vh,620px);padding:12px;scrollbar-gutter:stable}
+.vs-dialog-line{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin:5px 0;border-radius:10px;border:1px solid transparent;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.vs-dialog-bullet{font-size:18px;line-height:1.4;min-width:19px;text-align:center;flex-shrink:0}
+.vs-dialog-content{min-width:0;flex:1}
+.vs-dialog-speaker{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.vs-dialog-mine{background:#e7f6f1;border-color:#b9e4d4;color:#164d3f;font-weight:650}
+.vs-dialog-mine .vs-dialog-bullet{color:#178360}
+.vs-dialog-partner{background:#f5f7f9;border-color:#e6ebef;color:#4b5a67}
+.vs-dialog-partner .vs-dialog-bullet{color:#9aa7b1}
+.vs-dialog-unassigned{color:#455b68}
+.vs-dialog-gap{height:9px}
+@media(max-width:720px){.vs-duo-dialogue{max-height:52vh;padding:8px}.vs-dialog-line{font-size:13px;padding:10px;gap:8px}.vs-duo-assignment{padding:13px}}
