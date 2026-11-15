@@ -27,25 +27,34 @@ insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values('sandbox-voice','sandbox-voice',false,26214400,array['audio/webm','audio/mp4','audio/ogg'])
 on conflict (id) do update set public=false,file_size_limit=26214400,allowed_mime_types=excluded.allowed_mime_types;
 
+-- Storage policy calls a narrowly scoped SECURITY DEFINER predicate because app_private
+-- tables intentionally have NO SELECT grant for authenticated browser users.
+create or replace function public.sandbox_voice_storage_allowed(p_path text,p_write boolean)
+returns boolean language sql stable security definer set search_path='' as $$
+ select (select auth.uid()) is not null
+  and split_part(p_path,'/',1)=(select auth.uid())::text
+  and exists (
+    select 1 from app_private.sandbox_voice_takes t
+    where t.owner_id=(select auth.uid())
+      and t.id::text=split_part(p_path,'/',2)
+      and t.account_id::text=split_part(split_part(p_path,'/',3),'.',1)
+      and (not p_write or t.state='recording')
+      and exists(select 1 from app_private.sandbox_test_sessions s
+      where s.owner_id=(select auth.uid()) and s.account_id=t.account_id
+       and s.project_id=t.project_id and s.ended_at is null and s.expires_at>now())
+  );
+$$;
+revoke all on function public.sandbox_voice_storage_allowed(text,boolean) from public,anon;
+grant execute on function public.sandbox_voice_storage_allowed(text,boolean) to authenticated;
 drop policy if exists sandbox_voice_upload_only on storage.objects;
 create policy sandbox_voice_upload_only on storage.objects
 for insert to authenticated with check (
- bucket_id='sandbox-voice' and
- (storage.foldername(name))[1]=(select auth.uid())::text and
- exists(select 1 from app_private.sandbox_voice_takes t
- where t.owner_id=(select auth.uid()) and t.id::text=(storage.foldername(name))[2]
- and t.state='recording'
- and exists(select 1 from app_private.sandbox_test_sessions s
- where s.owner_id=(select auth.uid()) and s.account_id=t.account_id and s.project_id=t.project_id
- and s.ended_at is null and s.expires_at>now()))
+ bucket_id='sandbox-voice' and public.sandbox_voice_storage_allowed(name,true)
 );
 drop policy if exists sandbox_voice_read_only on storage.objects;
 create policy sandbox_voice_read_only on storage.objects
 for select to authenticated using (
- bucket_id='sandbox-voice' and
- (storage.foldername(name))[1]=(select auth.uid())::text and
- exists(select 1 from app_private.sandbox_voice_takes t
- where t.owner_id=(select auth.uid()) and t.id::text=(storage.foldername(name))[2])
+ bucket_id='sandbox-voice' and public.sandbox_voice_storage_allowed(name,false)
 );
 
 create or replace function public.admin_sandbox_voice_action(
