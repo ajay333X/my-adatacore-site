@@ -14,6 +14,27 @@ const friendlyBytes=n=>n?((n/1048576).toFixed(1)+' MB'):'—';
 const db=window.supabase?.createClient(BASE,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 let currentUser=null,sources=[],clips=[],chosen=null,audioURL='',audioBuffer=null,activeBufferSource=null,loading=false,notifying=null;
 let attachmentId=null;
+const providerSelections=new Map();
+let providerStatuses=null;
+let checkingProviders=false;
+async function checkTranscriptionProviders(){
+ if(checkingProviders)return;
+ checkingProviders=true;
+ try{
+  const data=await api('provider_status');
+  providerStatuses=data?.providers||null;
+  const statusText=['groq','openai'].map(p=>{
+   const isReady=providerStatuses?.[p]?.configured;
+   const name=p==='groq'?'Groq (Whisper)':'OpenAI (GPT)';
+   return '<span class="'+(isReady?'ds-provider-ready':'ds-provider-missing')+'">'+name+': '+(isReady?'Ready':'API key required')+'</span>';
+  }).join(' &nbsp; · &nbsp; ');
+  $('dsProviderStatus').innerHTML='<strong>Available transcription engines</strong><br>'+statusText+
+   '<br><span class="ds-provider-note">OpenAI uses the API, not your ChatGPT subscription. Add OPENAI_API_KEY in Supabase Edge Function secrets if needed. Each transcription uses the selected provider and may incur API charges. AI drafts require human verification.</span>';
+ }catch(error){
+  $('dsProviderStatus').textContent='Unable to verify transcription provider settings. Groq remains available when configured; OpenAI requires OPENAI_API_KEY.';
+ }finally{checkingProviders=false}
+}
+
 const safeKind=url=>{
  try{const u=new URL(url);if(u.protocol!=='https:')return 'external';
   const h=u.hostname.toLowerCase();
@@ -67,7 +88,7 @@ function switchTab(tab){
  document.querySelectorAll('.ds-view').forEach(el=>el.classList.toggle('active',el.id==='view-'+tab));
  location.hash=tab;
  if(tab==='editor')renderEditorSources();
- if(tab==='library')renderClips();
+ if(tab==='library'){renderClips();checkTranscriptionProviders();}
  if(tab==='overview')renderStats();
 }
 async function load(){
@@ -126,7 +147,12 @@ function renderClips(){
   const badge=status==='human_verified'?'good':status==='not_started'?'warn':'';
   const kind=status==='human_verified'?'Human verified':status==='ai_draft'?'AI draft':status==='edited'?'Needs verification':'No transcript';
   return '<article class="ds-card ds-clip" data-clip-card="'+c.id+'"><div class="ds-clip-head"><div><h3>'+esc(s?.title||'Archived source')+'</h3><div class="ds-meta">'+esc(LANGS[c.language]||c.language)+' · '+(c.duration_ms/1000).toFixed(1)+' seconds · Source '+(c.start_ms/1000).toFixed(1)+'–'+(c.end_ms/1000).toFixed(1)+'s · '+date(c.created_at)+'</div></div><span class="ds-badge '+badge+'">'+esc(kind)+'</span></div>'+
-  '<div class="ds-actions"><button class="ds-btn ds-btn-small" data-clip-action="play" data-id="'+c.id+'">▶ Listen</button><button class="ds-btn ds-btn-small" data-clip-action="download" data-id="'+c.id+'">↓ WAV</button><button class="ds-btn ds-btn-small" data-clip-action="transcribe" data-id="'+c.id+'">✦ Generate AI draft</button><button class="ds-btn ds-btn-small" data-clip-action="metadata" data-id="'+c.id+'">↓ JSON</button></div>'+
+  '<div class="ds-actions"><button class="ds-btn ds-btn-small" data-clip-action="play" data-id="'+c.id+'">▶ Listen</button><button class="ds-btn ds-btn-small" data-clip-action="download" data-id="'+c.id+'">↓ WAV</button><button class="ds-btn ds-btn-small" data-clip-action="metadata" data-id="'+c.id+'">↓ JSON</button></div>'+
+  '<div class="ds-transcription-picker"><label class="ds-field">Transcription provider<select data-clip-provider="'+c.id+'" '+(status==='human_verified'?'disabled title="Verified transcripts are protected"':'')+'>'+
+   '<option value="groq" '+((providerSelections.get(c.id)||'groq')==='groq'?'selected':'')+'>Groq · Whisper</option>'+
+   '<option value="openai" '+((providerSelections.get(c.id)||'groq')==='openai'?'selected':'')+'>OpenAI · GPT Transcribe (ChatGPT provider)</option>'+
+   '</select></label><button class="ds-btn ds-btn-small ds-btn-primary" data-clip-action="transcribe" data-id="'+c.id+'" '+(status==='human_verified'?'disabled title="Verified transcripts cannot be overwritten"':'')+'>✦ Generate AI transcript</button></div>'+
+   '<p class="ds-provider-note">Choose Groq or OpenAI for this clip. OpenAI GPT transcriptions may not include segment timestamps. Check the text against the audio before approving.</p>'+
   '<div data-audio-host="'+c.id+'"></div><div class="ds-heading">Transcript</div><textarea data-transcript="'+c.id+'" spellcheck="true" placeholder="Generate an AI draft or type a verified transcript manually.">'+esc(c.transcript||'')+'</textarea>'+
   '<div class="ds-meta">Model: '+esc(c.model_name||'—')+' · '+esc(c.transcript_segments?.length?c.transcript_segments.length+' timestamped segments available in JSON':'No timed segments')+
   (s?.license_name?' · License: '+esc(s.license_name):'')+'</div>'+
@@ -340,8 +366,22 @@ async function clipAction(action,id){
   }
   if(action==='metadata') {downloadBlob(JSON.stringify(clipRecord(c),null,2),'adatacore-'+id+'.json','application/json');return}
   if(action==='transcribe'){
-   toast('Generating AI draft. It will remain unverified until manually reviewed.');
-   await api('transcribe',{clip_id:id});await load();toast('AI transcript draft generated. Please listen and correct it before verification.');return;
+   if(c.transcript_status==='human_verified')return toast('Human-verified transcripts are protected from AI replacement.',true);
+   const provider=providerSelections.get(id)||'groq';
+   const name=provider==='openai'?'OpenAI GPT':'Groq Whisper';
+   if(providerStatuses?.[provider]?.configured===false)return toast(
+    provider==='openai'?'OpenAI is not configured. Add OPENAI_API_KEY to your Supabase Edge Function secrets. ChatGPT Plus does not include API usage.':'Groq is not configured. Add GROQ_API_KEY to Supabase Edge Function secrets.',true);
+   const existing=Boolean(String(c.transcript||'').trim());
+   if(existing && !window.confirm('This will replace the existing, unverified transcript with a new '+name+' draft. Continue?'))return;
+   const button=card?.querySelector('[data-clip-action="transcribe"]');
+   if(button)button.disabled=true;
+   try{
+    toast('Sending this audio to '+name+' for transcription. It will remain an unverified draft.');
+    await api('transcribe',{clip_id:id,provider,replace_existing:existing});
+    await load();
+    toast(name+' transcription generated. Please listen and correct before human verification.');
+   }finally{if(button?.isConnected)button.disabled=false}
+   return;
   }
   const transcript=card?.querySelector('[data-transcript]')?.value.trim()||'';
   if(!transcript)return toast('Transcript cannot be empty.',true);
@@ -395,6 +435,7 @@ function bind(){
  $('sources').addEventListener('click',e=>{const node=e.target.closest('[data-source-action]');if(node)sourceAction(node.dataset.sourceAction,node.dataset.id)});
  $('editorSources').addEventListener('click',e=>{const node=e.target.closest('[data-editor-source]');if(node)selectSource(node.dataset.editorSource)});
  $('suggestionList').addEventListener('click',e=>{const node=e.target.closest('[data-suggestion-start]');if(node)chooseRange(Number(node.dataset.suggestionStart),Number(node.dataset.suggestionEnd))});
+ $('clips').addEventListener('change',e=>{const selector=e.target.closest('[data-clip-provider]');if(selector && ['groq','openai'].includes(selector.value))providerSelections.set(selector.dataset.clipProvider,selector.value)});
  $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id)});
 }
 window.adatacoreDatasetStudio={
