@@ -50,7 +50,9 @@ async function checkAccess(){
   currentUser=user;
   $('accessGate').remove();$('app').hidden=false;
   bind();initLangs();await load();const initial=location.hash.replace(/^#/,'');
-  if(['sources','editor','library','overview'].includes(initial))switchTab(initial);
+  if(['sources','editor','library','applications','overview'].includes(initial))switchTab(initial);
+  window.dispatchEvent(new CustomEvent('adatacore:dataset-studio-ready'));
+
  }catch(e){$('accessGate').textContent='Admin access check failed: '+e.message}
 }
 function initLangs(){
@@ -375,6 +377,7 @@ function bind(){
  document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.tab)));
  $('refreshBtn').addEventListener('click',load);
  $('addSources').addEventListener('click',addSources);
+ $('dsShortcutApplications').addEventListener('click',()=>switchTab('applications'));
  $('uploadSourceBtn').addEventListener('click',uploadSource);
  $('inspectAll').addEventListener('click',inspectAll);
  $('downloadApproved').addEventListener('click',downloadApproved);
@@ -394,5 +397,17 @@ function bind(){
  $('suggestionList').addEventListener('click',e=>{const node=e.target.closest('[data-suggestion-start]');if(node)chooseRange(Number(node.dataset.suggestionStart),Number(node.dataset.suggestionEnd))});
  $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id)});
 }
+window.adatacoreDatasetStudio={
+  async openImportedSource(id){
+    if(!currentUser)throw Error('Admin authentication has not completed.');
+    await load();
+    const source=sources.find(x=>x.id===id && x.storage_path);
+    if(!source)throw Error('Imported recording is not yet visible in the source collector. Refresh the Studio.');
+    switchTab('editor');
+    await selectSource(source.id);
+  },
+  async refresh(){await load()},
+  openTab:tab=>switchTab(tab)
+};
 window.addEventListener('DOMContentLoaded',checkAccess);
 })();
