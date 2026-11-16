@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/audio-dataset-applications",
+      "destination": "/audio-dataset-applications"
+    },
+    {
       "source": "/admin/audio-dataset-studio",
       "destination": "/audio-dataset-studio"
     },
