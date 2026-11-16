@@ -44,6 +44,7 @@ jobs:
           node --test tests/transcription-v2-review-levels.test.cjs
           node --test tests/transcription-v2-regression.test.cjs
           node --test tests/transcription-v2-cb-ui.test.cjs
+          node --test tests/anonymous-data-access-smoke.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
