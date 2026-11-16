@@ -62,6 +62,11 @@ test('New layout styles are balanced and loaded after previous styles',()=>{
  ]){
   const css=read(filename);
   assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length,filename+' has unbalanced braces');
-  assert.ok(read(htmlFilename).includes('/'+filename));
+  const html=read(htmlFilename);
+  if(!html.includes('/'+filename)){
+   assert.equal(filename,'transcription-v2-project-guidelines.css','Only published CSS bundles can replace standalone style assets');
+   assert.match(html,/\/transcription-v2-production\.css\?v=\d+/);
+   assert.ok(read('transcription-v2-production.css').includes('.v2-cb-rule-grid'),'Guideline styles missing from production CSS bundle');
+  }
  }
 });
