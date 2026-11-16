@@ -35,6 +35,7 @@ jobs:
           node --test tests/admin-command-center.test.cjs
           node --test tests/project-builder-recovery.test.cjs
           node --test tests/workspace-v2-opt-in.test.cjs
+          node --test tests/production-readiness-guardrails.test.cjs
 
       - name: Validate deployment configuration
         shell: bash
