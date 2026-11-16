@@ -25,7 +25,7 @@ test('Existing Transcription Lab V2 control IDs remain unique alongside reviewer
 test('Admin role manager is a separate module and does not replace the original assignment RPC',()=>{
  assert.ok(page.includes('/transcription-lab-v2-levels.js?v=1'));
  assert.ok(page.includes('/transcription-lab-v2-levels.css?v=1'));
- assert.ok(page.includes('/transcription-lab-v2-core.js?v=2'));
+ assert.match(page,/\/transcription-lab-v2-core\.js\?v=\d+/);
  const core=read('transcription-lab-v2-core.js');
  assert.ok(core.includes("rpc('tx_assign'"),'Existing task assignment retained');
  assert.doesNotThrow(()=>new vm.Script(script));
