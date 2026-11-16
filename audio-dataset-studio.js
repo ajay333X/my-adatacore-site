@@ -332,7 +332,7 @@ async function clipAction(action,id){
  try{
   if(action==='download'||action==='play'){
    const url=await signed(c.storage_path);
-   if(action==='download'){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.click()}
+   if(action==='download'){const response=await fetch(url);if(!response.ok)throw Error('Secure audio download failed.');const wav=await response.blob();const object=URL.createObjectURL(wav);const a=document.createElement('a');a.href=object;a.download='adatacore-'+id+'.wav';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(object),1500)}
    else{const host=card?.querySelector('[data-audio-host]');if(host){host.innerHTML='';const audio=document.createElement('audio');audio.src=url;audio.controls=true;audio.autoplay=true;audio.className='ds-audio';host.append(audio)}}
    return;
   }
