@@ -135,7 +135,10 @@ async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:b
  form.append("response_format",provider==="openai"?"json":"verbose_json");
  if(provider==="groq")form.append("timestamp_granularities[]","segment");
  const lang=String(clip.language||"").trim().toLowerCase();
- if(/^[a-z]{2}$/.test(lang))form.append("language",lang);
+ if(/^[a-z]{2}$/.test(lang)){
+  if(provider==="openai")form.append("languages[]",lang);
+  else form.append("language",lang);
+ }
  const host=provider==="openai"?"https://api.openai.com/v1/audio/transcriptions":"https://api.groq.com/openai/v1/audio/transcriptions";
  let response:Response;
  try {
@@ -144,13 +147,33 @@ async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:b
   throw Error("Transcription provider could not be reached or timed out. Please retry.");
  }
  if(!response.ok) {
-  await response.body?.cancel();
+  // Only extract safe provider error classification. Never leak provider messages, keys or request headers.
   const status=response.status;
-  if(status===401||status===403)throw Error((provider==="openai"?"OpenAI":"Groq")+" rejected its API credentials. Check the configured API key.");
-  if(status===402)throw Error((provider==="openai"?"OpenAI":"Groq")+" account has insufficient billing credits.");
-  if(status===429)throw Error((provider==="openai"?"OpenAI":"Groq")+" usage limit reached. Retry later or use the other provider.");
+  const providerBody=await response.json().catch(()=>({}));
+  const code=typeof providerBody?.error?.code==="string"?providerBody.error.code.slice(0,100):"";
+  const type=typeof providerBody?.error?.type==="string"?providerBody.error.type.slice(0,100):"";
+  const kind=code||type;
+  const name=provider==="openai"?"OpenAI":"Groq";
+  if(status===401||status===403)throw Error(name+" API credentials were rejected. Check the key and its assigned project.");
+  if(status===402)throw Error(name+" has insufficient billing credits. Check the API billing settings.");
+  if(status===429) {
+    if(["credit_balance_exhausted","insufficient_quota"].includes(kind)||
+      kind.includes("quota")||kind.includes("credit_balance")) {
+      throw Error(name+" API credits or quota are exhausted. This is not a temporary rate limit. Check API billing/usage and add credits or adjust limits before retrying.");
+    }
+    if(["project_spend_limit_exceeded","organization_spend_limit_exceeded","organization_usage_limit_exceeded","billing_hard_limit_reached"].includes(kind)||
+      kind.includes("spend_limit")||kind.includes("usage_limit")) {
+      throw Error(name+" API project or organization spending/usage limit was reached ("+kind+"). Review your project and organization limits; retrying alone will not fix it.");
+    }
+    const rawRetry=response.headers.get("retry-after")||"";
+    const seconds=/^[0-9]+$/.test(rawRetry)?Math.min(3600,Math.max(1,Number(rawRetry))):0;
+    const retry=seconds?" Retry after at least "+seconds+" seconds.":" Retry after a short delay.";
+    if(kind.includes("rate_limit")||kind.includes("rate_limit_exceeded"))throw Error(name+" temporary rate limit reached."+retry+" Repeated immediate retries can worsen the limit.");
+    throw Error(name+" returned HTTP 429. This may mean exhausted API credits, a spending limit, or a temporary request rate limit. Check your API billing and limits; do not retry repeatedly until the cause is known.");
+  }
   if(status===413)throw Error("The transcription provider rejected this audio size.");
-  throw Error((provider==="openai"?"OpenAI":"Groq")+" transcription failed (HTTP "+status+"). Check the provider configuration and audio format.");
+  if(status===400)throw Error(name+" rejected the transcription request (HTTP 400). Verify the selected model, language and audio format.");
+  throw Error(name+" transcription failed (HTTP "+status+"). Check the provider configuration and audio format.");
  }
  const output=await response.json();
  const transcript=String(output.text||"").trim().slice(0,30000);
