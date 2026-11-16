@@ -40,7 +40,7 @@ Scope: **read-only checks** of the live Supabase project, public repository, liv
 - Prioritize query-plan evidence for the signed-in dashboard, L1/L2 queue claims, and project assignment; test 10/25/50/100 simultaneous sessions in an isolated environment before claiming 100-user concurrency.
 
 ## Critical workflow confidence
-- Release pipeline has previous passing browser-route/API-availability checks and static smoke contracts. This review introduces CI regression checks for assignment center, L2 dashboard, transcription queue, editor review/diff flow, and review levels.
+- Release pipeline has previous passing HTTP route availability checks and static smoke contracts. This review introduces CI regression checks for assignment center, L2 dashboard, transcription queue, editor review/diff flow, and review levels.
 - New read-only anonymous REST smoke tests check that profile, project, task and submission rows cannot be enumerated using the public client key; and that anonymous reviewers cannot invoke the restricted review permission RPC. No test records or payments are created.
 - **Still unverified:** real email confirmation, Google OAuth, password reset, blocked-account enforcement, simultaneous L1 claim/race, L2 review feedback notification, solo/duo media capture and file playback, full client delivery, and any payout/settlement. These require controlled authenticated test accounts and isolated media/tasks.
 - Historical expired reservations are filtered out by the contributor context query. Verify new claim concurrency/expiry in the test environment before touching historical reservation rows.
