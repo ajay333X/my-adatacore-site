@@ -159,7 +159,7 @@ jobs:
           grep -Fq 'workspace-experience.js' <<<"$workspace"
           grep -Fq 'admin-theme.css' <<<"$admin"
           grep -Fq 'Application Review' <<<"$applications"
-          grep -Fq 'Adatacore Model & Data Lab' <<<"$coreforge"
+          grep -Fq '<title>CoreForge' <<<"$coreforge"
           grep -Fq 'coreforge.js' <<<"$coreforge"
           curl --fail --silent --show-error --location "${base}/assets/adatacore-logo.jpg" >/dev/null
           curl --fail --silent --show-error --head "${base}/" | grep -Fiq 'content-security-policy:'
