@@ -1,0 +1,75 @@
+name: Encrypted Adatacore backup (manual setup required)
+# SECURITY: Not scheduled until an operator has configured all GitHub secrets,
+# verified the output, and successfully restored into an isolated database.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: adatacore-backup
+  cancel-in-progress: false
+
+jobs:
+  export-encrypted-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.ADATACORE_BACKUP_DATABASE_URL }}
+      BACKUP_SERVICE_ROLE_KEY: ${{ secrets.ADATACORE_BACKUP_SERVICE_ROLE_KEY }}
+      BACKUP_SUPABASE_URL: https://llmhyezgcnbognmmsnzq.supabase.co
+      BACKUP_AGE_RECIPIENT: ${{ vars.ADATACORE_BACKUP_AGE_RECIPIENT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require configured credentials and recipient
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$BACKUP_DATABASE_URL" || { echo "::error::Missing database backup credential"; exit 1; }
+          test -n "$BACKUP_SERVICE_ROLE_KEY" || { echo "::error::Missing storage backup credential"; exit 1; }
+          [[ "$BACKUP_AGE_RECIPIENT" =~ ^age1[a-z0-9]{30,}$ ]] || { echo "::error::Invalid age recipient"; exit 1; }
+      - name: Install encryption tool
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age
+      - name: Export database and storage; encrypt before upload
+        id: export
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d "$RUNNER_TEMP/adatacore-export.XXXXXX")"
+          trap 'rm -rf "$work"' EXIT
+          mkdir -m 700 "$work/raw" "$work/storage"
+          docker run --rm \
+            -e BACKUP_DATABASE_URL \
+            -v "$work/raw:/backup" \
+            postgres:17-alpine sh -ec \
+            'pg_dump --dbname="$BACKUP_DATABASE_URL" --format=custom --no-owner --no-acl --file=/backup/database.dump && pg_restore --list /backup/database.dump >/dev/null'
+          test -s "$work/raw/database.dump"
+          BACKUP_STORAGE_DEST="$work/storage" node scripts/backup-supabase-storage.cjs
+          test -s "$work/storage/manifest.json"
+          age -r "$BACKUP_AGE_RECIPIENT" -o "$work/database.dump.age" "$work/raw/database.dump"
+          tar -C "$work/storage" -cf - . | age -r "$BACKUP_AGE_RECIPIENT" -o "$work/storage.tar.age"
+          test -s "$work/database.dump.age"
+          test -s "$work/storage.tar.age"
+          # Neither the raw data nor decrypted manifests are uploaded.
+          rm -rf "$work/raw" "$work/storage"
+          # Upload action needs a stable path after this shell step.
+          mkdir -m 700 "$RUNNER_TEMP/adatacore-encrypted"
+          mv "$work/database.dump.age" "$work/storage.tar.age" "$RUNNER_TEMP/adatacore-encrypted/"
+          echo "path=$RUNNER_TEMP/adatacore-encrypted" >> "$GITHUB_OUTPUT"
+      - name: Upload encrypted backup artifacts only
+        uses: actions/upload-artifact@v4
+        with:
+          name: adatacore-encrypted-${{ github.run_id }}
+          path: ${{ steps.export.outputs.path }}/*.age
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove encrypted working copy
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP/adatacore-encrypted"
