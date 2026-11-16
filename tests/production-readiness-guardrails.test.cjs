@@ -16,7 +16,7 @@ test('anonymous admin RPC execution is revoked in tracked migration',()=>{
   assert.doesNotMatch(migration,/revoke execute on function public\.public_log_voice_recruitment_event/);
 });
 test('backup exporter has valid syntax and refuses missing credentials',()=>{
-  assert.doesNotThrow(()=>new Function(backup));
+  assert.doesNotThrow(()=>new Function(backup.replace(/^#![^\n]*\n/,'')));
   assert.match(backup,/BACKUP_SERVICE_ROLE_KEY/);
   assert.match(backup,/object\/authenticated/);
   assert.match(backup,/manifest\.json/);
