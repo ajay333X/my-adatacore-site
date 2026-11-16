@@ -107,27 +107,67 @@ async function download(source:any,userId:string){
  if(error)throw Error("Audio saved but database update failed.");
  return {status:"downloaded",bytes:data.bytes.length};
 }
-async function transcribe(clip:any) {
- const key=Deno.env.get("GROQ_API_KEY")?.trim();
- if(!key)throw Error("AI transcription is unavailable: GROQ_API_KEY is not configured.");
+
+type TranscriptProvider = "groq" | "openai";
+function providerInfo() {
+ return {
+  groq: {configured:Boolean(Deno.env.get("GROQ_API_KEY")?.trim()), model:"whisper-large-v3-turbo", timestamps:true},
+  openai: {configured:Boolean(Deno.env.get("OPENAI_API_KEY")?.trim()), model:"gpt-transcribe", timestamps:false}
+ };
+}
+function safeProvider(raw:unknown):TranscriptProvider {
+ if(raw==="openai")return "openai";
+ if(raw==="groq" || raw===undefined || raw===null)return "groq";
+ throw Error("Unsupported transcription provider.");
+}
+async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:boolean) {
+ if(clip.transcript_status==="human_verified")throw Error("This clip was human verified. We won't overwrite a verified transcript. Use another clip for a new AI draft.");
+ if(clip.transcript && !replaceExisting)throw Error("A transcript already exists. Confirm replacement before generating another draft.");
+ const key=Deno.env.get(provider==="openai"?"OPENAI_API_KEY":"GROQ_API_KEY")?.trim();
+ if(!key)throw Error(provider==="openai"?"OpenAI API key is missing. Add OPENAI_API_KEY to Supabase Edge Function secrets. ChatGPT subscriptions do not supply API access.":"Groq API key is missing. Add GROQ_API_KEY to Supabase Edge Function secrets.");
  const {data:bytes,error:e}=await db.storage.from(BUCKET).download(clip.storage_path);
  if(e||!bytes)throw Error("Stored clip is unavailable.");
- if(bytes.size>MAX)throw Error("Clip is too large to transcribe.");
+ if(bytes.size>MAX)throw Error("Clip exceeds the audio transcription upload limit.");
  const form=new FormData();
  form.append("file",bytes,"clip.wav");
- form.append("model","whisper-large-v3-turbo");
- form.append("response_format","verbose_json");
- form.append("timestamp_granularities[]","segment");
- form.append("temperature","0");
+ const model=provider==="openai"?"gpt-transcribe":"whisper-large-v3-turbo";
+ form.append("model",model);
+ form.append("response_format",provider==="openai"?"json":"verbose_json");
+ if(provider==="groq")form.append("timestamp_granularities[]","segment");
  const lang=String(clip.language||"").trim().toLowerCase();
  if(/^[a-z]{2}$/.test(lang))form.append("language",lang);
- const resp=await fetch("https://api.groq.com/openai/v1/audio/transcriptions",{method:"POST",headers:{Authorization:"Bearer "+key},body:form,signal:AbortSignal.timeout(90000)});
- if(!resp.ok)throw Error("Speech recognition provider rejected this clip ("+resp.status+").");
- const output=await resp.json(),transcript=String(output.text||"").slice(0,30000),segments=Array.isArray(output.segments)?output.segments.slice(0,600).map((s:any)=>({start:s.start,end:s.end,text:String(s.text||"").slice(0,2000)})):[];
- const {error}=await db.from("dataset_studio_clips").update({transcript,transcript_segments:segments,transcript_status:"ai_draft",model_name:"groq/whisper-large-v3-turbo"}).eq("id",clip.id);
- if(error)throw Error("Transcription succeeded but could not be stored.");
- return {transcript,segments,transcript_status:"ai_draft"};
+ const host=provider==="openai"?"https://api.openai.com/v1/audio/transcriptions":"https://api.groq.com/openai/v1/audio/transcriptions";
+ let response:Response;
+ try {
+  response=await fetch(host,{method:"POST",headers:{Authorization:"Bearer "+key},body:form,signal:AbortSignal.timeout(90000)});
+ } catch(error) {
+  throw Error("Transcription provider could not be reached or timed out. Please retry.");
+ }
+ if(!response.ok) {
+  await response.body?.cancel();
+  const status=response.status;
+  if(status===401||status===403)throw Error((provider==="openai"?"OpenAI":"Groq")+" rejected its API credentials. Check the configured API key.");
+  if(status===402)throw Error((provider==="openai"?"OpenAI":"Groq")+" account has insufficient billing credits.");
+  if(status===429)throw Error((provider==="openai"?"OpenAI":"Groq")+" usage limit reached. Retry later or use the other provider.");
+  if(status===413)throw Error("The transcription provider rejected this audio size.");
+  throw Error((provider==="openai"?"OpenAI":"Groq")+" transcription failed (HTTP "+status+"). Check the provider configuration and audio format.");
+ }
+ const output=await response.json();
+ const transcript=String(output.text||"").trim().slice(0,30000);
+ if(!transcript)throw Error("Transcription returned no text; your existing transcript was kept.");
+ const segments=Array.isArray(output.segments)?output.segments.slice(0,600)
+  .filter((item:any)=>Number.isFinite(Number(item.start))&&Number.isFinite(Number(item.end)))
+  .map((item:any)=>({start:Number(item.start),end:Number(item.end),text:String(item.text||"").slice(0,2000)})):[];
+ // Guard against a concurrent user verifying this clip while the provider was processing.
+ const {data:saved,error}=await db.from("dataset_studio_clips")
+   .update({transcript,transcript_segments:segments,transcript_status:"ai_draft",model_name:provider+"/"+model,updated_at:new Date().toISOString()})
+   .eq("id",clip.id).neq("transcript_status","human_verified")
+   .select("id").maybeSingle();
+ if(error)throw Error("The AI draft was generated, but saving the result failed.");
+ if(!saved)throw Error("The transcript was human verified while processing, so this draft was not saved.");
+ return {transcript,segments,transcript_status:"ai_draft",provider,model_name:provider+"/"+model,timestamps_available:segments.length>0};
 }
+
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response(null,{headers:cors});
  if(req.method!=="POST")return err("Method not allowed.",405);
@@ -143,12 +183,16 @@ Deno.serve(async(req)=>{
   if(rError||pError||!roles?.length||profile?.accountStatus!=="active")return err("Super Admin access is required.",403);
   const body=await req.json();
   const action=String(body?.action||"");
-  if(!["inspect","download","transcribe"].includes(action))return err("Unknown operation.");
+  if(!["inspect","download","transcribe","provider_status"].includes(action))return err("Unknown operation.");
+  if(action==="provider_status")return result({providers:providerInfo()});
   if(action==="transcribe"){
    if(!/^[0-9a-f-]{36}$/i.test(body.clip_id||""))return err("Invalid clip identifier.");
+   const provider=safeProvider(body.provider);
    const {data:clip,error}=await db.from("dataset_studio_clips").select("*").eq("id",body.clip_id).maybeSingle();
    if(error||!clip)return err("Clip not found.",404);
-   return result(await transcribe(clip));
+   if(clip.transcript_status==="human_verified")return err("Human-verified transcripts cannot be overwritten by AI.",409);
+   if(clip.transcript&&!body.replace_existing)return err("Confirm replacement of the existing draft before rerunning transcription.",409);
+   return result(await transcribe(clip,provider,body.replace_existing===true));
   }
   if(!/^[0-9a-f-]{36}$/i.test(body.source_id||""))return err("Invalid source identifier.");
   const {data:source,error}=await db.from("dataset_studio_sources").select("*").eq("id",body.source_id).maybeSingle();
