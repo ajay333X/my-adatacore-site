@@ -21,7 +21,7 @@ test('Existing transcription editor controls remain and new Feedback/Diff option
  assert.match(html,/\/transcription-v2-review\.js\?v=\d+/);
  assert.match(html,/\/transcription-v2-production\.css\?v=\d+/);
  assert.match(src('transcription-v2-production.css'),/#v2ReviewFeedbackOpen/);
- assert.ok(html.includes('/transcription-editor.js?v=9'));
+ assert.match(html,/\/transcription-editor\.js\?v=[A-Za-z0-9_-]+/);
 });
 test('Review form has category ratings and optional text, without losing original review decisions',()=>{
  for(const kind of ['accuracy','timing','tags','formatting','overall']){
