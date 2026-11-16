@@ -166,7 +166,7 @@ async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:b
       throw Error(name+" API project or organization spending/usage limit was reached ("+kind+"). Review your project and organization limits; retrying alone will not fix it.");
     }
     const rawRetry=response.headers.get("retry-after")||"";
-    const seconds=/^\\d+$/.test(rawRetry)?Math.min(3600,Math.max(1,Number(rawRetry))):0;
+    const seconds=/^[0-9]+$/.test(rawRetry)?Math.min(3600,Math.max(1,Number(rawRetry))):0;
     const retry=seconds?" Retry after at least "+seconds+" seconds.":" Retry after a short delay.";
     if(kind.includes("rate_limit")||kind.includes("rate_limit_exceeded"))throw Error(name+" temporary rate limit reached."+retry+" Repeated immediate retries can worsen the limit.");
     throw Error(name+" returned HTTP 429. This may mean exhausted API credits, a spending limit, or a temporary request rate limit. Check your API billing and limits; do not retry repeatedly until the cause is known.");
