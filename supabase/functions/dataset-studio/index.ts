@@ -7,7 +7,7 @@ const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"
 const result = (data:unknown,status=200) => new Response(JSON.stringify(data),{status,headers:cors});
 const err = (message:string,status=400) => result({error:message},status);
 const strip = (s:unknown) => String(s??"").replace(/<[^>]*>/g," ").replace(/&(?:nbsp|amp|quot|lt|gt);/g,m=>({"&nbsp;":" ","&amp;":"&","&quot;":'"',"&lt;":"<","&gt;":">"}[m]||m)).replace(/\s+/g," ").trim().slice(0,600);
-const extFor = (url:string) => (new URL(url).pathname.match(/\.(ogg|oga|opus|mp3|wav|flac|webm|m4a|mp4|aac)$/i)?.[1] || "").toLowerCase();
+const extFor = (url:string) => (new URL(url, "https://archive.org").pathname.match(/\.(ogg|oga|opus|mp3|wav|flac|webm|m4a|mp4|aac)$/i)?.[1] || "").toLowerCase();
 const mime = (ext:string)=>({ogg:"audio/ogg",oga:"audio/ogg",opus:"audio/opus",mp3:"audio/mpeg",wav:"audio/wav",flac:"audio/flac",webm:"audio/webm",m4a:"audio/mp4",mp4:"audio/mp4",aac:"audio/aac"} as Record<string,string>)[ext]||"";
 function allowedHost(h:string) {return h==="upload.wikimedia.org"||h==="commons.wikimedia.org"||h==="archive.org"||/^ia\d{2,10}(?:\.us)?\.archive\.org$/.test(h)}
 function approved(lic:string,url:string) {
