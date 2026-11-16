@@ -26,10 +26,10 @@ async function checkTranscriptionProviders(){
   const statusText=['groq','openai'].map(p=>{
    const isReady=providerStatuses?.[p]?.configured;
    const name=p==='groq'?'Groq (Whisper)':'OpenAI (GPT)';
-   return '<span class="'+(isReady?'ds-provider-ready':'ds-provider-missing')+'">'+name+': '+(isReady?'Ready':'API key required')+'</span>';
+   return '<span class="'+(isReady?'ds-provider-ready':'ds-provider-missing')+'">'+name+': '+(isReady?'API key installed (billing not checked)':'API key required')+'</span>';
   }).join(' &nbsp; · &nbsp; ');
   $('dsProviderStatus').innerHTML='<strong>Available transcription engines</strong><br>'+statusText+
-   '<br><span class="ds-provider-note">OpenAI uses the API, not your ChatGPT subscription. Add OPENAI_API_KEY in Supabase Edge Function secrets if needed. Each transcription uses the selected provider and may incur API charges. AI drafts require human verification.</span>';
+   '<br><span class="ds-provider-note">A configured API key does not guarantee paid credits or rate-limit availability. OpenAI API billing is separate from ChatGPT plans. If you see HTTP 429, check whether your API credits, project spending limit, or rate limit has been reached. Existing drafts stay unchanged on failure. Every AI draft still requires human verification.</span>';
  }catch(error){
   $('dsProviderStatus').textContent='Unable to verify transcription provider settings. Groq remains available when configured; OpenAI requires OPENAI_API_KEY.';
  }finally{checkingProviders=false}
