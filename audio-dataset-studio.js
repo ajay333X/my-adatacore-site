@@ -377,6 +377,7 @@ function bind(){
  document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.tab)));
  $('refreshBtn').addEventListener('click',load);
  $('addSources').addEventListener('click',addSources);
+ $('dsShortcutApplications').addEventListener('click',()=>switchTab('applications'));
  $('uploadSourceBtn').addEventListener('click',uploadSource);
  $('inspectAll').addEventListener('click',inspectAll);
  $('downloadApproved').addEventListener('click',downloadApproved);
