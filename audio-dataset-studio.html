@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Audio Dataset Studio — Adatacore Admin</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="/design-system.css">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script defer src="/audio-dataset-studio.js?v=1"></script>
+<style>
+:root{--as-ink:#192e3a;--as-muted:#67808c;--as-line:#dfe9eb;--as-soft:#f2f7f7;--as-teal:#146e6f;--as-teal-soft:#e5f5f1;--as-card:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f5f7f8;color:var(--as-ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}a{color:inherit}.ds-shell{max-width:1500px;margin:auto;padding:26px 36px 76px}.ds-top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:24px;border-bottom:1px solid var(--as-line)}.ds-brand{display:flex;gap:12px;align-items:center;text-decoration:none;font-weight:850;font-size:17px;letter-spacing:-.035em}.ds-brand img{width:34px;height:34px;border-radius:9px;object-fit:cover}.ds-admin{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--as-muted);font-weight:800}.ds-top-actions{display:flex;gap:8px;align-items:center}.ds-header{display:flex;gap:24px;justify-content:space-between;align-items:flex-end;margin:34px 0 22px}.ds-kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--as-teal);font-weight:850}.ds-header h1{font-size:36px;line-height:1.15;letter-spacing:-.055em;margin:9px 0}.ds-header p{color:var(--as-muted);margin:0;max-width:780px;line-height:1.65}.ds-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #cadfe0;background:white;border-radius:100px;padding:7px 11px;color:var(--as-teal);font-size:11px;font-weight:750}.ds-chip:before{content:'';width:6px;height:6px;border-radius:50%;background:#2a9a83}.ds-tabs{display:flex;gap:5px;border-bottom:1px solid var(--as-line);margin-bottom:24px;overflow:auto}.ds-tab{color:var(--as-muted);border:none;border-bottom:3px solid transparent;background:transparent;padding:14px 17px;font-weight:750;white-space:nowrap}.ds-tab.active{border-color:var(--as-teal);color:var(--as-teal)}.ds-view{display:none}.ds-view.active{display:block}.ds-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.ds-card{background:var(--as-card);border:1px solid var(--as-line);border-radius:14px;box-shadow:0 5px 30px rgba(23,56,65,.025)}.ds-stat{padding:22px}.ds-stat small{display:block;color:var(--as-muted);font-size:11px;font-weight:700}.ds-stat strong{font-size:29px;letter-spacing:-.05em;display:block;margin:10px 0 3px}.ds-stat span{color:var(--as-muted);font-size:11px}.ds-panel{padding:23px}.ds-panel h2{margin:0;font-size:18px;letter-spacing:-.035em}.ds-note{color:var(--as-muted);font-size:12px;line-height:1.65}.ds-panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:18px}.ds-panelhead p{margin:7px 0 0}.ds-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #d3e0e3;border-radius:9px;background:white;color:#244554;font-size:12px;font-weight:760;text-decoration:none;min-height:39px;padding:0 14px;transition:background .15s,border-color .15s}.ds-btn:hover:not(:disabled){border-color:#80bdba;background:#f1f9f7}.ds-btn-primary{background:var(--as-teal);color:#fff;border-color:var(--as-teal)}.ds-btn-primary:hover:not(:disabled){background:#0c5657;color:#fff}.ds-btn-small{min-height:31px;padding:0 10px;font-size:11px}.ds-btn-danger{color:#ac3e36}.ds-field{display:flex;flex-direction:column;gap:7px;font-size:11px;color:#46616a;font-weight:760}.ds-field input,.ds-field select,.ds-field textarea,.ds-input{width:100%;background:#fff;color:var(--as-ink);border:1px solid #d5e2e5;border-radius:9px;padding:11px 12px;outline:none}.ds-field input:focus,.ds-field textarea:focus,.ds-field select:focus,.ds-input:focus{border-color:#4b9c9c;box-shadow:0 0 0 3px rgba(28,127,128,.09)}.ds-field textarea{resize:vertical;min-height:172px;font-size:12px;line-height:1.6}.ds-control-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}.ds-flex{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}.ds-list{display:grid;gap:9px;max-height:680px;overflow:auto;padding-right:3px}.ds-source{border:1px solid var(--as-line);border-radius:10px;padding:13px;background:#fff}.ds-source.selected{border-color:#66a8a6;background:#f6fbfa}.ds-source-head{display:flex;align-items:start;justify-content:space-between;gap:10px}.ds-source strong{display:block;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.ds-meta{font-size:11px;color:var(--as-muted);line-height:1.7;overflow-wrap:anywhere;margin:5px 0}.ds-badge{white-space:nowrap;border-radius:100px;font-size:10px;font-weight:800;background:#edf1f3;color:#637680;padding:5px 9px;text-transform:capitalize}.ds-badge.good{background:#e2f5ec;color:#217253}.ds-badge.warn{background:#fff1db;color:#987028}.ds-badge.bad{background:#fde9e5;color:#ac4537}.ds-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.ds-check{display:flex;align-items:start;gap:9px;color:#58707b;font-size:11px;line-height:1.5;cursor:pointer;padding:8px 0}.ds-check input{margin-top:2px;accent-color:var(--as-teal)}.ds-empty{padding:50px 22px;text-align:center;color:var(--as-muted);border:1px dashed #c5d7db;border-radius:11px}.ds-empty strong{display:block;color:var(--as-ink);font-size:15px;margin-bottom:7px}.ds-divider{height:1px;background:var(--as-line);margin:20px 0}.ds-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ds-audio{display:block;width:100%;margin:15px 0}.ds-tone{background:#f3f8f7;border:1px solid #dceae8;border-radius:11px;padding:14px;font-size:11px;color:#436874;line-height:1.6}.ds-heading{font-size:12px;font-weight:800;margin:16px 0 10px}.ds-range{width:100%;accent-color:var(--as-teal);height:19px}.ds-suggestions{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 17px}.ds-pill{border:1px solid #cde0dc;border-radius:8px;background:#f4faf7;padding:7px 10px;font-size:11px;color:#1f6765}.ds-clips{display:grid;gap:13px}.ds-clip{padding:18px 20px}.ds-clip-head{display:flex;align-items:start;gap:12px;justify-content:space-between}.ds-clip h3{margin:0;font-size:14px}.ds-clip textarea{display:block;width:100%;min-height:98px;padding:11px;border:1px solid var(--as-line);border-radius:9px;line-height:1.6;resize:vertical;color:var(--as-ink)}.ds-toast{position:fixed;bottom:22px;right:24px;z-index:100;background:#102f36;color:#fff;padding:14px 18px;border-radius:11px;box-shadow:0 12px 35px #102f3638;max-width:470px;font-size:12px;line-height:1.5;display:none}.ds-toast.show{display:block}.ds-toast.error{background:#88372d}.ds-spinner{display:inline-block;width:11px;height:11px;border:2px solid #bcd7d5;border-top-color:#156869;border-radius:100%;animation:spin .8s linear infinite;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}.ds-link{font-size:11px;color:#197677;word-break:break-all}.ds-langs{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0}.ds-lang{border-radius:10px;background:#e9f4f2;border:1px solid #cde2dd;padding:12px 16px;color:#236b69;font-size:12px;font-weight:740}.ds-faint{font-size:10px;color:#80949b}.ds-banner{display:flex;gap:10px;align-items:start;background:#f9faf2;border:1px solid #eaeccf;border-radius:11px;color:#707544;font-size:11px;line-height:1.6;padding:13px;margin-bottom:15px}.ds-hidden{display:none!important}.ds-search{min-width:180px;max-width:310px}
+@media(max-width:1050px){.ds-flex{grid-template-columns:1fr}.ds-grid4{grid-template-columns:1fr 1fr}.ds-list{max-height:340px}}@media(max-width:620px){.ds-shell{padding:16px 13px 50px}.ds-header{display:block}.ds-header h1{font-size:30px}.ds-control-grid,.ds-two,.ds-grid4{grid-template-columns:1fr}.ds-panel{padding:15px}.ds-top-actions .ds-admin{display:none}}
+</style>
+</head>
+<body>
+<div class="ds-shell">
+ <header class="ds-top">
+  <a class="ds-brand" href="/admin"><img src="/assets/adatacore-logo.jpg" alt=""><span>Adatacore</span><span class="ds-admin">/ Admin</span></a>
+  <div class="ds-top-actions"><span class="ds-chip">Private dataset workspace</span><a class="ds-btn" href="/admin">← Admin Console</a></div>
+ </header>
+ <div id="accessGate" class="ds-empty" style="margin-top:40px"><span class="ds-spinner"></span> Verifying super administrator access…</div>
+ <div id="app" hidden>
+  <section class="ds-header"><div><span class="ds-kicker">DATA OPERATIONS / COLLECTION & ANNOTATION</span><h1>Audio Dataset Studio</h1><p>Build traceable speech datasets from permitted recordings. Inspect source metadata, extract conversation-ready clips, prepare AI draft transcripts, and export with provenance.</p></div><button class="ds-btn" id="refreshBtn">↻ Refresh library</button></section>
+  <nav class="ds-tabs" aria-label="Dataset Studio sections">
+   <button class="ds-tab active" data-tab="sources">01 · Source collector</button><button class="ds-tab" data-tab="editor">02 · Clip editor</button><button class="ds-tab" data-tab="library">03 · Dataset library</button><button class="ds-tab" data-tab="overview">Overview</button>
+  </nav>
+  <section id="view-sources" class="ds-view active">
+   <div class="ds-control-grid" style="grid-template-columns:1fr 1fr">
+    <article class="ds-card ds-panel">
+     <div class="ds-panelhead"><div><h2>Import multiple source links</h2><p class="ds-note">Paste one URL per line. Commons and Internet Archive links are inspected; YouTube is saved as reference only.</p></div></div>
+     <div class="ds-control-grid"><label class="ds-field">Target language<select id="batchLang"></select></label><label class="ds-field">Collection label<input id="batchLabel" maxlength="80" value="Indic speech collection 01"></label></div>
+     <label class="ds-field">Recording URLs<textarea id="sourceLinks" spellcheck="false" placeholder="https://commons.wikimedia.org/wiki/File:Example.ogg&#10;https://archive.org/details/example-item&#10;https://youtu.be/your-reference-id"></textarea></label>
+     <div class="ds-banner">ⓘ Recording availability does not grant reuse rights. Inspect each license and creator, then confirm that the intended use is authorized. We do not bypass YouTube download restrictions.</div>
+     <div class="ds-row"><button id="addSources" class="ds-btn ds-btn-primary">Add sources to queue →</button><span id="addStatus" class="ds-note">Up to 60 links per batch</span></div>
+    </article>
+    <article class="ds-card ds-panel">
+     <div class="ds-panelhead"><div><h2>Upload an authorized audio file</h2><p class="ds-note">Use your own recordings or permitted downloads. Recommended for YouTube recordings when you have an authorized local file.</p></div></div>
+     <div class="ds-control-grid"><label class="ds-field">Language<select id="uploadLang"></select></label><label class="ds-field">Attribution / creator<input id="uploadAuthor" maxlength="150" placeholder="Creator or source organization"></label></div>
+     <label class="ds-field">License or permission record<input id="uploadLicense" maxlength="150" placeholder="CC BY 4.0, permission from creator, etc."></label>
+     <label class="ds-field" style="margin-top:12px">Audio file<input type="file" id="directFile" accept=".mp3,.m4a,.wav,.ogg,.opus,.webm,.flac,audio/*"></label>
+     <label class="ds-check"><input id="uploadRights" type="checkbox">I have verified that this recording may be copied, processed, and reused for the intended demonstration.</label>
+     <div class="ds-row"><button id="uploadSourceBtn" class="ds-btn ds-btn-primary">Upload file →</button><span class="ds-note">Audio only · maximum 25 MB</span></div>
+     <div class="ds-divider"></div><div class="ds-tone"><strong>Supported workflow</strong><br>1. Inspect source → 2. Confirm rights → 3. Download / upload → 4. Cut 30–120 seconds → 5. AI transcription → 6. Review & export. No audio is publicly exposed by this workspace.</div>
+    </article>
+   </div>
+   <div class="ds-card ds-panel" style="margin-top:16px">
+    <div class="ds-panelhead"><div><h2>Source intake queue</h2><p class="ds-note">Source status, licensing evidence, and original recording are maintained together.</p></div><div class="ds-row"><select class="ds-input ds-search" id="sourceLangFilter" aria-label="Filter language"></select><button class="ds-btn" id="inspectAll">Inspect eligible sources</button><button class="ds-btn ds-btn-primary" id="downloadApproved">Download approved sources</button></div></div>
+    <div id="sources" class="ds-list" style="max-height:none"></div>
+   </div>
+  </section>
+  <section id="view-editor" class="ds-view">
+   <div class="ds-flex">
+    <article class="ds-card ds-panel"><div class="ds-panelhead"><div><h2>Ready recordings</h2><p class="ds-note">Choose a downloaded or uploaded source.</p></div></div><div id="editorSources" class="ds-list"></div></article>
+    <article class="ds-card ds-panel"><div class="ds-panelhead"><div><h2>Conversation clip editor</h2><p class="ds-note">Select exact boundaries and preview before saving. Browser-side extraction keeps the original audio intact.</p></div></div>
+     <div id="editorEmpty" class="ds-empty"><strong>No recording selected</strong>Open a ready source from the list to edit clips.</div>
+     <div id="editorBody" class="ds-hidden">
+      <div class="ds-tone"><strong id="editorTitle">—</strong><br><span id="editorMeta">—</span></div>
+      <audio id="sourcePlayer" class="ds-audio" controls preload="metadata"></audio>
+      <div class="ds-row"><button id="loadWaveform" class="ds-btn">Analyze audio locally</button><button id="suggestClips" class="ds-btn" disabled>Suggest speech-rich clips</button><span class="ds-note" id="decodeInfo"></span></div>
+      <div class="ds-suggestions" id="suggestionList"></div>
+      <div class="ds-divider"></div>
+      <div class="ds-two"><label class="ds-field">Start (seconds)<input id="clipStart" type="number" min="0" step="0.1" value="0"></label><label class="ds-field">End (seconds)<input id="clipEnd" type="number" min="1" step="0.1" value="60"></label></div>
+      <div class="ds-row" style="margin-top:13px"><button id="previewClip" class="ds-btn">▶ Preview selection</button><button id="createClip" class="ds-btn ds-btn-primary">Extract & save WAV clip →</button><span class="ds-note" id="clipDuration">60 seconds</span></div>
+      <p class="ds-note">Clips are rendered locally as mono 16 kHz PCM WAV, suitable for speech transcription. Suggested boundaries use audio energy, not conversation understanding. Choose clips after listening.</p>
+     </div>
+    </article>
+   </div>
+  </section>
+  <section id="view-library" class="ds-view">
+   <article class="ds-card ds-panel">
+    <div class="ds-panelhead"><div><h2>Prepared speech clips</h2><p class="ds-note">Generate AI drafts, correct transcripts, and explicitly mark clips as human verified.</p></div><div class="ds-row"><select id="clipLangFilter" class="ds-input ds-search" aria-label="Language"></select><button id="exportCSV" class="ds-btn">Export CSV</button><button id="exportJSON" class="ds-btn ds-btn-primary">Export JSON manifest</button></div></div>
+    <div class="ds-banner">Human-verified status must be earned by listening to the original clip. AI-generated drafts are never automatically published or represented as verified.</div>
+    <div id="clips" class="ds-clips"></div>
+   </article>
+  </section>
+  <section id="view-overview" class="ds-view">
+   <div class="ds-grid4" id="stats"></div>
+   <div class="ds-card ds-panel" style="margin-top:16px"><div class="ds-panelhead"><div><h2>Indic language collection</h2><p class="ds-note">Live counts come from your private dataset registry.</p></div></div><div id="languageSummary" class="ds-langs"></div></div>
+   <div class="ds-card ds-panel" style="margin-top:16px"><h2>Release boundaries</h2><p class="ds-note">This first version is an administrator-only collection tool. It does not publish customer-facing assets, alter contributor queues, or change the existing transcription pipeline. It supports approved Wikimedia Commons and Internet Archive downloads, authorized file uploads, local clip extraction, AI draft transcription using the configured provider, and metadata exports.</p></div>
+  </section>
+ </div>
+</div>
+<div class="ds-toast" id="notice" role="status" aria-live="polite"></div>
+</body>
+</html>
