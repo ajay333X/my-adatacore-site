@@ -33,6 +33,6 @@ test('Transcription V2 L1 and L2 task routes remain distinct without duplicate t
 });
 
 test('New dashboard script is loaded from both contributor entry points',()=>{
- assert.ok(html.includes('/workspace-project-groups.js?v=7'));
- assert.ok(entry.includes('/workspace-project-groups.js?v=7'));
+ assert.match(html,/\/workspace-project-groups\.js\?v=\d+/);
+ assert.match(entry,/\/workspace-project-groups\.js\?v=\d+/);
 });
