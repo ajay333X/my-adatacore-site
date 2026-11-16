@@ -105,7 +105,7 @@ function renderSources(){
   const link=s.source_url&&s.source_url.startsWith('https://')?'<a class="ds-link" target="_blank" rel="noopener noreferrer" href="'+esc(s.source_url)+'">Original source ↗</a>':'';
   const ready=['downloaded','uploaded'].includes(s.status);
   return '<div class="ds-source"><div class="ds-source-head"><div><strong>'+esc(s.title)+'</strong><div class="ds-meta">'+esc(LANGS[s.language]||s.language)+' · '+esc(s.source_kind)+' · '+date(s.created_at)+(s.source_bytes?' · '+friendlyBytes(s.source_bytes):'')+'</div></div>'+statusBadge(s)+'</div>'+
-   '<div class="ds-meta">Creator: '+esc(s.author||'Not recorded')+' · License: '+esc(s.license_name||'Not confirmed')+(s.license_url?'<br><a class="ds-link" target="_blank" rel="noopener noreferrer" href="'+esc(s.license_url)+'">License terms ↗</a>':'')+'</div>'+
+   '<div class="ds-meta">Creator: '+esc(s.author||'Not recorded')+' · License: '+esc(s.license_name||'Not confirmed')+(s.license_url?.startsWith('https://')?'<br><a class="ds-link" target="_blank" rel="noopener noreferrer" href="'+esc(s.license_url)+'">License terms ↗</a>':'')+'</div>'+
    (s.last_error?'<div class="ds-meta" style="color:#a45440">ⓘ '+esc(s.last_error)+'</div>':'')+link+
    (!ready?'<label class="ds-check"><input type="checkbox" data-source-rights="'+s.id+'" '+(s.rights_confirmed?'checked':'')+'>I verified the rights to copy and process this recording.</label>':'')+
    '<div class="ds-actions">'+sourceActions(s)+'</div></div>';
@@ -146,7 +146,7 @@ async function addSources(){
  if(!links.length)return toast('Paste at least one valid HTTPS link.',true);
  if(links.length>60)return toast('Limit each batch to 60 links.',true);
  const label=$('batchLabel').value.trim().slice(0,80);
- const records=links.map(url=>({source_url:url,source_kind:safeKind(url),language:$('batchLang').value,title:label||'Uninspected recording',created_by:currentUser.id,status:'queued',metadata:{collection_label:label||'Indic speech collection'}}));
+ const records=links.map(url=>{const kind=safeKind(url);const blocked=kind==='youtube'||kind==='external';return {source_url:url,source_kind:kind,language:$('batchLang').value,title:label||'Uninspected recording',created_by:currentUser.id,status:blocked?'unsupported':'queued',last_error:blocked?(kind==='youtube'?'YouTube is reference-only: upload an authorized local recording.':'Automated download is restricted to Commons and Archive; upload authorized audio.') : null,metadata:{collection_label:label||'Indic speech collection'}}});
  $('addSources').disabled=true;$('addStatus').textContent='Saving source records…';
  try {
   const {data,error}=await db.from('dataset_studio_sources').insert(records).select('id,source_kind');
@@ -184,6 +184,13 @@ async function inspectAll(){
  $('inspectAll').disabled=true;let ok=0;
  for(const s of target){try{await api('inspect',{source_id:s.id});ok++}catch(e){toast('Could not inspect '+s.title+': '+e.message,true)}}
  await load();toast('Inspected '+ok+' of '+target.length+' queued sources.');$('inspectAll').disabled=false;
+}
+async function downloadApproved(){
+ const candidates=sources.filter(s=>s.status==='inspected'&&s.rights_confirmed&&licenseApproved(s)).slice(0,25);
+ if(!candidates.length)return toast('No licensed, rights-confirmed sources are ready for download.',true);
+ $('downloadApproved').disabled=true;let ok=0;
+ for(const s of candidates){try{await api('download',{source_id:s.id});ok++}catch(e){toast('Download needs attention: '+s.title+' — '+e.message,true)}}
+ await load();$('downloadApproved').disabled=false;toast('Downloaded '+ok+' / '+candidates.length+' approved source files.');
 }
 const attachmentInput=document.createElement('input');attachmentInput.type='file';attachmentInput.accept='audio/*,.ogg,.wav,.mp3,.opus,.webm,.m4a,.flac';attachmentInput.hidden=true;document.body.append(attachmentInput);
 async function fileUpload(file,existing=null){
@@ -370,6 +377,7 @@ function bind(){
  $('addSources').addEventListener('click',addSources);
  $('uploadSourceBtn').addEventListener('click',uploadSource);
  $('inspectAll').addEventListener('click',inspectAll);
+ $('downloadApproved').addEventListener('click',downloadApproved);
  $('sourceLangFilter').addEventListener('change',renderSources);
  $('clipLangFilter').addEventListener('change',renderClips);
  $('exportCSV').addEventListener('click',()=>exportDataset('csv'));
