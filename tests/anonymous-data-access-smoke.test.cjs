@@ -19,7 +19,8 @@ async function request(route,{method='GET',body}={}){
 }
 test('anonymous callers cannot enumerate contributor, task, project or submission rows',async()=>{
   for(const table of ['users','tasks','project_lab','submissions','project_access_controls']){
-    const r=await request('/rest/v1/'+table+'?select=id&limit=1');
+    const column=table==='project_access_controls'?'user_id':'id';
+    const r=await request('/rest/v1/'+table+'?select='+column+'&limit=1');
     assert.ok([200,401,403,404].includes(r.status),table+' returned unexpected HTTP '+r.status);
     if(r.status===200) {
       let parsed;
