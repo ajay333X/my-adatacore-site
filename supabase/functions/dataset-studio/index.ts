@@ -126,23 +126,12 @@ function safeProvider(raw:unknown):TranscriptProvider {
 const GEMINI_INLINE_LIMIT = 12 * 1024 * 1024; // Keep the encoded JSON payload comfortably below the 20 MB inline request ceiling.
 function toBase64(buffer:ArrayBuffer):string {
  const bytes=new Uint8Array(buffer);
- const parts:string[]=[];
- for(let i=0;i<bytes.length;i+=32768){
-  const section=bytes.subarray(i,Math.min(i+32768,bytes.length));
-  let binary="";
-  for(let j=0;j<section.length;j++)binary+=String.fromCharCode(section[j]);
-  parts.push(btoa(binary));
- }
- // The chunk boundaries above are multiples of 3? 32768 is not; encode all bytes in 3-aligned chunks.
- return parts.length===1?parts[0]:encodeChunks(bytes);
-}
-function encodeChunks(bytes:Uint8Array):string{
+ const size=32766; // Multiple of three: padding only at the end of the entire file.
  let output="";
- const size=32766; // divisible by 3, avoids embedded padding.
  for(let i=0;i<bytes.length;i+=size){
-  const slice=bytes.subarray(i,Math.min(i+size,bytes.length));
+  const chunk=bytes.subarray(i,Math.min(i+size,bytes.length));
   let binary="";
-  for(let j=0;j<slice.length;j++)binary+=String.fromCharCode(slice[j]);
+  for(let j=0;j<chunk.length;j++)binary+=String.fromCharCode(chunk[j]);
   output+=btoa(binary);
  }
  return output;
