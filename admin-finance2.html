@@ -41,9 +41,9 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_audio_minute">Per audio minute</option></select></label>
 <label>Eligibility rule<select id="trigger"><option value="approved">On approval (legacy)</option><option value="valid_submission">On valid submission — earn immediately</option><option value="review_complete">On review completion</option><option value="manual">Manual authorization</option></select></label>
 <label>Currency<select id="currency"><option>USD</option></select></label>
-<label>L1 rate<input id="l1" type="number" min="0" step="0.0001"></label>
-<label>L2 rate<input id="l2" type="number" min="0" step="0.0001"></label>
-</div><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task or verified audio-minute rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
+<label><span id="l1RateLabel">L1 rate (USD/task)</span><input id="l1" type="number" min="0" step="0.0001" required placeholder="Set explicitly"></label>
+<label><span id="l2RateLabel">L2 rate (USD/review)</span><input id="l2" type="number" min="0" step="0.0001" required placeholder="Set explicitly"></label>
+</div><p id="rateUnitHint" class="muted">Enter USD per task. Existing transcription-hourly rates are NOT per-task rates.</p><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task or verified audio-minute rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
 </section>
 <section class="panel">
 <h2>Review-side compensation recommendation</h2>
@@ -57,7 +57,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <p class="muted">Recommendation and authorization are logged separately. Authorization alone does not transfer money.</p>
 </section>
 </div>
-<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Project totals cover all records; the detail tables below show the most recent 1,000. Eligible earnings before approval remain separate from the existing wallet.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
+<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Project totals cover all records; the detail tables below show the most recent 1,000. Eligible earnings before approval remain separate from the existing wallet.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="fields"><label>Completed L2 earning ID<input type="number" id="l2PaidId" min="1" step="1"></label><label>External transfer reference<input id="l2PaidRef" placeholder="Bank UTR / transfer reference"></label></div><div class="actions"><button id="recordL2Paid">Record completed L2 transfer</button></div><p class="muted">Record only payments already sent externally. This action is immutable and cannot initiate a bank transfer.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th><th>Settlement</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
 <section class="panel"><h2>Project-by-project earning burn</h2><div id="stats" class="stats"></div>
 <p class="muted">Automatically earned but unapproved work is shown separately from legacy-approved amounts and manual exceptions. Do not add columns together without reconciling overlaps. Existing Finance still manages approved payouts, expenses and budgets.</p>
 <div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Auto-earned, unapproved</th><th>Calculated, pending</th><th>Legacy-approved</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
@@ -79,13 +79,20 @@ const rpc=async(name,args={})=>{const {data,error}=await db.rpc(name,args);if(er
 let projects=[];
 const opt=(label,value)=>{const x=document.createElement('option');x.textContent=label;x.value=value;return x};
 const td=(tr,value)=>{const c=document.createElement('td');c.textContent=String(value??'—');tr.appendChild(c)};
-const setBusy=flag=>['save','recommend','authorize','refresh','recordPaid'].forEach(id=>el(id).disabled=flag);
+const setBusy=flag=>['save','recommend','authorize','refresh','recordPaid','recordL2Paid'].forEach(id=>el(id).disabled=flag);
 const requireReason=()=>{const r=el('reason').value.trim();if(r.length<5)throw Error('Provide a meaningful reason (at least 5 characters).');return r};
+function updateRateUnitHint(){const perMinute=el('model').value==='per_audio_minute';const unit=perMinute?'audio minute':'task/review';
+el('l1RateLabel').textContent='L1 rate (USD per '+unit+')';el('l2RateLabel').textContent='L2 rate (USD per '+unit+')';
+const a=Number(el('l1').value),b=Number(el('l2').value);
+el('rateUnitHint').textContent=perMinute?('These are USD per AUDIO MINUTE, not per hour. Hourly equivalent: L1 '+(Number.isFinite(a)?money(a*60):'—')+' /hour; L2 '+(Number.isFinite(b)?money(b*60):'—')+' /hour. Existing $10/hour rates would be about $0.1667/minute.'):'These are USD per TASK/REVIEW, not per hour. Please set explicit rates; older project rates may use different units.';
+}
 function projectSelected(){
 const p=projects.find(x=>String(x.id)===el('project').value);if(!p)return;
 el('model').value=p.model||'per_task';el('trigger').value=p.earning_trigger||'approved';
-el('currency').value=p.currency||'USD';el('l1').value=p.l1_rate??0;el('l2').value=p.l2_rate??0;
-el('version').textContent='Current version: '+(p.version||'Legacy defaults');
+el('currency').value=p.currency||'USD';
+el('l1').value=p.version>0?(p.l1_rate??''):'';el('l2').value=p.version>0?(p.l2_rate??''):'';
+el('version').textContent=p.version>0?'Active version: '+p.version:'No Finance 2.0 policy yet. Enter rates explicitly; legacy rates are not imported.';
+updateRateUnitHint();
 }
 async function load(){
 setBusy(true);
@@ -115,6 +122,7 @@ for(const e of Array.isArray(autoEarnings)?autoEarnings:[]){
  const amount=Number(e.amount||0);
  if(e.manual_paid_at)autoTotals.paid+=amount;
  else if(isApproved)autoTotals.legacy+=amount;
+ else if(e.paid_at)autoTotals.paid+=amount;
  else if(e.eligibility==='eligible')autoTotals.eligible+=amount;
  else if(e.eligibility==='pending')autoTotals.pending+=amount;
  const row=document.createElement('tr');
@@ -130,14 +138,14 @@ for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
  const row=document.createElement('tr');
  [e.source+' #'+e.id,e.project,String(e.reviewer_id||'').slice(0,8),
  Number(e.units||0).toFixed(3),money(e.rate,e.currency),money(amount,e.currency),
- e.eligibility,e.decision].forEach(x=>td(row,x));
+ e.eligibility,e.decision,e.paid_at?'Paid '+new Date(e.paid_at).toLocaleDateString():'Unpaid'].forEach(x=>td(row,x));
  rr.appendChild(row);
 }
 Object.assign(autoTotals,(Array.isArray(projectTotals)?projectTotals:[]).reduce((acc,e)=>{
  acc.eligible+=Number(e.l1_eligible||0)+Number(e.l2_eligible||0);
  acc.pending+=Number(e.l1_pending||0)+Number(e.l2_pending||0);
  acc.legacy+=Number(e.legacy_approved||0);
- acc.paid+=Number(e.exception_paid||0);
+ acc.paid+=Number(e.exception_paid||0)+Number(e.l2_paid||0);
  return acc;
 },{eligible:0,pending:0,legacy:0,paid:0}));
 const as=el('autoStats');as.replaceChildren();
@@ -162,12 +170,31 @@ notice('Finance settings loaded. Current legacy payouts are unchanged.');
 finally{setBusy(false)}
 }
 el('project').addEventListener('change',projectSelected);
+['model','l1','l2'].forEach(id=>el(id).addEventListener(id==='model'?'change':'input',updateRateUnitHint));
 el('refresh').addEventListener('click',load);
 el('save').addEventListener('click',async()=>{setBusy(true);try{
-await rpc('finance2_set_project_rule',{p_project_id:Number(el('project').value),p_model:el('model').value,p_trigger:el('trigger').value,p_currency:el('currency').value,p_l1_rate:Number(el('l1').value),p_l2_rate:Number(el('l2').value)});
-await load();notice('Project rule activated for new submissions. Earnings are now calculated automatically under the selected policy; no bank transfer is initiated.');
+const p=projects.find(x=>String(x.id)===el('project').value);
+if(!p)throw Error('Choose a project.');
+const a=el('l1').value.trim(),b=el('l2').value.trim();
+if(!a||!b||!Number.isFinite(Number(a))||!Number.isFinite(Number(b))||Number(a)<0||Number(b)<0)throw Error('Set explicit, valid non-negative L1 and L2 rates.');
+const unit=el('model').value==='per_audio_minute'?'AUDIO MINUTE':'TASK / REVIEW';
+const msg='Activate compensation for '+p.name+'?\n'+
+'L1: '+money(a)+' per '+unit+'\nL2: '+money(b)+' per '+unit+'\n'+
+'Eligibility: '+el('trigger').selectedOptions[0].textContent+'\n'+
+'Applies only to NEW work. Existing paid records are unchanged.\nNo bank transfers will be initiated.';
+if(!confirm(msg))return;
+await rpc('finance2_set_project_rule',{p_project_id:Number(el('project').value),p_model:el('model').value,p_trigger:el('trigger').value,p_currency:el('currency').value,p_l1_rate:Number(a),p_l2_rate:Number(b)});
+await load();notice('Project rate activated with explicit units and new version. No bank transfer initiated.');
 }catch(e){notice(e.message,true)}finally{setBusy(false)}});
-el('recordPaid').addEventListener('click',async()=>{setBusy(true);try{
+el('recordL2Paid').addEventListener('click',async()=>{setBusy(true);try{
+ const id=Number(el('l2PaidId').value),ref=el('l2PaidRef').value.trim();
+ if(!Number.isInteger(id)||id<1)throw Error('Enter a valid L2 earning ID.');
+ if(ref.length<6)throw Error('Enter a valid external transfer reference.');
+ if(!confirm('Confirm the L2 review transfer has already been paid externally? This records it, but does not send money.'))return;
+ const data=await rpc('finance2_record_l2_manual_paid',{p_review_earning_id:id,p_reference:ref});
+ await load();notice('L2 payment '+data.status+' · '+money(data.amount,data.currency));
+ }catch(e){notice(e.message,true)}finally{setBusy(false)}});
+ el('recordPaid').addEventListener('click',async()=>{setBusy(true);try{
 const sid=Number(el('paidSubmission').value), ref=el('paidReference').value.trim();
 if(!Number.isInteger(sid)||sid<=0)throw Error('Enter a valid submission ID.');
 if(ref.length<6)throw Error('Enter the actual external payment reference.');
