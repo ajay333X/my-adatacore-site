@@ -95,7 +95,7 @@ begin
  -- Voice review records create their own entry and must not be counted twice.
  if exists(select 1 from public.voice_l2_reviews where submission_id=new.id) then return new;end if;
  v_admin:=auth.uid();if v_admin is null then return new;end if;
- select * into v_task from public.tasks t join public.users u on u.id=v_admin
+ select t.* into v_task from public.tasks t join public.users u on u.id=v_admin
  where t.layer='L2' and t.title=new."projectTitle"
   and t.status in ('pending','submitted')
   and lower(t."assignedTo") in (lower(u.email),lower(coalesce(u."uniqueID",'')))
