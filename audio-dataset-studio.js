@@ -461,8 +461,15 @@ async function clipAction(action,id,providerChoice){
   if(!transcript)return toast('Transcript cannot be empty.',true);
   if(action==='verify'&&!card?.querySelector('[data-reviewed]')?.checked)return toast('Please listen to the recording and confirm your review before verifying.',true);
   const state=action==='verify'?'human_verified':'edited';
-  const {error}=await db.from('dataset_studio_clips').update({transcript,transcript_status:state,updated_at:new Date().toISOString()}).eq('id',id);
-  if(error)throw error;await load();toast(state==='human_verified'?'Human verification recorded.':'Transcript saved as an edited draft.');
+  const selected=comparisonSelections.get(id);
+  const changes={transcript,transcript_status:state,updated_at:new Date().toISOString()};
+  if(selected){changes.model_name=selected.model_name;changes.transcript_segments=selected.segments}
+  const {data:saved,error}=await db.from('dataset_studio_clips').update(changes).eq('id',id).neq('transcript_status','human_verified').select('id').maybeSingle();
+  if(error)throw error;
+  if(!saved)throw Error('Transcript has already been verified; no changes were saved.');
+  comparisonSelections.delete(id);
+  comparisonResults.delete(id);
+  await load();toast(state==='human_verified'?'Human verification recorded.':'Transcript saved as an edited draft.');
  }catch(e){toast('Clip action failed: '+e.message,true)}
 }
 function clipRecord(c){
