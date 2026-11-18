@@ -15,6 +15,24 @@ const db=window.supabase?.createClient(BASE,KEY,{auth:{persistSession:true,autoR
 let currentUser=null,sources=[],clips=[],chosen=null,audioURL='',audioBuffer=null,activeBufferSource=null,loading=false,notifying=null;
 let attachmentId=null;
 const providerSelections=new Map();
+const comparisonResults=new Map();
+const comparisonSelections=new Map();
+const providerLabels={groq:'Groq Whisper',openai:'OpenAI GPT',gemini:'Gemini 3.5',deepgram:'Deepgram Nova-3'};
+
+function compareOptions(current){
+ return ['deepgram','gemini','groq','openai'].map(provider=>'<option value="'+provider+'"'+(current===provider?' selected':'')+'>'+providerLabels[provider]+'</option>').join('');
+}
+function comparisonMarkup(id){
+ const results=comparisonResults.get(id);
+ if(!results?.length)return '<div data-comparison-results="'+id+'" class="ds-compare-results"></div>';
+ const cards=results.map(r=>{
+  if(r.error)return '<article class="ds-compare-result"><strong>'+esc(providerLabels[r.provider]||r.provider)+'</strong><p class="ds-provider-note">'+esc(r.error)+'</p></article>';
+  return '<article class="ds-compare-result"><strong>'+esc(providerLabels[r.provider]||r.provider)+'</strong><div class="ds-comparison-transcript">'+esc(r.transcript)+'</div>'+
+   '<button type="button" class="ds-btn ds-btn-small ds-btn-primary" data-clip-action="choose-comparison" data-id="'+id+'" data-provider="'+esc(r.provider)+'">Use this draft in editor</button></article>';
+ }).join('');
+ return '<div data-comparison-results="'+id+'" class="ds-compare-results">'+cards+'</div>';
+}
+
 let providerStatuses=null;
 let checkingProviders=false;
 async function checkTranscriptionProviders(){
@@ -23,15 +41,15 @@ async function checkTranscriptionProviders(){
  try{
   const data=await api('provider_status');
   providerStatuses=data?.providers||null;
-  const statusText=['groq','openai','gemini'].map(p=>{
+  const statusText=['groq','openai','gemini','deepgram'].map(p=>{
    const isReady=providerStatuses?.[p]?.configured;
-   const name=p==='groq'?'Groq (Whisper)':p==='gemini'?'Google Gemini (3.5 Transcribe)':'OpenAI (GPT)';
+   const name=p==='groq'?'Groq (Whisper)':p==='gemini'?'Google Gemini (3.5 Transcribe)':p==='deepgram'?'Deepgram (Nova-3)':'OpenAI (GPT)';
    return '<span class="'+(isReady?'ds-provider-ready':'ds-provider-missing')+'">'+name+': '+(isReady?'API key installed (billing not checked)':'API key required')+'</span>';
   }).join(' &nbsp; · &nbsp; ');
   $('dsProviderStatus').innerHTML='<strong>Available transcription engines</strong><br>'+statusText+
    '<br><span class="ds-provider-note">An API key does not guarantee provider quota availability. Gemini 3.5 Transcribe has a free tier with limits; Google may use free-tier inputs to improve products. Do not send private applicant/customer audio without appropriate permission. Existing drafts stay unchanged on failure. Every AI draft still requires human verification.</span>';
  }catch(error){
-  $('dsProviderStatus').textContent='Unable to verify provider status. Gemini requires GEMINI_API_KEY; Groq and OpenAI remain separate options.';
+  $('dsProviderStatus').textContent='Unable to verify provider status. Gemini requires GEMINI_API_KEY and Deepgram requires DEEPGRAM_API_KEY; Groq and OpenAI remain separate options.';
  }finally{checkingProviders=false}
 }
 
@@ -151,10 +169,17 @@ function renderClips(){
   '<div class="ds-transcription-picker"><label class="ds-field">Transcription provider<select data-clip-provider="'+c.id+'" '+(status==='human_verified'?'disabled title="Verified transcripts are protected"':'')+'>'+
    '<option value="groq" '+((providerSelections.get(c.id)||'groq')==='groq'?'selected':'')+'>Groq · Whisper</option>'+
    '<option value="openai" '+((providerSelections.get(c.id)||'groq')==='openai'?'selected':'')+'>OpenAI · GPT Transcribe (ChatGPT provider)</option>'+
-   '<option value="gemini" '+((providerSelections.get(c.id)||'groq')==='gemini'?'selected':'')+'>Google Gemini · 3.5 Transcribe (free-tier eligible)</option>'+
+   '<option value="gemini" '+((providerSelections.get(c.id)||'groq')==='gemini'?'selected':'')+'>Google Gemini · 3.5 Transcribe (free-tier eligible)</option>'+ '<option value="deepgram" '+((providerSelections.get(c.id)||'groq')==='deepgram'?'selected':'')+'>Deepgram · Nova-3 (introductory credits)</option>'+
    '</select></label><button class="ds-btn ds-btn-small ds-btn-primary" data-clip-action="transcribe" data-id="'+c.id+'" '+(status==='human_verified'?'disabled title="Verified transcripts cannot be overwritten"':'')+'>✦ Generate AI transcript</button></div>'+
-   '<p class="ds-provider-note">Choose Groq, OpenAI or Gemini. AI drafts require listening and human verification. Gemini free-tier data may be used by Google to improve its products.</p>'+
+   '<p class="ds-provider-note">Choose Groq, OpenAI, Gemini or Deepgram. All drafts require human verification. Deepgram API calls consume trial credits or paid usage.</p>'+
    '<label class="ds-check" style="margin:8px 0 15px"><input type="checkbox" data-gemini-consent="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'> For Gemini only: I confirm I have permission to send this recording to Google for processing under the applicable data-use terms (including free-tier product improvement).</label>'+ 
+  '<label class="ds-check" style="margin:8px 0 15px"><input type="checkbox" data-deepgram-consent="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'> For Deepgram only: I have permission to send this recording to Deepgram. The request opts out of model improvement.</label>'+ 
+  '<div class="ds-compare-section"><div class="ds-heading">AI transcript comparison</div>'+
+  '<p class="ds-provider-note">Compare two providers without overwriting the transcript. Two requests consume credits or quotas. Choose the draft to edit and save afterward.</p>'+
+  '<div class="ds-compare-controls"><label class="ds-field">First AI<select data-compare-a="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>'+compareOptions('deepgram')+'</select></label>'+
+  '<label class="ds-field">Second AI<select data-compare-b="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>'+compareOptions('gemini')+'</select></label>'+
+  '<button class="ds-btn ds-btn-small" type="button" data-clip-action="compare" data-id="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>Compare drafts</button></div>'+
+  comparisonMarkup(c.id)+'</div>'+ 
   '<div data-audio-host="'+c.id+'"></div><div class="ds-heading">Transcript</div><textarea data-transcript="'+c.id+'" spellcheck="true" placeholder="Generate an AI draft or type a verified transcript manually.">'+esc(c.transcript||'')+'</textarea>'+
   '<div class="ds-meta">Model: '+esc(c.model_name||'—')+' · '+esc(c.transcript_segments?.length?c.transcript_segments.length+' timestamped segments available in JSON':'No timed segments')+
   (s?.license_name?' · License: '+esc(s.license_name):'')+'</div>'+
@@ -356,7 +381,7 @@ async function createClip(){
  }catch(e){toast('Clip extraction failed: '+e.message,true)}
  finally{$('createClip').disabled=false;updateDuration()}
 }
-async function clipAction(action,id){
+async function clipAction(action,id,providerChoice){
  const c=clips.find(x=>x.id===id);if(!c)return;
  const card=document.querySelector('[data-clip-card="'+id+'"]');
  try{
@@ -367,21 +392,66 @@ async function clipAction(action,id){
    return;
   }
   if(action==='metadata') {downloadBlob(JSON.stringify(clipRecord(c),null,2),'adatacore-'+id+'.json','application/json');return}
+
+  if(action==='choose-comparison'){
+   const chosen=comparisonResults.get(id)?.find(item=>item.provider===providerChoice&&!item.error);
+   if(!chosen)return toast('The comparison result is no longer available.',true);
+   if(c.transcript_status==='human_verified')return toast('Verified transcripts cannot be replaced.',true);
+   const textarea=card?.querySelector('[data-transcript]');
+   if(!textarea)return;
+   textarea.value=chosen.transcript;
+   comparisonSelections.set(id,{model_name:chosen.model_name,segments:chosen.segments,source_transcript:chosen.transcript});
+   textarea.focus();
+   toast('Selected '+(providerLabels[providerChoice]||providerChoice)+'. Review this draft and click Save transcript edits.');
+   return;
+  }
+  if(action==='compare'){
+   if(c.transcript_status==='human_verified')return toast('Already verified: create a new clip before running comparison.',true);
+   const first=card?.querySelector('[data-compare-a]')?.value;
+   const second=card?.querySelector('[data-compare-b]')?.value;
+   if(!first||!second||first===second)return toast('Choose two different AI providers.',true);
+   for(const provider of [first,second]){
+    if(providerStatuses?.[provider]?.configured===false)return toast((providerLabels[provider]||provider)+' needs an API key in Supabase.',true);
+    if(provider==='gemini'&&!card?.querySelector('[data-gemini-consent]')?.checked)return toast('Confirm permission for Google Gemini processing.',true);
+    if(provider==='deepgram'&&!card?.querySelector('[data-deepgram-consent]')?.checked)return toast('Confirm permission for Deepgram processing.',true);
+   }
+   if(!window.confirm('Run two external AI transcription requests for this clip? Both may consume credits or quota. Your saved transcript will not be changed.'))return;
+   const compareButton=card?.querySelector('[data-clip-action="compare"]');
+   if(compareButton)compareButton.disabled=true;
+   try{
+    toast('Comparing '+providerLabels[first]+' against '+providerLabels[second]+'…');
+    const result=await api('compare',{clip_id:id,providers:[first,second],confirm_api_usage:true,
+      allow_google_data_use:card?.querySelector('[data-gemini-consent]')?.checked===true,
+      allow_deepgram_processing:card?.querySelector('[data-deepgram-consent]')?.checked===true});
+    comparisonResults.set(id,Array.isArray(result.results)?result.results:[]);
+    const host=card?.querySelector('[data-comparison-results]');
+    if(host){
+     const temp=document.createElement('template');
+     temp.innerHTML=comparisonMarkup(id);
+     host.replaceWith(temp.content);
+    }
+    const count=(result.results||[]).filter(item=>Boolean(item.transcript)).length;
+    toast(count+' of 2 drafts generated. Choose, review and save one.',count===0);
+   }finally{if(compareButton?.isConnected)compareButton.disabled=false}
+   return;
+  }
   if(action==='transcribe'){
    if(c.transcript_status==='human_verified')return toast('Human-verified transcripts are protected from AI replacement.',true);
    const provider=providerSelections.get(id)||'groq';
-   const name=provider==='gemini'?'Google Gemini 3.5 Transcribe':provider==='openai'?'OpenAI GPT':'Groq Whisper';
+   const name=providerLabels[provider]||provider;
    if(providerStatuses?.[provider]?.configured===false)return toast(
-    provider==='gemini'?'Gemini is not configured. Add GEMINI_API_KEY to your Supabase Edge Function secrets.':provider==='openai'?'OpenAI is not configured. Add OPENAI_API_KEY to your Supabase Edge Function secrets. ChatGPT Plus does not include API usage.':'Groq is not configured. Add GROQ_API_KEY to Supabase Edge Function secrets.',true);
+    provider==='gemini'?'Gemini is not configured. Add GEMINI_API_KEY to your Supabase Edge Function secrets.':provider==='deepgram'?'Deepgram is not configured. Add DEEPGRAM_API_KEY to Supabase Edge Function secrets.':provider==='openai'?'OpenAI is not configured. Add OPENAI_API_KEY to your Supabase Edge Function secrets. ChatGPT Plus does not include API usage.':'Groq is not configured. Add GROQ_API_KEY to Supabase Edge Function secrets.',true);
    const allowGoogleDataUse=provider==='gemini' && Boolean(card?.querySelector('[data-gemini-consent="'+id+'"]')?.checked);
    if(provider==='gemini' && !allowGoogleDataUse)return toast('Before using Gemini, confirm you have permission for Google to process this recording, including free-tier data-use terms.',true);
+   const allowDeepgramProcessing=provider==='deepgram'&&Boolean(card?.querySelector('[data-deepgram-consent]')?.checked);
+   if(provider==='deepgram'&&!allowDeepgramProcessing)return toast('Confirm you have permission to send this audio to Deepgram.',true);
    const existing=Boolean(String(c.transcript||'').trim());
    if(existing && !window.confirm('This will replace the existing, unverified transcript with a new '+name+' draft. Continue?'))return;
    const button=card?.querySelector('[data-clip-action="transcribe"]');
    if(button)button.disabled=true;
    try{
     toast('Sending this audio to '+name+' for transcription. It will remain an unverified draft.');
-    await api('transcribe',{clip_id:id,provider,replace_existing:existing,allow_google_data_use:allowGoogleDataUse});
+    await api('transcribe',{clip_id:id,provider,replace_existing:existing,allow_google_data_use:allowGoogleDataUse,allow_deepgram_processing:allowDeepgramProcessing});
     await load();
     toast(name+' transcription generated. Please listen and correct before human verification.');
    }finally{if(button?.isConnected)button.disabled=false}
@@ -391,8 +461,15 @@ async function clipAction(action,id){
   if(!transcript)return toast('Transcript cannot be empty.',true);
   if(action==='verify'&&!card?.querySelector('[data-reviewed]')?.checked)return toast('Please listen to the recording and confirm your review before verifying.',true);
   const state=action==='verify'?'human_verified':'edited';
-  const {error}=await db.from('dataset_studio_clips').update({transcript,transcript_status:state,updated_at:new Date().toISOString()}).eq('id',id);
-  if(error)throw error;await load();toast(state==='human_verified'?'Human verification recorded.':'Transcript saved as an edited draft.');
+  const selected=comparisonSelections.get(id);
+  const changes={transcript,transcript_status:state,updated_at:new Date().toISOString()};
+  if(selected){changes.model_name=selected.model_name;changes.transcript_segments=transcript===selected.source_transcript?selected.segments:[]}
+  const {data:saved,error}=await db.from('dataset_studio_clips').update(changes).eq('id',id).neq('transcript_status','human_verified').select('id').maybeSingle();
+  if(error)throw error;
+  if(!saved)throw Error('Transcript has already been verified; no changes were saved.');
+  comparisonSelections.delete(id);
+  comparisonResults.delete(id);
+  await load();toast(state==='human_verified'?'Human verification recorded.':'Transcript saved as an edited draft.');
  }catch(e){toast('Clip action failed: '+e.message,true)}
 }
 function clipRecord(c){
@@ -439,8 +516,8 @@ function bind(){
  $('sources').addEventListener('click',e=>{const node=e.target.closest('[data-source-action]');if(node)sourceAction(node.dataset.sourceAction,node.dataset.id)});
  $('editorSources').addEventListener('click',e=>{const node=e.target.closest('[data-editor-source]');if(node)selectSource(node.dataset.editorSource)});
  $('suggestionList').addEventListener('click',e=>{const node=e.target.closest('[data-suggestion-start]');if(node)chooseRange(Number(node.dataset.suggestionStart),Number(node.dataset.suggestionEnd))});
- $('clips').addEventListener('change',e=>{const selector=e.target.closest('[data-clip-provider]');if(selector && ['groq','openai','gemini'].includes(selector.value))providerSelections.set(selector.dataset.clipProvider,selector.value)});
- $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id)});
+ $('clips').addEventListener('change',e=>{const selector=e.target.closest('[data-clip-provider]');if(selector && ['groq','openai','gemini','deepgram'].includes(selector.value))providerSelections.set(selector.dataset.clipProvider,selector.value)});
+ $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id,node.dataset.provider)});
 }
 window.adatacoreDatasetStudio={
   async openImportedSource(id){
