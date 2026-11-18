@@ -174,6 +174,12 @@ function renderClips(){
    '<p class="ds-provider-note">Choose Groq, OpenAI, Gemini or Deepgram. All drafts require human verification. Deepgram API calls consume trial credits or paid usage.</p>'+
    '<label class="ds-check" style="margin:8px 0 15px"><input type="checkbox" data-gemini-consent="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'> For Gemini only: I confirm I have permission to send this recording to Google for processing under the applicable data-use terms (including free-tier product improvement).</label>'+ 
   '<label class="ds-check" style="margin:8px 0 15px"><input type="checkbox" data-deepgram-consent="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'> For Deepgram only: I have permission to send this recording to Deepgram. The request opts out of model improvement.</label>'+ 
+  '<div class="ds-compare-section"><div class="ds-heading">AI transcript comparison</div>'+
+  '<p class="ds-provider-note">Compare two providers without overwriting the transcript. Two requests consume credits or quotas. Choose the draft to edit and save afterward.</p>'+
+  '<div class="ds-compare-controls"><label class="ds-field">First AI<select data-compare-a="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>'+compareOptions('deepgram')+'</select></label>'+
+  '<label class="ds-field">Second AI<select data-compare-b="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>'+compareOptions('gemini')+'</select></label>'+
+  '<button class="ds-btn ds-btn-small" type="button" data-clip-action="compare" data-id="'+c.id+'" '+(status==='human_verified'?'disabled':'')+'>Compare drafts</button></div>'+
+  comparisonMarkup(c.id)+'</div>'+ 
   '<div data-audio-host="'+c.id+'"></div><div class="ds-heading">Transcript</div><textarea data-transcript="'+c.id+'" spellcheck="true" placeholder="Generate an AI draft or type a verified transcript manually.">'+esc(c.transcript||'')+'</textarea>'+
   '<div class="ds-meta">Model: '+esc(c.model_name||'—')+' · '+esc(c.transcript_segments?.length?c.transcript_segments.length+' timestamped segments available in JSON':'No timed segments')+
   (s?.license_name?' · License: '+esc(s.license_name):'')+'</div>'+
