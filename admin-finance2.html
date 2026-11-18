@@ -57,7 +57,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <p class="muted">Recommendation and authorization are logged separately. Authorization alone does not transfer money.</p>
 </section>
 </div>
-<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Eligible earnings before approval remain a separate payable obligation; L1 approvals use the existing wallet settlement process.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
+<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Project totals cover all records; the detail tables below show the most recent 1,000. Eligible earnings before approval remain separate from the existing wallet.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
 <section class="panel"><h2>Project-by-project earning burn</h2><div id="stats" class="stats"></div>
 <p class="muted">Automatically earned but unapproved work is shown separately from legacy-approved amounts and manual exceptions. Do not add columns together without reconciling overlaps. Existing Finance still manages approved payouts, expenses and budgets.</p>
 <div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Auto-earned, unapproved</th><th>Calculated, pending</th><th>Legacy-approved</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
@@ -90,22 +90,16 @@ el('version').textContent='Current version: '+(p.version||'Legacy defaults');
 async function load(){
 setBusy(true);
 try{
-const [data,autoEarnings,l2Earnings]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000})]);projects=data.projects||[];
+const [data,autoEarnings,l2Earnings,projectTotals]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000}),rpc('finance2_project_earning_totals')]);projects=data.projects||[];
 const selected=el('project').value;el('project').replaceChildren();
 projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
 if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
 projectSelected();
 const rollups={};
-const add=(projectId,kind,amount)=>{const key=Number(projectId);if(!rollups[key])rollups[key]={eligible:0,pending:0,legacy:0};rollups[key][kind]+=Number(amount||0)};
-for(const e of Array.isArray(autoEarnings)?autoEarnings:[]){
- if(e.manual_paid_at)continue;
- if(String(e.quality_status||'').toLowerCase()==='approved')add(e.project_id,'legacy',e.amount);
- else if(e.eligibility==='eligible')add(e.project_id,'eligible',e.amount);
- else if(e.eligibility==='pending')add(e.project_id,'pending',e.amount);
-}
-for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
- if(e.eligibility==='eligible')add(e.project_id,'eligible',e.amount);
- else if(e.eligibility==='pending')add(e.project_id,'pending',e.amount);
+for(const e of Array.isArray(projectTotals)?projectTotals:[]){
+ rollups[Number(e.project_id)]={eligible:Number(e.l1_eligible||0)+Number(e.l2_eligible||0),
+ pending:Number(e.l1_pending||0)+Number(e.l2_pending||0),
+ legacy:Number(e.legacy_approved||0)};
 }
 const rows=el('projectRows');rows.replaceChildren();for(const p of projects){
  const x=rollups[Number(p.id)]||{eligible:0,pending:0,legacy:0};
@@ -139,6 +133,13 @@ for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
  e.eligibility,e.decision].forEach(x=>td(row,x));
  rr.appendChild(row);
 }
+Object.assign(autoTotals,(Array.isArray(projectTotals)?projectTotals:[]).reduce((acc,e)=>{
+ acc.eligible+=Number(e.l1_eligible||0)+Number(e.l2_eligible||0);
+ acc.pending+=Number(e.l1_pending||0)+Number(e.l2_pending||0);
+ acc.legacy+=Number(e.legacy_approved||0);
+ acc.paid+=Number(e.exception_paid||0);
+ return acc;
+},{eligible:0,pending:0,legacy:0,paid:0}));
 const as=el('autoStats');as.replaceChildren();
 for(const [label,val] of [['Eligible before QA approval',autoTotals.eligible],['Pending review or manual rule',autoTotals.pending],
  ['Approved — handled by legacy wallet',autoTotals.legacy],['External manual payments recorded',autoTotals.paid]]){
