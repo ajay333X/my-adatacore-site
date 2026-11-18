@@ -381,7 +381,7 @@ async function createClip(){
  }catch(e){toast('Clip extraction failed: '+e.message,true)}
  finally{$('createClip').disabled=false;updateDuration()}
 }
-async function clipAction(action,id){
+async function clipAction(action,id,providerChoice){
  const c=clips.find(x=>x.id===id);if(!c)return;
  const card=document.querySelector('[data-clip-card="'+id+'"]');
  try{
@@ -392,6 +392,49 @@ async function clipAction(action,id){
    return;
   }
   if(action==='metadata') {downloadBlob(JSON.stringify(clipRecord(c),null,2),'adatacore-'+id+'.json','application/json');return}
+
+  if(action==='choose-comparison'){
+   const chosen=comparisonResults.get(id)?.find(item=>item.provider===providerChoice&&!item.error);
+   if(!chosen)return toast('The comparison result is no longer available.',true);
+   if(c.transcript_status==='human_verified')return toast('Verified transcripts cannot be replaced.',true);
+   const textarea=card?.querySelector('[data-transcript]');
+   if(!textarea)return;
+   textarea.value=chosen.transcript;
+   comparisonSelections.set(id,{model_name:chosen.model_name,segments:chosen.segments});
+   textarea.focus();
+   toast('Selected '+(providerLabels[providerChoice]||providerChoice)+'. Review this draft and click Save transcript edits.');
+   return;
+  }
+  if(action==='compare'){
+   if(c.transcript_status==='human_verified')return toast('Already verified: create a new clip before running comparison.',true);
+   const first=card?.querySelector('[data-compare-a]')?.value;
+   const second=card?.querySelector('[data-compare-b]')?.value;
+   if(!first||!second||first===second)return toast('Choose two different AI providers.',true);
+   for(const provider of [first,second]){
+    if(providerStatuses?.[provider]?.configured===false)return toast((providerLabels[provider]||provider)+' needs an API key in Supabase.',true);
+    if(provider==='gemini'&&!card?.querySelector('[data-gemini-consent]')?.checked)return toast('Confirm permission for Google Gemini processing.',true);
+    if(provider==='deepgram'&&!card?.querySelector('[data-deepgram-consent]')?.checked)return toast('Confirm permission for Deepgram processing.',true);
+   }
+   if(!window.confirm('Run two external AI transcription requests for this clip? Both may consume credits or quota. Your saved transcript will not be changed.'))return;
+   const compareButton=card?.querySelector('[data-clip-action="compare"]');
+   if(compareButton)compareButton.disabled=true;
+   try{
+    toast('Comparing '+providerLabels[first]+' against '+providerLabels[second]+'…');
+    const result=await api('compare',{clip_id:id,providers:[first,second],confirm_api_usage:true,
+      allow_google_data_use:card?.querySelector('[data-gemini-consent]')?.checked===true,
+      allow_deepgram_processing:card?.querySelector('[data-deepgram-consent]')?.checked===true});
+    comparisonResults.set(id,Array.isArray(result.results)?result.results:[]);
+    const host=card?.querySelector('[data-comparison-results]');
+    if(host){
+     const temp=document.createElement('template');
+     temp.innerHTML=comparisonMarkup(id);
+     host.replaceWith(temp.content);
+    }
+    const count=(result.results||[]).filter(item=>Boolean(item.transcript)).length;
+    toast(count+' of 2 drafts generated. Choose, review and save one.',count===0);
+   }finally{if(compareButton?.isConnected)compareButton.disabled=false}
+   return;
+  }
   if(action==='transcribe'){
    if(c.transcript_status==='human_verified')return toast('Human-verified transcripts are protected from AI replacement.',true);
    const provider=providerSelections.get(id)||'groq';
@@ -467,7 +510,7 @@ function bind(){
  $('editorSources').addEventListener('click',e=>{const node=e.target.closest('[data-editor-source]');if(node)selectSource(node.dataset.editorSource)});
  $('suggestionList').addEventListener('click',e=>{const node=e.target.closest('[data-suggestion-start]');if(node)chooseRange(Number(node.dataset.suggestionStart),Number(node.dataset.suggestionEnd))});
  $('clips').addEventListener('change',e=>{const selector=e.target.closest('[data-clip-provider]');if(selector && ['groq','openai','gemini','deepgram'].includes(selector.value))providerSelections.set(selector.dataset.clipProvider,selector.value)});
- $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id)});
+ $('clips').addEventListener('click',e=>{const node=e.target.closest('[data-clip-action]');if(node)clipAction(node.dataset.clipAction,node.dataset.id,node.dataset.provider)});
 }
 window.adatacoreDatasetStudio={
   async openImportedSource(id){
