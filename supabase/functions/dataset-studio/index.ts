@@ -108,17 +108,19 @@ async function download(source:any,userId:string){
  return {status:"downloaded",bytes:data.bytes.length};
 }
 
-type TranscriptProvider = "groq" | "openai" | "gemini";
+type TranscriptProvider = "groq" | "openai" | "gemini" | "deepgram";
 function providerInfo() {
  return {
   groq: {configured:Boolean(Deno.env.get("GROQ_API_KEY")?.trim()), model:"whisper-large-v3-turbo", timestamps:true},
   openai: {configured:Boolean(Deno.env.get("OPENAI_API_KEY")?.trim()), model:"gpt-transcribe", timestamps:false},
-  gemini: {configured:Boolean(Deno.env.get("GEMINI_API_KEY")?.trim()), model:"gemini-3.5-transcribe", timestamps:false, free_tier_data_use:true}
+  gemini: {configured:Boolean(Deno.env.get("GEMINI_API_KEY")?.trim()), model:"gemini-3.5-transcribe", timestamps:false, free_tier_data_use:true},
+  deepgram: {configured:Boolean(Deno.env.get("DEEPGRAM_API_KEY")?.trim()), model:"nova-3", timestamps:true, trial_credits:true}
  };
 }
 function safeProvider(raw:unknown):TranscriptProvider {
  if(raw==="openai")return "openai";
  if(raw==="gemini")return "gemini";
+ if(raw==="deepgram")return "deepgram";
  if(raw==="groq" || raw===undefined || raw===null)return "groq";
  throw Error("Unsupported transcription provider.");
 }
@@ -171,26 +173,56 @@ async function geminiTranscribe(bytes:Blob,key:string,language:string):Promise<{
  return {transcript,segments:[]};
 }
 
-async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:boolean,allowGoogleDataUse:boolean) {
- if(clip.transcript_status==="human_verified")throw Error("This clip was human verified. We won't overwrite a verified transcript. Use another clip for a new AI draft.");
- if(clip.transcript && !replaceExisting)throw Error("A transcript already exists. Confirm replacement before generating another draft.");
+
+async function deepgramTranscribe(bytes:Blob,key:string,language:string):Promise<{transcript:string,segments:any[]}> {
+ // Use a supported Nova-3 monolingual model; otherwise use the multilingual model for a language-detection fallback.
+ const supported=new Set(["hi","bn","gu","kn","mr","ne","pa","ta","te","ur","ml","kok","ks","sd","bo","doi","en"]);
+ const code=supported.has(language)?language:"multi";
+ const query=new URLSearchParams({model:"nova-3",language:code,punctuate:"true",filler_words:"true",smart_format:"false",mip_opt_out:"true"});
+ let response:Response;
+ try{
+  response=await fetch("https://api.deepgram.com/v1/listen?"+query.toString(),{
+   method:"POST",
+   headers:{"Authorization":"Token "+key,"Content-Type":"audio/wav"},
+   body:bytes,signal:AbortSignal.timeout(90000)
+  });
+ }catch(_){throw Error("Deepgram request timed out or could not connect. Your transcript remains unchanged.");}
+ if(!response.ok){
+  const status=response.status;
+  await response.body?.cancel();
+  if(status===401||status===403)throw Error("Deepgram rejected the API key. Check the key and its permissions in Deepgram Console.");
+  if(status===402)throw Error("Deepgram API credits are exhausted. The introductory credit balance is not unlimited.");
+  if(status===429)throw Error("Deepgram request or concurrency limit reached. Retry after the provider limit resets.");
+  if(status===400)throw Error("Deepgram rejected this audio or language (400). Try a different supported language setting.");
+  throw Error("Deepgram transcription failed (HTTP "+status+"). Check your Deepgram project.");
+ }
+ const output=await response.json();
+ const alternative=output?.results?.channels?.[0]?.alternatives?.[0];
+ const transcript=String(alternative?.transcript||"").trim().slice(0,30000);
+ if(!transcript)throw Error("Deepgram produced no spoken text. Your existing transcript was kept.");
+ const segments=Array.isArray(alternative?.words)?alternative.words.slice(0,600)
+  .filter((word:any)=>Number.isFinite(Number(word.start))&&Number.isFinite(Number(word.end)))
+  .map((word:any)=>({start:Number(word.start),end:Number(word.end),text:String(word.punctuated_word||word.word||"").slice(0,2000)})):[];
+ return {transcript,segments};
+}
+
+async function createDraft(clip:any,provider:TranscriptProvider,allowGoogleDataUse:boolean,allowDeepgramProcessing:boolean) {
  if(provider==="gemini" && !allowGoogleDataUse)throw Error("Google Gemini Free Tier may use submitted audio to improve products. Confirm processing rights and explicitly opt in for this recording.");
- const keyName=provider==="gemini"?"GEMINI_API_KEY":provider==="openai"?"OPENAI_API_KEY":"GROQ_API_KEY";
+ if(provider==="deepgram" && !allowDeepgramProcessing)throw Error("Confirm you have permission to send this recording to Deepgram for transcription.");
+ const keyName=provider==="gemini"?"GEMINI_API_KEY":provider==="deepgram"?"DEEPGRAM_API_KEY":provider==="openai"?"OPENAI_API_KEY":"GROQ_API_KEY";
  const key=Deno.env.get(keyName)?.trim();
- if(!key)throw Error(provider==="gemini"?"Gemini API key missing. Add GEMINI_API_KEY in Supabase Edge Function secrets.":provider==="openai"?"OpenAI API key is missing. Add OPENAI_API_KEY to Supabase Edge Function secrets. ChatGPT subscriptions do not supply API access.":"Groq API key is missing. Add GROQ_API_KEY to Supabase Edge Function secrets.");
+ if(!key)throw Error(provider==="gemini"?"Gemini API key missing. Add GEMINI_API_KEY in Supabase Edge Function secrets.":provider==="deepgram"?"Deepgram API key missing. Add DEEPGRAM_API_KEY in Supabase Edge Function secrets.":provider==="openai"?"OpenAI API key is missing. Add OPENAI_API_KEY to Supabase Edge Function secrets. ChatGPT subscriptions do not supply API access.":"Groq API key is missing. Add GROQ_API_KEY to Supabase Edge Function secrets.");
  const {data:bytes,error:e}=await db.storage.from(BUCKET).download(clip.storage_path);
  if(e||!bytes)throw Error("Stored clip is unavailable.");
  if(bytes.size>MAX)throw Error("Clip exceeds the audio transcription upload limit.");
- if(provider==="gemini"){
-  const language=String(clip.language||"").trim().toLowerCase();
-  const draft=await geminiTranscribe(bytes,key,language);
-  const {data:saved,error}=await db.from("dataset_studio_clips").update({
-   transcript:draft.transcript,transcript_segments:draft.segments,
-   transcript_status:"ai_draft",model_name:"gemini/gemini-3.5-transcribe",updated_at:new Date().toISOString()
-  }).eq("id",clip.id).neq("transcript_status","human_verified").select("id").maybeSingle();
-  if(error)throw Error("Gemini transcription succeeded but saving the result failed.");
-  if(!saved)throw Error("This transcript was verified while processing, so no AI changes were saved.");
-  return {transcript:draft.transcript,segments:draft.segments,transcript_status:"ai_draft",provider:"gemini",model_name:"gemini/gemini-3.5-transcribe",timestamps_available:false};
+
+ if(provider==="gemini") {
+  const draft=await geminiTranscribe(bytes,key,String(clip.language||"").toLowerCase());
+  return {...draft,transcript_status:"ai_draft",provider,model_name:"gemini/gemini-3.5-transcribe",timestamps_available:false};
+ }
+ if(provider==="deepgram") {
+  const draft=await deepgramTranscribe(bytes,key,String(clip.language||"").toLowerCase());
+  return {...draft,transcript_status:"ai_draft",provider,model_name:"deepgram/nova-3",timestamps_available:draft.segments.length>0};
  }
  const form=new FormData();
  form.append("file",bytes,"clip.wav");
@@ -245,14 +277,19 @@ async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:b
  const segments=Array.isArray(output.segments)?output.segments.slice(0,600)
   .filter((item:any)=>Number.isFinite(Number(item.start))&&Number.isFinite(Number(item.end)))
   .map((item:any)=>({start:Number(item.start),end:Number(item.end),text:String(item.text||"").slice(0,2000)})):[];
- // Guard against a concurrent user verifying this clip while the provider was processing.
- const {data:saved,error}=await db.from("dataset_studio_clips")
-   .update({transcript,transcript_segments:segments,transcript_status:"ai_draft",model_name:provider+"/"+model,updated_at:new Date().toISOString()})
-   .eq("id",clip.id).neq("transcript_status","human_verified")
-   .select("id").maybeSingle();
- if(error)throw Error("The AI draft was generated, but saving the result failed.");
- if(!saved)throw Error("The transcript was human verified while processing, so this draft was not saved.");
  return {transcript,segments,transcript_status:"ai_draft",provider,model_name:provider+"/"+model,timestamps_available:segments.length>0};
+}
+async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:boolean,allowGoogleDataUse:boolean,allowDeepgramProcessing:boolean) {
+ if(clip.transcript_status==="human_verified")throw Error("Human-verified transcripts are protected from AI replacement.");
+ if(clip.transcript && !replaceExisting)throw Error("Confirm replacement of the existing draft before generating another.");
+ const draft=await createDraft(clip,provider,allowGoogleDataUse,allowDeepgramProcessing);
+ const {data:saved,error}=await db.from("dataset_studio_clips").update({
+  transcript:draft.transcript,transcript_segments:draft.segments,transcript_status:"ai_draft",
+  model_name:draft.model_name,updated_at:new Date().toISOString()
+ }).eq("id",clip.id).neq("transcript_status","human_verified").select("id").maybeSingle();
+ if(error)throw Error("The draft was generated, but saving the result failed.");
+ if(!saved)throw Error("This transcript was human-verified while processing; AI changes were not saved.");
+ return draft;
 }
 
 Deno.serve(async(req)=>{
@@ -270,16 +307,27 @@ Deno.serve(async(req)=>{
   if(rError||pError||!roles?.length||profile?.accountStatus!=="active")return err("Super Admin access is required.",403);
   const body=await req.json();
   const action=String(body?.action||"");
-  if(!["inspect","download","transcribe","provider_status"].includes(action))return err("Unknown operation.");
+  if(!["inspect","download","transcribe","compare","provider_status"].includes(action))return err("Unknown operation.");
   if(action==="provider_status")return result({providers:providerInfo()});
-  if(action==="transcribe"){
+  if(action==="transcribe"||action==="compare"){
    if(!/^[0-9a-f-]{36}$/i.test(body.clip_id||""))return err("Invalid clip identifier.");
-   const provider=safeProvider(body.provider);
    const {data:clip,error}=await db.from("dataset_studio_clips").select("*").eq("id",body.clip_id).maybeSingle();
    if(error||!clip)return err("Clip not found.",404);
-   if(clip.transcript_status==="human_verified")return err("Human-verified transcripts cannot be overwritten by AI.",409);
+   if(clip.transcript_status==="human_verified")return err("Human-verified transcripts cannot be overwritten or rerun through this tool.",409);
+   if(action==="compare"){
+    if(body.confirm_api_usage!==true)return err("Confirm that comparison calls two external AI providers and uses API credits.",400);
+    if(!Array.isArray(body.providers)||body.providers.length!==2||body.providers[0]===body.providers[1])return err("Choose exactly two different providers.",400);
+    const providers=body.providers.map(safeProvider);
+    const responses=await Promise.allSettled(providers.map(provider=>createDraft(clip,provider,body.allow_google_data_use===true,body.allow_deepgram_processing===true)));
+    const results=responses.map((r,i)=>r.status==="fulfilled"
+     ?{provider:providers[i],transcript:r.value.transcript,segments:r.value.segments,model_name:r.value.model_name}
+     :{provider:providers[i],error:r.reason instanceof Error?r.reason.message:"Transcription failed."});
+    // Deliberately no database write: the admin must select and explicitly save a result.
+    return result({results,non_persistent:true});
+   }
+   const provider=safeProvider(body.provider);
    if(clip.transcript&&!body.replace_existing)return err("Confirm replacement of the existing draft before rerunning transcription.",409);
-   return result(await transcribe(clip,provider,body.replace_existing===true,body.allow_google_data_use===true));
+   return result(await transcribe(clip,provider,body.replace_existing===true,body.allow_google_data_use===true,body.allow_deepgram_processing===true));
   }
   if(!/^[0-9a-f-]{36}$/i.test(body.source_id||""))return err("Invalid source identifier.");
   const {data:source,error}=await db.from("dataset_studio_sources").select("*").eq("id",body.source_id).maybeSingle();
