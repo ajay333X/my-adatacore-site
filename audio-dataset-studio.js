@@ -18,6 +18,21 @@ const providerSelections=new Map();
 const comparisonResults=new Map();
 const comparisonSelections=new Map();
 const providerLabels={groq:'Groq Whisper',openai:'OpenAI GPT',gemini:'Gemini 3.5',deepgram:'Deepgram Nova-3'};
+
+function compareOptions(current){
+ return ['deepgram','gemini','groq','openai'].map(provider=>'<option value="'+provider+'"'+(current===provider?' selected':'')+'>'+providerLabels[provider]+'</option>').join('');
+}
+function comparisonMarkup(id){
+ const results=comparisonResults.get(id);
+ if(!results?.length)return '<div data-comparison-results="'+id+'" class="ds-compare-results"></div>';
+ const cards=results.map(r=>{
+  if(r.error)return '<article class="ds-compare-result"><strong>'+esc(providerLabels[r.provider]||r.provider)+'</strong><p class="ds-provider-note">'+esc(r.error)+'</p></article>';
+  return '<article class="ds-compare-result"><strong>'+esc(providerLabels[r.provider]||r.provider)+'</strong><div class="ds-comparison-transcript">'+esc(r.transcript)+'</div>'+
+   '<button type="button" class="ds-btn ds-btn-small ds-btn-primary" data-clip-action="choose-comparison" data-id="'+id+'" data-provider="'+esc(r.provider)+'">Use this draft in editor</button></article>';
+ }).join('');
+ return '<div data-comparison-results="'+id+'" class="ds-compare-results">'+cards+'</div>';
+}
+
 let providerStatuses=null;
 let checkingProviders=false;
 async function checkTranscriptionProviders(){
