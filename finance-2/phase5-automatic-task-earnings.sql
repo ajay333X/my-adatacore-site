@@ -35,7 +35,7 @@ begin
  if tg_op='UPDATE' then
    if old."earnedAmount" is distinct from new."earnedAmount"
     and exists(select 1 from app_private.finance2_task_earnings where submission_id=old.id)
-   then raise exception 'FINANCE2_RATE_SNAPSHOT_LOCKED';end if;
+   then new."earnedAmount":=old."earnedAmount";end if;
    return new;
  end if;
  if new.task_id is null then return new;end if;
