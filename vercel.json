@@ -46,6 +46,10 @@
   ],
   "rewrites": [
     {
+      "source": "/admin/finance-2",
+      "destination": "/admin-finance2"
+    },
+    {
       "source": "/admin/audio-dataset-applications",
       "destination": "/audio-dataset-applications"
     },
