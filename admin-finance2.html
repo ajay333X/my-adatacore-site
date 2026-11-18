@@ -43,7 +43,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <label>Currency<select id="currency"><option>USD</option></select></label>
 <label>L1 rate<input id="l1" type="number" min="0" step="0.0001"></label>
 <label>L2 rate<input id="l2" type="number" min="0" step="0.0001"></label>
-</div><p class="muted">Automatic USD calculations are enabled for new L1 task submissions using per-task or verified transcription audio-minute rates. Rates are snapshotted; existing submissions and balances are not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
+</div><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task or verified audio-minute rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
 </section>
 <section class="panel">
 <h2>Review-side compensation recommendation</h2>
@@ -57,7 +57,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <p class="muted">Recommendation and authorization are logged separately. Authorization alone does not transfer money.</p>
 </section>
 </div>
-<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks are calculated using their project's rate version. Before approval, eligible earnings remain a separate payable obligation; after approval, the existing wallet workflow handles settlement.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div></section>
+<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Eligible earnings before approval remain a separate payable obligation; L1 approvals use the existing wallet settlement process.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
 <section class="panel"><h2>Project spend — payment exceptions</h2><div id="stats" class="stats"></div>
 <p class="muted">Amounts below cover only Finance 2.0 exceptions; use Existing Finance for legacy approved submissions, expenses and budgets. No currencies are combined.</p>
 <div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
@@ -90,7 +90,7 @@ el('version').textContent='Current version: '+(p.version||'Legacy defaults');
 async function load(){
 setBusy(true);
 try{
-const [data,autoEarnings]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000})]);projects=data.projects||[];
+const [data,autoEarnings,l2Earnings]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000})]);projects=data.projects||[];
 const selected=el('project').value;el('project').replaceChildren();
 projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
 if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
@@ -112,6 +112,17 @@ for(const e of Array.isArray(autoEarnings)?autoEarnings:[]){
  [e.submission_id,e.project,e.role,Number(e.units).toFixed(3),money(e.rate,e.currency),money(amount,e.currency),
   e.manual_paid_at?'Externally paid':e.eligibility,e.quality_status,e.rule_version].forEach(x=>td(row,x));
  ar.appendChild(row);
+}
+const rr=el('reviewEarningRows');rr.replaceChildren();
+for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
+ const amount=Number(e.amount||0);
+ if(e.eligibility==='eligible')autoTotals.eligible+=amount;
+ else if(e.eligibility==='pending')autoTotals.pending+=amount;
+ const row=document.createElement('tr');
+ [e.source+' #'+e.id,e.project,String(e.reviewer_id||'').slice(0,8),
+ Number(e.units||0).toFixed(3),money(e.rate,e.currency),money(amount,e.currency),
+ e.eligibility,e.decision].forEach(x=>td(row,x));
+ rr.appendChild(row);
 }
 const as=el('autoStats');as.replaceChildren();
 for(const [label,val] of [['Eligible before QA approval',autoTotals.eligible],['Pending review or manual rule',autoTotals.pending],
