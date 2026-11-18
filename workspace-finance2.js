@@ -63,8 +63,9 @@ async function load(){
    holder.append(heading);
    for(const x of l2){
     const amount=Number(x.amount||0);
-    let status=x.eligibility==='eligible'?'Review completed · eligible for payout':'Calculated · awaiting finance policy';
-    if(x.eligibility==='eligible')totals.eligible+=amount;
+    let status=x.paid_at?'Externally paid · '+new Date(x.paid_at).toLocaleDateString():(x.eligibility==='eligible'?'Review completed · eligible for payout':'Calculated · awaiting finance policy');
+    if(x.paid_at)totals.paid+=amount;
+    else if(x.eligibility==='eligible')totals.eligible+=amount;
     else if(x.eligibility==='pending')totals.pending+=amount;
     holder.append(row(x,'L2 review · '+x.source+' · '+Number(x.units||0).toFixed(3)+' units · rate v'+x.rule_version,status));
    }
