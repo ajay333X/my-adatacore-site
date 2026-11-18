@@ -31,19 +31,19 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <main class="wrap">
 <h1>Contributor compensation control</h1>
 <p>Configure project compensation rules, record reviewer recommendations, and authorize compensation exceptions without changing task quality outcomes.</p>
-<div class="banner">Controlled rollout: setting a policy does not automatically alter existing contributor balances or release payments. No automatic transfers are performed. Manual payout recording requires an actual external transfer and its reference. Legacy balances remain separate.</div>
+<div class="banner">Automatic task earnings are active for newly submitted tasks in projects where you save a supported compensation policy. Existing tasks are not retroactively recalculated. Earnings appear before approval when "Valid submission" is selected; bank transfers remain disabled. USD only for now to protect the existing wallet.</div>
 <p id="notice" role="status"></p>
 <div class="grid">
 <section class="panel">
 <h2>Project compensation rules</h2>
 <div class="fields">
 <label class="wide">Project<select id="project"></select></label>
-<label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_work_hour">Per verified work hour</option><option value="per_audio_minute">Per audio minute</option><option value="per_1000_words">Per 1,000 words</option></select></label>
-<label>Eligibility rule<select id="trigger"><option value="approved">On approval (legacy)</option><option value="valid_submission">On valid submission (requires integration)</option><option value="review_complete">Review complete (requires integration)</option><option value="manual">Manual authorization</option></select></label>
-<label>Currency<select id="currency"><option>USD</option><option>INR</option><option>EUR</option><option>GBP</option></select></label>
+<label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_audio_minute">Per audio minute</option></select></label>
+<label>Eligibility rule<select id="trigger"><option value="approved">On approval (legacy)</option><option value="valid_submission">On valid submission — earn immediately</option><option value="review_complete">On review completion</option><option value="manual">Manual authorization</option></select></label>
+<label>Currency<select id="currency"><option>USD</option></select></label>
 <label>L1 rate<input id="l1" type="number" min="0" step="0.0001"></label>
 <label>L2 rate<input id="l2" type="number" min="0" step="0.0001"></label>
-</div><div class="actions"><button id="save">Save new rate version</button><span id="version" class="muted"></span></div>
+</div><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task or verified audio-minute rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
 </section>
 <section class="panel">
 <h2>Review-side compensation recommendation</h2>
@@ -57,9 +57,10 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <p class="muted">Recommendation and authorization are logged separately. Authorization alone does not transfer money.</p>
 </section>
 </div>
-<section class="panel"><h2>Project spend — payment exceptions</h2><div id="stats" class="stats"></div>
-<p class="muted">Amounts below cover only Finance 2.0 exceptions; use Existing Finance for legacy approved submissions, expenses and budgets. No currencies are combined.</p>
-<div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
+<section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Project totals cover all records; the detail tables below show the most recent 1,000. Eligible earnings before approval remain separate from the existing wallet.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
+<section class="panel"><h2>Project-by-project earning burn</h2><div id="stats" class="stats"></div>
+<p class="muted">Automatically earned but unapproved work is shown separately from legacy-approved amounts and manual exceptions. Do not add columns together without reconciling overlaps. Existing Finance still manages approved payouts, expenses and budgets.</p>
+<div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Auto-earned, unapproved</th><th>Calculated, pending</th><th>Legacy-approved</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
 </section>
 <section class="panel" style="margin-top:15px"><h2>Finance decisions</h2>
 <div class="fields"><label>Submission ID for manual payout record<input id="paidSubmission" type="number" min="1" step="1"></label><label>External transfer reference<input id="paidReference" placeholder="Bank UTR / transaction reference"></label></div>
@@ -89,13 +90,62 @@ el('version').textContent='Current version: '+(p.version||'Legacy defaults');
 async function load(){
 setBusy(true);
 try{
-const data=await rpc('finance2_read');projects=data.projects||[];
+const [data,autoEarnings,l2Earnings,projectTotals]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000}),rpc('finance2_project_earning_totals')]);projects=data.projects||[];
 const selected=el('project').value;el('project').replaceChildren();
 projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
 if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
 projectSelected();
+const rollups={};
+for(const e of Array.isArray(projectTotals)?projectTotals:[]){
+ rollups[Number(e.project_id)]={eligible:Number(e.l1_eligible||0)+Number(e.l2_eligible||0),
+ pending:Number(e.l1_pending||0)+Number(e.l2_pending||0),
+ legacy:Number(e.legacy_approved||0)};
+}
 const rows=el('projectRows');rows.replaceChildren();for(const p of projects){
-const r=document.createElement('tr');[p.name,p.currency,money(p.exceptions_eligible,p.currency),money(p.exceptions_paid,p.currency),p.version].forEach(v=>td(r,v));rows.appendChild(r);
+ const x=rollups[Number(p.id)]||{eligible:0,pending:0,legacy:0};
+ const r=document.createElement('tr');
+ [p.name,p.currency,money(x.eligible,p.currency),money(x.pending,p.currency),money(x.legacy,p.currency),
+  money(p.exceptions_eligible,p.currency),money(p.exceptions_paid,p.currency),p.version].forEach(v=>td(r,v));rows.appendChild(r);
+}
+const ar=el('autoRows');ar.replaceChildren();
+const autoTotals={eligible:0,pending:0,legacy:0,paid:0};const seen=new Set();
+for(const e of Array.isArray(autoEarnings)?autoEarnings:[]){
+ if(seen.has(e.submission_id))continue;seen.add(e.submission_id);
+ const isApproved=String(e.quality_status||'').toLowerCase()==='approved';
+ const amount=Number(e.amount||0);
+ if(e.manual_paid_at)autoTotals.paid+=amount;
+ else if(isApproved)autoTotals.legacy+=amount;
+ else if(e.eligibility==='eligible')autoTotals.eligible+=amount;
+ else if(e.eligibility==='pending')autoTotals.pending+=amount;
+ const row=document.createElement('tr');
+ [e.submission_id,e.project,e.role,Number(e.units).toFixed(3),money(e.rate,e.currency),money(amount,e.currency),
+  e.manual_paid_at?'Externally paid':e.eligibility,e.quality_status,e.rule_version].forEach(x=>td(row,x));
+ ar.appendChild(row);
+}
+const rr=el('reviewEarningRows');rr.replaceChildren();
+for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
+ const amount=Number(e.amount||0);
+ if(e.eligibility==='eligible')autoTotals.eligible+=amount;
+ else if(e.eligibility==='pending')autoTotals.pending+=amount;
+ const row=document.createElement('tr');
+ [e.source+' #'+e.id,e.project,String(e.reviewer_id||'').slice(0,8),
+ Number(e.units||0).toFixed(3),money(e.rate,e.currency),money(amount,e.currency),
+ e.eligibility,e.decision].forEach(x=>td(row,x));
+ rr.appendChild(row);
+}
+Object.assign(autoTotals,(Array.isArray(projectTotals)?projectTotals:[]).reduce((acc,e)=>{
+ acc.eligible+=Number(e.l1_eligible||0)+Number(e.l2_eligible||0);
+ acc.pending+=Number(e.l1_pending||0)+Number(e.l2_pending||0);
+ acc.legacy+=Number(e.legacy_approved||0);
+ acc.paid+=Number(e.exception_paid||0);
+ return acc;
+},{eligible:0,pending:0,legacy:0,paid:0}));
+const as=el('autoStats');as.replaceChildren();
+for(const [label,val] of [['Eligible before QA approval',autoTotals.eligible],['Pending review or manual rule',autoTotals.pending],
+ ['Approved — handled by legacy wallet',autoTotals.legacy],['External manual payments recorded',autoTotals.paid]]){
+ const card=document.createElement('div');card.className='stat';
+ const small=document.createElement('small');small.textContent=label;
+ const amount=document.createElement('b');amount.textContent=money(val,'USD');card.append(small,amount);as.appendChild(card);
 }
 const ors=el('overrideRows');ors.replaceChildren();for(const o of data.overrides||[]){
 const r=document.createElement('tr');[o.submission_id,o.project_id,o.submission_status,o.state,money(o.amount,o.currency),o.paid_at?'Yes':'No',o.reason].forEach(v=>td(r,v));ors.appendChild(r);
@@ -115,7 +165,7 @@ el('project').addEventListener('change',projectSelected);
 el('refresh').addEventListener('click',load);
 el('save').addEventListener('click',async()=>{setBusy(true);try{
 await rpc('finance2_set_project_rule',{p_project_id:Number(el('project').value),p_model:el('model').value,p_trigger:el('trigger').value,p_currency:el('currency').value,p_l1_rate:Number(el('l1').value),p_l2_rate:Number(el('l2').value)});
-await load();notice('Project rule saved and versioned. Legacy earning logic remains unchanged.');
+await load();notice('Project rule activated for new submissions. Earnings are now calculated automatically under the selected policy; no bank transfer is initiated.');
 }catch(e){notice(e.message,true)}finally{setBusy(false)}});
 el('recordPaid').addEventListener('click',async()=>{setBusy(true);try{
 const sid=Number(el('paidSubmission').value), ref=el('paidReference').value.trim();
