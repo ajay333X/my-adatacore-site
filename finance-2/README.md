@@ -60,3 +60,16 @@ Open **/admin/finance-2**, select one project, choose *per task* or *per audio m
 - Rollback-only tests passed: unauthorized settlement attempt, first successful settlement, idempotent duplicate, different-reference rejection, immutable-row update rejection, and project total reconciliation.
 - Bank transfer initiation remains disabled. This is manual *recording* of transfers that occurred outside the platform.
 - Remaining issues before a defensible 10/10: real-browser cross-role verification; full compatibility with all specialized voice-task models; trusted work-hour and word-count units; multi-currency settlement in a separate wallet; external bank statement reconciliation with evidence; end-to-end refund/dispute handling. Do not claim these are complete.
+
+
+## Reconciliation health (read-only)
+Finance admins now have a dedicated reconciliation health panel. It checks:
+- task amount drift versus original rate snapshot;
+- arithmetic mismatches between verified units, rate and amount;
+- L2 settlement amounts and payee consistency;
+- double-paid submissions across Finance 2.0 and the legacy payout system;
+- manual override amount drift and unresolved approved exceptions;
+- unsupported currencies or compensation models;
+- overdue eligible-but-unpaid task and reviewer earnings.
+
+This is a **read-only audit**, not automatic error correction. `finance2_reconciliation_health` checks the complete earning tables rather than only paginated UI results, and is restricted to finance-capable staff. Authenticated browser role testing and independent production payment reconciliation still remain necessary before claiming 10/10.

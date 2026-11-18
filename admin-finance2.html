@@ -32,7 +32,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <h1>Contributor compensation control</h1>
 <p>Configure project compensation rules, record reviewer recommendations, and authorize compensation exceptions without changing task quality outcomes.</p>
 <div class="banner">Automatic task earnings are active for newly submitted tasks in projects where you save a supported compensation policy. Existing tasks are not retroactively recalculated. Earnings appear before approval when "Valid submission" is selected; bank transfers remain disabled. USD only for now to protect the existing wallet.</div>
-<p id="notice" role="status"></p>
+<p id="notice" role="status"></p><section class="panel" style="margin-top:14px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><h2 style="margin-bottom:4px">Reconciliation health</h2><p>Checks earnings, recorded transfers and payout consistency. No money is moved.</p></div><strong id="healthStatus">Checking…</strong></div><div id="healthOverview" class="muted"></div><div class="scroll" style="margin-top:10px"><table><thead><tr><th>Severity</th><th>Financial control</th><th>Findings</th></tr></thead><tbody id="healthRows"></tbody></table></div></section>
 <div class="grid">
 <section class="panel">
 <h2>Project compensation rules</h2>
@@ -97,7 +97,10 @@ updateRateUnitHint();
 async function load(){
 setBusy(true);
 try{
-const [data,autoEarnings,l2Earnings,projectTotals]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000}),rpc('finance2_project_earning_totals')]);projects=data.projects||[];
+const [data,autoEarnings,l2Earnings,projectTotals,health]=await Promise.all([rpc('finance2_read'),rpc('finance2_admin_task_earnings',{p_limit:1000}),rpc('finance2_admin_review_earnings',{p_limit:1000}),rpc('finance2_project_earning_totals'),rpc('finance2_reconciliation_health')]);projects=data.projects||[];
+el('healthStatus').textContent=String(health.status||'unknown').toUpperCase();el('healthStatus').style.color=health.status==='critical'?'#b12535':health.status==='warning'?'#966300':'#21634a';
+el('healthOverview').textContent=health.configured_projects+' configured project(s) · '+health.task_earning_records+' task earnings · '+health.review_earning_records+' review earnings · '+health.manual_review_settlements+' recorded L2 external transfers';
+const healthRows=el('healthRows');healthRows.replaceChildren();for(const c of health.checks||[]){const row=document.createElement('tr');[c.severity,c.issue,c.count].forEach(v=>td(row,v));if(Number(c.count)>0)row.style.fontWeight='700';healthRows.appendChild(row);}
 const selected=el('project').value;el('project').replaceChildren();
 projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
 if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
