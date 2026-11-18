@@ -129,6 +129,7 @@ try{const {data:{user}}=await db.auth.getUser();if(!user){location.replace('/aut
 const access=await rpc('get_my_admin_access');
 if(!access?.allowed||!access.is_super_admin&&!access.capabilities?.includes('finance')){location.replace('/workspace');return}
 await load();
+const preselected=new URLSearchParams(location.search).get('submission');if(preselected && /^\d+$/.test(preselected))el('submission').value=preselected;
 }catch(e){notice('Finance access verification failed: '+e.message,true)}
 })();
 </script>
