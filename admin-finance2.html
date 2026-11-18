@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Finance 2.0 — Adatacore</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#182035;background:#f5f7fc}
+*{box-sizing:border-box}body{margin:0}header{background:white;border-bottom:1px solid #dfe4ec;padding:18px max(22px,calc((100vw - 1250px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
+header a{color:#4535a0;text-decoration:none;font-size:13px;font-weight:650}.wrap{max-width:1250px;margin:auto;padding:24px}
+h1{font-size:28px;letter-spacing:-.03em;margin:0 0 8px}h2{font-size:16px;margin:0 0 14px}p{color:#596478;font-size:13px;line-height:1.6}
+.banner{background:#fdf7e9;border:1px solid #e9d4a0;padding:13px 16px;border-radius:12px;color:#6a4d16;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:18px 0}.panel{padding:20px;border:1px solid #dfe4ec;border-radius:16px;background:#fff;box-shadow:0 3px 12px #18203508;min-width:0}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{display:grid;gap:6px;font-size:12px;color:#535e75;font-weight:650}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cfd6e4;border-radius:9px;font:inherit;font-size:13px;color:#182035;background:white}
+textarea{resize:vertical;min-height:76px}.wide{grid-column:1/-1}
+button{border:0;background:#4834ad;color:white;padding:11px 15px;border-radius:9px;font:650 12px Inter,system-ui;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.secondary{background:#edf0f8;color:#28345c}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px}
+.muted{font-size:12px;color:#6d7586}#notice{font-size:12px;min-height:20px;color:#245f48}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{padding:15px;background:#f7f8fc;border-radius:12px}
+.stat b{display:block;font-size:21px;margin-top:8px}.stat small{color:#727b8d}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;border-bottom:1px solid #e9edf3;text-align:left;white-space:nowrap}
+.scroll{overflow:auto;max-height:440px}
+@media(max-width:800px){.grid,.fields,.stats{grid-template-columns:1fr}.wide{grid-column:auto}.wrap{padding:14px}header{padding:14px}}
+</style>
+</head>
+<body>
+<header><strong>Adatacore / Finance 2.0</strong><nav><a href="/admin#finance-ledger">Existing Finance</a> · <a href="/admin">Admin Console</a></nav></header>
+<main class="wrap">
+<h1>Contributor compensation control</h1>
+<p>Configure project compensation rules, record reviewer recommendations, and authorize compensation exceptions without changing task quality outcomes.</p>
+<div class="banner">Controlled rollout: setting a policy does not automatically alter existing contributor balances or release payments. Payment disbursement and legacy reconciliation remain disabled until verified.</div>
+<p id="notice" role="status"></p>
+<div class="grid">
+<section class="panel">
+<h2>Project compensation rules</h2>
+<div class="fields">
+<label class="wide">Project<select id="project"></select></label>
+<label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_work_hour">Per verified work hour</option><option value="per_audio_minute">Per audio minute</option><option value="per_1000_words">Per 1,000 words</option></select></label>
+<label>Eligibility rule<select id="trigger"><option value="approved">On approval (legacy)</option><option value="valid_submission">On valid submission (requires integration)</option><option value="review_complete">Review complete (requires integration)</option><option value="manual">Manual authorization</option></select></label>
+<label>Currency<select id="currency"><option>USD</option><option>INR</option><option>EUR</option><option>GBP</option></select></label>
+<label>L1 rate<input id="l1" type="number" min="0" step="0.0001"></label>
+<label>L2 rate<input id="l2" type="number" min="0" step="0.0001"></label>
+</div><div class="actions"><button id="save">Save new rate version</button><span id="version" class="muted"></span></div>
+</section>
+<section class="panel">
+<h2>Review-side compensation recommendation</h2>
+<p>Reviewers can recommend that a submitted task be paid despite rejection. A finance administrator must separately authorize the recommendation.</p>
+<div class="fields">
+<label>Submission ID<input id="submission" type="number" min="1" step="1"></label>
+<label>Payment decision<select id="decision"><option value="eligible">Eligible</option><option value="hold">Hold</option><option value="exclude">Exclude</option></select></label>
+<label class="wide">Reason<textarea id="reason" placeholder="Required — explain the payment decision"></textarea></label>
+</div>
+<div class="actions"><button id="recommend" class="secondary">Record QA recommendation</button><button id="authorize">Finance authorize</button></div>
+<p class="muted">Recommendation and authorization are logged separately. Authorization alone does not transfer money.</p>
+</section>
+</div>
+<section class="panel"><h2>Project spend — payment exceptions</h2><div id="stats" class="stats"></div>
+<p class="muted">Amounts below cover only Finance 2.0 exceptions; use Existing Finance for legacy approved submissions, expenses and budgets. No currencies are combined.</p>
+<div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
+</section>
+<section class="panel" style="margin-top:15px"><h2>Finance decisions</h2>
+<div class="actions"><button id="refresh" class="secondary">Refresh</button></div>
+<div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Quality</th><th>Payment</th><th>Amount</th><th>Paid</th><th>Reason</th></tr></thead><tbody id="overrideRows"></tbody></table></div>
+</section>
+</main>
+<script>
+(async()=>{
+'use strict';
+const db=supabase.createClient('https://llmhyezgcnbognmmsnzq.supabase.co','sb_publishable_QfaSTpmmj6reyY-kCsmhng_7PKvCGml',{auth:{persistSession:true,autoRefreshToken:true}});
+const el=id=>document.getElementById(id), money=(n,c)=>new Intl.NumberFormat(undefined,{style:'currency',currency:c||'USD'}).format(Number(n||0));
+const notice=(s,error=false)=>{el('notice').textContent=s;el('notice').style.color=error?'#aa293c':'#245f48'};
+const rpc=async(name,args={})=>{const {data,error}=await db.rpc(name,args);if(error)throw Error(error.message);return data};
+let projects=[];
+const opt=(label,value)=>{const x=document.createElement('option');x.textContent=label;x.value=value;return x};
+const td=(tr,value)=>{const c=document.createElement('td');c.textContent=String(value??'—');tr.appendChild(c)};
+const setBusy=flag=>['save','recommend','authorize','refresh'].forEach(id=>el(id).disabled=flag);
+const requireReason=()=>{const r=el('reason').value.trim();if(r.length<5)throw Error('Provide a meaningful reason (at least 5 characters).');return r};
+function projectSelected(){
+const p=projects.find(x=>String(x.id)===el('project').value);if(!p)return;
+el('model').value=p.model||'per_task';el('trigger').value=p.earning_trigger||'approved';
+el('currency').value=p.currency||'USD';el('l1').value=p.l1_rate??0;el('l2').value=p.l2_rate??0;
+el('version').textContent='Current version: '+(p.version||'Legacy defaults');
+}
+async function load(){
+setBusy(true);
+try{
+const data=await rpc('finance2_read');projects=data.projects||[];
+const selected=el('project').value;el('project').replaceChildren();
+projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
+if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
+projectSelected();
+const rows=el('projectRows');rows.replaceChildren();for(const p of projects){
+const r=document.createElement('tr');[p.name,p.currency,money(p.exceptions_eligible,p.currency),money(p.exceptions_paid,p.currency),p.version].forEach(v=>td(r,v));rows.appendChild(r);
+}
+const ors=el('overrideRows');ors.replaceChildren();for(const o of data.overrides||[]){
+const r=document.createElement('tr');[o.submission_id,o.project_id,o.submission_status,o.state,money(o.amount,o.currency),o.paid_at?'Yes':'No',o.reason].forEach(v=>td(r,v));ors.appendChild(r);
+}
+const byCurrency={};for(const p of projects){const c=p.currency||'USD';if(!byCurrency[c])byCurrency[c]={eligible:0,paid:0};byCurrency[c].eligible+=Number(p.exceptions_eligible||0);byCurrency[c].paid+=Number(p.exceptions_paid||0)}
+const stats=el('stats');stats.replaceChildren();for(const [currency,s] of Object.entries(byCurrency)){
+const card=document.createElement('div');card.className='stat';
+const label=document.createElement('small');label.textContent=currency+' / exception liabilities';
+const value=document.createElement('b');value.textContent=money(s.eligible,currency);
+const sub=document.createElement('small');sub.textContent='Paid: '+money(s.paid,currency);card.append(label,value,sub);stats.appendChild(card);
+}
+notice('Finance settings loaded. Current legacy payouts are unchanged.');
+}catch(e){notice('Finance 2.0 API is not available or access is restricted: '+e.message,true)}
+finally{setBusy(false)}
+}
+el('project').addEventListener('change',projectSelected);
+el('refresh').addEventListener('click',load);
+el('save').addEventListener('click',async()=>{setBusy(true);try{
+await rpc('finance2_set_project_rule',{p_project_id:Number(el('project').value),p_model:el('model').value,p_trigger:el('trigger').value,p_currency:el('currency').value,p_l1_rate:Number(el('l1').value),p_l2_rate:Number(el('l2').value)});
+await load();notice('Project rule saved and versioned. Legacy earning logic remains unchanged.');
+}catch(e){notice(e.message,true)}finally{setBusy(false)}});
+el('recommend').addEventListener('click',async()=>{setBusy(true);try{
+await rpc('finance2_recommend',{p_submission_id:Number(el('submission').value),p_decision:el('decision').value,p_reason:requireReason()});
+notice('Review recommendation recorded. No balance change or payment occurred.');
+}catch(e){notice(e.message,true)}finally{setBusy(false)}});
+el('authorize').addEventListener('click',async()=>{setBusy(true);try{
+const id=Number(el('submission').value), decision=el('decision').value,reason=requireReason();
+if(!id||!confirm('Authorize '+decision+' for submission '+id+'? This does NOT transfer money.'))return;
+await rpc('finance2_authorize',{p_submission_id:id,p_state:decision,p_reason:reason});
+await load();notice('Finance override authorized; disbursement remains disabled.');
+}catch(e){notice(e.message,true)}finally{setBusy(false)}});
+try{const {data:{user}}=await db.auth.getUser();if(!user){location.replace('/auth');return}
+const access=await rpc('get_my_admin_access');
+if(!access?.allowed||!access.is_super_admin&&!access.capabilities?.includes('finance')){location.replace('/workspace');return}
+await load();
+}catch(e){notice('Finance access verification failed: '+e.message,true)}
+})();
+</script>
+</body></html>
