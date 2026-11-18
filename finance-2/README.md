@@ -1,32 +1,37 @@
-# Finance 2.0 — safe implementation slice
+# Finance 2.0 — controlled release
 
-Status: **foundation only, not installed or deployed**.
+## Implemented
+- Dedicated protected admin interface `/admin/finance-2`, accessed from the existing admin and Project Lab navigation.
+- Project-level payment models, earning-trigger preferences, L1/L2 rate configuration, and audit-backed rate versions.
+- Reviewer recommendation controls in the L2 Review Results interface. A QA recommendation is separate from finance authorization.
+- Finance-admin authorization of non-approved submission payment eligibility/hold/exclusion, with written reason.
+- Manual payout reconciliation for these exceptions: authorized finance staff record a **transfer already sent externally**, with a unique submission record and bank reference; no transfer is initiated.
+- Contributor earnings section lists their own authorized exceptions and recorded external payout status, separately from their existing wallet.
+- Existing project budget and spend dashboard remains intact, with a separate Finance 2.0 exception-liability view.
+- Backend RPC functions restricted by existing finance and scoped QA permissions, with private RLS-protected tables.
+- A guard prevents Finance 2.0 payable exceptions from entering the legacy approved payment path until reconciled.
+- Existing legacy approved-task payments, balances, and payout batches are not modified.
 
-This branch introduces a private Postgres finance data model that is deliberately isolated from the existing Adatacore submission-payments, project rates, review screens, and contributor balances.
+## Verified
+- Supabase SQL migrations phase 2, 3, and 4 applied successfully; the earlier experimental private schema foundation is **not** applied.
+- Backend read, rate update, review recommendation, authorization, manual-paid recording, and project dashboard were exercised in an SQL transaction that was rolled back. The test left zero rate rules, exception records, review recommendations or audit entries.
+- Anonymous users have no direct table access; authenticated users cannot directly write the private finance tables.
+- JavaScript syntax validated for entry pages and finance/review scripts.
+- Vercel preview build succeeded. Browser-level QA, all role scenarios and actual money transfer testing remain outstanding.
 
-## Existing schema discovered
-- `public.project_lab` uses integer IDs and already has `l1_rate`, `l2_rate`, and transcription rate/currency.
-- `public.submissions` has integer IDs and `earnedAmount`, `status`, `workerUID`, and `projectTitle`.
-- `public.submission_payments` already tracks payment state.
-- `public.voice_l2_reviews` stores review decision/feedback.
-- Existing projects and recordings are in production. **Do not overwrite or backfill payments from these columns without reconciliation.**
+## Not yet automated — intentionally
+- Setting `valid_submission` or `review_complete` is **stored configuration**, not an automatic earning-accrual rule yet. Legacy approved work still follows the original payment processing.
+- Finance 2.0 does **not** create or send bank transfers and does not alter the legacy contributor balance.
+- Legacy project budget/spend calculations and finance exceptions are displayed separately; a unified cross-model spending reconciliation is not yet available.
+- Non-generic task types (voice, transcription segments, application audio) require explicit payment mappings before enabling auto-accrual.
+- No aggregator connected.
 
-## Intended modules
-1. Project Finance tab: rates by role, effective version, compensation basis and earning trigger, currency, budget.
-2. Review UI: reviewer selects eligible/hold/exclude and provides reason; finance admin separately authorizes.
-3. Ledger service: idempotency keys, stored rate snapshot, immutable credits/reversals, no double-crediting.
-4. Finance dashboard: per-project payable, committed, paid, and budget remaining (all amounts by currency).
-5. Contributor wallet: earned, held, payable, processing, paid, failed; distinguish review approval from pay status.
-6. Payout batches: admin approval and manual transfer reconciliation first; no automatic transfers.
-7. Testing and rollout: staging, authorization tests, rate change test, simultaneous submission retry, payout retry, ledger reconciliation, zero-impact regression checks.
+## Next acceptance gates before calling Finance 2.0 fully complete
+1. End-to-end browser QA for super admin, finance staff, QA manager, contributor, and unauthorized user.
+2. Agree and implement task-type mappings and unit measurements; only then activate pay-on-valid-submission and reviewer payment accrual.
+3. Reconcile the exception ledger with the existing wallet, payout batches, budget reports, and any external payment processor.
+4. Test historical rate snapshots, concurrency, refunds/adjustments, dispute handling and reconciliation with sample tasks.
+5. Confirm legal/payment obligations and authorize provider integration.
 
-## Blocking decisions before enabling
-- Confirm which existing task types/source tables should generate payable earnings. Audio items, voice sessions, and generic submissions may need different task ID and completion semantics.
-- Confirm each project's compensation policy and existing historical balances.
-- Decide who has finance authorization rights, whether contributors see estimates or guaranteed earning amounts, and which currencies are legally payable.
-- Add application backend with verified role checks and atomic transactional APIs. **Never perform finance writes directly from browser credentials.**
-- Add enforced append-only triggers to immutable tables, and transactionally validate payout eligibility and exact event allocations.
-- Add tests for role isolation, duplicate events, retroactive policy changes, reversals, concurrent payouts, refunds, and audit tampering.
-- Validate Supabase grants, RLS, data-access surface and deployment migrations in staging; do not run this foundation SQL in production yet.
-
-This branch must stay as an unmerged draft PR until those pieces are implemented and tested.
+## Rollout safety
+No historical task balances are backfilled, no payments are executed automatically, and no legacy task is re-priced. Leave automated disbursement disabled. 
