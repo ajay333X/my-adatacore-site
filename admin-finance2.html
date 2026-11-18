@@ -58,9 +58,9 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 </section>
 </div>
 <section class="panel" style="margin-bottom:15px"><h2>Automatic task earnings</h2><p>New submitted tasks and completed L2 reviews use snapshotted project rate versions. Eligible earnings before approval remain a separate payable obligation; L1 approvals use the existing wallet settlement process.</p><div id="autoStats" class="stats"></div><div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Level</th><th>Units</th><th>Rate</th><th>Amount</th><th>Earning eligibility</th><th>Quality status</th><th>Rate version</th></tr></thead><tbody id="autoRows"></tbody></table></div><h2 style="margin-top:22px">L2 review earnings</h2><p>Each verified review is calculated independently of its L1 task quality decision.</p><div class="scroll"><table><thead><tr><th>Review</th><th>Project</th><th>Reviewer</th><th>Unit count</th><th>Rate</th><th>Amount</th><th>Eligibility</th><th>Decision</th></tr></thead><tbody id="reviewEarningRows"></tbody></table></div></section>
-<section class="panel"><h2>Project spend — payment exceptions</h2><div id="stats" class="stats"></div>
-<p class="muted">Amounts below cover only Finance 2.0 exceptions; use Existing Finance for legacy approved submissions, expenses and budgets. No currencies are combined.</p>
-<div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
+<section class="panel"><h2>Project-by-project earning burn</h2><div id="stats" class="stats"></div>
+<p class="muted">Automatically earned but unapproved work is shown separately from legacy-approved amounts and manual exceptions. Do not add columns together without reconciling overlaps. Existing Finance still manages approved payouts, expenses and budgets.</p>
+<div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Auto-earned, unapproved</th><th>Calculated, pending</th><th>Legacy-approved</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
 </section>
 <section class="panel" style="margin-top:15px"><h2>Finance decisions</h2>
 <div class="fields"><label>Submission ID for manual payout record<input id="paidSubmission" type="number" min="1" step="1"></label><label>External transfer reference<input id="paidReference" placeholder="Bank UTR / transaction reference"></label></div>
@@ -95,8 +95,23 @@ const selected=el('project').value;el('project').replaceChildren();
 projects.forEach(p=>el('project').appendChild(opt(p.name+' (#'+p.id+')',String(p.id))));
 if(projects.some(p=>String(p.id)===selected))el('project').value=selected;
 projectSelected();
+const rollups={};
+const add=(projectId,kind,amount)=>{const key=Number(projectId);if(!rollups[key])rollups[key]={eligible:0,pending:0,legacy:0};rollups[key][kind]+=Number(amount||0)};
+for(const e of Array.isArray(autoEarnings)?autoEarnings:[]){
+ if(e.manual_paid_at)continue;
+ if(String(e.quality_status||'').toLowerCase()==='approved')add(e.project_id,'legacy',e.amount);
+ else if(e.eligibility==='eligible')add(e.project_id,'eligible',e.amount);
+ else if(e.eligibility==='pending')add(e.project_id,'pending',e.amount);
+}
+for(const e of Array.isArray(l2Earnings)?l2Earnings:[]){
+ if(e.eligibility==='eligible')add(e.project_id,'eligible',e.amount);
+ else if(e.eligibility==='pending')add(e.project_id,'pending',e.amount);
+}
 const rows=el('projectRows');rows.replaceChildren();for(const p of projects){
-const r=document.createElement('tr');[p.name,p.currency,money(p.exceptions_eligible,p.currency),money(p.exceptions_paid,p.currency),p.version].forEach(v=>td(r,v));rows.appendChild(r);
+ const x=rollups[Number(p.id)]||{eligible:0,pending:0,legacy:0};
+ const r=document.createElement('tr');
+ [p.name,p.currency,money(x.eligible,p.currency),money(x.pending,p.currency),money(x.legacy,p.currency),
+  money(p.exceptions_eligible,p.currency),money(p.exceptions_paid,p.currency),p.version].forEach(v=>td(r,v));rows.appendChild(r);
 }
 const ar=el('autoRows');ar.replaceChildren();
 const autoTotals={eligible:0,pending:0,legacy:0,paid:0};const seen=new Set();
