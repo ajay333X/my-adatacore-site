@@ -1,37 +1,49 @@
-# Finance 2.0 — controlled release
+# Finance 2.0: Automatic Task Earnings
 
-## Implemented
-- Dedicated protected admin interface `/admin/finance-2`, accessed from the existing admin and Project Lab navigation.
-- Project-level payment models, earning-trigger preferences, L1/L2 rate configuration, and audit-backed rate versions.
-- Reviewer recommendation controls in the L2 Review Results interface. A QA recommendation is separate from finance authorization.
-- Finance-admin authorization of non-approved submission payment eligibility/hold/exclusion, with written reason.
-- Manual payout reconciliation for these exceptions: authorized finance staff record a **transfer already sent externally**, with a unique submission record and bank reference; no transfer is initiated.
-- Contributor earnings section lists their own authorized exceptions and recorded external payout status, separately from their existing wallet.
-- Existing project budget and spend dashboard remains intact, with a separate Finance 2.0 exception-liability view.
-- Backend RPC functions restricted by existing finance and scoped QA permissions, with private RLS-protected tables.
-- A guard prevents Finance 2.0 payable exceptions from entering the legacy approved payment path until reconciled.
-- Existing legacy approved-task payments, balances, and payout batches are not modified.
+## Production behavior (2026-11-18)
 
-## Verified
-- Supabase SQL migrations phase 2, 3, and 4 applied successfully; the earlier experimental private schema foundation is **not** applied.
-- Backend read, rate update, review recommendation, authorization, manual-paid recording, and project dashboard were exercised in an SQL transaction that was rolled back. The test left zero rate rules, exception records, review recommendations or audit entries.
-- Anonymous users have no direct table access; authenticated users cannot directly write the private finance tables.
-- JavaScript syntax validated for entry pages and finance/review scripts.
-- Vercel preview build succeeded. Browser-level QA, all role scenarios and actual money transfer testing remain outstanding.
+The engine is **implemented and enabled** for newly submitted tasks in projects after a finance administrator saves a supported policy under **Admin → Finance 2.0**. Existing projects with no saved Finance 2.0 policy continue using their current legacy earnings and review flow. No historical submissions are backfilled.
 
-## Not yet automated — intentionally
-- Setting `valid_submission` or `review_complete` is **stored configuration**, not an automatic earning-accrual rule yet. Legacy approved work still follows the original payment processing.
-- Finance 2.0 does **not** create or send bank transfers and does not alter the legacy contributor balance.
-- Legacy project budget/spend calculations and finance exceptions are displayed separately; a unified cross-model spending reconciliation is not yet available.
-- Non-generic task types (voice, transcription segments, application audio) require explicit payment mappings before enabling auto-accrual.
-- No aggregator connected.
+### Supported calculation and eligibility
+- **Per task:** snapshot the configured L1 rate when the new `public.submissions` record is inserted. Exactly one task-earning snapshot per task ID.
+- **Per audio minute:** calculate using the duration stored in a matching `transcription_audio_items` record; the configured rate is **per audio minute**, not per hour. Requires an existing transcription source item with trusted duration.
+- **L2 reviews:** snapshot the L2 review rate for actual completed reviews from `voice_l2_reviews`, `transcription_review_assessments`, or the generic L2 review status change path. One record per source review, with idempotency key.
+- **Eligibility rules:** valid submission (eligible immediately), review complete, approval only, or manual authorization. Review quality is independent of payment eligibility.
+- **Rate versioning:** new work snapshots the version, role, units, unit rate, amount, and currency. Subsequent project-rate changes do not alter earlier amounts.
+- **Amount consistency:** new Finance 2.0 submissions publish their fixed amount into `submissions.earnedAmount` and `tasks.price`. Resubmission retains the original snapshot. Earnings rate updates and submissions use a common advisory lock to prevent rate-change races.
+- **USD only** for automatic calculation while the existing contributor balance has no multi-currency accounting. INR/EUR/etc are intentionally blocked rather than silently mixed.
+- **Not yet supported:** automatic per-work-hour and per-1,000-word calculations, because a verified unit source has not been integrated.
+- **Not mapped:** all specialized non-`submissions` task models, including some separate Voice Studio project/session flows. They remain on existing payout arrangements until explicitly mapped and tested.
 
-## Next acceptance gates before calling Finance 2.0 fully complete
-1. End-to-end browser QA for super admin, finance staff, QA manager, contributor, and unauthorized user.
-2. Agree and implement task-type mappings and unit measurements; only then activate pay-on-valid-submission and reviewer payment accrual.
-3. Reconcile the exception ledger with the existing wallet, payout batches, budget reports, and any external payment processor.
-4. Test historical rate snapshots, concurrency, refunds/adjustments, dispute handling and reconciliation with sample tasks.
-5. Confirm legal/payment obligations and authorize provider integration.
+### Contributor and admin views
+- Contributor Workspace → Earnings shows automatic L1 and L2 compensation separately from regular wallet balance and manual review exceptions. `Earned/eligible` means the contractor has met the configured conditions, **not** that money has reached a bank.
+- Admin → Finance 2.0 includes payment policy controls, all-task totals by project, individual L1 submissions, completed L2 reviews, finance eligibility overrides, and optional manual external payout recording.
+- Per-project earning liabilities are summed **in the database without pagination**. Detailed task/review tables display the latest 1,000 records.
+- Approved L1 task earnings are recognized as part of the existing wallet settlement flow and are excluded from the separate unapproved liability total to avoid double counting.
 
-## Rollout safety
-No historical task balances are backfilled, no payments are executed automatically, and no legacy task is re-priced. Leave automated disbursement disabled. 
+### Safety and limitations
+- **No automatic bank transfer, payment-provider integration, or withdrawal is enabled.**
+- **No automatic credit to `users.balance` before approval:** earned/eligible amounts are visible in Finance 2.0 until existing settlement or manual finance procedures take over. This preserves the legacy payout system and avoids duplicate credits.
+- Existing `admin_update_submission_payment`, `submit_voice_l2_review`, `tx_submit`, `admin_set_submission_status`, and project budget/spend procedures are not rewritten.
+- Finance 2.0 paid exceptions are prevented from being approved again through the legacy payment path without reconciliation.
+- Finance 2.0 table rows are private, RLS-enabled, and accessed through permission-scoped RPCs. Sensitive writes use finance or scoped QA permissions.
+- Manual "paid" means an authorized finance admin is **recording an external transfer that has actually occurred**, not initiating a bank transfer.
+- No change is made to previously approved amounts, paid histories or old project rules.
+
+### SQL changes
+1. `phase5-automatic-task-earnings.sql` — new L1 task snapshots, triggers, read APIs, policy activation
+2. `phase6-l2-review-earnings.sql` — L2 review ledger and capture triggers
+3. `phase7-project-earning-totals.sql` — complete project aggregates
+4. `phase8-publish-task-price.sql` — synchronize task pricing metadata
+5. `phase9-transactional-rate-locks.sql` — serialize configuration and accrual
+
+Earlier `phase2`–`phase4` migrations are still in place. The experimental `schema-foundation.sql` remains a non-deployed design artifact and is not used by the live system.
+
+### Verification
+- SQL migrations parsed and executed in rollback tests.
+- Tested: valid submission eligibility, audio-minute calculation, review completion, immutable rate snapshots, retroactive rate change isolation, unauthorized finance reads and edits, currency/model rejection, duplicate task credit prevention, unchanged pre-approval legacy balance, contributor read authorization, L2 review snapshot idempotency, and project aggregation.
+- JavaScript entry points passed syntax checks.
+- Final browser regression testing with actual assigned participant, QA, finance, and admin sessions is still recommended before treating the system as fully operational for paying external contributors.
+
+### Admin action required
+Open **/admin/finance-2**, select one project, choose *per task* or *per audio minute*, set explicit **USD per-unit L1 and L2 rates**, choose *On valid submission* for earnings before QA approval, then **Save and activate rate version**. Only new submissions/reviews on that project use the new rule; no old work is repriced.
