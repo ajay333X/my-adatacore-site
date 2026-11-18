@@ -73,3 +73,16 @@ Finance admins now have a dedicated reconciliation health panel. It checks:
 - overdue eligible-but-unpaid task and reviewer earnings.
 
 This is a **read-only audit**, not automatic error correction. `finance2_reconciliation_health` checks the complete earning tables rather than only paginated UI results, and is restricted to finance-capable staff. Authenticated browser role testing and independent production payment reconciliation still remain necessary before claiming 10/10.
+
+
+## Further safety hardening (18 November 2026)
+
+**Append-only financial history:** Finance 2.0 audit events, rate history and L2 review earning records reject UPDATE/DELETE. L1 task earning snapshots reject changes to amount, currency, rate, contributor, units, and project; only eligibility and eligibility timestamp remain updatable. This preserves evidence when payment eligibility legitimately changes.
+
+**Settled payment protection:** A paid L1 override cannot be reauthorized or rewritten; transfer references are normalized and unique for each L1/L2 external payout record. Cross-table checks reject reuse between L1 exceptions and L2 reviews. L2 settlement inserts are validated against the exact earning, amount, currency, reviewer and project in the database, even if inserted outside the normal RPC.
+
+**Transcription word model:** An additional **USD per 1,000 transcribed words** calculation is available for new work on transcription projects with persisted submitted segments. Count is the number of whitespace-delimited tokens containing a Unicode letter/number, summed across submitted segments, with 1–50,000 tokens required. Rates apply proportionally to the exact count and are snapshotted; the model also supports completed transcription L2 reviews using the underlying L1 submission's saved segments. Word counts are not inferred from audio duration. Existing submissions are never repriced. Unit rates must be entered explicitly.
+
+**Verified:** Rollback tests covered immutable audit/earnings records, duplicate transfer references, idempotent settlement retries, per-1,000-word unit math, submission snapshot equality and project policy activation. Automatic bank transfers remain disabled.
+
+**Remaining to qualify as 10/10:** Real authenticated browser tests across all roles and specialized project types; a verified billable work-hour source; currency-specific settlement wallets and no cross-currency mixing; real bank statement reconciliation/chargeback support; operator-dispute and reversal procedures; security review of all legacy payment flows, and load/concurrency testing under actual traffic. The released financial core is hardened, but a perfect score is not supported without those checks.
