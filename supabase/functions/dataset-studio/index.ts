@@ -108,26 +108,90 @@ async function download(source:any,userId:string){
  return {status:"downloaded",bytes:data.bytes.length};
 }
 
-type TranscriptProvider = "groq" | "openai";
+type TranscriptProvider = "groq" | "openai" | "gemini";
 function providerInfo() {
  return {
   groq: {configured:Boolean(Deno.env.get("GROQ_API_KEY")?.trim()), model:"whisper-large-v3-turbo", timestamps:true},
-  openai: {configured:Boolean(Deno.env.get("OPENAI_API_KEY")?.trim()), model:"gpt-transcribe", timestamps:false}
+  openai: {configured:Boolean(Deno.env.get("OPENAI_API_KEY")?.trim()), model:"gpt-transcribe", timestamps:false},
+  gemini: {configured:Boolean(Deno.env.get("GEMINI_API_KEY")?.trim()), model:"gemini-3.5-transcribe", timestamps:false, free_tier_data_use:true}
  };
 }
 function safeProvider(raw:unknown):TranscriptProvider {
  if(raw==="openai")return "openai";
+ if(raw==="gemini")return "gemini";
  if(raw==="groq" || raw===undefined || raw===null)return "groq";
  throw Error("Unsupported transcription provider.");
 }
-async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:boolean) {
+
+const GEMINI_INLINE_LIMIT = 12 * 1024 * 1024; // Keep the encoded JSON payload comfortably below the 20 MB inline request ceiling.
+function toBase64(buffer:ArrayBuffer):string {
+ const bytes=new Uint8Array(buffer);
+ const size=32766; // Multiple of three: padding only at the end of the entire file.
+ let output="";
+ for(let i=0;i<bytes.length;i+=size){
+  const chunk=bytes.subarray(i,Math.min(i+size,bytes.length));
+  let binary="";
+  for(let j=0;j<chunk.length;j++)binary+=String.fromCharCode(chunk[j]);
+  output+=btoa(binary);
+ }
+ return output;
+}
+async function geminiTranscribe(bytes:Blob,key:string,language:string):Promise<{transcript:string,segments:any[]}>{
+ if(bytes.size>GEMINI_INLINE_LIMIT)throw Error("Gemini inline transcription currently supports WAV clips up to 12 MB. Choose a shorter clip in the editor.");
+ const b64=toBase64(await bytes.arrayBuffer());
+ // Official Gemini Interactions API: audio content with inline base64 + dedicated ASR model.
+ const languageCode=/^[a-z]{2}$/.test(language)?language+"-"+(language==="hi"?"IN":language==="ur"?"PK":"IN"):"";
+ const config:any={mode:{type:"verbatim"}};
+ if(languageCode && language==="hi")config.language_codes=[languageCode]; // Other languages may be code-switched; let Gemini detect automatically.
+ let response:Response;
+ try {
+  response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+   method:"POST",
+   headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+   body:JSON.stringify({model:"gemini-3.5-transcribe",input:[{type:"audio",data:b64,mime_type:"audio/wav"}],generation_config:{transcription_config:config}}),
+   signal:AbortSignal.timeout(90000)
+  });
+ }catch(_){throw Error("Gemini transcription could not be reached or timed out. Your current transcript was not changed.");}
+ if(!response.ok){
+  const code=response.status;
+  await response.body?.cancel();
+  if(code===401||code===403)throw Error("Google Gemini rejected this API key or the project lacks access to Gemini 3.5 Transcribe. Check Google AI Studio.");
+  if(code===429)throw Error("Gemini free-tier quota or rate limit reached. Check your project's usage and rate limits in Google AI Studio.");
+  if(code===402)throw Error("Gemini project billing or credits are insufficient.");
+  if(code===400)throw Error("Gemini rejected this audio request. Ensure the selected clip is a supported WAV file and the model is enabled.");
+  throw Error("Gemini transcription failed (HTTP "+code+"). Verify the model's availability for your Google AI Studio project.");
+ }
+ const output=await response.json();
+ if(output.status && output.status!=="completed")throw Error("Gemini did not complete the transcription ("+String(output.status).slice(0,60)+"). Your transcript remains unchanged.");
+ const steps=Array.isArray(output.steps)?output.steps:[];
+ const texts=steps.filter((step:any)=>step?.type==="model_output").flatMap((step:any)=>Array.isArray(step.content)?step.content:[])
+  .filter((item:any)=>item?.type==="text"&&typeof item.text==="string").map((item:any)=>item.text);
+ const transcript=texts.join("\n").trim().slice(0,30000);
+ if(!transcript)throw Error("Gemini returned no text for this audio. Your transcript remains unchanged.");
+ return {transcript,segments:[]};
+}
+
+async function transcribe(clip:any,provider:TranscriptProvider,replaceExisting:boolean,allowGoogleDataUse:boolean) {
  if(clip.transcript_status==="human_verified")throw Error("This clip was human verified. We won't overwrite a verified transcript. Use another clip for a new AI draft.");
  if(clip.transcript && !replaceExisting)throw Error("A transcript already exists. Confirm replacement before generating another draft.");
- const key=Deno.env.get(provider==="openai"?"OPENAI_API_KEY":"GROQ_API_KEY")?.trim();
- if(!key)throw Error(provider==="openai"?"OpenAI API key is missing. Add OPENAI_API_KEY to Supabase Edge Function secrets. ChatGPT subscriptions do not supply API access.":"Groq API key is missing. Add GROQ_API_KEY to Supabase Edge Function secrets.");
+ if(provider==="gemini" && !allowGoogleDataUse)throw Error("Google Gemini Free Tier may use submitted audio to improve products. Confirm processing rights and explicitly opt in for this recording.");
+ const keyName=provider==="gemini"?"GEMINI_API_KEY":provider==="openai"?"OPENAI_API_KEY":"GROQ_API_KEY";
+ const key=Deno.env.get(keyName)?.trim();
+ if(!key)throw Error(provider==="gemini"?"Gemini API key missing. Add GEMINI_API_KEY in Supabase Edge Function secrets.":provider==="openai"?"OpenAI API key is missing. Add OPENAI_API_KEY to Supabase Edge Function secrets. ChatGPT subscriptions do not supply API access.":"Groq API key is missing. Add GROQ_API_KEY to Supabase Edge Function secrets.");
  const {data:bytes,error:e}=await db.storage.from(BUCKET).download(clip.storage_path);
  if(e||!bytes)throw Error("Stored clip is unavailable.");
  if(bytes.size>MAX)throw Error("Clip exceeds the audio transcription upload limit.");
+ if(provider==="gemini"){
+  const language=String(clip.language||"").trim().toLowerCase();
+  const draft=await geminiTranscribe(bytes,key,language);
+  const {data:saved,error}=await db.from("dataset_studio_clips").update({
+   transcript:draft.transcript,transcript_segments:draft.segments,
+   transcript_status:"ai_draft",model_name:"gemini/gemini-3.5-transcribe",updated_at:new Date().toISOString()
+  }).eq("id",clip.id).neq("transcript_status","human_verified").select("id").maybeSingle();
+  if(error)throw Error("Gemini transcription succeeded but saving the result failed.");
+  if(!saved)throw Error("This transcript was verified while processing, so no AI changes were saved.");
+  return {transcript:draft.transcript,segments:draft.segments,transcript_status:"ai_draft",provider:"gemini",model_name:"gemini/gemini-3.5-transcribe",timestamps_available:false};
+ }
  const form=new FormData();
  form.append("file",bytes,"clip.wav");
  const model=provider==="openai"?"gpt-transcribe":"whisper-large-v3-turbo";
@@ -215,7 +279,7 @@ Deno.serve(async(req)=>{
    if(error||!clip)return err("Clip not found.",404);
    if(clip.transcript_status==="human_verified")return err("Human-verified transcripts cannot be overwritten by AI.",409);
    if(clip.transcript&&!body.replace_existing)return err("Confirm replacement of the existing draft before rerunning transcription.",409);
-   return result(await transcribe(clip,provider,body.replace_existing===true));
+   return result(await transcribe(clip,provider,body.replace_existing===true,body.allow_google_data_use===true));
   }
   if(!/^[0-9a-f-]{36}$/i.test(body.source_id||""))return err("Invalid source identifier.");
   const {data:source,error}=await db.from("dataset_studio_sources").select("*").eq("id",body.source_id).maybeSingle();
