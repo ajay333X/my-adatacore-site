@@ -38,12 +38,12 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <h2>Project compensation rules</h2>
 <div class="fields">
 <label class="wide">Project<select id="project"></select></label>
-<label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_audio_minute">Per audio minute</option></select></label>
+<label>Payment basis<select id="model"><option value="per_task">Per task</option><option value="per_audio_minute">Per audio minute</option><option value="per_1000_words">Per 1,000 transcribed words</option></select></label>
 <label>Eligibility rule<select id="trigger"><option value="approved">On approval (legacy)</option><option value="valid_submission">On valid submission — earn immediately</option><option value="review_complete">On review completion</option><option value="manual">Manual authorization</option></select></label>
 <label>Currency<select id="currency"><option>USD</option></select></label>
 <label><span id="l1RateLabel">L1 rate (USD/task)</span><input id="l1" type="number" min="0" step="0.0001" required placeholder="Set explicitly"></label>
 <label><span id="l2RateLabel">L2 rate (USD/review)</span><input id="l2" type="number" min="0" step="0.0001" required placeholder="Set explicitly"></label>
-</div><p id="rateUnitHint" class="muted">Enter USD per task. Existing transcription-hourly rates are NOT per-task rates.</p><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task or verified audio-minute rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
+</div><p id="rateUnitHint" class="muted">Enter USD per task. Existing transcription-hourly rates are NOT per-task rates.</p><p class="muted">Automatic USD calculations are enabled for new L1 submissions and L2 review completions, using per-task, verified audio-minute, or submitted transcript word-count rates. Historical work is not recalculated.</p><div class="actions"><button id="save">Save and activate rate version</button><span id="version" class="muted"></span></div>
 </section>
 <section class="panel">
 <h2>Review-side compensation recommendation</h2>
@@ -81,10 +81,15 @@ const opt=(label,value)=>{const x=document.createElement('option');x.textContent
 const td=(tr,value)=>{const c=document.createElement('td');c.textContent=String(value??'—');tr.appendChild(c)};
 const setBusy=flag=>['save','recommend','authorize','refresh','recordPaid','recordL2Paid'].forEach(id=>el(id).disabled=flag);
 const requireReason=()=>{const r=el('reason').value.trim();if(r.length<5)throw Error('Provide a meaningful reason (at least 5 characters).');return r};
-function updateRateUnitHint(){const perMinute=el('model').value==='per_audio_minute';const unit=perMinute?'audio minute':'task/review';
+function updateRateUnitHint(){
+const mode=el('model').value;const perMinute=mode==='per_audio_minute';const perWords=mode==='per_1000_words';
+const unit=perMinute?'audio minute':perWords?'1,000 transcribed words':'task/review';
 el('l1RateLabel').textContent='L1 rate (USD per '+unit+')';el('l2RateLabel').textContent='L2 rate (USD per '+unit+')';
 const a=Number(el('l1').value),b=Number(el('l2').value);
-el('rateUnitHint').textContent=perMinute?('These are USD per AUDIO MINUTE, not per hour. Hourly equivalent: L1 '+(Number.isFinite(a)?money(a*60):'—')+' /hour; L2 '+(Number.isFinite(b)?money(b*60):'—')+' /hour. Existing $10/hour rates would be about $0.1667/minute.'):'These are USD per TASK/REVIEW, not per hour. Please set explicit rates; older project rates may use different units.';
+el('rateUnitHint').textContent=perWords?
+'Words are counted from submitted transcription segments as non-punctuation whitespace-separated tokens. L1 and L2 rates apply to each 1,000 words. This option requires a transcription project with stored segments.':
+perMinute?('These are USD per AUDIO MINUTE, not per hour. Hourly equivalent: L1 '+(Number.isFinite(a)?money(a*60):'—')+' /hour; L2 '+(Number.isFinite(b)?money(b*60):'—')+' /hour. Existing $10/hour rates would be about $0.1667/minute.'):
+'These are USD per TASK/REVIEW, not per hour. Please set explicit rates; older project rates may use different units.';
 }
 function projectSelected(){
 const p=projects.find(x=>String(x.id)===el('project').value);if(!p)return;
@@ -180,7 +185,7 @@ const p=projects.find(x=>String(x.id)===el('project').value);
 if(!p)throw Error('Choose a project.');
 const a=el('l1').value.trim(),b=el('l2').value.trim();
 if(!a||!b||!Number.isFinite(Number(a))||!Number.isFinite(Number(b))||Number(a)<0||Number(b)<0)throw Error('Set explicit, valid non-negative L1 and L2 rates.');
-const unit=el('model').value==='per_audio_minute'?'AUDIO MINUTE':'TASK / REVIEW';
+const unit=el('model').value==='per_audio_minute'?'AUDIO MINUTE':el('model').value==='per_1000_words'?'1,000 TRANSCRIBED WORDS':'TASK / REVIEW';
 const msg='Activate compensation for '+p.name+'?\n'+
 'L1: '+money(a)+' per '+unit+'\nL2: '+money(b)+' per '+unit+'\n'+
 'Eligibility: '+el('trigger').selectedOptions[0].textContent+'\n'+
