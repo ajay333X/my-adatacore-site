@@ -141,7 +141,7 @@ async function geminiTranscribe(bytes:Blob,key:string,language:string):Promise<{
  const b64=toBase64(await bytes.arrayBuffer());
  // Official Gemini Interactions API: audio content with inline base64 + dedicated ASR model.
  const languageCode=/^[a-z]{2}$/.test(language)?language+"-"+(language==="hi"?"IN":language==="ur"?"PK":"IN"):"";
- const config:any={mode:"verbatim"};
+ const config:any={mode:{type:"verbatim"}};
  if(languageCode && language==="hi")config.language_codes=[languageCode]; // Other languages may be code-switched; let Gemini detect automatically.
  let response:Response;
  try {
