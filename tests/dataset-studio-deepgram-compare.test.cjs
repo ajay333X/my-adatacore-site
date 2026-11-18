@@ -13,7 +13,7 @@ test('Deepgram Nova-3 provider is optional and previous choices remain available
 });
 test('Deepgram sends WAV with correct auth, language and model improvement opt-out',()=>{
  assert.match(worker,/api\.deepgram\.com\/v1\/listen/);
- assert.match(worker,/Authorization":"Token " \+key/);
+ assert.match(worker,/Authorization":"Token "\+key/);
  assert.match(worker,/Content-Type":"audio\/wav"/);
  assert.match(worker,/mip_opt_out:"true"/);
  assert.match(worker,/language:code/);
