@@ -19,7 +19,8 @@ create table if not exists app_private.finance2_task_earnings (
  measurement_source text not null,
  created_at timestamptz not null default now(),
  eligible_at timestamptz,
- unique(project_id,submission_id)
+ unique(project_id,submission_id),
+ unique(task_id)
 );
 create index if not exists finance2_earned_project_idx on app_private.finance2_task_earnings(project_id,eligibility,created_at);
 create index if not exists finance2_earned_user_idx on app_private.finance2_task_earnings(contributor_id,created_at);
@@ -142,6 +143,8 @@ begin
  if not public.admin_has_capability('finance') then raise exception 'FINANCE_ACCESS_REQUIRED';end if;
  if not exists(select 1 from public.project_lab where id=p_project_id) then raise exception 'PROJECT_NOT_FOUND';end if;
  if p_model not in ('per_task','per_audio_minute') then raise exception 'AUTOMATIC_MODEL_NOT_YET_SUPPORTED';end if;
+ if p_model='per_audio_minute' and not exists(select 1 from public.transcription_audio_items where transcription_project_id=p_project_id) then
+   raise exception 'AUDIO_MINUTE_REQUIRES_TRANSCRIPTION_PROJECT_WITH_AUDIO';end if;
  if p_trigger not in ('valid_submission','review_complete','approved','manual')
    or p_currency <> 'USD' or p_l1_rate is null or p_l2_rate is null or p_l1_rate<0 or p_l2_rate<0
    then raise exception 'INVALID_RULE_OR_UNSUPPORTED_CURRENCY';end if;
