@@ -31,12 +31,14 @@ async function load(){
  if(!root)return;
  root.textContent='Loading task earnings…';
  try{
-  const [auto,exceptions]=await Promise.all([
+  const [auto,exceptions,reviews]=await Promise.all([
    db.rpc('finance2_my_task_earnings',{p_limit:200}),
-   db.rpc('finance2_my_exceptions')
+   db.rpc('finance2_my_exceptions'),
+   db.rpc('finance2_my_review_earnings',{p_limit:200})
   ]);
   if(auto.error)throw Error(auto.error.message);
   if(exceptions.error)throw Error(exceptions.error.message);
+  if(reviews.error)throw Error(reviews.error.message);
   const items=Array.isArray(auto.data)?auto.data:[],manual=Array.isArray(exceptions.data)?exceptions.data:[];
   const known=new Set(items.map(x=>x.submission_id));
   const totals={eligible:0,pending:0,legacy:0,paid:0};
@@ -54,6 +56,18 @@ async function load(){
    else status='Payment '+state;
    const description='Task #'+x.task_id+' · '+x.role+' · '+Number(x.units||0).toFixed(3)+' units · rate version '+x.version;
    holder.append(row(x,description,status));
+  }
+  const l2=Array.isArray(reviews.data)?reviews.data:[];
+  if(l2.length){
+   const heading=document.createElement('h3');heading.textContent='L2 review earnings';heading.style.fontSize='12px';heading.style.margin='16px 0 7px';
+   holder.append(heading);
+   for(const x of l2){
+    const amount=Number(x.amount||0);
+    let status=x.eligibility==='eligible'?'Review completed · eligible for payout':'Calculated · awaiting finance policy';
+    if(x.eligibility==='eligible')totals.eligible+=amount;
+    else if(x.eligibility==='pending')totals.pending+=amount;
+    holder.append(row(x,'L2 review · '+x.source+' · '+Number(x.units||0).toFixed(3)+' units · rate v'+x.rule_version,status));
+   }
   }
   root.replaceChildren(holder);
   const boxes=document.getElementById('finance2Totals');boxes.replaceChildren();
