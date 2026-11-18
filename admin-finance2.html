@@ -31,7 +31,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <main class="wrap">
 <h1>Contributor compensation control</h1>
 <p>Configure project compensation rules, record reviewer recommendations, and authorize compensation exceptions without changing task quality outcomes.</p>
-<div class="banner">Controlled rollout: setting a policy does not automatically alter existing contributor balances or release payments. Payment disbursement and legacy reconciliation remain disabled until verified.</div>
+<div class="banner">Controlled rollout: setting a policy does not automatically alter existing contributor balances or release payments. No automatic transfers are performed. Manual payout recording requires an actual external transfer and its reference. Legacy balances remain separate.</div>
 <p id="notice" role="status"></p>
 <div class="grid">
 <section class="panel">
@@ -62,7 +62,9 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px;bord
 <div class="scroll"><table><thead><tr><th>Project</th><th>Currency</th><th>Eligible exceptions</th><th>Paid exceptions</th><th>Policy version</th></tr></thead><tbody id="projectRows"></tbody></table></div>
 </section>
 <section class="panel" style="margin-top:15px"><h2>Finance decisions</h2>
-<div class="actions"><button id="refresh" class="secondary">Refresh</button></div>
+<div class="fields"><label>Submission ID for manual payout record<input id="paidSubmission" type="number" min="1" step="1"></label><label>External transfer reference<input id="paidReference" placeholder="Bank UTR / transaction reference"></label></div>
+<div class="actions"><button id="recordPaid">Record completed manual transfer</button><button id="refresh" class="secondary">Refresh</button></div>
+<p class="muted">Only use this after money has actually been transferred outside Adatacore. This does not initiate a bank transfer or change the legacy wallet.</p>
 <div class="scroll"><table><thead><tr><th>Submission</th><th>Project</th><th>Quality</th><th>Payment</th><th>Amount</th><th>Paid</th><th>Reason</th></tr></thead><tbody id="overrideRows"></tbody></table></div>
 </section>
 </main>
@@ -76,7 +78,7 @@ const rpc=async(name,args={})=>{const {data,error}=await db.rpc(name,args);if(er
 let projects=[];
 const opt=(label,value)=>{const x=document.createElement('option');x.textContent=label;x.value=value;return x};
 const td=(tr,value)=>{const c=document.createElement('td');c.textContent=String(value??'—');tr.appendChild(c)};
-const setBusy=flag=>['save','recommend','authorize','refresh'].forEach(id=>el(id).disabled=flag);
+const setBusy=flag=>['save','recommend','authorize','refresh','recordPaid'].forEach(id=>el(id).disabled=flag);
 const requireReason=()=>{const r=el('reason').value.trim();if(r.length<5)throw Error('Provide a meaningful reason (at least 5 characters).');return r};
 function projectSelected(){
 const p=projects.find(x=>String(x.id)===el('project').value);if(!p)return;
@@ -114,6 +116,14 @@ el('refresh').addEventListener('click',load);
 el('save').addEventListener('click',async()=>{setBusy(true);try{
 await rpc('finance2_set_project_rule',{p_project_id:Number(el('project').value),p_model:el('model').value,p_trigger:el('trigger').value,p_currency:el('currency').value,p_l1_rate:Number(el('l1').value),p_l2_rate:Number(el('l2').value)});
 await load();notice('Project rule saved and versioned. Legacy earning logic remains unchanged.');
+}catch(e){notice(e.message,true)}finally{setBusy(false)}});
+el('recordPaid').addEventListener('click',async()=>{setBusy(true);try{
+const sid=Number(el('paidSubmission').value), ref=el('paidReference').value.trim();
+if(!Number.isInteger(sid)||sid<=0)throw Error('Enter a valid submission ID.');
+if(ref.length<6)throw Error('Enter the actual external payment reference.');
+if(!confirm('Confirm this payment has ALREADY been sent externally for submission #'+sid+'? This action only records the transfer.'))return;
+const r=await rpc('finance2_mark_manual_paid',{p_submission_id:sid,p_payment_reference:ref});
+await load();notice('Manual payout '+r.status+': '+money(r.amount,r.currency)+' for submission #'+sid);
 }catch(e){notice(e.message,true)}finally{setBusy(false)}});
 el('recommend').addEventListener('click',async()=>{setBusy(true);try{
 await rpc('finance2_recommend',{p_submission_id:Number(el('submission').value),p_decision:el('decision').value,p_reason:requireReason()});
