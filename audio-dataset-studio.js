@@ -400,7 +400,7 @@ async function clipAction(action,id,providerChoice){
    const textarea=card?.querySelector('[data-transcript]');
    if(!textarea)return;
    textarea.value=chosen.transcript;
-   comparisonSelections.set(id,{model_name:chosen.model_name,segments:chosen.segments});
+   comparisonSelections.set(id,{model_name:chosen.model_name,segments:chosen.segments,source_transcript:chosen.transcript});
    textarea.focus();
    toast('Selected '+(providerLabels[providerChoice]||providerChoice)+'. Review this draft and click Save transcript edits.');
    return;
@@ -463,7 +463,7 @@ async function clipAction(action,id,providerChoice){
   const state=action==='verify'?'human_verified':'edited';
   const selected=comparisonSelections.get(id);
   const changes={transcript,transcript_status:state,updated_at:new Date().toISOString()};
-  if(selected){changes.model_name=selected.model_name;changes.transcript_segments=selected.segments}
+  if(selected){changes.model_name=selected.model_name;changes.transcript_segments=transcript===selected.source_transcript?selected.segments:[]}
   const {data:saved,error}=await db.from('dataset_studio_clips').update(changes).eq('id',id).neq('transcript_status','human_verified').select('id').maybeSingle();
   if(error)throw error;
   if(!saved)throw Error('Transcript has already been verified; no changes were saved.');
