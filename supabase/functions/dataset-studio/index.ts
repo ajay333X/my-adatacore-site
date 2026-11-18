@@ -318,6 +318,7 @@ Deno.serve(async(req)=>{
     if(body.confirm_api_usage!==true)return err("Confirm that comparison calls two external AI providers and uses API credits.",400);
     if(!Array.isArray(body.providers)||body.providers.length!==2||body.providers[0]===body.providers[1])return err("Choose exactly two different providers.",400);
     const providers=body.providers.map(safeProvider);
+    if(providers[0]===providers[1])return err("Choose two different providers.",400);
     const responses=await Promise.allSettled(providers.map(provider=>createDraft(clip,provider,body.allow_google_data_use===true,body.allow_deepgram_processing===true)));
     const results=responses.map((r,i)=>r.status==="fulfilled"
      ?{provider:providers[i],transcript:r.value.transcript,segments:r.value.segments,model_name:r.value.model_name}
