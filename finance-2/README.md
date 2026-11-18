@@ -47,3 +47,16 @@ Earlier `phase2`–`phase4` migrations are still in place. The experimental `sch
 
 ### Admin action required
 Open **/admin/finance-2**, select one project, choose *per task* or *per audio minute*, set explicit **USD per-unit L1 and L2 rates**, choose *On valid submission* for earnings before QA approval, then **Save and activate rate version**. Only new submissions/reviews on that project use the new rule; no old work is repriced.
+
+
+## 2026-11-18 reconciliation hardening
+
+- Adds private, append-only `finance2_review_settlements` for payments **already sent externally** against an individual eligible L2 review earning.
+- Each review earning can be settled **exactly once**, using a unique review-earning reference; repeating a request with the same transfer reference returns `already_recorded`, and a different reference is rejected.
+- The admin Finance 2.0 interface now supports external transfer reconciliation for L2 reviews. Contributors see their paid L2 earnings separately from still-eligible earnings.
+- Project liability totals now exclude settled L2 earnings from payable amounts and show L2 payments independently, avoiding paid-versus-unpaid double counting.
+- Reviewer settlement RPC is restricted to Finance-capable admins, private tables remain inaccessible to ordinary clients, and the settlement record cannot be updated or deleted by application SQL paths.
+- On first activation, project rate fields start **blank** rather than copying a possibly hourly legacy rate into a per-task configuration. The admin must explicitly enter rates and confirm the currency, payment unit, and eligibility before a project is activated.
+- Rollback-only tests passed: unauthorized settlement attempt, first successful settlement, idempotent duplicate, different-reference rejection, immutable-row update rejection, and project total reconciliation.
+- Bank transfer initiation remains disabled. This is manual *recording* of transfers that occurred outside the platform.
+- Remaining issues before a defensible 10/10: real-browser cross-role verification; full compatibility with all specialized voice-task models; trusted work-hour and word-count units; multi-currency settlement in a separate wallet; external bank statement reconciliation with evidence; end-to-end refund/dispute handling. Do not claim these are complete.
